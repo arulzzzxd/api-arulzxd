@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arulz-XD API - Pastebin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    <style>
+        :root { 
+            --bg-main: #090d16; 
+            --bg-card: #0f172a;
+            --border-dark: #1e293b; 
+            --cyan: #00a3ff; 
+            --cyan-hover: #0082cc;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: var(--bg-main);
+            background-image: radial-gradient(rgba(0, 163, 255, 0.1) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            font-weight: bold; 
+            padding-top: 85px; 
+        }
+
+        /* Kontainer Tombol Utama di Pojok Kiri Atas */
+        .top-left-nav {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav-top {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 2px solid var(--cyan);
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px rgba(0, 163, 255, 0.2);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.05s, box-shadow 0.05s;
+        }
+        .btn-nav-top:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0, 163, 255, 0.2);
+        }
+        .btn-nav-top.accent {
+            background: var(--cyan);
+            color: #000;
+        }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; box-sizing: border-box; min-height: 400px; }
+
+        .hero-banner { background: var(--bg-card); border: 2px solid var(--border-dark); box-shadow: 0px 10px 30px rgba(0,0,0,0.5); padding: 35px; margin-bottom: 35px; position: relative; border-radius: 12px; }
+        .hero-tag { background: rgba(0, 163, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); display: inline-block; padding: 4px 12px; font-size: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; border-radius: 20px; }
+        .hero-banner h1 { margin: 0 0 20px 0; font-size: 36px; font-weight: 900; color: var(--text-main); }
+        .hero-banner h1 span { color: var(--cyan); }
+        .hero-banner p { margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; font-weight: bold; line-height: 1.6; max-width: 700px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--border-dark); background: var(--bg-card); box-shadow: 0px 10px 30px rgba(0,0,0,0.3); margin-bottom: 35px; border-radius: 12px; overflow: hidden; }
+        .stat-box { padding: 25px; background: var(--bg-card); box-sizing: border-box; }
+        .stat-box.left { border-right: 2px solid var(--border-dark); background: rgba(0, 163, 255, 0.05); }
+        .stat-box.center { border-right: 2px solid var(--border-dark); }
+        .stat-box h2 { margin: 0 0 5px 0; font-size: 38px; font-weight: 900; color: var(--cyan); font-family: Arial, sans-serif; }
+        .stat-box p { margin: 0; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 900; }
+
+        .search-wrapper { position: relative; margin-bottom: 15px; }
+        .search-input { width: 100%; padding: 16px 16px 16px 45px; font-size: 14px; border: 2px solid var(--border-dark); border-radius: 8px; box-sizing: border-box; background: var(--bg-card); color: var(--text-main); font-weight: bold; font-family: inherit; }
+        .search-input:focus { outline: none; border-color: var(--cyan); }
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text-muted); pointer-events: none; display: flex; align-items: center; }
+
+        .filter-wrapper { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .btn-filter { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 6px; padding: 8px 16px; font-size: 12px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-filter.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+
+        .title-separator { display: flex; align-items: center; margin-bottom: 30px; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        .title-separator span { color: var(--cyan); margin-right: 15px; font-size: 14px; }
+        .title-separator .line { flex-grow: 1; height: 2px; background: var(--border-dark); margin-left: 20px; }
+
+        .paste-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-bottom: 40px; }
+        .paste-card { 
+            background: var(--bg-card); 
+            border: 2px solid var(--border-dark); 
+            border-radius: 12px;
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            cursor: pointer; 
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .paste-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
+
+        .card-top { background: rgba(0,0,0,0.2); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-dark); }
+        .mac-dots { display: flex; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff5f56; }
+        .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+        .lang-badge { padding: 3px 10px; font-size: 11px; border-radius: 4px; text-transform: lowercase; font-weight: 900; }
+        .card-body { padding: 20px; background: var(--bg-card); }
+        .card-title { margin: 0 0 15px 0; font-size: 16px; font-weight: 900; color: var(--text-main); text-transform: lowercase; cursor: pointer; display: inline-block; }
+        .card-title:hover { color: var(--cyan); }
+        .preview-box { background: #0b0c10; color: #fff; padding: 15px; font-size: 12px; overflow: hidden; white-space: pre-wrap; font-family: monospace; border: 1px solid var(--border-dark); border-radius: 6px; height: 70px; box-sizing: border-box; }
+        .card-footer { background: rgba(0,0,0,0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-top: 1px solid var(--border-dark); }
+        .card-footer-info { display: flex; align-items: center; gap: 15px; color: var(--text-muted); }
+        .btn-raw { background: var(--cyan); color: #000; text-decoration: none; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: 900; display: flex; align-items: center; gap: 4px; }
+
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 40px auto 20px auto; flex-wrap: wrap; }
+        .page-btn { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 900; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .page-btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+        .page-btn.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+        .page-btn:disabled { background: #1e293b; color: #475569; border-color: #1e293b; cursor: not-allowed; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 2px solid var(--border-dark); border-radius: 6px; padding: 10px 18px; text-decoration: none; color: var(--text-main); margin-bottom: 25px; font-size: 12px; font-weight: 900; }
+        .btn-back:hover { border-color: var(--cyan); color: var(--cyan); }
+        .detail-header { background: var(--bg-card); border: 2px solid var(--border-dark); border-radius: 12px; padding: 25px; margin-bottom: 25px; position: relative; }
+        .detail-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+
+        .code-window { background: #0b0c10; border: 2px solid var(--border-dark); border-radius: 12px; margin-bottom: 30px; overflow: hidden; contain: content; }
+        .window-top { background: rgba(0,0,0,0.3); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-dark); color: var(--text-main); font-size: 12px; flex-wrap: wrap; gap: 12px; }
+
+        .action-menubar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; background: transparent; padding: 0; border: none; }
+        .action-menubar-row-2 { display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; width: 100%; margin-top: 10px; }
+
+        .btn-brutalism { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 6px; padding: 12px 8px; font-size: 11px; font-weight: 900; font-family: inherit; text-transform: uppercase; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .btn-brutalism:hover { border-color: var(--cyan); color: var(--cyan); }
+        .btn-brutalism.yellow-accent { background: var(--cyan); color: #000; border-color: var(--cyan); }
+        .btn-brutalism.yellow-accent:hover { color: #000; opacity: 0.9; }
+        .btn-brutalism.black-accent { background: var(--text-main); color: #000; border-color: var(--text-main); }
+
+        .raw-modal-content { background: var(--bg-card); border: 2px solid var(--border-dark); color: var(--text-main); max-width: 650px; width: 100%; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .raw-modal-header { background: rgba(0,0,0,0.2); padding: 15px 20px; display: flex; justify-content: flex-start; align-items: center; border-bottom: 2px solid var(--border-dark); }
+        .raw-modal-title { color: var(--text-main); font-size: 14px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .raw-modal-body { padding: 20px; background: var(--bg-main); }
+        .raw-textarea-box { width: 100%; height: 280px; background: #0b0c10; color: #39ff14; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 13px; font-weight: bold; resize: none; outline: none; line-height: 1.6; }
+        .raw-modal-footer { background: rgba(0,0,0,0.2); padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 2px solid var(--border-dark); }
+
+        .alert-modal-content { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--cyan); border-radius: 16px; max-width: 420px; width: 100%; padding: 30px; text-align: left; font-family: inherit; position: relative; overflow: hidden; }
+        .alert-modal-text { font-size: 16px; font-weight: 900; line-height: 1.5; margin-top: 10px; margin-bottom: 25px; }
+        .btn-alert-oke { background: var(--cyan); color: #000; border: none; border-radius: 8px; font-size: 13px; font-weight: 900; cursor: pointer; padding: 8px 24px; text-transform: uppercase; }
+
+        .code-window pre[class*="language-"] { max-height: 550px !important; overflow-y: auto !important; overflow-x: auto !important; margin: 0 !important; background: #0b0c10 !important; }
+        pre[class*="language-"].line-numbers { padding-left: 3.8em !important; font-size: 13px; }
+        .footer { background: #0b0c10; color: var(--text-muted); padding: 30px 20px; text-align: center; border-top: 2px solid var(--border-dark); font-size: 12px; margin-top: 60px; font-weight: bold; }
+
+        .heavy-code-warning { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; font-size: 11px; color: #f87171; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="top-left-nav">
+    <a href="/" class="btn-nav-top">
+        <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="width:14px; height:14px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Kembali
+    </a>
+
+    <button id="translateBtn" class="btn-nav-top accent" onclick="toggleLanguageSystem()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px; height:14px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
+        </svg>
+        <span id="translate-btn-text">EN</span>
+    </button>
+</div>
+
+<div class="container" id="page-content">
+    <div style="text-align:center; padding:40px;" id="loading-text">Mengambil data Server...</div>
+</div>
+
+<div class="modal" id="rawModal">
+    <div class="modal-content raw-modal-content">
+        <div class="raw-modal-header">
+            <div class="raw-modal-title">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px; height:16px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                <span id="raw-modal-title-text">RAW - PREVIEW</span>
+            </div>
+        </div>
+        <div class="raw-modal-body">
+            <textarea id="raw-textarea-display" class="raw-textarea-box" readonly></textarea>
+        </div>
+        <div class="raw-modal-footer">
+            <button class="btn-brutalism" style="padding: 8px 20px;" onclick="closeRawModal()">TUTUP</button>
+            <button class="btn-brutalism yellow-accent" style="padding: 8px 20px;" onclick="copyRawInsideModal()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" />
+                </svg>
+                SALIN RAW
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="alertModal">
+    <div class="modal-content alert-modal-content">
+        <div class="alert-modal-text" id="alertModalMessage">Aksi berhasil dilakukan!</div>
+        <div class="alert-modal-btn-container">
+            <button class="btn-alert-oke" onclick="closeAlertModal()">Oke</button>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>© 2026 Arulz-XD API · <span id="lbl-footer-text">Dibuat untuk Developer Indonesia</span></p>
+</div>
+
+<script>
+    const GITHUB_RAW_URL = "https://raw.githubusercontent.com/arulzzzxd/api-arulzxd-vvipclouds/main/database/data.js";
+
+    const translations = {
+        id: {
+            heroTitle: "<span>Snippet</span> & Kode", heroDesc: "Kumpulan kode, script, dan snippet dari tim Arulz-XD. Gratis, langsung pakai.",
+            stat1: "Total Paste", stat2: "Bahasa", stat4: "Total Baris",
+            searchPlaceholder: "Cari paste berdasarkan judul, bahasa, atau deskripsi...", filterAll: "Semua", sepText: "Semua Paste", noData: "Data tidak ditemukan.",
+            lblFooterText: "Dibuat untuk Developer Indonesia", alertSuccessCopy: "Kode berhasil disalin!", 
+            btnBack: "KEMBALI KE PASTEBIN", lblLines: "baris", btnCopy: "SALIN KODE", 
+            btnRaw: "RAW", btnShare: "SHARE", alertShare: "Link berhasil disalin ke clipboard!", btnDownload: "DOWNLOAD",
+            btnPrev: "← Sebelumnya", btnNext: "Berikutnya →"
+        },
+        en: {
+            heroTitle: "<span>Snippet</span> & Code", heroDesc: "Collection of codes, scripts, and snippets from the over-XD team. Free, ready to use.",
+            stat1: "Total Pastes", stat2: "Languages", stat4: "Total Lines",
+            searchPlaceholder: "Search paste by title, language, or description...", filterAll: "All", sepText: "All Pastes", noData: "Data not found.",
+            lblFooterText: "Created for Indonesian Developers", alertSuccessCopy: "Code successfully copied!", 
+            btnBack: "BACK TO PASTEBIN", lblLines: "lines", btnCopy: "COPY CODE", 
+            btnRaw: "RAW", btnShare: "SHARE", alertShare: "Link copied to clipboard!", btnDownload: "DOWNLOAD",
+            btnPrev: "← Previous", btnNext: "Next →"
+        }
+    };
+
+    let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
+    let pastes = [];
+    let currentPage = 1;
+    const itemsPerPage = 4; 
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewId = urlParams.get('id');
+    const isRawMode = urlParams.get('raw') === 'true'; 
+    let currentFilter = 'ALL';
+
+    function getLanguageStyle(lang) {
+        const l = String(lang).toLowerCase().trim();
+        switch(l) {
+            case 'javascript': case 'js':
+                return 'background: rgba(247, 223, 30, 0.1); color: #f7df1e; border: 1px solid #f7df1e;';
+            case 'html':
+                return 'background: rgba(227, 76, 38, 0.1); color: #e34c26; border: 1px solid #e34c26;';
+            case 'php':
+                return 'background: rgba(119, 123, 180, 0.1); color: #8892bf; border: 1px solid #8892bf;';
+            case 'python':
+                return 'background: rgba(55, 118, 171, 0.1); color: #4584b6; border: 1px solid #4584b6;';
+            case 'scrape':
+                return 'background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc;';
+            default:
+                return 'background: rgba(0, 163, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan);';
+        }
+    }
+
+    function customAlert(message) {
+        document.getElementById('alertModalMessage').innerText = message;
+        document.getElementById('alertModal').style.display = 'flex';
+    }
+
+    function closeAlertModal() {
+        document.getElementById('alertModal').style.display = 'none';
+    }
+
+    async function loadPastesFromServer() {
+        try {
+            const response = await fetch(GITHUB_RAW_URL);
+            if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+            const fileContent = await response.text();
+
+            let jsonString = fileContent.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
+            if (jsonString.endsWith(';')) {
+                jsonString = jsonString.slice(0, -1);
+            }
+
+            pastes = JSON.parse(jsonString);
+            localStorage.setItem('arulzxd_pastes', JSON.stringify(pastes));
+        } catch (err) {
+            const rawLocal = localStorage.getItem('arulzxd_pastes');
+            try { pastes = rawLocal ? JSON.parse(rawLocal) : []; } catch(e) { pastes = []; }
+        }
+        if (!pastes || !Array.isArray(pastes)) pastes = [];
+        renderPage();
+    }
+
+    function toggleLanguageSystem() {
+        const nextLang = currentLang === 'id' ? 'en' : 'id';
+        changeLanguage(nextLang);
+    }
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('arulzxd_lang', lang);
+        const btnText = document.getElementById('translate-btn-text');
+        if(btnText) btnText.innerText = lang === 'id' ? 'EN' : 'ID';
+        applyStaticTranslations();
+        renderPage();
+    }
+
+    function applyStaticTranslations() {
+        const t = translations[currentLang];
+        if(document.getElementById('lbl-footer-text')) document.getElementById('lbl-footer-text').innerText = t.lblFooterText;
+    }
+
+    function openRawModal() {
+        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+        if(idx !== -1) {
+            const current = pastes[idx];
+            document.getElementById('raw-modal-title-text').innerText = `RAW - ${current.title.toUpperCase()}`;
+            document.getElementById('raw-textarea-display').value = current.content;
+            document.getElementById('rawModal').style.display = 'flex';
+        }
+    }
+
+    function closeRawModal() {
+        document.getElementById('rawModal').style.display = 'none';
+    }
+
+    function copyRawInsideModal() {
+        const txt = document.getElementById('raw-textarea-display').value;
+        navigator.clipboard.writeText(txt).then(() => {
+            customAlert(translations[currentLang].alertSuccessCopy);
+            closeRawModal();
+        });
+    }
+
+    function downloadCode() {
+        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+        if(idx !== -1) {
+            const current = pastes[idx];
+            const element = document.createElement("a");
+            const file = new Blob([current.content], {type: 'text/plain'});
+            element.href = URL.createObjectURL(file);
+            element.download = `${current.title.replace(/\s+/g, '_').toLowerCase()}.js`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    }
+
+    function renderPage() {
+        const target = document.getElementById('page-content');
+        if (!target) return;
+        const t = translations[currentLang];
+
+        // LOGIKA PENYEMBUNYIAN TOMBOL NAVIGASI ATAS
+        const topLeftNav = document.querySelector('.top-left-nav');
+        if (topLeftNav) {
+            if (viewId) {
+                topLeftNav.style.display = 'none'; // Sembunyikan jika di dalam URL detail (?id=)
+            } else {
+                topLeftNav.style.display = 'flex'; // Munculkan kembali jika di halaman list utama
+            }
+        }
+
+        if (pastes.length === 0 && !viewId) {
+            target.innerHTML = `<div style="text-align:center; padding:40px; border:2px dashed var(--border-dark); background:var(--bg-card);">${t.noData}</div>`;
+            return;
+        }
+
+        if (viewId && isRawMode) {
+            const current = pastes.find(p => p.id.toString() === viewId.toString());
+            if (!current) { document.body.innerHTML = "Data tidak ditemukan."; return; }
+            document.body.innerHTML = `<pre style="margin: 0; padding:15px; white-space: pre-wrap; font-family: monospace; font-size: 14px; color:#000; background:#fff;">${current.content}</pre>`;
+            return;
+        }
+
+        if (viewId) {
+            const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+            if (idx === -1) {
+                target.innerHTML = `<h2>Data tidak ditemukan!</h2><a href="/pastecode" class="btn-back">Kembali</a>`;
+                return;
+            }
+
+            const current = pastes[idx];
+            const lineCount = current.content ? current.content.split('\n').length : 0;
+            const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
+
+            target.innerHTML = `
+                <a href="/pastecode" class="btn-back">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                    ${t.btnBack}
+                </a>
+                <div class="detail-header">
+                    <div class="detail-header-top">
+                        <div style="flex-grow: 1; padding-right: 20px;">
+                            <h2 style="margin:0 0 10px 0; font-size:24px; color:var(--text-main);">${current.title}</h2>
+                            <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-muted); font-weight:normal;">${current.desc || 'Tidak ada deskripsi.'}</p>
+                        </div>
+                        <div>
+                            <div class="detail-lang-badge" style="${getLanguageStyle(current.language)}">${current.language}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top: 10px; display:flex; align-items:center; gap:10px;">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                        ${current.date} · 
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
+                        ${lineCount.toLocaleString()} ${t.lblLines}
+                    </div>
+                </div>
+
+                ${isHeavyCode ? `<div class="heavy-code-warning">⚠️ File besar terdeteksi (${lineCount.toLocaleString()} baris). Syntax highlighting dimatikan demi kelancaran rendering.</div>` : ''}
+
+                <div style="margin-bottom: 20px;">
+                    <div class="action-menubar">
+                        <button class="btn-brutalism yellow-accent" onclick="copyText()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" /></svg>
+                            ${t.btnCopy}
+                        </button>
+                        <button class="btn-brutalism" onclick="downloadCode()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                            DOWNLOAD
+                        </button>
+                        <button class="btn-brutalism" onclick="openRawModal()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                            ${t.btnRaw}
+                        </button>
+                    </div>
+                    <div class="action-menubar-row-2">
+                        <button class="btn-brutalism" onclick="copyRawUrl()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                            RAW URL
+                        </button>
+                        <button class="btn-brutalism black-accent" onclick="sharePaste()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                            ${t.btnShare}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="code-window">
+                    <div class="window-top">
+                        <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
+                        <div style="font-size: 11px; font-weight: 900; letter-spacing: 0.5px; color: var(--cyan);">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
+                    </div>
+                    <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : current.language}"><code id="code-block"></code></pre>
+                </div>
+            `;
+            document.getElementById('code-block').textContent = current.content || '';
+            if (!isHeavyCode && typeof Prism !== 'undefined') Prism.highlightAll();
+
+        } else {
+            let totalLines = 0;
+            let langs = {};
+            pastes.forEach(p => {
+                if(p.content) totalLines += p.content.split('\n').length;
+                langs[p.language] = true;
+            });
+            let totalLanguagesCount = Object.keys(langs).length;
+            if (totalLanguagesCount < 2) totalLanguagesCount = 2;
+
+            target.innerHTML = `
+                <div class="hero-banner">
+                    <div class="hero-tag">Arulz-XD Pastebin</div>
+                    <h1>${t.heroTitle}</h1>
+                    <p>${t.heroDesc}</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box left"><h2>${pastes.length}</h2><p>${t.stat1}</p></div>
+                    <div class="stat-box center"><h2>${totalLanguagesCount}</h2><p>${t.stat2}</p></div>
+                    <div class="stat-box"><h2>${totalLines.toLocaleString()}</h2><p>${t.stat4}</p></div>
+                </div>
+
+                <div class="search-wrapper">
+                    <span class="search-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:18px; height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.604 10.604z" /></svg>
+                    </span>
+                    <input type="text" id="search-bar" class="search-input" placeholder="${t.searchPlaceholder}" oninput="handleSearch()">
+                </div>
+
+                <div class="filter-wrapper">
+                    <button class="btn-filter id-filter-all active" onclick="filterLanguage('ALL')">${t.filterAll}</button>
+                    <button class="btn-filter id-filter-javascript" onclick="filterLanguage('javascript')">JavaScript</button>
+                    <button class="btn-filter id-filter-html" onclick="filterLanguage('html')">HTML</button>
+                    <button class="btn-filter id-filter-php" onclick="filterLanguage('php')">PHP</button>
+                    <button class="btn-filter id-filter-python" onclick="filterLanguage('python')">Python</button>
+                    <button class="btn-filter id-filter-scrape" onclick="filterLanguage('scrape')">Scrape</button>
+                    <button class="btn-filter id-filter-plaintext" onclick="filterLanguage('plaintext')">Plaintext</button>
+                </div>
+
+                <div class="title-separator"><span>//</span> ${t.sepText} (<span id="total-paste-text">${pastes.length}</span> Paste) <div class="line"></div></div>
+                <div class="paste-grid" id="grid-list"></div>
+                <div class="pagination-container" id="pagination-wrapper"></div>
+            `;
+            applyFilterAndSearch();
+        }
+    }
+
+    function renderGridItems(items) {
+        const grid = document.getElementById('grid-list');
+        if(!grid) return;
+        grid.innerHTML = '';
+        if(items.length === 0) {
+            grid.innerHTML = `<div style="text-align:center; padding:40px; border:2px dashed var(--border-dark); background:var(--bg-card);">${translations[currentLang].noData}</div>`;
+            document.getElementById('pagination-wrapper').innerHTML = '';
+            return;
+        }
+
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedItems = items.slice(startIndex, endIndex);
+
+        let htmlCards = '';
+        paginatedItems.forEach(p => {
+            const contentPreview = p.content ? p.content.substring(0, 120) : '';
+            htmlCards += `
+                <div class="paste-card" onclick="window.location.href='/pastecode?id=${p.id}'">
+                    <div class="card-top">
+                        <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
+                        <div class="lang-badge" style="${getLanguageStyle(p.language)}">${p.language}</div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title" style="margin:0 0 15px 0;">${p.title}</h3>
+                        <div class="preview-box">${escapeHTML(contentPreview)}</div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-footer-info" style="display:flex; align-items:center; gap:5px;">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                            <span>${p.date}</span>
+                        </div>
+                        <a href="/pastecode?id=${p.id}&raw=true" target="_blank" class="btn-raw" onclick="event.stopPropagation();">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px; height:12px; stroke:#000;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                            RAW
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+        grid.innerHTML = htmlCards;
+        renderPaginationControls(totalPages, items);
+    }
+
+    function renderPaginationControls(totalPages, currentItems) {
+        const wrapper = document.getElementById('pagination-wrapper');
+        if (!wrapper) return;
+        wrapper.innerHTML = '';
+        const t = translations[currentLang];
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerText = t.btnPrev;
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderGridItems(currentItems);
+                window.scrollTo({ top: 400, behavior: 'smooth' });
+            }
+        };
+        wrapper.appendChild(prevBtn);
+
+        const maxPagesToShow = Math.min(totalPages, 5);
+        for (let i = 1; i <= maxPagesToShow; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
+            pageBtn.innerText = i;
+            pageBtn.onclick = () => {
+                currentPage = i;
+                renderGridItems(currentItems);
+                window.scrollTo({ top: 400, behavior: 'smooth' });
+            };
+            wrapper.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerText = t.btnNext;
+        nextBtn.disabled = currentPage === totalPages || currentPage >= 5;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages && currentPage < 5) {
+                currentPage++;
+                renderGridItems(currentItems);
+                window.scrollTo({ top: 400, behavior: 'smooth' });
+            }
+        };
+        wrapper.appendChild(nextBtn);
+    }
+
+    function filterLanguage(lang) {
+        currentFilter = lang;
+        currentPage = 1; 
+        document.querySelectorAll('.filter-wrapper .btn-filter').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.querySelector(`.id-filter-${lang.toLowerCase()}`);
+        if (activeBtn) activeBtn.classList.add('active');
+        applyFilterAndSearch();
+    }
+
+    function copyRawUrl() {
+        const rawUrl = window.location.origin + "/pastecode?id=" + viewId + "&raw=true";
+        navigator.clipboard.writeText(rawUrl).then(() => customAlert(translations[currentLang].alertShare));
+    }
+
+    function sharePaste() {
+        const currentViewId = new URLSearchParams(window.location.search).get('id');
+        if (!currentViewId) return;
+
+        const idx = pastes.findIndex(p => p.id.toString() === currentViewId.toString());
+        if (idx !== -1) {
+            const current = pastes[idx];
+            const shareUrl = window.location.origin + "/pastecode?id=" + currentViewId;
+            if (navigator.share) {
+                navigator.share({ title: current.title, text: current.desc || `Lihat kode ${current.title}`, url: shareUrl });
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(() => customAlert(translations[currentLang].alertShare));
+            }
+        }
+    }
+
+    function handleSearch() { currentPage = 1; applyFilterAndSearch(); }
+
+    function applyFilterAndSearch() {
+        const searchBar = document.getElementById('search-bar');
+        const query = searchBar ? searchBar.value.toLowerCase() : "";
+        let filtered = pastes;
+
+        if (currentFilter !== 'ALL') {
+            filtered = filtered.filter(p => p.language && p.language.toLowerCase() === currentFilter.toLowerCase());
+        }
+        if (query) {
+            filtered = filtered.filter(p => 
+                (p.title && p.title.toLowerCase().includes(query)) || 
+                (p.desc && p.desc.toLowerCase().includes(query)) ||
+                (p.language && p.language.toLowerCase().includes(query))
+            );
+        }
+        const totalText = document.getElementById('total-paste-text');
+        if(totalText) totalText.innerText = filtered.length;
+        renderGridItems(filtered);
+    }
+
+    function escapeHTML(text) { return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+    function copyText() {
+        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+        if(idx !== -1) {
+            navigator.clipboard.writeText(pastes[idx].content).then(() => customAlert(translations[currentLang].alertSuccessCopy));
+        }
+    }
+
+    window.onload = function() {
+        const btnText = document.getElementById('translate-btn-text');
+        if(btnText) btnText.innerText = currentLang === 'id' ? 'EN' : 'ID';
+        applyStaticTranslations();
+        loadPastesFromServer(); 
+    };
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+</body>
+</html>

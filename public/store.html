@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArulzXD Store - Cyberpunk Marketplace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Plus Jakarta Sans & Orbitron -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        cyber: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        cyberCyan: '#00f3ff',
+                        cyberCyanDark: '#008b94',
+                        cyberDark: '#050b14',
+                        cyberCard: '#0a1628',
+                        cyberBorder: '#162a45'
+                    },
+                    boxShadow: {
+                        glowCyan: '0 0 15px rgba(0, 243, 255, 0.35)',
+                        glowCyanSm: '0 0 8px rgba(0, 243, 255, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050b14;
+            color: #e2e8f0;
+        }
+        .bg-cyber-grid {
+            background-image: linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050b14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #162a45;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
+
+    <!-- TOP NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder shadow-glowCyanSm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <a href="/" class="flex-shrink-0 text-2xl font-black font-cyber tracking-wider text-cyberCyan drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
+                Arulz<span class="text-white">Store</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan cyberpunk..." 
+                       class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyan transition">
+                <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Menu Kanan -->
+            <div class="flex items-center gap-4 text-slate-300">
+                <a href="/doc" class="text-sm font-semibold hover:text-cyberCyan transition hidden sm:block">Docs API</a>
+                <a href="/doc?showProfile=true" class="text-lg hover:text-cyberCyan transition relative">
+                    <i class="fa-regular fa-user"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+
+        <!-- HEADER UTAMA WEBSITE -->
+        <div class="mb-6 p-6 sm:p-8 bg-cyberCard rounded-2xl border border-cyberBorder shadow-xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyberCyan/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative z-10 max-w-2xl">
+                <span class="inline-flex items-center gap-1.5 bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3 font-cyber shadow-glowCyanSm">
+                    <i class="fa-solid fa-terminal"></i> Cyberpunk Marketplace
+                </span>
+                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight font-cyber">
+                    Arulz<span class="text-cyberCyan drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]">XD</span> Store
+                </h1>
+                <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+                    Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat & Otomatis.
+                </p>
+            </div>
+            <i class="fa-solid fa-microchip absolute -right-6 -bottom-8 text-9xl text-cyberCyan/5 rotate-12 pointer-events-none"></i>
+        </div>
+
+        <!-- AREA UTAMA (KATEGORI & PRODUK) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+
+            <!-- SIDEBAR KATEGORI -->
+            <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder shadow-md sticky top-20 z-30">
+                <h3 class="font-bold text-xs font-cyber text-slate-200 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-cyberCyan"></i> Kategori Produk
+                </h3>
+                <div class="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide" id="categoryContainer">
+                    <button onclick="selectCategory('all')" data-category="all" class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-cyberCyan text-cyberDark shadow-glowCyanSm font-cyber whitespace-nowrap">
+                        Semua Produk
+                    </button>
+                </div>
+            </div>
+
+            <!-- LIST GRID PRODUK -->
+            <div class="md:col-span-3">
+                <div class="flex items-center justify-between mb-4 bg-cyberCard p-3 rounded-xl border border-cyberBorder shadow-md">
+                    <p class="text-xs text-slate-400 font-medium tracking-wide">
+                        Menampilkan <span id="productCount" class="font-bold text-cyberCyan">0</span> produk
+                    </p>
+                    <div class="text-xs text-slate-400 font-mono">System: <span id="serverStatus" class="text-cyberCyan font-bold animate-pulse">● CONNECTING...</span></div>
+                </div>
+
+                <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
+
+                    <!-- Loading Skeleton Animation -->
+                    <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
+                        <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
+                        <div class="h-4 bg-slate-800 rounded w-3/4"></div>
+                        <div class="h-4 bg-slate-800 rounded w-1/2"></div>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="hidden text-center py-16 bg-cyberCard rounded-xl border border-cyberBorder mt-2">
+                    <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3"></i>
+                    <h3 class="text-sm font-bold text-slate-300">Produk Tidak Ditemukan</h3>
+                    <p class="text-xs text-slate-500 mt-1">Coba gunakan kata kunci pencarian atau kategori lain.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL POPUP CHECKOUT -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200" id="modalContent">
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
+                <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
+                    <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
+                </h3>
+                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="orderForm" onsubmit="submitOrder(event)" class="p-5 space-y-4">
+                <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
+                    <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
+                    <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
+                </div>
+
+                <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
+                    <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
+                    <div class="overflow-hidden flex-1">
+                        <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
+                        <div class="flex items-center justify-between mt-1">
+                            <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan"></p>
+                            <span id="modalProductSold" class="text-[10px] text-slate-400"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder flex items-center justify-between">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300">Jumlah Beli</label>
+                        <span id="modalStockInfo" class="text-[10px] text-slate-400">Tersisa: 0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="updateQuantity(-1)" 
+                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                            -
+                        </button>
+                        <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" 
+                               class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
+                        <button type="button" onclick="updateQuantity(1)" 
+                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
+                    <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
+                        Username / Nama Pembeli <span class="text-cyberCyan">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                            <i class="fa-regular fa-user"></i>
+                        </span>
+                        <input type="text" id="usernameInput" required placeholder="Masukkan username Anda"
+                               class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
+                        Catatan Tambahan (Opsional)
+                    </label>
+                    <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
+                              class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                </div>
+
+                <button type="submit" id="btnSubmitOrder" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Pesanan ke WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-cyberCard border-t border-cyberBorder mt-16 py-6 text-center text-xs text-slate-500 font-medium">
+        <p>© 2026 Arulz-XD Store. All rights reserved.</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let DATA_PRODUK = [];
+
+        let KATEGORI_AKTIF = 'all';
+        let SELECTED_PRODUCT = null;
+        let CURRENT_ORDER_ID = '';
+        let CURRENT_QTY = 1;
+
+        function formatTerjual(jumlah) {
+            if (!jumlah) return '0 terjual';
+            if (jumlah >= 1000) {
+                return (jumlah / 1000).toFixed(1).replace('.0', '') + 'RB+ terjual';
+            }
+            return jumlah + ' terjual';
+        }
+
+        function generateUniqueOrderId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let randomStr = '';
+            for (let i = 0; i < 6; i++) {
+                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return `TRX-${randomStr}`;
+        }
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
+        }
+
+        async function fetchProduk() {
+            const statusElem = document.getElementById('serverStatus');
+            try {
+                const response = await fetch('/database/produk');
+                if (!response.ok) throw new Error('Gagal memuat API server');
+
+                DATA_PRODUK = await response.json();
+
+                if (statusElem) {
+                    statusElem.innerText = '● ONLINE';
+                    statusElem.className = 'text-cyberCyan font-bold animate-pulse';
+                }
+
+                generateKategoriButtons();
+                renderProduk();
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                if (statusElem) {
+                    statusElem.innerText = '● OFFLINE';
+                    statusElem.className = 'text-red-500 font-bold';
+                }
+
+                document.getElementById('productGrid').innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-red-950/30 text-red-400 text-xs font-semibold rounded-xl border border-red-800/40">
+                        <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i> Gagal mengambil data dari server (/database/produk). Pastikan server Express aktif.
+                    </div>
+                `;
+            }
+        }
+
+        function generateKategoriButtons() {
+            const container = document.getElementById('categoryContainer');
+            const categories = ['all', ...new Set(DATA_PRODUK.map(p => p.kategori).filter(Boolean))];
+
+            container.innerHTML = categories.map(cat => {
+                const isAll = cat === 'all';
+                const label = isAll ? 'Semua Produk' : cat;
+                return `
+                    <button onclick="selectCategory('${cat}')" data-category="${cat}" 
+                            class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition whitespace-nowrap font-cyber ${isAll ? 'bg-cyberCyan text-cyberDark shadow-glowCyanSm' : 'text-slate-400 hover:bg-cyberDark hover:text-cyberCyan'}">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectCategory(category) {
+            KATEGORI_AKTIF = category;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-cyberCyan', 'text-cyberDark', 'shadow-glowCyanSm');
+                btn.classList.add('text-slate-400', 'hover:bg-cyberDark', 'hover:text-cyberCyan');
+            });
+            const activeBtn = document.querySelector(`.cat-btn[data-category="${category}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400', 'hover:bg-cyberDark', 'hover:text-cyberCyan');
+                activeBtn.classList.add('bg-cyberCyan', 'text-cyberDark', 'shadow-glowCyanSm');
+            }
+            renderProduk();
+        }
+
+        function renderProduk() {
+            const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('emptyState');
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = DATA_PRODUK.filter(item => {
+                const matchKategori = KATEGORI_AKTIF === 'all' || item.kategori === KATEGORI_AKTIF;
+                const matchNama = item.nama.toLowerCase().includes(keyword);
+                const matchDeskripsi = item.deskripsi && item.deskripsi.toLowerCase().includes(keyword);
+                return matchKategori && (matchNama || matchDeskripsi);
+            });
+
+            document.getElementById('productCount').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map((produk) => {
+                const originalIndex = DATA_PRODUK.indexOf(produk);
+                const badgeHtml = (produk.badge && produk.badge.trim() !== "") 
+                    ? `<span class="absolute top-2 left-2 bg-cyberCyan text-cyberDark font-cyber text-[9px] font-black px-1.5 py-0.5 rounded shadow-glowCyanSm z-10 uppercase tracking-wider">${produk.badge}</span>` 
+                    : '';
+
+                const isOutOfStock = produk.stok !== undefined && produk.stok <= 0;
+
+                const stokBadge = isOutOfStock 
+                    ? `<span class="text-[10px] text-red-400 font-semibold bg-red-950/60 border border-red-800/50 px-1.5 py-0.5 rounded">Stok Habis</span>`
+                    : `<span class="text-[10px] text-emerald-400 font-semibold">Stok: ${produk.stok}</span>`;
+
+                let hargaHtml = produk.harga_diskon ? `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-500 line-through">${formatRupiah(produk.harga)}</span>
+                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
+                    </div>
+                ` : `
+                    <div class="flex flex-col">
+                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga)}</span>
+                    </div>
+                `;
+
+                // LOGIKA WHATSAPP EXPAND DESKRIPSI (TANPA POPUP)
+                const maxChar = 65;
+                const deskripsiTeks = produk.deskripsi || 'Tidak ada deskripsi.';
+                const isLong = deskripsiTeks.length > maxChar;
+
+                return `
+                    <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group">
+                        <div class="relative bg-cyberDark pt-[100%] overflow-hidden flex-shrink-0">
+                            <img src="${produk.gambar || 'https://api-arulzxd.web.id/files/X1F0Cn.png'}" 
+                                 alt="${produk.nama}" 
+                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300 opacity-90 group-hover:opacity-100 ${isOutOfStock ? 'grayscale brightness-50' : ''}"
+                                 loading="lazy">
+                            ${badgeHtml}
+                        </div>
+                        
+                        <div class="p-3 flex flex-col flex-1 justify-between">
+                            <div class="space-y-1.5">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 line-clamp-2 min-h-[2rem] leading-tight" title="${produk.nama}">
+                                    ${produk.nama}
+                                </h4>
+                                
+                                <!-- DESKRIPSI PRODUK STYLE WHATSAPP -->
+                                <div class="text-[11px] text-slate-400 min-h-[2.5rem]">
+                                    <div class="flex items-start gap-1.5">
+                                        <span class="relative flex h-2 w-2 mt-1 flex-shrink-0">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberCyan opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-cyberCyan"></span>
+                                        </span>
+                                        <div class="leading-relaxed flex-1">
+                                            <p id="desc-text-${originalIndex}" class="line-clamp-2 transition-all duration-300">
+                                                ${deskripsiTeks}
+                                            </p>
+                                            ${isLong ? `
+                                                <button onclick="toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-cyberCyan font-bold hover:underline mt-0.5 inline-block text-[10px]">
+                                                    ... baca selengkapnya
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                                    <span>${stokBadge}</span>
+                                    <span>${formatTerjual(produk.terjual)}</span>
+                                </div>
+                                
+                                <div class="pt-1 border-t border-cyberBorder/50">
+                                    ${hargaHtml}
+                                </div>
+                            </div>
+                            
+                            <button onclick="openCheckoutModal(${originalIndex})" 
+                                    ${isOutOfStock ? 'disabled' : ''}
+                                    class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed' : 'bg-cyberCyan/10 hover:bg-cyberCyan border-cyberCyan/40 text-cyberCyan hover:text-cyberDark shadow-glowCyanSm'} border font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
+                                <i class="fa-solid fa-cart-shopping"></i> ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // FUNGSI KONTROL EXPAND DESKRIPSI (GAYA WA)
+        function toggleWaDesc(index) {
+            const textElem = document.getElementById(`desc-text-${index}`);
+            const btnElem = document.getElementById(`desc-btn-${index}`);
+
+            if (!textElem || !btnElem) return;
+
+            if (textElem.classList.contains('line-clamp-2')) {
+                textElem.classList.remove('line-clamp-2');
+                btnElem.innerText = 'Sembunyikan';
+            } else {
+                textElem.classList.add('line-clamp-2');
+                btnElem.innerText = '... baca selengkapnya';
+            }
+        }
+
+        function filterProduk() {
+            renderProduk();
+        }
+
+        function openCheckoutModal(index) {
+            SELECTED_PRODUCT = DATA_PRODUK[index];
+            if (!SELECTED_PRODUCT || (SELECTED_PRODUCT.stok !== undefined && SELECTED_PRODUCT.stok <= 0)) return;
+
+            CURRENT_ORDER_ID = generateUniqueOrderId();
+            CURRENT_QTY = 1;
+
+            const hargaFinal = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
+
+            document.getElementById('modalOrderId').innerText = CURRENT_ORDER_ID;
+            document.getElementById('modalProductName').innerText = SELECTED_PRODUCT.nama;
+            document.getElementById('modalProductPrice').innerText = formatRupiah(hargaFinal);
+            document.getElementById('modalProductSold').innerText = formatTerjual(SELECTED_PRODUCT.terjual);
+            document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://api-arulzxd.web.id/files/X1F0Cn.png';
+            document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
+
+            document.getElementById('qtyInput').value = CURRENT_QTY;
+            updateTotalPrice();
+
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function updateQuantity(change) {
+            if (!SELECTED_PRODUCT) return;
+            const maxStok = SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 999;
+
+            let newQty = CURRENT_QTY + change;
+            if (newQty >= 1 && newQty <= maxStok) {
+                CURRENT_QTY = newQty;
+                document.getElementById('qtyInput').value = CURRENT_QTY;
+                updateTotalPrice();
+            }
+        }
+
+        function onQtyInputChange() {
+            if (!SELECTED_PRODUCT) return;
+            const maxStok = SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 999;
+            let val = parseInt(document.getElementById('qtyInput').value) || 1;
+
+            if (val < 1) val = 1;
+            if (val > maxStok) val = maxStok;
+
+            CURRENT_QTY = val;
+            document.getElementById('qtyInput').value = CURRENT_QTY;
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            if (!SELECTED_PRODUCT) return;
+            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
+            const total = hargaUnit * CURRENT_QTY;
+            document.getElementById('modalTotalPrice').innerText = formatRupiah(total);
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+            document.getElementById('orderForm').reset();
+            SELECTED_PRODUCT = null;
+            CURRENT_ORDER_ID = '';
+            CURRENT_QTY = 1;
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+            if (!SELECTED_PRODUCT || !CURRENT_ORDER_ID) return;
+
+            const username = document.getElementById('usernameInput').value.trim();
+            const note = document.getElementById('noteInput').value.trim();
+            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
+            const totalHarga = hargaUnit * CURRENT_QTY;
+
+            let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
+            message += `*--- DETAIL PESANAN BARU ---*\n`;
+            message += `🔖 *ID TRX:* ${CURRENT_ORDER_ID}\n`;
+            message += `👤 *Username:* ${username}\n`;
+            message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
+            message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
+            message += `💰 *Harga Satuan:* ${formatRupiah(hargaUnit)}\n`;
+            message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
+            if (note) {
+                message += `📝 *Catatan:* ${note}\n`;
+            }
+            message += `\nMohon informasi metode pembayaran selanjutnya. Terima kasih!`;
+
+            const waLink = `https://wa.me/6285122629940?text=${encodeURIComponent(message)}`;
+
+            window.open(waLink, '_blank');
+            closeCheckoutModal();
+        }
+
+        window.addEventListener('DOMContentLoaded', fetchProduk);
+    </script>
+</body>
+</html>

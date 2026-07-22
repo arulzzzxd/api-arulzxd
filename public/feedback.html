@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback & Bug Report - API-ARULZXD</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+        .neon-success {
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.25);
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Container Utama -->
+    <div id="cardContainer" class="w-full max-w-lg glass-card rounded-2xl p-6 md:p-8 neon-glow relative z-10 transition-all duration-500 transform scale-100 opacity-100">
+        
+        <!-- Bagian Konten Form (Bungkus Dalam ID agar mudah dimanipulasi) -->
+        <div id="formContent" class="transition-all duration-300 opacity-100 block">
+            <a href="/" class="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-6 group font-mono">
+                <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Kembali ke Dashboard
+            </a>
+
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-2xl mb-4 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                    <i class="fa-solid fa-comment-dots"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">Kirim Feedback</h1>
+                <p class="text-sm text-slate-400 mt-1">Bantu kami meningkatkan kualitas layanan API-ARULZXD</p>
+            </div>
+
+            <form id="feedbackForm" class="space-y-5">
+                <div>
+                    <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Email Pengirim</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 text-sm">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="email" required
+                            class="w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-white/10 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 font-mono text-cyan-300" 
+                            placeholder="nama@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tipe Laporan</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950/40 border border-white/5 rounded-xl cursor-pointer hover:border-cyan-500/50 transition-all has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-500/5 text-sm group">
+                            <input type="radio" name="report_type" value="bug" checked class="hidden">
+                            <i class="fa-solid fa-bug text-red-400 group-hover:scale-110 transition-transform"></i> Bug Report
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950/40 border border-white/5 rounded-xl cursor-pointer hover:border-cyan-500/50 transition-all has-[:checked]:border-cyan-500 delegate-has has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-500/5 text-sm group">
+                            <input type="radio" name="report_type" value="suggestion" class="hidden">
+                            <i class="fa-solid fa-lightbulb text-yellow-400 group-hover:scale-110 transition-transform"></i> Saran / Fitur
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="message" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Isi Pesan / Laporan</label>
+                    <textarea id="message" rows="4" required
+                        class="w-full px-4 py-3 bg-slate-950/60 border border-white/10 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 resize-none"
+                        placeholder="Jelaskan secara detail kendala atau saran kamu..."></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(6,182,212,0.3)] hover:shadow-[0_4px_20px_rgba(6,182,212,0.5)] active:scale-[0.99] flex items-center justify-center gap-2 text-sm mt-2 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Laporan
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const cardContainer = document.getElementById('cardContainer');
+            const formContent = document.getElementById('formContent');
+            
+            const emailData = document.getElementById('email').value;
+            const typeData = document.querySelector('input[name="report_type"]:checked')?.value || 'bug';
+            const messageData = document.getElementById('message').value;
+
+            // Loading State
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Mengirim Laporan...`;
+
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ 
+                    email: emailData, 
+                    type: typeData, 
+                    message: messageData 
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status) {
+                    // Animasi Keluar (Smooth Fade Out Form)
+                    formContent.classList.replace('opacity-100', 'opacity-0');
+                    
+                    setTimeout(() => {
+                        formContent.style.display = 'none';
+                        
+                        // Menambahkan efek glow neon sukses pada card
+                        cardContainer.classList.replace('neon-glow', 'neon-success');
+                        
+                        // Menyisipkan template UI Sukses Modern ke dalam card utama
+                        cardContainer.innerHTML = `
+                            <div class="text-center py-6 animate-fade-in transition-all duration-500">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/40 text-emerald-400 text-4xl mb-6 shadow-[0_0_25px_rgba(16,185,129,0.3)] animate-bounce">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-white mb-2 tracking-wide">Laporan Berhasil Dikirim!</h2>
+                                <p class="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed mb-8">
+                                    Terima kasih banyak. Feedback atau laporan bug kamu telah tersimpan aman di database kami dan sistem otomatis telah diteruskan ke email administrator.
+                                </p>
+                                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                    <button onclick="window.location.reload()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-900 border border-white/10 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 font-medium rounded-xl text-sm transition-all cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square mr-2"></i> Kirim Baru
+                                    </button>
+                                    <a href="/" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl text-sm text-center transition-all shadow-[0_4px_10px_rgba(6,182,212,0.2)] cursor-pointer">
+                                        <i class="fa-solid fa-house mr-1"></i> Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }, 300);
+
+                } else {
+                    alert('Gagal: ' + data.message);
+                    resetButton();
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Terjadi kesalahan saat menghubungi server.');
+                resetButton();
+            });
+
+            function resetButton() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Laporan`;
+            }
+        });
+    </script>
+</body>
+</html>

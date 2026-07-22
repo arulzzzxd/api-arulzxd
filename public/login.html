@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autentikasi - ArulzXD REST API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tambahan: SweetAlert2 untuk Alert Estetik -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { 
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                } 
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-image: linear-gradient(rgba(11, 15, 25, 0.8), rgba(11, 15, 25, 0.8)), url('https://api-arulzxd.web.id/files/5zkZru.png'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .hidden-form { display: none; }
+
+        /* Styling khusus kustomisasi SweetAlert2 agar tema serasi dengan ArulzXD API */
+        .swal2-popup-custom {
+            background: rgba(17, 24, 39, 0.95) !important;
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(6, 182, 212, 0.3) !important;
+            border-radius: 1.5rem !important;
+            color: #f3f4f6 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .swal2-title-custom {
+            color: #ffffff !important;
+            font-size: 1.25rem !important;
+            font-weight: 800 !important;
+        }
+        .swal2-html-custom {
+            color: #9ca3af !important;
+            font-size: 0.875rem !important;
+        }
+        .swal2-confirm-custom {
+            background: linear-gradient(to right, #0891b2, #06b6d4) !important;
+            color: #020617 !important;
+            font-weight: 700 !important;
+            font-size: 0.875rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 4px 6px -1px rgba(8, 145, 178, 0.3) !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-gray-200">
+
+    <div class="glass-card p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+        
+        <!-- Ornamen Dekoratif -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
+
+        <!-- Logo/Header -->
+        <div class="text-center mb-6 relative z-10">
+            <h1 class="text-2xl font-extrabold tracking-tight text-white mb-1">
+                Arulz<span class="text-cyan-400">XD</span> API
+            </h1>
+            <p id="form-description" class="text-xs text-gray-400">Masuk untuk mengelola token dan akses API Anda.</p>
+        </div>
+
+        <!-- ================= FORM SIGN IN ================= -->
+        <div id="signin-form" class="space-y-4 relative z-10">
+            <form id="loginForm" action="/auth/login" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Username / Email</label>
+                    <input type="text" name="username" required placeholder="Masukkan username atau email" class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Kata Sandi</label>
+                        <button type="button" onclick="switchForm('forgot')" class="text-xs font-medium text-cyan-400 hover:underline">Lupa Password?</button>
+                    </div>
+                    <div class="relative">
+                        <input id="login-password" type="password" name="password" required placeholder="••••••••" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                        <button type="button" onclick="togglePassword('login-password', 'eye-icon-login')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-cyan-400 transition">
+                            <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold py-3 rounded-xl shadow-md shadow-cyan-950/30 text-sm transition tracking-wide uppercase">Masuk</button>
+            </form>
+
+            <!-- Oauth Divider -->
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-white/5"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-[10px] font-bold tracking-widest uppercase">Atau masuk dengan</span>
+                <div class="flex-grow border-t border-white/5"></div>
+            </div>
+
+            <!-- OAuth Buttons -->
+            <div class="grid grid-cols-2 gap-3">
+                <a href="/auth/google" class="flex items-center justify-center gap-2 bg-slate-900/80 hover:bg-slate-800 border border-white/5 py-2.5 rounded-xl text-xs font-semibold transition text-white">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-4 h-4" alt="Google"> Google
+                </a>
+                <a href="/auth/github" class="flex items-center justify-center gap-2 bg-slate-900/80 hover:bg-slate-800 border border-white/5 py-2.5 rounded-xl text-xs font-semibold transition text-white">
+                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" class="w-4 h-4 invert" alt="GitHub"> GitHub
+                </a>
+            </div>
+
+            <p class="text-center text-xs text-gray-400 mt-4">Belum punya akun? <button onclick="switchForm('signup')" class="text-cyan-400 font-bold hover:underline">Daftar sekarang</button></p>
+        </div>
+
+        <!-- ================= FORM SIGN UP ================= -->
+        <div id="signup-form" class="space-y-4 relative z-10 hidden-form">
+            <form id="registerForm" action="/auth/register" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Username</label>
+                    <input type="text" name="username" required placeholder="pilih username" class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Alamat Email</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Kata Sandi</label>
+                    <div class="relative">
+                        <input id="register-password" type="password" name="password" required placeholder="••••••••" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                        <button type="button" onclick="togglePassword('register-password', 'eye-icon-register')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-purple-400 transition">
+                            <svg id="eye-icon-register" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl shadow-md shadow-purple-950/30 text-sm transition tracking-wide uppercase">Buat Akun Baru</button>
+            </form>
+            <p class="text-center text-xs text-gray-400 mt-4">Sudah punya akun? <button onclick="switchForm('signin')" class="text-cyan-400 font-bold hover:underline">Masuk</button></p>
+        </div>
+
+        <!-- ================= FORM FORGOT PASSWORD ================= -->
+        <div id="forgot-form" class="space-y-4 relative z-10 hidden-form">
+            <form id="forgotForm" action="/auth/forgot-password" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Alamat Email Terdaftar</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white font-bold py-3 rounded-xl shadow-md text-sm transition tracking-wide uppercase">Kirim Instruksi Reset</button>
+            </form>
+            <p class="text-center text-xs text-gray-400 mt-4"><button onclick="switchForm('signin')" class="text-cyan-400 font-bold hover:underline">Kembali ke Halaman Login</button></p>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Logika Form dan Show/Hide Password -->
+    <script>
+        // Konfigurasi Dasar Custom Classes SweetAlert2
+        const swalConfig = {
+            customClass: {
+                popup: 'swal2-popup-custom',
+                title: 'swal2-title-custom',
+                htmlContainer: 'swal2-html-custom',
+                confirmButton: 'swal2-confirm-custom'
+            },
+            buttonsStyling: false
+        };
+
+        // Fungsi Utama Show/Hide Password
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                `;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                `;
+            }
+        }
+
+        // Fungsi Switch Form
+        function switchForm(formType) {
+            const signinForm = document.getElementById('signin-form');
+            const signupForm = document.getElementById('signup-form');
+            const forgotForm = document.getElementById('forgot-form');
+            const description = document.getElementById('form-description');
+
+            signinForm.classList.add('hidden-form');
+            signupForm.classList.add('hidden-form');
+            forgotForm.classList.add('hidden-form');
+
+            if (formType === 'signin') {
+                signinForm.classList.remove('hidden-form');
+                description.innerText = "Masuk untuk mengelola token dan akses API Anda.";
+            } else if (formType === 'signup') {
+                signupForm.classList.remove('hidden-form');
+                description.innerText = "Daftarkan akun baru Anda untuk mendapatkan API Key gratis.";
+            } else if (formType === 'forgot') {
+                forgotForm.classList.remove('hidden-form');
+                description.innerText = "Masukkan email Anda untuk memproses penyetelan ulang sandi.";
+            }
+        }
+
+        // --- INTERSEPT SUBMIT & SWEETALERT LOGIC ---
+
+        // 1. Alert Form Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                ...swalConfig,
+                icon: 'success',
+                iconColor: '#06b6d4',
+                title: 'Autentikasi Berhasil',
+                text: 'Memproses login Anda, mohon tunggu...',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                e.target.submit();
+            });
+        });
+
+        // 2. Alert Form Register
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                ...swalConfig,
+                icon: 'success',
+                iconColor: '#a855f7', // Warna ungu mengikuti tema registrasi Anda
+                title: 'Pendaftaran Berhasil',
+                text: 'Akun Anda berhasil dibuat! Mengalihkan ke dashboard...',
+                confirmButtonText: 'Lanjutkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit();
+                }
+            });
+        });
+
+        // 3. Alert Form Lupa Password
+        document.getElementById('forgotForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                ...swalConfig,
+                icon: 'info',
+                iconColor: '#3b82f6',
+                title: 'Instruksi Dikirim',
+                text: 'Silakan periksa kotak masuk email Anda untuk menyetel ulang kata sandi.',
+                confirmButtonText: 'Mengerti'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Arulz-XD API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0c10;
+        }
+        .bg-gradient-blur {
+            background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="text-slate-200 font-sans min-h-screen relative overflow-x-hidden antialiased">
+
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-blur pointer-events-none z-0"></div>
+
+    <div class="container max-w-3xl mx-auto px-4 py-12 relative z-10">
+        
+        <div class="mb-8">
+            <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50 rounded-xl text-slate-300 hover:text-cyan-400 transition-all text-sm font-medium backdrop-blur-md shadow-lg group">
+                <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span id="lbl-btn-back">Kembali ke Beranda</span>
+            </a>
+        </div>
+
+        <header class="mb-10 text-center md:text-left">
+            <h1 id="lbl-main-title" class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
+                Kebijakan Privasi
+            </h1>
+            <p id="lbl-updated" class="text-xs font-mono text-cyan-400/80 uppercase tracking-widest">
+                Terakhir Diperbarui: 29 Juni 2026
+            </p>
+        </header>
+
+        <main id="policy-list-container" class="space-y-6">
+            <div class="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md animate-pulse h-32"></div>
+        </main>
+
+        <footer class="mt-12 pt-8 border-t border-white/15 text-center">
+            <h3 id="lbl-footer-title" class="text-sm font-semibold text-slate-300 mb-2">Punya pertanyaan atau kendala?</h3>
+            <p id="lbl-footer-desc" class="text-xs text-slate-400 font-medium">
+                Hubungi tim support teknis melalui email resmi kami di: 
+                <a href="mailto:supportarulzxd@gmail.com" class="text-cyan-400 hover:underline font-mono">supportarulzxd@gmail.com</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const docTranslations = {
+            id: {
+                btnBack: "Kembali ke Beranda",
+                mainTitle: "Kebijakan Privasi",
+                updated: "Terakhir Diperbarui: 29 Juni 2026",
+                footerTitle: "Punya pertanyaan atau kendala?",
+                footerDesc: "Hubungi tim support teknis melalui email resmi kami di:",
+                items: [
+                    "<strong>1. Pengumpulan Data:</strong> Kami tidak menyimpan data pribadi pengguna di database server kami. Semua data unggahan file yang diproses melalui sistem Uploader langsung diteruskan ke penyimpanan terisolasi yang aman dan otomatis dibersihkan secara berkala.",
+                    "<strong>2. Penyimpanan Browser:</strong> Kami memanfaatkan fitur media <i>local storage</i> pada aplikasi browser Anda secara aman murni hanya untuk menyimpan konfigurasi preferensi pilihan bahasa utama (ID/EN).",
+                    "<strong>3. Penggunaan Cookie:</strong> Kami sama sekali tidak memasang cookie pelacak pihak ketiga yang mengganggu. Semua aktivitas interaksi ngoding Anda berjalan murni secara efisien dan transparan."
+                ]
+            },
+            en: {
+                btnBack: "Back to Home",
+                mainTitle: "Privacy Policy",
+                updated: "Last Updated: June 29, 2026",
+                footerTitle: "Have any questions or concerns?",
+                footerDesc: "Contact our technical support team via our official email at:",
+                items: [
+                    "<strong>1. Data Collection:</strong> We do not store any personal user data on our server databases. All file upload actions processed through the Uploader system are directly forwarded to secure, isolated storage and automatically wiped periodically.",
+                    "<strong>2. Browser Storage:</strong> We securely use your browser's local storage media to store your preferred language configuration preferences (ID/EN).",
+                    "<strong>3. Cookie Usage:</strong> We do not deploy intrusive third-party cookies. All your coding interactions run purely in an efficient and transparent manner."
+                ]
+            }
+        };
+
+        let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
+
+        function renderPrivacyContent() {
+            const data = docTranslations[currentLang];
+            
+            document.getElementById('lbl-btn-back').innerText = data.btnBack;
+            document.getElementById('lbl-main-title').innerText = data.mainTitle;
+            document.getElementById('lbl-updated').innerText = data.updated;
+            document.getElementById('lbl-footer-title').innerText = data.footerTitle;
+            
+            document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:defandryannn@gmail.com" class="text-cyan-400 hover:underline font-mono">defandryannn@gmail.com</a>`;
+
+            const listContainer = document.getElementById('policy-list-container');
+            listContainer.innerHTML = '';
+            
+            data.items.forEach(text => {
+                const box = document.createElement('div');
+                box.className = 'p-6 bg-white/5 border border-white/10 hover:border-cyan-500/30 rounded-2xl backdrop-blur-md transition-all duration-300 text-slate-300 leading-relaxed text-sm md:text-base';
+                box.innerHTML = text;
+                listContainer.appendChild(box);
+            });
+        }
+
+        window.onload = renderPrivacyContent;
+    </script>
+</body>
+</html>

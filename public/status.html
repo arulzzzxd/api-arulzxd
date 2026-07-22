@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server OS Status - ArulzXD REST API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { 
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                } 
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #0b0f19; 
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex items-center justify-center">
+
+    <div class="w-full max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-2">
+                System <span class="text-cyan-400">OS Status</span>
+            </h1>
+            <p class="text-sm text-gray-400">Status monitor spesifikasi, beban kerja mesin, dan OS website secara real-time.</p>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Card 1: RAM & Resource Usage -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path></svg>
+                    Memory Usage (RAM)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>Beban RAM Terpakai</span>
+                            <span id="ram-percent" class="font-bold text-white">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-950/80 rounded-full h-3 border border-white/5 overflow-hidden">
+                            <div id="ram-bar" class="progress-bar bg-cyan-500 h-full w-[0%]"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center pt-2">
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Total</span>
+                            <span id="ram-total" class="font-mono text-sm font-semibold text-white">-- GB</span>
+                        </div>
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Terpakai</span>
+                            <span id="ram-used" class="font-mono text-sm font-semibold text-cyan-400">-- GB</span>
+                        </div>
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Tersisa</span>
+                            <span id="ram-free" class="font-mono text-sm font-semibold text-emerald-400">-- GB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: CPU & Processor Info -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m10.5-5.25V4.5m7.5 3.75h-1.5m-3 11.25V21m-7.5-16.5v1.5m-3 0h1.5m13.5 0h-1.5m-15 4.5H4.5m15 0h-1.5m-15 4.5H4.5m15 0h-1.5M4.5 19.5H3m16.5 0H18m-10.5 0V21m4.5-21v1.5m-3 15V21m3-21v1.5M5.25 5.25h13.5A2.25 2.25 0 0121 7.5v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.5A2.25 2.25 0 015.25 5.25z"></path></svg>
+                    Processor Information
+                </h3>
+                <div class="space-y-3 font-mono text-xs">
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-gray-400">Model CPU:</span>
+                        <span id="cpu-model" class="text-white font-semibold truncate max-w-[200px]">--</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-gray-400">Kecepatan CPU:</span>
+                        <span id="cpu-speed" class="text-white font-semibold">--</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-gray-400">Jumlah CPU Core:</span>
+                        <span id="cpu-cores" class="text-cyan-400 font-bold">-- Cores</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Load Average (1/5/15m):</span>
+                        <span id="cpu-load" class="text-emerald-400 font-bold">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Platform & OS Details -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl">
+                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a3 3 0 013-3v11.25m13.5-11.25a3 3 0 013 3V18"></path></svg>
+                    Sistem Operasi (OS)
+                </h3>
+                <div class="space-y-3 font-mono text-xs">
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-gray-400">Platform OS:</span>
+                        <span id="os-platform" class="text-white font-bold uppercase">--</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/5 pb-2">
+                        <span class="text-gray-400">Arsitektur:</span>
+                        <span id="os-arch" class="text-white font-semibold">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Sistem Berjalan (Uptime):</span>
+                        <span id="os-uptime" class="text-yellow-400 font-semibold">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Server Status & Controls -->
+            <div class="glass-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-cyan-400 mb-3 flex items-center gap-2">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        Network Ping Status
+                    </h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">ArulzXD REST API server ditenangkan oleh sistem cluster yang memantau performa hardware secara berkala demi menjamin uptime 99.9%.</p>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+                    <button onclick="fetchStatus()" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition duration-200 uppercase tracking-wider text-center">
+                        Refresh Manual
+                    </button>
+                    <a href="/doc" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-200 border border-white/5 text-center block">
+                        Kembali Ke Doc
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-8 text-center text-[11px] text-gray-500">
+            © 2026 Arulz-XD API • Automated System Telemetry
+        </footer>
+    </div>
+
+    <script>
+        // Fungsi untuk format durasi detik ke format Hari, Jam, Menit, Detik
+        function formatUptime(seconds) {
+            const d = Math.floor(seconds / (3600 * 24));
+            const h = Math.floor((seconds % (3600 * 24)) / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+
+            const dDisplay = d > 0 ? d + " Hari " : "";
+            const hDisplay = h > 0 ? h + " Jam " : "";
+            const mDisplay = m > 0 ? m + " Menit " : "";
+            const sDisplay = s > 0 ? s + " Detik" : "";
+            return dDisplay + hDisplay + mDisplay + sDisplay;
+        }
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/server-status');
+                if (!response.ok) throw new Error("Gagal mengambil data status");
+                const data = await response.json();
+
+                // 1. Memory UI
+                document.getElementById('ram-percent').innerText = `${data.memoryUsagePercent}%`;
+                document.getElementById('ram-bar').style.width = `${data.memoryUsagePercent}%`;
+                document.getElementById('ram-total').innerText = data.totalMemory;
+                document.getElementById('ram-used').innerText = data.usedMemory;
+                document.getElementById('ram-free').innerText = data.freeMemory;
+
+                // Atur warna bar sesuai beban
+                const ramBar = document.getElementById('ram-bar');
+                if (parseFloat(data.memoryUsagePercent) > 85) {
+                    ramBar.className = "progress-bar bg-red-500 h-full";
+                } else if (parseFloat(data.memoryUsagePercent) > 60) {
+                    ramBar.className = "progress-bar bg-yellow-500 h-full";
+                } else {
+                    ramBar.className = "progress-bar bg-cyan-500 h-full";
+                }
+
+                // 2. CPU UI
+                document.getElementById('cpu-model').innerText = data.cpuModel;
+                document.getElementById('cpu-speed').innerText = data.cpuSpeed;
+                document.getElementById('cpu-cores').innerText = `${data.cpuCores} Cores`;
+                document.getElementById('cpu-load').innerText = data.loadAverage.map(v => v.toFixed(2)).join(' | ');
+
+                // 3. OS UI
+                document.getElementById('os-platform').innerText = data.platform;
+                document.getElementById('os-arch').innerText = data.architecture;
+                document.getElementById('os-uptime').innerText = formatUptime(data.uptime);
+
+            } catch (err) {
+                console.error("Terjadi galat pengambilan data:", err);
+            }
+        }
+
+        // Fetch pertama saat loading awal
+        fetchStatus();
+
+        // Refresh data otomatis setiap 3 detik (3000ms)
+        setInterval(fetchStatus, 1000);
+    </script>
+</body>
+</html>
