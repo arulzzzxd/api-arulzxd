@@ -15,7 +15,6 @@ const crypto = require('crypto');
 const compression = require('compression');
 const os = require('os');
 
-// === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
 const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
