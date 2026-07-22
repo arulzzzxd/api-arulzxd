@@ -34,6 +34,50 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
+function getDefaultAvatarByRole(role = '') {
+    const normRole = role.toLowerCase();
+    if (normRole.includes('vip')) {
+        return 'https://files.catbox.moe/i3ewze.png'; // ganti dengan URL avatar VIP Anda
+    }
+    if (normRole.includes('premium')) {
+        return 'https://files.catbox.moe/uqp8tw.png'; // ganti dengan URL avatar Premium Anda
+    }
+    return 'https://files.catbox.moe/c8tpqh.png'; // Default Free User
+}
+
+app.post('/api/user/change-avatar', async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ status: false, message: 'Silakan login terlebih dahulu!' });
+    }
+
+    try {
+        const { avatarUrl } = req.body;
+        const userId = req.user.id || req.user._id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
+        }
+
+        // Jika avatarUrl diisi, pakai itu. Jika dikosongkan/reset, kembalikan ke avatar default role
+        const newAvatar = (avatarUrl && avatarUrl.trim() !== '') 
+            ? avatarUrl.trim() 
+            : getDefaultAvatarByRole(user.role);
+
+        user.avatar = newAvatar;
+        await user.save();
+
+        return res.json({ 
+            status: true, 
+            message: 'Avatar berhasil diperbarui!', 
+            avatar: newAvatar 
+        });
+    } catch (error) {
+        console.error('Error update avatar:', error);
+        return res.status(500).json({ status: false, message: 'Gagal memperbarui avatar pada server.' });
+    }
+});
+
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
 
@@ -750,22 +794,33 @@ app.get('/auth/google/callback', async (req, res) => {
     }
 });
 
-app.get('/api/user-status', (req, res) => {
+app.get('/api/user-status', async (req, res) => {
     if (req.user) {
-        res.json({
-            loggedIn: true,
-            user: {
-                name: req.user.name,
-                username: req.user.username,
-                email: req.user.email,
-                avatar: req.user.avatar,
-                apiKey: req.user.apiKey,
-                role: req.user.role
+        try {
+            // Ambil data user paling baru langsung dari MongoDB
+            const userId = req.user.id || req.user._id;
+            const freshUser = await User.findById(userId);
+
+            if (freshUser) {
+                const userAvatar = freshUser.avatar || getDefaultAvatarByRole(freshUser.role);
+
+                return res.json({
+                    loggedIn: true,
+                    user: {
+                        name: freshUser.username,
+                        username: freshUser.username,
+                        email: freshUser.email,
+                        avatar: userAvatar,
+                        apiKey: freshUser.apikey,
+                        role: freshUser.role
+                    }
+                });
             }
-        });
-    } else {
-        res.json({ loggedIn: false });
+        } catch (err) {
+            console.error("Gagal mengambil data user dari DB:", err);
+        }
     }
+    res.json({ loggedIn: false });
 });
 
 app.get('/auth/logout', (req, res, next) => {
@@ -780,11 +835,6 @@ const listNotifikasi = require('./database/notifikasi');
 const playlist = require('./database/playlist');
 const PREMIUM_USERS = require('./database/PREMIUM_USERS');
 const VIP_USERS = require('./database/VIP_USERS');
-
-const localFileUploader = fileUpload({
-    createParentPath: true,
-    limits: { fileSize: 100 * 1024 * 1024 }, 
-});
 
 const title = "API-ARULZXD - REST";
 const favicon = "https://api-arulzxd.web.id/files/X1F0Cn.png";
@@ -882,7 +932,7 @@ const apiKeyLimiter = rateLimit({
         return req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip; 
     },
     validate: {
-        keyGeneratorIpFallback: false // Menghilangkan Warning IPv6 di Vercel Logs
+        keyGeneratorIpFallback: false
     },
     skip: (req, res) => {
         const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
@@ -1025,7 +1075,7 @@ app.post('/api/feedback', async (req, res) => {
 
 
 app.get('/database/download', async (req, res) => {
-    const imageUrl = req.query.url || "https://arulz-uploader.vercel.app/files/CVmlrD.jpg";
+    const imageUrl = req.query.url || "https://api-arulzxd.web.id/CVmlrD.jpg";
 
     try {
         const response = await axios({
@@ -1082,6 +1132,8 @@ app.get('/files/*', async (req, res) => {
   if (!requestedPath) return res.status(400).send('Missing file path');
 
   const gitPath = requestedPath.startsWith('uploads/') ? requestedPath : `uploads/${requestedPath}`;
+
+  // Lakukan perulangan pada repoList secara acak untuk mencari file yang cocok
   const shuffledRepos = [...repoList].sort(() => Math.random() - 0.5);
 
   for (const targetRepo of shuffledRepos) {
@@ -1109,7 +1161,7 @@ app.get('/files/*', async (req, res) => {
   return res.status(404).send('File tidak ditemukan di seluruh GitHub Repository');
 });
 
-app.post('/uploadfile', localFileUploader, async (req, res) => {
+app.post('/uploadfile', async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send('Tidak ada file yang diunggah.');
   }
@@ -1124,6 +1176,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
   let gitPath = `uploads/${fileName}`;
   let base64Content = Buffer.from(uploadedFile.data).toString('base64');
 
+  // PILIH REPO SECARA RANDOM SETIAP KALI UNGGAH
   const selectedRepo = getRandomRepo(); 
 
   try {
@@ -1142,8 +1195,6 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
     const baseWebUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
     const rawUrl = `${baseWebUrl}/files/${fileName}`;
 
-    // OPTIMASI FRONTEND: Menghapus backdrop-filter blur, radial-gradient, animasi checkmark draw, 
-    // dan scaleIn yang berlebihan untuk menjaga kenyamanan device berspesifikasi rendah.
     res.send(`
       <!DOCTYPE html>
       <html lang="id" class="dark">
@@ -1171,10 +1222,15 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
               body { 
                   background-color: #0b0f19; 
                   color: #f3f4f6;
+                  background-image: 
+                      radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                      radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
               }
-              .solid-card {
-                  background: #111827;
+              .glass-card {
+                  background: rgba(17, 24, 39, 0.65);
+                  backdrop-filter: blur(16px);
                   border: 1px solid rgba(255, 255, 255, 0.07);
+                  animation: cardFadeIn 0.5s ease-out forwards;
               }
               .url-box {
                   background: rgba(0, 0, 0, 0.25);
@@ -1183,15 +1239,33 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
               .checkmark-circle {
                   background: rgba(16, 185, 129, 0.06);
                   border: 1px solid rgba(16, 185, 129, 0.2);
+                  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+              }
+              .checkmark-path {
+                  stroke-dasharray: 100;
+                  stroke-dashoffset: 100;
+                  animation: drawCheck 0.6s ease-in-out 0.3s forwards;
+              }
+              @keyframes cardFadeIn {
+                  from { opacity: 0; transform: translateY(12px); }
+                  to { opacity: 1; transform: translateY(0); }
+              }
+              @keyframes scaleIn {
+                  from { transform: scale(0); opacity: 0; }
+                  to { transform: scale(1); opacity: 1; }
+              }
+              @keyframes drawCheck {
+                  from { stroke-dashoffset: 100; }
+                  to { stroke-dashoffset: 0; }
               }
           </style>
       </head>
       <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
-          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
+          <div class="glass-card p-7 rounded-2xl shadow-2xl w-full max-w-md text-center">
               <div class="mb-5 flex justify-center">
                   <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-400">
                       <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                          <path class="checkmark-path" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                       </svg>
                   </div>
               </div>
@@ -1204,7 +1278,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
                   <button onclick="copyToClipboard()" class="flex-1 bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5">
                       Salin URL
                   </button>
-                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 block text-center">
+                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md shadow-cyan-950/30 transition duration-200 block text-center">
                       Kembali
                   </a>
               </div>
@@ -1783,94 +1857,109 @@ app.get('/doc', (req, res) => {
     </div>
     
     <!-- User Profile Pop-up Modal -->
-            <!-- User Profile Pop-up Modal -->
-    <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-      <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
-            
-            <!-- Glow Aesthetic Decor -->
-            <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
+        
+        <!-- Glow Aesthetic Decor -->
+        <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div class="flex flex-col items-center text-center mt-2 relative z-10">
-                <!-- Avatar Section -->
-                <div class="relative w-32 h-32 flex items-center justify-center mb-3">
-                    <!-- Badge Rank / Role -->
-                    <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
-                    
-                    <!-- 3D Border & Main Avatar Core -->
-                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
-                        <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner">
-                            <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- User Meta Information -->
-                <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
-                <p id="userEmail" class="text-slate-400 font-mono text-xs mb-5">loading-email@mail.com</p>
+        <div class="flex flex-col items-center text-center mt-2 relative z-10">
+            <!-- Avatar Section -->
+            <div class="relative w-32 h-32 flex items-center justify-center mb-1">
+                <!-- Badge Rank / Role -->
+                <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
                 
-                <!-- Detail Info Container -->
-                <div class="w-full space-y-4 text-left mb-5">
-                    <!-- Role Card -->
-                    <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1">
-                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
-                        <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
-                            <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
-                        </div>
-                    </div>
-
-                    <!-- API Key Card -->
-                    <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-2">
-                        <!-- Warning/Notice Animasi Kedip -->
-                        <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
-                            Jangan bagikan API Key ini kepada siapapun!
-                        </div>
-                        
-                        <div class="flex items-center justify-between mt-1">
-                            <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
-                            <!-- Tombol Copy Diperbesar -->
-                            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
-                            <span id="userApiKey">loading-key-xxxx</span>
-                        </div>
+                <!-- 3D Border & Main Avatar Core -->
+                <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
+                    <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner">
+                        <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
-
-                <!-- Action & Navigation Buttons -->
-                <div class="w-full flex flex-col gap-3">
-                    <!-- Tombol Upgrade Premium (Diatas Tutup & Logout) -->
-                    <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>
-                        Upgrade
-                    </a>
-                    
-                    <!-- Bottom Control Buttons -->
-                    <div class="flex gap-3 w-full">
-                        <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
-                            Tutup
-                        </button>
-                        <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
-                            Log Out
-                        </a>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- Custom Avatar Controller -->
+            <div class="w-full mb-3">
+                <div class="flex items-center gap-1.5">
+                    <input type="url" id="inputAvatarUrl" placeholder="Masukkan URL Avatar Baru..." 
+                        class="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-mono transition">
+                    <button onclick="submitChangeAvatar()" title="Simpan Avatar" 
+                        class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition duration-200 whitespace-nowrap shadow-md">
+                        Simpan
+                    </button>
+                </div>
+                <div class="flex justify-between items-center px-1 mt-1">
+                    <span class="text-[9px] text-slate-500">Mendukung link gambar langsung (Direct URL)</span>
+                    <button onclick="resetDefaultAvatar()" class="text-[9px] text-cyan-400 hover:underline font-semibold">Reset Role</button>
+                </div>
+            </div>
+
+            <!-- User Meta Information -->
+            <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
+            <p id="userEmail" class="text-slate-400 font-mono text-xs mb-4">loading-email@mail.com</p>
+            
+            <!-- Detail Info Container -->
+            <div class="w-full space-y-3 text-left mb-5">
+                <!-- Role Card -->
+                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+                    <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
+                    <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
+                        <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- API Key Card -->
+                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
+                    <!-- Warning/Notice Animasi Kedip -->
+                    <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
+                        Jangan bagikan API Key ini kepada siapapun!
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
+                        <!-- Tombol Copy -->
+                        <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
+                        <span id="userApiKey">loading-key-xxxx</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action & Navigation Buttons -->
+            <div class="w-full flex flex-col gap-3">
+                <!-- Tombol Upgrade Premium -->
+                <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    Upgrade
+                </a>
+                
+                <!-- Bottom Control Buttons -->
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
+                        Tutup
+                    </button>
+                    <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Log Out
+                    </a>
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
+  </div>
+</div>
 
     <!-- Notification Center -->
     <div id="notifPopup" class="fixed inset-0 z-[99999] hidden">
@@ -2300,6 +2389,53 @@ function openProfilePopup() {
                     setRoleTheme("free"); 
                 });
         }
+
+function submitChangeAvatar() {
+    const avatarUrl = document.getElementById('inputAvatarUrl').value;
+    
+    if (!avatarUrl.trim()) {
+        alert('Masukkan URL gambar terlebih dahulu!');
+        return;
+    }
+
+    fetch('/api/user/change-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatarUrl })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status) {
+            document.getElementById('userAvatar').src = data.avatar;
+            document.getElementById('inputAvatarUrl').value = '';
+            alert('Avatar berhasil diganti!');
+        } else {
+            alert(data.message || 'Gagal mengganti avatar.');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Terjadi kesalahan jaringan.');
+    });
+}
+
+function resetDefaultAvatar() {
+    if (!confirm('Kembalikan avatar ke default role?')) return;
+
+    fetch('/api/user/change-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatarUrl: '' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status) {
+            document.getElementById('userAvatar').src = data.avatar;
+            alert('Avatar dikembalikan ke default role!');
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const popup = document.getElementById('welcomePopup');
     const closeBtn = document.getElementById('closePopupBtn');
