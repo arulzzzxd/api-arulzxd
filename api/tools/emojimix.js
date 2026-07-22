@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-// Fungsi scraper emojimix yang mengembalikan data berupa arraybuffer
 const emojimixBuffer = async (emoji1, emoji2) => {
     // Menggunakan parameter emoji1 dan emoji2 untuk query ke Tenor API
     const urlTenor = `https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`;
