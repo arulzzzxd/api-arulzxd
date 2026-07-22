@@ -2,10 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-const API =
-  "https://raw.githubusercontent.com/arulzzzxd/database/main/quotes/anime.json";
+const API = "https://raw.githubusercontent.com/arulzzzxd/database/main/quotes/anime-quotes.json";
 
-async function getAnime() {
+async function getQuotes() {
   const res = await fetch(API, {
     headers: {
       "User-Agent": "Mozilla/5.0",
@@ -41,11 +40,11 @@ async function getAnime() {
   }
 }
 
-function normalizeData(data) {
+function normalizeQuotes(data) {
   if (Array.isArray(data)) return data;
+  if (Array.isArray(data.quotes)) return data.quotes;
   if (Array.isArray(data.result)) return data.result;
   if (Array.isArray(data.data)) return data.data;
-  if (Array.isArray(data.anime)) return data.anime;
   return [];
 }
 
@@ -55,35 +54,40 @@ function pickRandom(list) {
 
 router.get("/", async (req, res) => {
   try {
-    const result = await getAnime();
+    const result = await getQuotes();
 
     if (!result.ok) {
       return res.status(result.code).json({
         status: false,
         code: result.code,
         creator: "ArulzXD",
-        message: result.error
+        quote: null,
+        character: null,
+        anime: null
       });
     }
 
-    const list = normalizeData(result.data);
+    const quotes = normalizeQuotes(result.data);
+    const selected = pickRandom(quotes);
 
-    if (!list.length) {
+    if (!selected) {
       return res.status(404).json({
         status: false,
         code: 404,
         creator: "ArulzXD",
-        message: "Data tidak ditemukan."
+        quote: null,
+        character: null,
+        anime: null
       });
     }
 
-    const random = pickRandom(list);
-
     res.json({
       status: true,
-      code: 200,
+      code: result.code,
       creator: "ArulzXD",
-      result: random
+      quote: selected.quote || selected.text || selected.kata || null,
+      character: selected.character || selected.char || selected.name || selected.tokoh || null,
+      anime: selected.anime || selected.title || selected.source || null
     });
 
   } catch (err) {
@@ -98,5 +102,4 @@ router.get("/", async (req, res) => {
 
 router.status = "ready";
 router.type = "free";
-
 module.exports = router;
