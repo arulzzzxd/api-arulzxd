@@ -29,6 +29,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
+
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
+    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
 
@@ -43,13 +49,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-const MONGODB_URI = 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
-
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
-    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
-
-// ================= 2. SKEMA & MODEL USER =================
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -883,6 +882,9 @@ const apiKeyLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, 
     keyGenerator: (req) => {
         return req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip; 
+    },
+    validate: {
+        keyGeneratorIpFallback: false // Menghilangkan Warning IPv6 di Vercel Logs
     },
     skip: (req, res) => {
         const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];

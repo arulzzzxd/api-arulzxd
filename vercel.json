@@ -9,15 +9,10 @@
         "includeFiles": [
           "api/**",
           "database/**",
-          "profile.html",
-          "uploader.html",
-          "feedback.html",
-          "pastecode.html",
-          "support.html",
-          "privacy.html",
-          "styles.css",
-          "script.js",
-          "data.js"
+          "public/**",
+          "*.html",
+          "*.css",
+          "*.js"
         ]
       }
     }
