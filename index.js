@@ -28,7 +28,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-// Mengaktifkan kompresi gzip untuk mempercepat load aset di jaringan lambat/low device
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,17 +62,7 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', userSchema);
-
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (err) {
-        done(err, null);
-    }
-});
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
@@ -114,8 +103,6 @@ passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'pass
     }
 ));
 
-// --- HELPER FUNCTION UNTUK EMIT ALERT YANG RINGAN DAN ESTETIK ---
-// Mengoptimalkan CSS SweetAlert: menghapus backdrop-filter blur yang membuat GPU low device lag parah
 function sendSweetAlert(res, icon, title, text, redirectUrl) {
     return res.send(`
         <!DOCTYPE html>
