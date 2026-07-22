@@ -17,6 +17,7 @@ const os = require('os');
 
 // === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
@@ -35,7 +36,8 @@ app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
+    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
+    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
 app.use(passport.initialize());
