@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "api/**",
+          "database/**",
+          "profile.html",
+          "uploader.html",
+          "feedback.html",
+          "pastecode.html",
+          "support.html",
+          "privacy.html",
+          "styles.css",
+          "script.js",
+          "data.js"
+        ]
+      }
+    }
+  ],
+  "rewrites": [
+    { "source": "/pastecode", "destination": "/pastecode.html" },
+    { "source": "/support", "destination": "/support.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/(.*)", "destination": "/index.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS, POST, PUT, DELETE" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" }
+      ]
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
