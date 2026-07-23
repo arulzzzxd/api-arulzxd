@@ -75,13 +75,13 @@
                 <span class="text-[10px] bg-cyan-500/20 px-2 py-0.5 rounded text-cyan-400 uppercase font-bold">Authenticated</span>
             </div>
 
-                        <!-- Upload Box / Dropzone (Diperbarui untuk dukungan Mobile) -->
+            <!-- Upload Box / Dropzone Area -->
             <div id="dropZone" class="relative z-30 block border-2 border-dashed border-white/20 hover:border-cyan-500/80 rounded-2xl p-6 sm:p-10 text-center transition-all bg-black/30 hover:bg-black/20 group mb-6 overflow-hidden">
                 
-                <!-- 1. Input Dibuat Transparan dan Menutupi Seluruh Kotak -->
+                <!-- Input File Asli (Transparan Menutupi Seluruh Kotak) -->
                 <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 z-50 cursor-pointer" title="Pilih Berkas" />
                 
-                <!-- 2. UI Tampilan (Icon & Teks) diletakkan di bawah lapisan input -->
+                <!-- Tampilan Visual Kotak Upload -->
                 <div class="relative z-10 pointer-events-none flex flex-col items-center">
                     <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform mb-4 mx-auto shadow-lg">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -93,8 +93,8 @@
                     <p class="text-xs text-slate-400 font-mono">Mendukung Gambar, Dokumen, Video, Audio & Zip (Maks 50MB)</p>
                 </div>
                 
-                <!-- 3. Detail File yang Terdeteksi -->
-                <div id="fileMeta" class="hidden relative z-10 mt-4 p-2.5 bg-slate-900/90 border border-white/10 rounded-xl text-xs font-mono text-cyan-300 flex items-center justify-center gap-2 w-max mx-auto pointer-events-none">
+                <!-- Informasi Berkas Terdeteksi -->
+                <div id="fileMeta" style="display: none;" class="relative z-10 mt-4 p-2.5 bg-slate-900/90 border border-white/10 rounded-xl text-xs font-mono text-cyan-300 flex items-center justify-center gap-2 w-max mx-auto pointer-events-none">
                     <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                     <span id="fileName" class="truncate max-w-[200px] sm:max-w-[280px]">nama_file.png</span>
                     <span id="fileSize" class="text-slate-500">(- KB)</span>
@@ -145,12 +145,11 @@
 
     <!-- Script Logic -->
     <script>
-        // === PASTI KAN DIISI DENGAN SUPABASE MILIK ANDA ===
         const SUPABASE_URL = "https://evcfckqcgeucugmkqbef.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_1PUlVZ3zSMyVA0r-tWUOSw_1byEaXMq";
         const BUCKET_NAME = "uploads"; 
 
-        // Inisialisasi Supabase
+        // Inisialisasi Supabase Client
         let supabase = null;
         try {
             if (window.supabase) {
@@ -178,7 +177,7 @@
 
         let selectedFile = null;
 
-        // Auto Detect Status User dari Express Server
+        // Auto Detect Status User dari Express
         fetch('/api/user-status')
             .then(res => res.json())
             .then(data => {
@@ -189,14 +188,41 @@
             })
             .catch(() => {});
 
-        // Handle Event Ketika File Dipilih
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                handleFileSelection(e.target.files[0]);
+        // Fungsi Utama Saat File Terpilih
+        function handleFileSelection(file) {
+            if (!file) return;
+
+            if (file.size > 50 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ukuran Terlalu Besar',
+                    text: 'Maksimal ukuran berkas adalah 50MB.',
+                    background: '#111827',
+                    color: '#ffffff',
+                    confirmButtonColor: '#06b6d4'
+                });
+                fileInput.value = ''; // Reset input
+                return;
+            }
+
+            selectedFile = file;
+            fileName.innerText = file.name;
+            fileSize.innerText = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+            
+            // Tampilkan rincian file secara tegas menggunakan style inline
+            fileMeta.style.display = 'flex';
+            uploadBtn.disabled = false;
+            resultBox.classList.add('hidden');
+        }
+
+        // Trigger Event saat Input File berubah (Diperkuat untuk Desktop & Mobile)
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                handleFileSelection(this.files[0]);
             }
         });
 
-        // Drag & Drop Handlers
+        // Event Drag and Drop
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => {
                 e.preventDefault();
@@ -216,33 +242,12 @@
         dropZone.addEventListener('drop', (e) => {
             const files = e.dataTransfer.files;
             if (files && files.length > 0) {
-                fileInput.files = files; // Sinkronkan ke input file
+                fileInput.files = files;
                 handleFileSelection(files[0]);
             }
         });
 
-        function handleFileSelection(file) {
-            if (file.size > 50 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Ukuran Terlalu Besar',
-                    text: 'Maksimal ukuran berkas adalah 50MB.',
-                    background: '#111827',
-                    color: '#ffffff',
-                    confirmButtonColor: '#06b6d4'
-                });
-                return;
-            }
-
-            selectedFile = file;
-            fileName.innerText = file.name;
-            fileSize.innerText = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
-            fileMeta.classList.remove('hidden');
-            uploadBtn.disabled = false;
-            resultBox.classList.add('hidden');
-        }
-
-        // Upload Process
+        // Proses Unggah ke Supabase
         uploadBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
@@ -250,7 +255,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Konfigurasi Belum Diisi',
-                    text: 'SUPABASE_URL dan SUPABASE_ANON_KEY belum dikonfigurasi secara benar di dalam script.',
+                    text: 'SUPABASE_URL / SUPABASE_ANON_KEY belum dikonfigurasi.',
                     background: '#111827',
                     color: '#ffffff',
                     confirmButtonColor: '#06b6d4'
@@ -272,7 +277,7 @@
                 progressBar.style.width = '60%';
                 progressPercent.innerText = '60%';
 
-                // 1. Upload File
+                // Upload ke Storage Bucket
                 const { data, error } = await supabase.storage
                     .from(BUCKET_NAME)
                     .upload(filePath, selectedFile, {
@@ -285,7 +290,7 @@
                 progressBar.style.width = '90%';
                 progressPercent.innerText = '90%';
 
-                // 2. Ambil Link Public
+                // Dapatkan Link Publik
                 const { data: publicUrlData } = supabase.storage
                     .from(BUCKET_NAME)
                     .getPublicUrl(filePath);
