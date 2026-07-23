@@ -1,5 +1,6 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
+const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
