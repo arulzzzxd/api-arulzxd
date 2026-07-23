@@ -1,6 +1,5 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
-const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -17,6 +16,7 @@ const os = require('os');
 
 // === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
@@ -42,6 +42,11 @@ app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: MONGODB_URI,
+        collectionName: 'sessions',
+        ttl: 24 * 60 * 60 // Waktu simpan sesi dalam detik (1 hari)
+    }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
