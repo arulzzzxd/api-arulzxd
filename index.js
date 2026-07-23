@@ -19,6 +19,13 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
+const fileUpload = require('express-fileupload');
+
+// Tambahkan middleware express-fileupload
+app.use(fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // Limit 50 MB
+    useTempFiles: false
+}));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
