@@ -21,18 +21,18 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 
-// Tambahkan middleware express-fileupload
-app.use(fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 }, // Limit 50 MB
-    useTempFiles: false
-}));
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
+
+// Tambahkan middleware express-fileupload
+app.use(fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // Limit 50 MB
+    useTempFiles: false
+}));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
