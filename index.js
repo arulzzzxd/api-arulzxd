@@ -28,7 +28,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-// Tambahkan middleware express-fileupload
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, // Limit 50 MB
     useTempFiles: false
