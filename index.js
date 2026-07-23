@@ -1,4 +1,5 @@
 const express = require('express');
+const fileUpload = require('express-fileupload');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
@@ -19,7 +20,6 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-const fileUpload = require('express-fileupload');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,11 +27,6 @@ app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
-
-app.use(fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 }, // Limit 50 MB
-    useTempFiles: false
-}));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
@@ -62,7 +57,7 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
     role: { type: String, default: 'Free User' },
-    avatar: { type: String, default: 'https://api-arulzxd.web.id/files/Vz4tTG.png' }, 
+    avatar: { type: String, default: 'https://api-arulzxd.web.id/files/X1F0Cn.png' }, 
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -90,7 +85,6 @@ passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'pass
 
             if (!user) return done(null, false, { message: 'Username atau Email tidak ditemukan.' });
 
-            // Proteksi: Jika user mendaftar via Google/GitHub OAuth, larang login menggunakan password manual
             if (!user.password || user.provider !== 'local') {
                 return done(null, false, { 
                     message: `Akun ini terdaftar via ${user.provider.toUpperCase()}. Silakan masuk dengan tombol ${user.provider.toUpperCase()}.` 
@@ -275,7 +269,7 @@ app.post('/auth/register', async (req, res) => {
             userApiKey = `arulz-${cleanUsername.toLowerCase()}-${randomHex}`;
         }
 
-        const defaultAvatar = 'https://api-arulzxd.web.id/files/Vz4tTG.png';
+        const defaultAvatar = 'https://api-arulzxd.web.id/files/X1F0Cn.png';
 
         const newUser = new User({
             username: cleanUsername,
@@ -786,6 +780,11 @@ const playlist = require('./database/playlist');
 const PREMIUM_USERS = require('./database/PREMIUM_USERS');
 const VIP_USERS = require('./database/VIP_USERS');
 
+const localFileUploader = fileUpload({
+    createParentPath: true,
+    limits: { fileSize: 100 * 1024 * 1024 }, 
+});
+
 const title = "API-ARULZXD - REST";
 const favicon = "https://api-arulzxd.web.id/files/X1F0Cn.png";
 const logo = "https://api-arulzxd.web.id/files/33s7XJ.png";
@@ -1025,7 +1024,7 @@ app.post('/api/feedback', async (req, res) => {
 
 
 app.get('/database/download', async (req, res) => {
-    const imageUrl = req.query.url || "https://api-arulzxd.web.id/files/CVmlrD.jpg";
+    const imageUrl = req.query.url || "https://arulz-uploader.vercel.app/files/CVmlrD.jpg";
 
     try {
         const response = await axios({
@@ -1059,6 +1058,180 @@ app.get('/privacy', (req, res) => {
 
 app.get('/support', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'support.html'));
+});
+
+function getRequestProtocol(req) {
+  const forwarded = req.headers['x-forwarded-proto'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.secure ? 'https' : 'http';
+}
+
+function generateId(length = 6) {
+  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const bytes = crypto.randomBytes(length);
+  let id = '';
+  for (let i = 0; i < length; i++) {
+    id += alphabet[bytes[i] % alphabet.length];
+  }
+  return id;
+}
+
+app.get('/files/*', async (req, res) => {
+  const requestedPath = req.params[0]; 
+  if (!requestedPath) return res.status(400).send('Missing file path');
+
+  const gitPath = requestedPath.startsWith('uploads/') ? requestedPath : `uploads/${requestedPath}`;
+  const shuffledRepos = [...repoList].sort(() => Math.random() - 0.5);
+
+  for (const targetRepo of shuffledRepos) {
+    try {
+      const resp = await axios.get(`https://api.github.com/repos/${owner}/${targetRepo}/contents/${gitPath}?ref=${branch}`, {
+        headers: {
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github.v3.raw'
+        },
+        responseType: 'arraybuffer',
+        validateStatus: status => status < 500
+      });
+
+      if (resp.status === 200) {
+        const contentType = mime.lookup(requestedPath) || 'application/octet-stream';
+        res.set('Content-Type', contentType);
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.send(Buffer.from(resp.data));
+      }
+    } catch (error) {
+      console.error(`Gagal cek di repo ${targetRepo}:`, error.message);
+    }
+  }
+
+  return res.status(404).send('File tidak ditemukan di seluruh GitHub Repository');
+});
+
+app.post('/uploadfile', localFileUploader, async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('Tidak ada file yang diunggah.');
+  }
+
+  let uploadedFile = req.files.file;
+  const originalName = uploadedFile.name || 'file';
+  const origExt = path.extname(originalName);
+
+  let extension = origExt ? origExt.replace(/^\./, '') : (mime.extension(uploadedFile.mimetype) || 'bin');
+  let id = generateId(6);
+  let fileName = origExt ? `${id}${origExt}` : `${id}.${extension}`;
+  let gitPath = `uploads/${fileName}`;
+  let base64Content = Buffer.from(uploadedFile.data).toString('base64');
+
+  const selectedRepo = getRandomRepo(); 
+
+  try {
+    await axios.put(`https://api.github.com/repos/${owner}/${selectedRepo}/contents/${gitPath}`, {
+      message: `Upload file ${fileName} to ${selectedRepo}`,
+      content: base64Content,
+      branch: branch,
+    }, {
+      headers: {
+        Authorization: `Bearer ${githubToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const protocol = getRequestProtocol(req);
+    const baseWebUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
+    const rawUrl = `${baseWebUrl}/files/${fileName}`;
+
+    // OPTIMASI FRONTEND: Menghapus backdrop-filter blur, radial-gradient, animasi checkmark draw, 
+    // dan scaleIn yang berlebihan untuk menjaga kenyamanan device berspesifikasi rendah.
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="id" class="dark">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Unggahan Berhasil</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+          <script>
+              tailwind.config = {
+                  darkMode: 'class',
+                  theme: { 
+                      extend: {
+                          fontFamily: {
+                              sans: ['Plus Jakarta Sans', 'sans-serif'],
+                          }
+                      } 
+                  }
+              }
+          </script>
+          <style>
+              body { 
+                  background-color: #0b0f19; 
+                  color: #f3f4f6;
+              }
+              .solid-card {
+                  background: #111827;
+                  border: 1px solid rgba(255, 255, 255, 0.07);
+              }
+              .url-box {
+                  background: rgba(0, 0, 0, 0.25);
+                  border: 1px solid rgba(255, 255, 255, 0.05);
+              }
+              .checkmark-circle {
+                  background: rgba(16, 185, 129, 0.06);
+                  border: 1px solid rgba(16, 185, 129, 0.2);
+              }
+          </style>
+      </head>
+      <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
+          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
+              <div class="mb-5 flex justify-center">
+                  <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-400">
+                      <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                  </div>
+              </div>
+              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-white">Unggahan Berhasil!</h1>
+              <p class="mb-5 text-xs text-gray-400">Berkas Anda telah aktif di cloud server:</p>
+              <div class="url-box p-3.5 rounded-xl break-all mb-6">
+                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
+              </div>
+              <div class="flex space-x-3">
+                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5">
+                      Salin URL
+                  </button>
+                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 block text-center">
+                      Kembali
+                  </a>
+              </div>
+          </div>
+          <div id="toast" class="fixed bottom-5 bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide">
+              URL Berhasil disalin ke papan klip!
+          </div>
+          <script>
+              function copyToClipboard() {
+                  const urlText = document.getElementById('rawUrl').href;
+                  navigator.clipboard.writeText(urlText).then(() => {
+                      const toast = document.getElementById('toast');
+                      toast.classList.remove('opacity-0', 'invisible');
+                      toast.classList.add('opacity-100', 'visible');
+                      setTimeout(() => {
+                          toast.classList.remove('opacity-100', 'visible');
+                          toast.classList.add('opacity-0', 'invisible');
+                      }, 2500);
+                  });
+              }
+          </script>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error uploading file.');
+  }
 });
 
 const router = express.Router();
