@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
     role: { type: String, default: 'Free User' },
-    avatar: { type: String, default: 'https://api-arulzxd.web.id/files/X1F0Cn.png' }, 
+    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -205,7 +205,7 @@ app.post('/auth/login', (req, res, next) => {
                     username: user.username,
                     email: user.email,
                     name: user.username,
-                    avatar: user.avatar || 'https://api-arulzxd.web.id/files/X1F0Cn.png',
+                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
                     role: updatedRole,     
                     apiKey: updatedApiKey   
                 };
@@ -269,7 +269,7 @@ app.post('/auth/register', async (req, res) => {
             userApiKey = `arulz-${cleanUsername.toLowerCase()}-${randomHex}`;
         }
 
-        const defaultAvatar = 'https://api-arulzxd.web.id/files/X1F0Cn.png';
+        const defaultAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
 
         const newUser = new User({
             username: cleanUsername,
@@ -503,7 +503,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
 const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
 const GITHUB_CLIENT_SECRET = '00ff4d42fac19077ddcca11e5df9da27b7016bb7';
-const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://api-arulzxd.web.id/auth/github/callback";
+const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://arulz-xd.my.id/auth/github/callback";
 
 const d = "613783942158";
 const e = "-5vdiad2jd9ash4";
@@ -513,7 +513,7 @@ const id = "googleusercontent.com";
 
 const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
 const GOOGLE_CLIENT_SECRET = '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';
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://api-arulzxd.web.id/auth/google/callback";
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
 
 const checkAuthSession = (req, res, next) => {
     const token = req.cookies.auth_session;
@@ -614,7 +614,7 @@ app.get('/auth/github/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.avatar_url || 'https://api-arulzxd.web.id/files/X1F0Cn.png'
+                avatar: userData.avatar_url || 'https://arulz-xd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -710,7 +710,7 @@ app.get('/auth/google/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.picture || 'https://api-arulzxd.web.id/files/X1F0Cn.png'
+                avatar: userData.picture || 'https://arulz-xd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -786,8 +786,8 @@ const localFileUploader = fileUpload({
 });
 
 const title = "API-ARULZXD - REST";
-const favicon = "https://api-arulzxd.web.id/files/X1F0Cn.png";
-const logo = "https://api-arulzxd.web.id/files/33s7XJ.png";
+const favicon = "https://arulz-xd.my.id/files/X1F0Cn.png";
+const logo = "https://arulz-xd.my.id/files/33s7XJ.png";
 const headertitle = `<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" />`;
 const headerdescription = "Browse, inspect & fire requests against live endpoints._";
 const footer = "© Arulz-XD";
@@ -1759,7 +1759,7 @@ app.get('/doc', (req, res) => {
           </div>
           
           <div class="mb-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
-            <img src="https://api-arulzxd.web.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
+            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
           </div>
           
           <div class="text-center text-slate-300 text-xs sm:text-sm mb-5 px-1 leading-relaxed">
@@ -2084,7 +2084,7 @@ app.get('/doc', (req, res) => {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
-                    <span class="underline break-all font-semibold">https://api-arulzxd.web.id/</span>
+                    <span class="underline break-all font-semibold">https://arulz-xd.my.id/</span>
                 </div>
                 <a href="https://wa.me/6285122629940?text=Halo%20Arulz,%20saya%20ingin%20request%20fitur%20baru%20di%20REST%20API%20:" 
                    target="_blank" 
