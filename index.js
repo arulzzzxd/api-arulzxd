@@ -1485,6 +1485,41 @@ router.get('/apilist', (req, res) => {
   res.json({ categories });
 });
 
+// === REAL-TIME TRAFFIC LOG ENGINE (SSE) ===
+let trafficClients = [];
+
+// Endpoint SSE untuk dikoneksikan ke Frontend
+app.get('/api/live-traffic', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    trafficClients.push(res);
+
+    req.on('close', () => {
+        trafficClients = trafficClients.filter(client => client !== res);
+    });
+});
+
+// Middleware penangkap request API asli (/api/category/endpoint)
+app.use('/api/:category/:endpoint', (req, res, next) => {
+    res.on('finish', () => {
+        const fullPath = req.originalUrl.split('?')[0]; // Ambil jalur tanpa query sensitif
+        const logData = {
+            method: req.method,
+            status: res.statusCode,
+            path: fullPath,
+            time: new Date().toLocaleTimeString('id-ID', { hour12: false })
+        };
+
+        // Broadcast log real-time ke seluruh client yang membuka home.html
+        trafficClients.forEach(client => {
+            client.write(`data: ${JSON.stringify(logData)}\n\n`);
+        });
+    });
+    next();
+});
+
 app.get('/api/server-status', (req, res) => {
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
