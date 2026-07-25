@@ -26,34 +26,34 @@
         }
         .bg-dots {
             background-color: #030712;
-            background-image: radial-gradient(rgba(6, 182, 212, 0.18) 1.5px, transparent 1.5px);
+            background-image: radial-gradient(rgba(6, 182, 212, 0.15) 1.5px, transparent 1.5px);
             background-size: 22px 22px;
         }
         .glass-card {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.25; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.1); }
+            50% { opacity: 0.45; transform: scale(1.08); }
         }
         .glow-effect {
             animation: pulse-glow 7s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="bg-[#030712] text-slate-100 h-screen w-screen relative overflow-hidden bg-dots flex flex-col justify-between p-4 sm:p-6 antialiased">
+<body class="bg-[#030712] text-slate-100 h-screen w-screen relative overflow-hidden bg-dots flex flex-col justify-between p-4 antialiased">
 
     <!-- Efek Cahaya Latar Belakang Digital -->
     <div class="absolute top-[-10%] left-[-10%] w-[70vw] h-[50vh] bg-cyan-500/15 rounded-full blur-[110px] pointer-events-none glow-effect"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[70vw] h-[50vh] bg-purple-500/15 rounded-full blur-[110px] pointer-events-none glow-effect" style="animation-delay: -3.5s;"></div>
 
-    <!-- Header / Navbar -->
-    <header class="w-full max-w-xl mx-auto flex items-center justify-between relative z-10 flex-shrink-0">
+    <!-- Header / Navbar Utama -->
+    <header class="w-full max-w-lg mx-auto flex items-center justify-between relative z-10 flex-shrink-0 pt-1">
         <div class="flex items-center gap-2">
-            <span class="text-xl font-extrabold tracking-wider text-white">
+            <span class="text-lg font-extrabold tracking-wider text-white">
                 Arulz<span class="text-cyan-400">-XD</span> 
                 <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 ml-1 code-font">API</span>
             </span>
@@ -61,92 +61,87 @@
         
         <!-- Container Profil/Login Dynamic -->
         <div id="authNavContainer">
-            <a href="/login" class="text-xs font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2 rounded-xl transition-all active:scale-95">
+            <a href="/login" class="text-xs font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white border border-white/10 px-3.5 py-1.5 rounded-xl transition-all active:scale-95">
                 Login
             </a>
         </div>
     </header>
 
-    <!-- Main Content (Mengisi Penuh Seluruh Area Ruang Layar) -->
-    <main class="flex-1 flex flex-col justify-between items-center relative z-10 max-w-xl mx-auto w-full my-3">
+    <!-- Main Content (Terpusat Rapi Tanpa Ruang Kosong Berlebihan) -->
+    <main class="flex-1 flex items-center justify-center relative z-10 max-w-lg mx-auto w-full py-2">
         
-        <!-- Hero Title Section -->
-        <div class="text-center w-full flex flex-col items-center">
+        <div class="glass-card w-full p-5 sm:p-6 rounded-3xl border border-white/10 shadow-2xl flex flex-col gap-4 text-center">
+            
             <!-- Badge Status -->
-            <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase mb-3 animate-pulse">
-                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                Sistem Siap Digunakan
+            <div>
+                <span class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase animate-pulse">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                    Sistem Siap Digunakan
+                </span>
             </div>
 
             <!-- Judul Utama -->
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight mb-2">
-                Bangun Aplikasi Cepat Dengan <br>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white leading-snug">
+                Bangun Aplikasi Lebih Cepat <br>
                 <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                     REST API Berkualitas
                 </span>
             </h1>
 
             <!-- Deskripsi -->
-            <p class="text-slate-400 text-xs sm:text-sm max-w-md leading-relaxed font-medium">
-                Nikmati akses endpoint andal, kencang, dan selalu terbarui untuk mendukung pengembangan projek Anda.
+            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed font-medium max-w-xs mx-auto">
+                Akses berbagai fitur endpoint andal, kencang, dan selalu terbarui untuk projek Anda.
             </p>
-        </div>
 
-        <!-- Quick Stats Grid (Menambah Kepadatan & Tampilan Pro) -->
-        <div class="grid grid-cols-3 gap-2.5 w-full my-1">
-            <div class="glass-card p-2.5 rounded-xl text-center border border-white/5">
-                <div class="text-[10px] text-slate-400 uppercase font-bold code-font">UPTIME</div>
-                <div class="text-sm font-extrabold text-cyan-400">99.9%</div>
-            </div>
-            <div class="glass-card p-2.5 rounded-xl text-center border border-white/5">
-                <div class="text-[10px] text-slate-400 uppercase font-bold code-font">RESPON</div>
-                <div class="text-sm font-extrabold text-emerald-400">Fast API</div>
-            </div>
-            <div class="glass-card p-2.5 rounded-xl text-center border border-white/5">
-                <div class="text-[10px] text-slate-400 uppercase font-bold code-font">STATUS</div>
-                <div class="text-sm font-extrabold text-purple-400">Active</div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center justify-center gap-3 w-full">
-            <a href="/doc" class="flex-1 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-3.5 px-5 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.3)] text-center">
-                Buka Dokumentasi
-            </a>
-            <a href="/status" class="flex-1 bg-slate-900/80 hover:bg-slate-800 text-white font-bold py-3.5 px-5 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
-                Status
-            </a>
-        </div>
-
-        <!-- Kartu Keunggulan Fitur (Ukuran Proporsional & Rapi) -->
-        <div class="flex flex-col gap-2.5 w-full">
-            <div class="glass-card p-3 rounded-xl border border-white/5 flex items-center justify-between gap-3">
-                <div class="flex-1">
-                    <div class="text-cyan-400 font-bold text-xs uppercase tracking-wide code-font">// STABIL & CEPAT</div>
-                    <p class="text-[11px] text-slate-400 leading-tight mt-0.5">Infrastruktur server dioptimasi penuh untuk respon instan.</p>
+            <!-- Quick Stats Row -->
+            <div class="grid grid-cols-3 gap-2 my-1">
+                <div class="bg-slate-950/50 p-2 rounded-xl border border-white/5">
+                    <div class="text-[9px] text-slate-400 uppercase font-bold code-font">UPTIME</div>
+                    <div class="text-xs font-extrabold text-cyan-400">99.9%</div>
+                </div>
+                <div class="bg-slate-950/50 p-2 rounded-xl border border-white/5">
+                    <div class="text-[9px] text-slate-400 uppercase font-bold code-font">RESPON</div>
+                    <div class="text-xs font-extrabold text-emerald-400">Fast API</div>
+                </div>
+                <div class="bg-slate-950/50 p-2 rounded-xl border border-white/5">
+                    <div class="text-[9px] text-slate-400 uppercase font-bold code-font">STATUS</div>
+                    <div class="text-xs font-extrabold text-purple-400">Active</div>
                 </div>
             </div>
 
-            <div class="glass-card p-3 rounded-xl border border-white/5 flex items-center justify-between gap-3">
-                <div class="flex-1">
-                    <div class="text-purple-400 font-bold text-xs uppercase tracking-wide code-font">// BANYAK FITUR</div>
-                    <p class="text-[11px] text-slate-400 leading-tight mt-0.5">Kategori fungsional lengkap yang siap pakai untuk bot atau web.</p>
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-center gap-2.5 w-full">
+                <a href="/doc" class="flex-1 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-3 px-4 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_15px_rgba(6,182,212,0.25)] text-center">
+                    Dokumentasi
+                </a>
+                <a href="/status" class="flex-1 bg-slate-900/80 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
+                    Status
+                </a>
+            </div>
+
+            <!-- Kartu Keunggulan Fitur (Grid 3 Kolom Ringkas) -->
+            <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/5 text-left">
+                <div class="bg-slate-950/40 p-2 rounded-xl border border-white/5">
+                    <div class="text-cyan-400 font-bold text-[9px] uppercase code-font">// CEPAT</div>
+                    <p class="text-[9px] text-slate-400 leading-tight mt-0.5">Respon data instan.</p>
+                </div>
+                <div class="bg-slate-950/40 p-2 rounded-xl border border-white/5">
+                    <div class="text-purple-400 font-bold text-[9px] uppercase code-font">// LENGKAP</div>
+                    <p class="text-[9px] text-slate-400 leading-tight mt-0.5">Siap bot & web.</p>
+                </div>
+                <div class="bg-slate-950/40 p-2 rounded-xl border border-white/5">
+                    <div class="text-emerald-400 font-bold text-[9px] uppercase code-font">// MUDAH</div>
+                    <p class="text-[9px] text-slate-400 leading-tight mt-0.5">JSON terstruktur.</p>
                 </div>
             </div>
 
-            <div class="glass-card p-3 rounded-xl border border-white/5 flex items-center justify-between gap-3">
-                <div class="flex-1">
-                    <div class="text-emerald-400 font-bold text-xs uppercase tracking-wide code-font">// KEMUDAHAN INTEGRASI</div>
-                    <p class="text-[11px] text-slate-400 leading-tight mt-0.5">Format response JSON bersih yang memudahkan integrasi kode.</p>
-                </div>
-            </div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="w-full max-w-xl mx-auto text-center text-[11px] text-slate-500 relative z-10 font-medium flex-shrink-0 pt-2 border-t border-white/5">
-        &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
+    <footer class="w-full max-w-lg mx-auto text-center text-[10px] text-slate-500 relative z-10 font-medium flex-shrink-0 pb-1">
+        &copy; 2026 Arulz-XD. All Rights Reserved.
     </footer>
 
     <!-- Script Pengunci Zoom & Auto-Fetch User Status -->
@@ -166,8 +161,8 @@
                     if (data.loggedIn) {
                         const container = document.getElementById('authNavContainer');
                         container.innerHTML = `
-                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
-                                <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
+                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-2.5 py-1 rounded-xl transition-all active:scale-95 shadow-md">
+                                <img src="${data.user.avatar}" class="w-5 h-5 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
                                 <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
                             </a>
                         `;
