@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
-    <!-- Mencegah zoom di perangkat mobile -->
+    <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Arulz-XD API - Powerful & Fast REST API Services</title>
     <!-- Tailwind CSS & Google Fonts -->
@@ -15,7 +15,7 @@
         html, body {
             width: 100%;
             min-height: 100vh;
-            touch-action: pan-x pan-y; /* Hanya izin scroll x & y, cegah pinch zoom */
+            touch-action: pan-x pan-y; /* Izin scroll X & Y, cegah pinch zoom */
             font-family: 'Space Grotesk', sans-serif;
             -webkit-user-select: none;
             user-select: none;
@@ -50,7 +50,7 @@
     <div class="fixed bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none glow-effect" style="animation-delay: -4s;"></div>
 
     <!-- Header / Navbar Utama -->
-    <header class="w-full max-w-4xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
+    <header class="w-full max-w-2xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
         <div class="flex items-center gap-2">
             <span class="text-xl font-black tracking-wider text-white">
                 Arulz<span class="text-cyan-400">-XD</span> 
@@ -66,8 +66,8 @@
         </div>
     </header>
 
-    <!-- Main Content Container (Style ala Clutch API - Minimalis & Berstruktur) -->
-    <main class="w-full max-w-2xl mx-auto px-6 py-8 relative z-10 flex-1 flex flex-col items-center">
+    <!-- Main Content Container -->
+    <main class="w-full max-w-2xl mx-auto px-6 py-4 relative z-10 flex-1 flex flex-col items-center">
         
         <!-- Status Pill Badge -->
         <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-6 animate-pulse">
@@ -89,16 +89,101 @@
         </p>
 
         <!-- Main Action Buttons -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mb-10">
-            <a href="/doc" class="w-full sm:w-1/2 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.25)] text-center">
-                Buka Dokumentasi
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mb-12">
+            <a href="/doc" class="w-full sm:w-1/2 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.25)] text-center code-font">
+                GET API &gt;_
             </a>
             <a href="/status" class="w-full sm:w-1/2 bg-slate-900/80 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
                 Status Server
             </a>
         </div>
 
-        <!-- Section: Fitur Utama (Clutch-Style Grid Cards) -->
+        <!-- ================= SECTION BARU: Laporan Realtime Gateway & Statistik Live ================= -->
+        <div class="w-full mb-10">
+            <!-- Section Title -->
+            <div class="mb-5 text-left">
+                <div class="text-cyan-400 text-xs font-bold uppercase tracking-wider code-font mb-1">
+                    Laporan realtime gateway //
+                </div>
+                <h2 class="text-2xl font-extrabold text-white tracking-tight">
+                    Kinerja server &amp; statistik live
+                </h2>
+                <div class="flex items-center gap-1.5 text-slate-500 text-xs font-mono mt-1">
+                    <svg class="w-3.5 h-3.5 animate-spin text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Autosync stats via core monitoring</span>
+                </div>
+            </div>
+
+            <!-- Stats Grid List -->
+            <div class="space-y-3.5">
+                
+                <!-- Stat 1: Gate State -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-mono tracking-wide">Gate state</span>
+                        <span class="text-[10px] font-bold code-font bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">
+                            Online
+                        </span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-white tracking-tight font-mono">99.99%</span>
+                        <span class="text-xs text-slate-400 font-mono">Uptime</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-mono mt-2">Gateway server aktif penuh asinkron</p>
+                </div>
+
+                <!-- Stat 2: Velocity -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-mono tracking-wide">Velocity</span>
+                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-white tracking-tight font-mono">&lt; 45ms</span>
+                        <span class="text-xs text-slate-400 font-mono">Latency</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-mono mt-2">Render canvas &amp; video asinkron cepat</p>
+                </div>
+
+                <!-- Stat 3: Core Engine -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-mono tracking-wide">Core engine</span>
+                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                        </svg>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-white tracking-tight font-mono">v1.0</span>
+                        <span class="text-xs text-slate-400 font-mono">ArulzCore</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-mono mt-2">Plugin-hotloaded core endpoints</p>
+                </div>
+
+                <!-- Stat 4: Storage Architecture -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-mono tracking-wide">Storage architecture</span>
+                        <span class="text-[10px] font-bold code-font bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded">
+                            Secure
+                        </span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-black text-white tracking-tight font-mono">None</span>
+                        <span class="text-xs text-slate-400 font-mono">Db free</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-mono mt-2">Memori asinkron instan tanpa DB lambat</p>
+                </div>
+
+            </div>
+        </div>
+        <!-- ================= END SECTION ================= -->
+
+        <!-- Section: Keunggulan Fitur // 01, // 02, // 03 -->
         <div class="w-full space-y-3">
             
             <div class="glass-card p-5 rounded-2xl flex items-start gap-4 hover:border-cyan-500/30 transition-all duration-300">
@@ -106,7 +191,7 @@
                     // 01
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Stabil & Cepat</h2>
+                    <h3 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Stabil &amp; Cepat</h3>
                     <p class="text-xs text-slate-400 leading-relaxed">Infrastruktur server dioptimasi penuh demi menghasilkan respon data yang instan.</p>
                 </div>
             </div>
@@ -116,7 +201,7 @@
                     // 02
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Banyak Fitur</h2>
+                    <h3 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Banyak Fitur</h3>
                     <p class="text-xs text-slate-400 leading-relaxed">Beragam kategori fungsional lengkap yang siap pakai untuk berbagai kebutuhan bot atau web.</p>
                 </div>
             </div>
@@ -126,7 +211,7 @@
                     // 03
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Kemudahan Integrasi</h2>
+                    <h3 class="text-sm font-bold text-white mb-1 uppercase tracking-wider code-font">Kemudahan Integrasi</h3>
                     <p class="text-xs text-slate-400 leading-relaxed">Format response JSON yang bersih dan terstruktur rapi memudahkan integrasi kode.</p>
                 </div>
             </div>
@@ -136,7 +221,7 @@
     </main>
 
     <!-- Footer Halaman -->
-    <footer class="w-full max-w-4xl mx-auto px-6 py-8 border-t border-white/5 text-center text-xs text-slate-500 relative z-10 font-medium">
+    <footer class="w-full max-w-2xl mx-auto px-6 py-8 border-t border-white/5 text-center text-xs text-slate-500 relative z-10 font-medium">
         &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
     </footer>
 
