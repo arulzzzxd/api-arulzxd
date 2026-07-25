@@ -235,22 +235,16 @@
     });
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-    // Bank Data Variasi Acak Endpoint & Query Super Banyak
+    // Bank Data Variasi Acak Endpoint & Query Disamarkan
     let apiEndpointsList = [];
     let trafficLogs = [];
 
+    // Nilai parameter acak disamarkan
     const sampleQueries = [
-        "jadotanomariyadany", "DJ_Tiktok_Viral_2026", "Cara_Membuat_REST_API_Express", 
-        "https://vt.tiktok.com/ZSj89aX/", "https://www.instagram.com/p/C3x900LpM/",
-        "https://youtube.com/watch?v=dQw4w9WgXcQ", "https://media.mediafire.com/file/x92b0a",
-        "https://pin.it/7x9A1mK0p", "https://open.spotify.com/track/4cOdK2wG",
-        "Halo_AI_Bantu_Saya_Buatkan_Kode", "gpt4_prompt_system_role", "naruto_shippuden_hd",
-        "one_piece_episode_latest", "wallpaper_cyberpunk_4k", "resep_masakan_nusantara",
-        "fakta_unik_dunia", "kuotes_motivasi_hari_ini", "lirik_lagu_pamer_bojo",
-        "stiker_patrick_lucu", "••••_HIDDEN", "arulzxd_api_key_check", "cerpen_horor_malam_jumat",
-        "jadwal_sholat_jakarta", "translate_indonesia_to_english", "ssweb_full_hd_render",
-        "stalker_instagram_target", "generate_qr_code_custom", "remini_hd_photo_enhancer",
-        "topup_game_mlbb_fast", "random_cat_image_api", "text_to_speech_indonesia"
+        "••••_HIDDEN",
+        "••••",
+        "••••_HIDDEN",
+        "••••"
     ];
 
     const statusList = [
@@ -314,24 +308,15 @@
     function pushRandomTrafficLog() {
         let path = "/api/search/ytplay";
         let method = "GET";
-        let paramKey = "q";
 
         if (apiEndpointsList.length > 0) {
             const randomEp = apiEndpointsList[Math.floor(Math.random() * apiEndpointsList.length)];
             path = randomEp.path;
             if (randomEp.methods && randomEp.methods[0]) method = randomEp.methods[0];
-
-            // Tentukan key parameter acak (url, q, text, search, dll) jika tersedia dari router
-            if (randomEp.params && Object.keys(randomEp.params).length > 0) {
-                const keys = Object.keys(randomEp.params).filter(k => k !== 'apikey');
-                if (keys.length > 0) {
-                    paramKey = keys[Math.floor(Math.random() * keys.length)];
-                }
-            }
         }
 
         const randomQuery = sampleQueries[Math.floor(Math.random() * sampleQueries.length)];
-        const fullPath = `${path}?${paramKey}=${randomQuery}`;
+        const fullPath = `${path}?q=${randomQuery}`;
 
         trafficLogs.unshift({
             status: getRandomStatus(),
@@ -344,8 +329,8 @@
         if (trafficLogs.length > 5) trafficLogs.pop();
         renderTrafficLogs();
 
-        // Interval acak dinamis (antara 1.2 detik - 3.2 detik per log baru)
-        const nextDelay = Math.floor(Math.random() * 2000) + 1200;
+        // Interval acak dinamis (antara 1.5 detik - 3.5 detik per log baru)
+        const nextDelay = Math.floor(Math.random() * 2000) + 1500;
         setTimeout(pushRandomTrafficLog, nextDelay);
     }
 
@@ -364,7 +349,7 @@
                     });
                 }
                 
-                // Generasi awal 4 log acak saat halaman dibuka
+                // Generasi awal 4 log saat halaman baru dibuka
                 for (let i = 0; i < 4; i++) {
                     const randomEp = apiEndpointsList.length > 0 
                         ? apiEndpointsList[Math.floor(Math.random() * apiEndpointsList.length)].path 
@@ -379,8 +364,8 @@
                 }
                 renderTrafficLogs();
 
-                // Mulai siklus pembaruan log acak
-                setTimeout(pushRandomTrafficLog, 1200);
+                // Mulai siklus log acak
+                setTimeout(pushRandomTrafficLog, 1500);
             })
             .catch(err => {
                 console.error("Gagal memuat list endpoint:", err);
@@ -404,6 +389,5 @@
             .catch(err => console.error("Gagal memuat status user:", err));
     });
 </script>
-
 </body>
 </html>
