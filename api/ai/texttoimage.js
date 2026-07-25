@@ -1,127 +1,126 @@
 const express = require("express");
-const fetch = require("node-fetch");
+const axios = require("axios");
 
 const router = express.Router();
 
 // ==========================================
-// CORE FUNCTIONS (TIDAK ADA YANG DIUBAH)
+// CORE FUNCTIONS
 // ==========================================
 
-async function anime(Prompt) {
-    const postResponse = await fetch('https://aicharalab.com/api/character/character-image', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-            'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-        },
-        body: JSON.stringify({
-            prompts: Prompt,
-            negative: "",
-            image_style: "anime",
-            style_transfer: 0,
-            aspect_ratio: "1:1",
-            number: 1
-        })
-    });
-
-    const postResult = await postResponse.json();
-    const taskId = postResult.data.task_id;
-
-    while (true) {
-        const getResponse = await fetch(`https://aicharalab.com/api/dash/task-status?task_id=${taskId}&project_name=character`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-                'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-            }
-        });
-
-        const getResult = await getResponse.json();
-        
-        if (getResult.status === 100000) {
-            return getResult.data.result[0];
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
-    }
+const headers = {
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+  'accept': 'application/json, text/plain, */*',
+  'accept-language': 'id,en;q=0.9',
+  'origin': 'https://nanobanana.im'
 }
 
-async function ghibli(Prompt) {
-    const postResponse = await fetch('https://aicharalab.com/api/character/character-image', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-            'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-        },
-        body: JSON.stringify({
-            prompts: Prompt,
-            negative: "",
-            image_style: "ghibli",
-            style_transfer: 0,
-            aspect_ratio: "1:1",
-            number: 1
-        })
-    });
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-    const postResult = await postResponse.json();
-    const taskId = postResult.data.task_id;
-
-    while (true) {
-        const getResponse = await fetch(`https://aicharalab.com/api/dash/task-status?task_id=${taskId}&project_name=character`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-                'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-            }
-        });
-
-        const getResult = await getResponse.json();
-        
-        if (getResult.status === 100000) {
-            return getResult.data.result[0];
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
-    }
+function updateCookies(oldCookieHeader, newSetCookies) {
+  if (!newSetCookies) return oldCookieHeader
+  const cookieMap = new Map()
+  
+  if (oldCookieHeader) {
+    oldCookieHeader.split(';').forEach(c => {
+      const parts = c.trim().split('=')
+      if (parts[0]) cookieMap.set(parts[0], parts.slice(1).join('='))
+    })
+  }
+  
+  newSetCookies.forEach(c => {
+    const parts = c.split(';')[0].trim().split('=')
+    if (parts[0]) cookieMap.set(parts[0], parts.slice(1).join('='))
+  })
+  
+  return Array.from(cookieMap.entries()).map(([k, v]) => `${k}=${v}`).join('; ')
 }
 
-async function pixel(Prompt) {
-    const postResponse = await fetch('https://aicharalab.com/api/character/character-image', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-            'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-        },
-        body: JSON.stringify({
-            prompts: Prompt,
-            negative: "",
-            image_style: "pixel art",
-            style_transfer: 0,
-            aspect_ratio: "1:1",
-            number: 1
-        })
-    });
+async function getMagicLink(email) {
+  let attempts = 0
+  while (attempts < 20) {
+    try {
+      const res = await axios.get(`https://api.tempmail.ing/api/emails/${encodeURIComponent(email)}`, { headers })
+      if (res.data && res.data.success && res.data.emails.length > 0) {
+        const text = res.data.emails[0].text || res.data.emails[0].html || ''
+        const match = text.match(/https:\/\/nanobanana\.im\/api\/auth\/magic-link\/verify\?token=[^\s"']+/)
+        if (match) return match[0]
+      }
+    } catch (e) {}
+    attempts++
+    await delay(3000)
+  }
+  throw new Error('Magic link tidak ditemukan / timeout.')
+}
 
-    const postResult = await postResponse.json();
-    const taskId = postResult.data.task_id;
+async function nanobanana(prompt) {
+  // Default string kosong untuk turnstileToken jika website tidak mewajibkannya
+  const turnstileToken = ""; 
 
-    while (true) {
-        const getResponse = await fetch(`https://aicharalab.com/api/dash/task-status?task_id=${taskId}&project_name=character`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36',
-                'Referer': 'https://aicharalab.com/ghibli-ai-generator'
-            }
-        });
+  const mailRes = await axios.post('https://api.tempmail.ing/api/generate', {}, { headers })
+  if (!mailRes.data || !mailRes.data.success) throw new Error('Failed to generate tempmail.')
+  const email = mailRes.data.email.address
 
-        const getResult = await getResponse.json();
-        
-        if (getResult.status === 100000) {
-            return getResult.data.result[0];
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
+  const session = axios.create({ headers })
+  let cookieHeader = ''
+
+  const initRes = await session.get('https://nanobanana.im/')
+  cookieHeader = updateCookies(cookieHeader, initRes.headers['set-cookie'])
+
+  const magicRes = await session.post('https://nanobanana.im/api/auth/sign-in/magic-link', {
+    email: email,
+    callbackURL: '/'
+  }, {
+    headers: { 'Cookie': cookieHeader }
+  })
+
+  if (!magicRes.data || !magicRes.data.status) throw new Error('Failed to send magic link.')
+
+  const link = await getMagicLink(email)
+  const verifyRes = await session.get(link, {
+    headers: { 'Cookie': cookieHeader },
+    maxRedirects: 0,
+    validateStatus: status => status >= 200 && status < 400
+  })
+
+  cookieHeader = updateCookies(cookieHeader, verifyRes.headers['set-cookie'])
+
+  const homeRes = await session.get('https://nanobanana.im/', {
+    headers: { 'Cookie': cookieHeader }
+  })
+  cookieHeader = updateCookies(cookieHeader, homeRes.headers['set-cookie'])
+
+  const taskRes = await session.post('https://nanobanana.im/api/img/nano-banana5', {
+    prompt: prompt,
+    dimension: 'auto',
+    aspect_ratio: 'auto',
+    image_urls: [], 
+    num_images: '1',
+    batchSize: 1,
+    turnstileToken: turnstileToken,
+    skipVerification: false,
+    image_path: 'hero',
+    size: '2K',
+    resolution: '2K',
+    output_format: 'png'
+  }, {
+    headers: { 'Cookie': cookieHeader }
+  })
+
+  if (!taskRes.data || !taskRes.data.taskId) {
+    throw new Error('Gagal membuat task gambar. Cek turnstileToken atau session.')
+  }
+  const taskId = taskRes.data.taskId
+
+  while (true) {
+    const checkRes = await session.post('https://nanobanana.im/api/img/nano-banana5/taskResult', { taskId }, {
+      headers: { 'Cookie': cookieHeader }
+    })
+
+    if (checkRes.data && checkRes.data.status === 1) {
+      return checkRes.data.imgAfterSrc
     }
+    await delay(5000)
+  }
 }
 
 // ==========================================
@@ -131,33 +130,16 @@ async function pixel(Prompt) {
 router.get("/", async (req, res) => {
   try {
     const text = req.query.text;
-    const type = req.query.type || 'anime';
 
     if (!text) {
       return res.status(400).json({
         status: false,
-        message: "Masukkan parameter 'text'. Contoh: ?text=cat"
+        message: "Masukkan parameter 'text'. Contoh: ?text=anime girl wearing a futuristic cyberpunk outfit"
       });
     }
 
-    let imageUrl;
-
-    switch (type.toLowerCase()) {
-      case 'anime':
-        imageUrl = await anime(text);
-        break;
-      case 'ghibli':
-        imageUrl = await ghibli(text);
-        break;
-      case 'pixel':
-        imageUrl = await pixel(text);
-        break;
-      default:
-        return res.status(400).json({
-          status: false,
-          message: `Tipe '${type}' tidak valid. Gunakan: anime, ghibli, atau pixel.`
-        });
-    }
+    // Memanggil fungsi tanpa menyisipkan token dari parameter
+    const imageUrl = await nanobanana(text);
 
     // Mengembalikan hasil URL gambar dalam format JSON
     return res.json({
