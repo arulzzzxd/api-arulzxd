@@ -15,7 +15,7 @@
         html, body {
             width: 100%;
             min-height: 100vh;
-            touch-action: pan-x pan-y; /* Izin scroll X & Y, cegah pinch zoom */
+            touch-action: pan-x pan-y;
             font-family: 'Space Grotesk', sans-serif;
             -webkit-user-select: none;
             user-select: none;
@@ -98,7 +98,7 @@
             </a>
         </div>
 
-        <!-- ================= SECTION BARU: Laporan Realtime Gateway & Statistik Live ================= -->
+        <!-- SECTION: Laporan Realtime Gateway & Statistik Live -->
         <div class="w-full mb-10">
             <!-- Section Title -->
             <div class="mb-5 text-left">
@@ -134,20 +134,29 @@
                     <p class="text-xs text-slate-500 font-mono mt-2">Gateway server aktif penuh asinkron</p>
                 </div>
 
-                <!-- Stat 2: Velocity -->
-                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-slate-400 font-mono tracking-wide">Velocity</span>
-                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                <!-- ================= WIDGET TRAFFIC LOG REAL-TIME ================= -->
+                <div class="rounded-2xl border-2 border-black bg-[#fffef0] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden font-mono p-3 sm:p-4">
+                    
+                    <!-- Header Terminal -->
+                    <div class="flex items-center justify-between bg-[#a8f0b0] border-2 border-black rounded-xl p-2 mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-red-400 border border-black inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-400 border border-black inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-400 border border-black inline-block"></span>
+                            <span class="text-xs font-bold text-black ml-2">live-traffic.log</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-[#ffdf6d] border border-black px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
+                            <span>LIVE</span>
+                        </div>
                     </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-3xl font-black text-white tracking-tight font-mono">&lt; 45ms</span>
-                        <span class="text-xs text-slate-400 font-mono">Latency</span>
+
+                    <!-- Container Items Log (Diupdate lewat JavaScript secara Real-Time) -->
+                    <div id="trafficLogContainer" class="space-y-2.5">
+                        <!-- Log items dimuat secara otomatis -->
                     </div>
-                    <p class="text-xs text-slate-500 font-mono mt-2">Render canvas &amp; video asinkron cepat</p>
                 </div>
+                <!-- ================= END WIDGET TRAFFIC LOG ================= -->
 
                 <!-- Stat 3: Core Engine -->
                 <div class="glass-card p-5 rounded-2xl relative overflow-hidden border border-white/5 hover:border-cyan-500/30 transition">
@@ -181,11 +190,9 @@
 
             </div>
         </div>
-        <!-- ================= END SECTION ================= -->
 
         <!-- Section: Keunggulan Fitur // 01, // 02, // 03 -->
         <div class="w-full space-y-3">
-            
             <div class="glass-card p-5 rounded-2xl flex items-start gap-4 hover:border-cyan-500/30 transition-all duration-300">
                 <div class="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 code-font text-xs font-bold shrink-0">
                     // 01
@@ -215,7 +222,6 @@
                     <p class="text-xs text-slate-400 leading-relaxed">Format response JSON yang bersih dan terstruktur rapi memudahkan integrasi kode.</p>
                 </div>
             </div>
-
         </div>
 
     </main>
@@ -225,7 +231,7 @@
         &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
     </footer>
 
-    <!-- Script Pencegah Zoom & Auto Fetch User Status -->
+    <!-- Script Anti-Zoom & Live Traffic Simulator -->
     <script>
         // Memblokir Pinch Zoom / Gesture Zoom pada Layar Sentuh Mobile
         document.addEventListener('gesturestart', function(e) {
@@ -246,8 +252,75 @@
             }
         }, { passive: false });
 
+        // Simulator Real-Time Traffic Log
+        const sampleEndpoints = [
+            "/search/ytplay?q=jadotanomariyadany",
+            "/search/ytplayv2?q=••••_HIDDEN",
+            "/ai/nova?text=Halo",
+            "/downloader/tiktok?url=••••_HIDDEN",
+            "/tools/pastecode?id=x79a0b",
+            "/search/google?q=arulzxd+api",
+            "/ai/gpt4?text=••••_HIDDEN"
+        ];
+
+        function getFormattedTime() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            return `${h}.${m}.${s}`;
+        }
+
+        let logsList = [
+            { method: "GET", status: "200", path: "/search/ytplay?q=jadotanomariyadany", time: "21.02.50" },
+            { method: "GET", status: "200", path: "/search/ytplayv2?q=••••_HIDDEN", time: "21.03.05" },
+            { method: "GET", status: "200", path: "/search/ytplayv2?q=jadotanomariyadany", time: "21.02.45" },
+            { method: "GET", status: "200", path: "/search/ytplay?q=••••_HIDDEN", time: "21.03.53" },
+            { method: "GET", status: "200", path: "/search/ytplayv2?q=••••_HIDDEN", time: "21.03.53" }
+        ];
+
+        function renderTrafficLog() {
+            const container = document.getElementById("trafficLogContainer");
+            if (!container) return;
+
+            container.innerHTML = logsList.map(log => `
+                <div class="bg-[#fffeec] border-2 border-black rounded-xl p-2.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="bg-[#a8f0b0] text-black font-extrabold px-2 py-0.5 rounded-md border border-black text-[10px]">
+                                [${log.status}]
+                            </span>
+                            <span class="bg-[#ffdf6d] text-black font-extrabold px-2 py-0.5 rounded-md border border-black text-[10px]">
+                                ${log.method}
+                            </span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 font-bold">${log.time}</span>
+                    </div>
+                    <div class="text-xs text-black font-bold truncate">
+                        ${log.path}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function pushNewTrafficLog() {
+            const randomPath = sampleEndpoints[Math.floor(Math.random() * sampleEndpoints.length)];
+            const newLog = {
+                method: "GET",
+                status: "200",
+                path: randomPath,
+                time: getFormattedTime()
+            };
+            logsList.unshift(newLog);
+            if (logsList.length > 5) logsList.pop();
+            renderTrafficLog();
+        }
+
         // Cek Status Login Pengguna
         document.addEventListener('DOMContentLoaded', () => {
+            renderTrafficLog();
+            setInterval(pushNewTrafficLog, 3500); // Otomatis menambah log baru tiap 3.5 detik
+
             fetch('/api/user-status')
                 .then(res => res.json())
                 .then(data => {
