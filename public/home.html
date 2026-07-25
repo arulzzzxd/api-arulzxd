@@ -228,121 +228,83 @@
     </footer>
 
     <script>
-        // Memblokir Pinch Zoom / Gesture Zoom
-        document.addEventListener('gesturestart', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
-        });
-        document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+    // Memblokir Touch Gesture Zoom & Keyboard Zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+    });
+    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-        let availableEndpoints = [];
-        let trafficLogs = [];
+    let trafficLogs = [];
 
-        function getFormattedTime() {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            return `${h}.${m}.${s}`;
+    function renderTrafficLogs() {
+        const container = document.getElementById("trafficLogContainer");
+        if (!container) return;
+
+        if (trafficLogs.length === 0) {
+            container.innerHTML = `
+                <div class="text-slate-500 text-xs font-mono py-4 text-center animate-pulse">
+                    Menunggu trafik request API masuk...
+                </div>`;
+            return;
         }
 
-        function renderTrafficLogs() {
-            const container = document.getElementById("trafficLogContainer");
-            if (!container) return;
-
-            container.innerHTML = trafficLogs.map(log => `
-                <div class="bg-slate-900/70 border border-white/10 rounded-xl p-2.5 hover:border-cyan-500/40 transition-all flex flex-col gap-1.5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1.5">
-                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
-                                [${log.status}]
-                            </span>
-                            <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
-                                ${log.method}
-                            </span>
-                        </div>
-                        <span class="text-[10px] text-slate-400 font-mono">${log.time}</span>
+        container.innerHTML = trafficLogs.map(log => `
+            <div class="bg-slate-900/70 border border-white/10 rounded-xl p-2.5 hover:border-cyan-500/40 transition-all flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="${log.status < 400 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'} border font-bold px-2 py-0.5 rounded text-[10px]">
+                            [${log.status}]
+                        </span>
+                        <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
+                            ${log.method}
+                        </span>
                     </div>
-                    <div class="text-xs text-slate-200 font-mono truncate">
-                        ${log.path}
-                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono">${log.time}</span>
                 </div>
-            `).join('');
-        }
+                <div class="text-xs text-slate-200 font-mono truncate">
+                    ${log.path}
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function pushNewEndpointLog() {
-            if (!availableEndpoints.length) return;
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTrafficLogs();
 
-            // Memilih endpoint acak dari daftar /api/${category}/${file}
-            const randomEp = availableEndpoints[Math.floor(Math.random() * availableEndpoints.length)];
+        // MENGHUBUNGKAN LANGSUNG KE REAL-TIME STREAM SERVER (SSE)
+        const eventSource = new EventSource('/api/live-traffic');
+
+        eventSource.onmessage = (event) => {
+            const newLog = JSON.parse(event.data);
             
-            // Menyusun query parameter simulasi opsional
-            let fullPath = randomEp.path;
-            if (randomEp.params && Object.keys(randomEp.params).length > 0) {
-                const keys = Object.keys(randomEp.params);
-                const sampleParam = keys[0] === 'apikey' && keys[1] ? keys[1] : keys[0];
-                if (sampleParam && sampleParam !== 'apikey') {
-                    fullPath += `?${sampleParam}=••••_HIDDEN`;
-                }
-            }
+            // Masukkan log baru dari server ke urutan paling atas
+            trafficLogs.unshift(newLog);
+            if (trafficLogs.length > 5) trafficLogs.pop(); // Batasi tampilan 5 log terakhir
 
-            const method = (randomEp.methods && randomEp.methods[0]) ? randomEp.methods[0] : 'GET';
-
-            trafficLogs.unshift({
-                status: "200",
-                method: method,
-                path: fullPath,
-                time: getFormattedTime()
-            });
-
-            if (trafficLogs.length > 5) trafficLogs.pop();
             renderTrafficLogs();
-        }
+        };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fetch daftar /api/${category}/${file} asli dari router backend
-            fetch('/api/apilist')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.categories) {
-                        data.categories.forEach(cat => {
-                            cat.items.forEach(item => {
-                                // Hanya mengambil path berformat /api/...
-                                if (item.path && item.path.startsWith('/api/')) {
-                                    availableEndpoints.push(item);
-                                }
-                            });
-                        });
-                    }
+        eventSource.onerror = () => {
+            console.warn("Koneksi live traffic terputus, mencoba menghubungkan kembali...");
+        };
 
-                    // Tambahkan log awal jika endpoint berhasil dimuat
-                    if (availableEndpoints.length) {
-                        for (let i = 0; i < 4; i++) {
-                            pushNewEndpointLog();
-                        }
-                    }
-                    
-                    // Update log endpoint setiap 3 detik secara berkala
-                    setInterval(pushNewEndpointLog, 3000);
-                })
-                .catch(err => console.error("Gagal memuat list endpoint:", err));
-
-            // Fetch Status User Login
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        const container = document.getElementById('authNavContainer');
-                        container.innerHTML = `
-                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
-                                <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
-                                <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
-                            </a>
-                        `;
-                    }
-                })
-                .catch(err => console.error("Gagal memuat status user:", err));
-        });
-    </script>
+        // Fetch Status User Login
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('authNavContainer');
+                    container.innerHTML = `
+                        <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
+                            <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
+                            <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
+                        </a>
+                    `;
+                }
+            })
+            .catch(err => console.error("Gagal memuat status user:", err));
+    });
+</script>
 </body>
 </html>
