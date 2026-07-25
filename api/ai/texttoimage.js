@@ -34,7 +34,7 @@ async function generateImage(prompt) {
 
 router.get("/", async (req, res) => {
   try {
-    const text = req.query.text || req.query.prompt;
+    const text = req.query.prompt;
 
     if (!text) {
       return res.status(400).json({
