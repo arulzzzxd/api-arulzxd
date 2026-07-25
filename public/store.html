@@ -399,7 +399,7 @@
                 return `
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group">
                         <div class="relative bg-cyberDark pt-[100%] overflow-hidden flex-shrink-0">
-                            <img src="${produk.gambar || 'https://api-arulzxd.web.id/files/X1F0Cn.png'}" 
+                            <img src="${produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" 
                                  alt="${produk.nama}" 
                                  class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300 opacity-90 group-hover:opacity-100 ${isOutOfStock ? 'grayscale brightness-50' : ''}"
                                  loading="lazy">
@@ -486,7 +486,7 @@
             document.getElementById('modalProductName').innerText = SELECTED_PRODUCT.nama;
             document.getElementById('modalProductPrice').innerText = formatRupiah(hargaFinal);
             document.getElementById('modalProductSold').innerText = formatTerjual(SELECTED_PRODUCT.terjual);
-            document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://api-arulzxd.web.id/files/X1F0Cn.png';
+            document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
