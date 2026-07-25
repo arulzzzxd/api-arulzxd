@@ -3,15 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Mencegah user zoom pada layar HP / touch screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arulz-XD API - Powerful & Fast REST API Services</title>
     <!-- Tailwind CSS & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Space_Grotesk', sans-serif;
+        /* Mencegah scroll dan interaksi zoom */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden !important;
+            touch-action: none; /* Mencegah gesture pinch-to-zoom */
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .code-font {
             font-family: 'JetBrains Mono', monospace;
@@ -36,19 +44,22 @@
         }
     </style>
 </head>
-<body class="bg-[#030712] text-slate-100 min-h-screen relative overflow-x-hidden bg-dots flex flex-col justify-between">
+<body class="bg-[#030712] text-slate-100 h-screen w-screen relative overflow-hidden bg-dots flex flex-col justify-between select-none">
 
     <!-- Efek Cahaya Latar Belakang Digital -->
     <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vh] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none glow-effect"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none glow-effect" style="animation-delay: -4s;"></div>
 
     <!-- Navbar Utama -->
-    <nav class="w-full max-w-6xl mx-auto px-6 py-5 flex items-center justify-between relative z-10">
+    <nav class="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between relative z-10 flex-shrink-0">
         <div class="flex items-center gap-2">
             <span class="text-xl font-bold tracking-wider text-white">
                 Arulz<span class="text-cyan-400">-XD</span> <span class="text-xs bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 ml-1 code-font">API</span>
             </span>
         </div>
+        
+        <!-- Container Tombol Auth Dynamic -->
+        <div id="authNavContainer">
             <a href="/login" class="text-xs font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2 rounded-xl transition-all active:scale-95">
                 Login
             </a>
@@ -56,17 +67,17 @@
     </nav>
 
     <!-- Konten Utama / Hero Section -->
-    <main class="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+    <main class="flex-1 flex items-center justify-center px-4 py-4 relative z-10 overflow-hidden">
         <div class="max-w-3xl w-full text-center">
             
             <!-- Badge Status -->
-            <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-6 animate-pulse">
+            <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4 animate-pulse">
                 <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                 Sistem Siap Digunakan
             </div>
 
             <!-- Judul Utama -->
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
                 Bangun Aplikasi Lebih Cepat Dengan <br class="hidden md:inline">
                 <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                     REST API Berkualitas Tinggi
@@ -74,33 +85,33 @@
             </h1>
 
             <!-- Deskripsi -->
-            <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto mb-10 leading-relaxed font-medium">
+            <p class="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto mb-8 leading-relaxed font-medium">
                 Nikmati akses ke berbagai macam fitur endpoint yang andal, cepat, dan selalu diperbarui secara berkala untuk mendukung kreativitas pengembangan projek Anda.
             </p>
 
             <!-- Aksi Utama -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-16">
-                <a href="/doc" class="w-full sm:w-auto flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-black py-3.5 px-8 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.25)] text-center">
+            <div class="flex flex-row items-center justify-center gap-3 max-w-md mx-auto mb-8">
+                <a href="/doc" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-black py-3 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.25)] text-center">
                     Buka Dokumentasi
                 </a>
-                <a href="/status" class="w-full sm:w-auto flex-1 bg-slate-900/60 hover:bg-slate-800/60 text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
+                <a href="/status" class="flex-1 bg-slate-900/60 hover:bg-slate-800/60 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
                     Status
                 </a>
             </div>
 
             <!-- Grid Keunggulan Kecil -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
-                <div class="glass-card p-5 rounded-2xl">
-                    <div class="text-cyan-400 font-bold text-sm mb-1 uppercase tracking-wide code-font">// STABIL & CEPAT</div>
-                    <p class="text-xs text-slate-400 leading-relaxed">Infrastruktur server dioptimasi penuh demi menghasilkan respon data yang instan.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto text-left">
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="text-cyan-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// STABIL & CEPAT</div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Infrastruktur server dioptimasi penuh demi menghasilkan respon data yang instan.</p>
                 </div>
-                <div class="glass-card p-5 rounded-2xl">
-                    <div class="text-purple-400 font-bold text-sm mb-1 uppercase tracking-wide code-font">// BANYAK FITUR</div>
-                    <p class="text-xs text-slate-400 leading-relaxed">Beragam kategori fungsional lengkap yang siap pakai untuk berbagai kebutuhan bot atau web.</p>
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="text-purple-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// BANYAK FITUR</div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Beragam kategori fungsional lengkap yang siap pakai untuk berbagai kebutuhan bot atau web.</p>
                 </div>
-                <div class="glass-card p-5 rounded-2xl">
-                    <div class="text-emerald-400 font-bold text-sm mb-1 uppercase tracking-wide code-font">// KEMUDAHAN INTEGRASI</div>
-                    <p class="text-xs text-slate-400 leading-relaxed">Format response JSON yang bersih dan terstruktur rapi memudahkan integrasi kode.</p>
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="text-emerald-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// KEMUDAHAN INTEGRASI</div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">Format response JSON yang bersih dan terstruktur rapi memudahkan integrasi kode.</p>
                 </div>
             </div>
 
@@ -108,9 +119,46 @@
     </main>
 
     <!-- Footer Halaman Utama -->
-    <footer class="w-full max-w-5xl mx-auto px-6 py-6 border-t border-white/5 text-center text-xs text-slate-500 relative z-10 font-medium">
+    <footer class="w-full max-w-5xl mx-auto px-6 py-4 border-t border-white/5 text-center text-[11px] text-slate-500 relative z-10 font-medium flex-shrink-0">
         &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
     </footer>
 
+    <!-- Script Pengunci Zoom & Pengecek Status User Login -->
+    <script>
+        // Mencegah Zoom dengan tombol CTRL + Scroll atau Pinch Touch pada Desktop/Mobile
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // Cek Status Login saat Halaman Dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn) {
+                        const container = document.getElementById('authNavContainer');
+                        container.innerHTML = `
+                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/80 hover:bg-slate-800 text-white border border-cyan-500/30 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
+                                <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/50" alt="Avatar">
+                                <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
+                            </a>
+                        `;
+                    }
+                })
+                .catch(err => console.error("Gagal memuat status user:", err));
+        });
+    </script>
 </body>
 </html>
