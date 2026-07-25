@@ -134,26 +134,26 @@
                     <p class="text-xs text-slate-500 font-mono mt-2">Gateway server aktif penuh asinkron</p>
                 </div>
 
-                <!-- ================= WIDGET TRAFFIC LOG REAL-TIME ================= -->
-                <div class="rounded-2xl border-2 border-black bg-[#fffef0] text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden font-mono p-3 sm:p-4">
+                <!-- ================= WIDGET TRAFFIC LOG REAL-TIME (CYBER DARK STYLE) ================= -->
+                <div class="glass-card rounded-2xl border border-cyan-500/20 bg-slate-950/80 overflow-hidden font-mono p-3 sm:p-4 shadow-[0_0_20px_rgba(6,182,212,0.1)]">
                     
                     <!-- Header Terminal -->
-                    <div class="flex items-center justify-between bg-[#a8f0b0] border-2 border-black rounded-xl p-2 mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-3 h-3 rounded-full bg-red-400 border border-black inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-yellow-400 border border-black inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-green-400 border border-black inline-block"></span>
-                            <span class="text-xs font-bold text-black ml-2">live-traffic.log</span>
+                    <div class="flex items-center justify-between bg-slate-900/90 border border-cyan-500/30 rounded-xl p-2.5 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block border border-red-400/30"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block border border-amber-400/30"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block border border-emerald-400/30"></span>
+                            <span class="text-xs font-bold text-cyan-400 ml-1 tracking-wider">live-traffic.log</span>
                         </div>
-                        <div class="flex items-center gap-1 bg-[#ffdf6d] border border-black px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
-                            <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
-                            <span>LIVE</span>
+                        <div class="flex items-center gap-1.5 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                            <span>LIVE LOGS</span>
                         </div>
                     </div>
 
-                    <!-- Container Items Log (Diupdate lewat JavaScript secara Real-Time) -->
-                    <div id="trafficLogContainer" class="space-y-2.5">
-                        <!-- Log items dimuat secara otomatis -->
+                    <!-- Container Items Log Realtime User -->
+                    <div id="trafficLogContainer" class="space-y-2">
+                        <!-- Log items di-render dinamis -->
                     </div>
                 </div>
                 <!-- ================= END WIDGET TRAFFIC LOG ================= -->
@@ -231,14 +231,14 @@
         &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
     </footer>
 
-    <!-- Script Anti-Zoom & Live Traffic Simulator -->
+    <!-- Script Anti-Zoom & Live Traffic Sync -->
     <script>
         // Memblokir Pinch Zoom / Gesture Zoom pada Layar Sentuh Mobile
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
 
-        // Memblokir Zoom via Pintasan Keyboard (Ctrl +, Ctrl -, Ctrl 0)
+        // Memblokir Zoom via Pintasan Keyboard
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
                 e.preventDefault();
@@ -252,16 +252,7 @@
             }
         }, { passive: false });
 
-        // Simulator Real-Time Traffic Log
-        const sampleEndpoints = [
-            "/search/ytplay?q=jadotanomariyadany",
-            "/search/ytplayv2?q=••••_HIDDEN",
-            "/ai/nova?text=Halo",
-            "/downloader/tiktok?url=••••_HIDDEN",
-            "/tools/pastecode?id=x79a0b",
-            "/search/google?q=arulzxd+api",
-            "/ai/gpt4?text=••••_HIDDEN"
-        ];
+        let currentUser = { username: "Guest" };
 
         function getFormattedTime() {
             const now = new Date();
@@ -271,60 +262,82 @@
             return `${h}.${m}.${s}`;
         }
 
-        let logsList = [
-            { method: "GET", status: "200", path: "/search/ytplay?q=jadotanomariyadany", time: "21.02.50" },
-            { method: "GET", status: "200", path: "/search/ytplayv2?q=••••_HIDDEN", time: "21.03.05" },
-            { method: "GET", status: "200", path: "/search/ytplayv2?q=jadotanomariyadany", time: "21.02.45" },
-            { method: "GET", status: "200", path: "/search/ytplay?q=••••_HIDDEN", time: "21.03.53" },
-            { method: "GET", status: "200", path: "/search/ytplayv2?q=••••_HIDDEN", time: "21.03.53" }
+        // Contoh daftar endpoint API publik untuk simulasi lalu lintas
+        const sampleEndpoints = [
+            "/search/ytplay?q=jadotanomariyadany",
+            "/search/ytplayv2?q=••••_HIDDEN",
+            "/ai/nova?text=Halo",
+            "/downloader/tiktok?url=••••_HIDDEN",
+            "/tools/pastecode?id=x79a0b",
+            "/search/google?q=arulzxd+api"
         ];
 
-        function renderTrafficLog() {
+        let trafficLogs = [];
+
+        function renderTrafficLogs() {
             const container = document.getElementById("trafficLogContainer");
             if (!container) return;
 
-            container.innerHTML = logsList.map(log => `
-                <div class="bg-[#fffeec] border-2 border-black rounded-xl p-2.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
-                    <div class="flex items-center justify-between mb-1">
+            container.innerHTML = trafficLogs.map(log => `
+                <div class="bg-slate-900/70 border border-white/10 rounded-xl p-2.5 hover:border-cyan-500/40 transition-all flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
-                            <span class="bg-[#a8f0b0] text-black font-extrabold px-2 py-0.5 rounded-md border border-black text-[10px]">
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
                                 [${log.status}]
                             </span>
-                            <span class="bg-[#ffdf6d] text-black font-extrabold px-2 py-0.5 rounded-md border border-black text-[10px]">
+                            <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
                                 ${log.method}
                             </span>
+                            <span class="bg-purple-500/10 text-purple-300 border border-purple-500/20 px-2 py-0.5 rounded text-[10px] font-bold">
+                                @${log.user}
+                            </span>
                         </div>
-                        <span class="text-[10px] text-gray-600 font-bold">${log.time}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">${log.time}</span>
                     </div>
-                    <div class="text-xs text-black font-bold truncate">
+                    <div class="text-xs text-slate-200 font-mono truncate">
                         ${log.path}
                     </div>
                 </div>
             `).join('');
         }
 
-        function pushNewTrafficLog() {
-            const randomPath = sampleEndpoints[Math.floor(Math.random() * sampleEndpoints.length)];
-            const newLog = {
-                method: "GET",
+        function addTrafficLog(user, path) {
+            trafficLogs.unshift({
                 status: "200",
-                path: randomPath,
+                method: "GET",
+                user: user,
+                path: path,
                 time: getFormattedTime()
-            };
-            logsList.unshift(newLog);
-            if (logsList.length > 5) logsList.pop();
-            renderTrafficLog();
+            });
+            if (trafficLogs.length > 5) trafficLogs.pop();
+            renderTrafficLogs();
         }
 
-        // Cek Status Login Pengguna
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTrafficLog();
-            setInterval(pushNewTrafficLog, 3500); // Otomatis menambah log baru tiap 3.5 detik
+        // Generator Request Realtime Dinamis Sesuai User Aktif
+        function startLiveTrafficStream() {
+            // Initial Seed Logs
+            trafficLogs = [
+                { status: "200", method: "GET", user: currentUser.username, path: "/search/ytplay?q=jadotanomariyadany", time: getFormattedTime() },
+                { status: "200", method: "GET", user: "system_bot", path: "/search/ytplayv2?q=••••_HIDDEN", time: getFormattedTime() },
+                { status: "200", method: "GET", user: currentUser.username, path: "/ai/nova?text=Halo", time: getFormattedTime() }
+            ];
+            renderTrafficLogs();
 
+            // Mensimulasikan log masuk secara berkelanjutan
+            setInterval(() => {
+                const randomUser = Math.random() > 0.4 ? currentUser.username : "user_" + Math.floor(Math.random() * 899 + 100);
+                const randomPath = sampleEndpoints[Math.floor(Math.random() * sampleEndpoints.length)];
+                addTrafficLog(randomUser, randomPath);
+            }, 3000);
+        }
+
+        // Cek Status Login Pengguna & Synchronize Dashboard
+        document.addEventListener('DOMContentLoaded', () => {
             fetch('/api/user-status')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.loggedIn) {
+                    if (data.loggedIn && data.user) {
+                        currentUser.username = data.user.username;
                         const container = document.getElementById('authNavContainer');
                         container.innerHTML = `
                             <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
@@ -333,8 +346,12 @@
                             </a>
                         `;
                     }
+                    startLiveTrafficStream();
                 })
-                .catch(err => console.error("Gagal memuat status user:", err));
+                .catch(err => {
+                    console.error("Gagal memuat status user:", err);
+                    startLiveTrafficStream();
+                });
         });
     </script>
 </body>
