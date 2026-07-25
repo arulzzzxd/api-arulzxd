@@ -849,18 +849,18 @@ function getApiKeyType(userKey, user = null) {
 app.get('/api/user-limit', (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    if (!userKey && req.cookies && req.cookies.token) {
-        try {
-            const decoded = jwt.verify(req.cookies.token, JWT_SECRET);
-            if (decoded && decoded.apiKey) userKey = decoded.apiKey;
-        } catch (err) {}
+    // PERBAIKAN 1: Ambil userKey langsung dari req.user jika parameter kosong
+    // Menggunakan req.user yang sudah divalidasi oleh middleware checkAuthSession
+    if (!userKey && req.user && req.user.apiKey) {
+        userKey = req.user.apiKey;
     }
 
     if (!userKey) {
         return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
     }
 
-    const keyType = getApiKeyType(userKey);
+    // PERBAIKAN 2: Teruskan 'req.user' ke getApiKeyType agar validasi kepemilikan VIP berhasil
+    const keyType = getApiKeyType(userKey, req.user);
     const maxLimit = getUserMaxLimit(keyType);
 
     if (USER_LIMIT_TRACKER[userKey] === undefined) {
@@ -868,7 +868,7 @@ app.get('/api/user-limit', (req, res) => {
     }
 
     res.json({
-        loggedIn: true,
+        loggedIn: !!req.user,
         limitUsed: USER_LIMIT_TRACKER[userKey],
         maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit,
         type: keyType
