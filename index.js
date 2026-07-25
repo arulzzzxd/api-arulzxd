@@ -1,8 +1,6 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
-const mongoose = require('mongoose');
-const MongoStore = require('connect-mongo')(session);
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -18,6 +16,7 @@ const compression = require('compression');
 const os = require('os');
 
 // === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
+const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
@@ -28,7 +27,6 @@ app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
-app.use(fileUpload());
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
@@ -43,11 +41,6 @@ app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
-    store: new MongoStore({
-        url: MONGODB_URI,       // Changed from 'mongoUrl'
-        collection: 'sessions', // Changed from 'collectionName'
-        ttl: 24 * 60 * 60 
-    }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
@@ -1088,8 +1081,6 @@ app.get('/files/*', async (req, res) => {
   if (!requestedPath) return res.status(400).send('Missing file path');
 
   const gitPath = requestedPath.startsWith('uploads/') ? requestedPath : `uploads/${requestedPath}`;
-
-  // Lakukan perulangan pada repoList secara acak untuk mencari file yang cocok
   const shuffledRepos = [...repoList].sort(() => Math.random() - 0.5);
 
   for (const targetRepo of shuffledRepos) {
@@ -1117,7 +1108,7 @@ app.get('/files/*', async (req, res) => {
   return res.status(404).send('File tidak ditemukan di seluruh GitHub Repository');
 });
 
-app.post('/uploadfile', async (req, res) => {
+app.post('/uploadfile', localFileUploader, async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send('Tidak ada file yang diunggah.');
   }
@@ -1132,7 +1123,6 @@ app.post('/uploadfile', async (req, res) => {
   let gitPath = `uploads/${fileName}`;
   let base64Content = Buffer.from(uploadedFile.data).toString('base64');
 
-  // PILIH REPO SECARA RANDOM SETIAP KALI UNGGAH
   const selectedRepo = getRandomRepo(); 
 
   try {
@@ -1151,6 +1141,8 @@ app.post('/uploadfile', async (req, res) => {
     const baseWebUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
     const rawUrl = `${baseWebUrl}/files/${fileName}`;
 
+    // OPTIMASI FRONTEND: Menghapus backdrop-filter blur, radial-gradient, animasi checkmark draw, 
+    // dan scaleIn yang berlebihan untuk menjaga kenyamanan device berspesifikasi rendah.
     res.send(`
       <!DOCTYPE html>
       <html lang="id" class="dark">
@@ -1178,15 +1170,10 @@ app.post('/uploadfile', async (req, res) => {
               body { 
                   background-color: #0b0f19; 
                   color: #f3f4f6;
-                  background-image: 
-                      radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
-                      radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
               }
-              .glass-card {
-                  background: rgba(17, 24, 39, 0.65);
-                  backdrop-filter: blur(16px);
+              .solid-card {
+                  background: #111827;
                   border: 1px solid rgba(255, 255, 255, 0.07);
-                  animation: cardFadeIn 0.5s ease-out forwards;
               }
               .url-box {
                   background: rgba(0, 0, 0, 0.25);
@@ -1195,33 +1182,15 @@ app.post('/uploadfile', async (req, res) => {
               .checkmark-circle {
                   background: rgba(16, 185, 129, 0.06);
                   border: 1px solid rgba(16, 185, 129, 0.2);
-                  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-              }
-              .checkmark-path {
-                  stroke-dasharray: 100;
-                  stroke-dashoffset: 100;
-                  animation: drawCheck 0.6s ease-in-out 0.3s forwards;
-              }
-              @keyframes cardFadeIn {
-                  from { opacity: 0; transform: translateY(12px); }
-                  to { opacity: 1; transform: translateY(0); }
-              }
-              @keyframes scaleIn {
-                  from { transform: scale(0); opacity: 0; }
-                  to { transform: scale(1); opacity: 1; }
-              }
-              @keyframes drawCheck {
-                  from { stroke-dashoffset: 100; }
-                  to { stroke-dashoffset: 0; }
               }
           </style>
       </head>
       <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
-          <div class="glass-card p-7 rounded-2xl shadow-2xl w-full max-w-md text-center">
+          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
               <div class="mb-5 flex justify-center">
                   <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-400">
                       <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
-                          <path class="checkmark-path" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                       </svg>
                   </div>
               </div>
@@ -1234,7 +1203,7 @@ app.post('/uploadfile', async (req, res) => {
                   <button onclick="copyToClipboard()" class="flex-1 bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5">
                       Salin URL
                   </button>
-                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md shadow-cyan-950/30 transition duration-200 block text-center">
+                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 block text-center">
                       Kembali
                   </a>
               </div>
