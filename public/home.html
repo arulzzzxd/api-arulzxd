@@ -13,8 +13,8 @@
     <style>
         /* Penguncian total scroll & zoom */
         html, body {
-            height: 100%;
-            width: 100%;
+            height: 100vh;
+            width: 100vw;
             overflow: hidden !important;
             touch-action: none;
             font-family: 'Space Grotesk', sans-serif;
@@ -26,100 +26,103 @@
         }
         .bg-dots {
             background-color: #030712;
-            background-image: radial-gradient(rgba(6, 182, 212, 0.15) 1.2px, transparent 1.2px);
-            background-size: 20px 20px;
+            background-image: radial-gradient(rgba(6, 182, 212, 0.15) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
         }
         .glass-card {
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         @keyframes pulse-glow {
-            0%, 100% { opacity: 0.25; transform: scale(1); }
-            50% { opacity: 0.45; transform: scale(1.08); }
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.05); }
         }
         .glow-effect {
-            animation: pulse-glow 6s infinite ease-in-out;
+            animation: pulse-glow 8s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="bg-[#030712] text-slate-100 h-full w-full relative overflow-hidden bg-dots flex flex-col justify-between p-4 sm:p-6 antialiased">
+<body class="bg-[#030712] text-slate-100 h-screen w-screen relative overflow-hidden bg-dots flex flex-col justify-between p-5 sm:p-8 antialiased">
 
     <!-- Efek Cahaya Latar Belakang -->
-    <div class="absolute top-[-10%] left-[-10%] w-[60vw] h-[40vh] bg-cyan-500/15 rounded-full blur-[100px] pointer-events-none glow-effect"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[40vh] bg-purple-500/15 rounded-full blur-[100px] pointer-events-none glow-effect" style="animation-delay: -3s;"></div>
+    <div class="absolute top-[-10%] left-[-10%] w-[60vw] h-[45vh] bg-cyan-500/15 rounded-full blur-[100px] pointer-events-none glow-effect"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[45vh] bg-purple-500/15 rounded-full blur-[100px] pointer-events-none glow-effect" style="animation-delay: -4s;"></div>
 
     <!-- Header / Navbar Utama -->
-    <header class="w-full max-w-5xl mx-auto flex items-center justify-between relative z-10 flex-shrink-0">
+    <header class="w-full max-w-4xl mx-auto flex items-center justify-between relative z-10 flex-shrink-0">
         <div class="flex items-center gap-2">
-            <span class="text-lg font-bold tracking-wider text-white">
+            <span class="text-xl font-bold tracking-wider text-white">
                 Arulz<span class="text-cyan-400">-XD</span> 
-                <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 ml-1 code-font">API</span>
+                <span class="text-xs bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 ml-1 code-font">API</span>
             </span>
         </div>
         
         <!-- Container Tombol Login / Profil Dynamic -->
         <div id="authNavContainer">
-            <a href="/login" class="text-[11px] font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white border border-white/10 px-3.5 py-1.5 rounded-xl transition-all active:scale-95">
+            <a href="/login" class="text-xs font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2 rounded-xl transition-all active:scale-95">
                 Login
             </a>
         </div>
     </header>
 
-    <!-- Konten Utama (Centered Fit) -->
-    <main class="flex-1 flex flex-col items-center justify-center relative z-10 max-w-2xl mx-auto w-full my-auto py-2">
+    <!-- Konten Utama (Disusun Proporsional Mengisi Seluruh Ruang) -->
+    <main class="flex-1 flex flex-col justify-evenly items-center relative z-10 max-w-xl mx-auto w-full my-auto py-2">
         
-        <!-- Badge Status -->
-        <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3 animate-pulse">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            Sistem Siap Digunakan
+        <!-- Bagian Hero / Judul -->
+        <div class="text-center w-full flex flex-col items-center">
+            <!-- Badge Status -->
+            <div class="inline-flex items-center gap-2 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4 animate-pulse">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                Sistem Siap Digunakan
+            </div>
+
+            <!-- Judul Utama -->
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-3">
+                Bangun Aplikasi Lebih Cepat Dengan <br class="hidden sm:inline">
+                <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    REST API Berkualitas Tinggi
+                </span>
+            </h1>
+
+            <!-- Deskripsi Ringkas -->
+            <p class="text-slate-400 text-xs sm:text-sm max-w-md leading-relaxed font-medium">
+                Nikmati akses ke berbagai macam fitur endpoint yang andal, cepat, dan selalu diperbarui untuk mendukung pengembangan projek Anda.
+            </p>
         </div>
 
-        <!-- Judul Utama -->
-        <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white text-center mb-2.5 leading-tight">
-            Bangun Aplikasi Lebih Cepat Dengan <br class="hidden sm:inline">
-            <span class="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                REST API Berkualitas Tinggi
-            </span>
-        </h1>
-
-        <!-- Deskripsi Ringkas -->
-        <p class="text-slate-400 text-xs sm:text-sm text-center max-w-lg mb-5 leading-relaxed font-medium">
-            Akses berbagai fitur endpoint yang andal, cepat, dan selalu diperbarui untuk mendukung pengembangan projek Anda.
-        </p>
-
         <!-- Action Buttons -->
-        <div class="flex items-center justify-center gap-2.5 w-full max-w-xs sm:max-w-md mb-5">
-            <a href="/doc" class="flex-1 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-2.5 px-4 rounded-xl transition-all duration-300 active:scale-95 text-[11px] sm:text-xs tracking-wider uppercase shadow-[0_0_15px_rgba(6,182,212,0.3)] text-center">
-                Dokumentasi
+        <div class="flex items-center justify-center gap-3 w-full max-w-md">
+            <a href="/doc" class="flex-1 bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 font-black py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.25)] text-center">
+                Buka Dokumentasi
             </a>
-            <a href="/status" class="flex-1 bg-slate-900/70 hover:bg-slate-800/80 text-white font-bold py-2.5 px-4 rounded-xl transition-all duration-300 active:scale-95 text-[11px] sm:text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
+            <a href="/status" class="flex-1 bg-slate-900/80 hover:bg-slate-800/80 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-95 text-xs tracking-wider uppercase border border-white/10 text-center backdrop-blur-sm">
                 Status
             </a>
         </div>
 
-        <!-- Grid Cards Keunggulan Fitur (Ukuran Compact & Rapi) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full text-left">
-            <div class="glass-card p-3 rounded-xl border border-white/5">
-                <div class="text-cyan-400 font-bold text-[11px] mb-0.5 uppercase tracking-wide code-font">// STABIL & CEPAT</div>
-                <p class="text-[10px] sm:text-[11px] text-slate-400 leading-snug">Infrastruktur server dioptimasi penuh demi respon instan.</p>
+        <!-- Kartu Keunggulan Fitur (Menyebar Pas dan Rapi) -->
+        <div class="flex flex-col gap-3 w-full">
+            <div class="glass-card p-4 rounded-2xl border border-white/5">
+                <div class="text-cyan-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// STABIL & CEPAT</div>
+                <p class="text-xs text-slate-400 leading-relaxed">Infrastruktur server dioptimasi penuh demi menghasilkan respon data yang instan.</p>
             </div>
-            <div class="glass-card p-3 rounded-xl border border-white/5">
-                <div class="text-purple-400 font-bold text-[11px] mb-0.5 uppercase tracking-wide code-font">// BANYAK FITUR</div>
-                <p class="text-[10px] sm:text-[11px] text-slate-400 leading-snug">Kategori fungsional lengkap siap pakai untuk bot & web.</p>
+            <div class="glass-card p-4 rounded-2xl border border-white/5">
+                <div class="text-purple-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// BANYAK FITUR</div>
+                <p class="text-xs text-slate-400 leading-relaxed">Beragam kategori fungsional lengkap yang siap pakai untuk berbagai kebutuhan bot atau web.</p>
             </div>
-            <div class="glass-card p-3 rounded-xl border border-white/5">
-                <div class="text-emerald-400 font-bold text-[11px] mb-0.5 uppercase tracking-wide code-font">// INTEGRASI MUDAH</div>
-                <p class="text-[10px] sm:text-[11px] text-slate-400 leading-snug">Format response JSON bersih memudahkan integrasi kode.</p>
+            <div class="glass-card p-4 rounded-2xl border border-white/5">
+                <div class="text-emerald-400 font-bold text-xs mb-1 uppercase tracking-wide code-font">// KEMUDAHAN INTEGRASI</div>
+                <p class="text-xs text-slate-400 leading-relaxed">Format response JSON yang bersih dan terstruktur rapi memudahkan integrasi kode.</p>
             </div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="w-full max-w-5xl mx-auto text-center text-[10px] text-slate-500 relative z-10 font-medium flex-shrink-0 pt-2 border-t border-white/5">
-        &copy; 2026 Arulz-XD. All Rights Reserved.
+    <footer class="w-full max-w-4xl mx-auto text-center text-xs text-slate-500 relative z-10 font-medium flex-shrink-0 pt-2 border-t border-white/5">
+        &copy; 2026 Arulz-XD. All Rights Reserved. Powered by High-Performance Core.
     </footer>
 
     <!-- Script Pengunci Zoom & Auto-Fetch User Status -->
@@ -139,9 +142,9 @@
                     if (data.loggedIn) {
                         const container = document.getElementById('authNavContainer');
                         container.innerHTML = `
-                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-2.5 py-1 rounded-xl transition-all active:scale-95 shadow-md">
-                                <img src="${data.user.avatar}" class="w-5 h-5 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
-                                <span class="text-[11px] font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
+                            <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
+                                <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
+                                <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
                             </a>
                         `;
                     }
