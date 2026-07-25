@@ -4,134 +4,28 @@ const axios = require("axios");
 const router = express.Router();
 
 // ==========================================
-// CORE FUNCTIONS
+// CORE FUNCTION
 // ==========================================
 
-const headers = {
-  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
-  'accept': 'application/json, text/plain, */*',
-  'accept-language': 'id,en;q=0.9',
-  'origin': 'https://nanobanana.im',
-  'referer': 'https://nanobanana.im/'
-}
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-function updateCookies(oldCookieHeader, newSetCookies) {
-  if (!newSetCookies) return oldCookieHeader
-  const cookieMap = new Map()
-  
-  if (oldCookieHeader) {
-    oldCookieHeader.split(';').forEach(c => {
-      const parts = c.trim().split('=')
-      if (parts[0]) cookieMap.set(parts[0], parts.slice(1).join('='))
-    })
-  }
-  
-  newSetCookies.forEach(c => {
-    const parts = c.split(';')[0].trim().split('=')
-    if (parts[0]) cookieMap.set(parts[0], parts.slice(1).join('='))
-  })
-  
-  return Array.from(cookieMap.entries()).map(([k, v]) => `${k}=${v}`).join('; ')
-}
-
-async function getMagicLink(email) {
-  let attempts = 0
-  while (attempts < 20) {
-    try {
-      const res = await axios.get(`https://api.tempmail.ing/api/emails/${encodeURIComponent(email)}`, { headers })
-      if (res.data && res.data.success && res.data.emails.length > 0) {
-        const text = res.data.emails[0].text || res.data.emails[0].html || ''
-        const match = text.match(/https:\/\/nanobanana\.im\/api\/auth\/magic-link\/verify\?token=[^\s"']+/)
-        if (match) return match[0]
-      }
-    } catch (e) {
-      // Abaikan error sementara saat menunggu email masuk
-    }
-    attempts++
-    await delay(3000)
-  }
-  throw new Error('Magic link tidak ditemukan / timeout email.')
-}
-
-async function nanobanana(prompt, customToken = "") {
-  const turnstileToken = customToken; 
-
-  // 1. Generate Tempmail
-  const mailRes = await axios.post('https://api.tempmail.ing/api/generate', {}, { headers })
-  if (!mailRes.data || !mailRes.data.success) throw new Error('Gagal generate tempmail.')
-  const email = mailRes.data.email.address
-
-  const session = axios.create({ headers })
-  let cookieHeader = ''
-
-  // 2. Inisialisasi Session & Magic Link
-  const initRes = await session.get('https://nanobanana.im/')
-  cookieHeader = updateCookies(cookieHeader, initRes.headers['set-cookie'])
-
-  const magicRes = await session.post('https://nanobanana.im/api/auth/sign-in/magic-link', {
-    email: email,
-    callbackURL: '/'
-  }, {
-    headers: { 'Cookie': cookieHeader }
-  })
-
-  if (!magicRes.data || !magicRes.data.status) throw new Error('Gagal mengirimkan magic link.')
-
-  // 3. Verifikasi Link Email
-  const link = await getMagicLink(email)
-  const verifyRes = await session.get(link, {
-    headers: { 'Cookie': cookieHeader },
-    maxRedirects: 0,
-    validateStatus: status => status >= 200 && status < 400
-  })
-
-  cookieHeader = updateCookies(cookieHeader, verifyRes.headers['set-cookie'])
-
-  // 4. Submit Task Gambar
-  const taskRes = await session.post('https://nanobanana.im/api/img/nano-banana5', {
-    prompt: prompt,
-    dimension: 'auto',
-    aspect_ratio: 'auto',
-    image_urls: [], 
-    num_images: '1',
-    batchSize: 1,
-    turnstileToken: turnstileToken,
-    skipVerification: false,
-    image_path: 'hero',
-    size: '2K',
-    resolution: '2K',
-    output_format: 'png'
-  }, {
-    headers: { 'Cookie': cookieHeader }
-  })
-
-  if (!taskRes.data || !taskRes.data.taskId) {
-    const errorMsg = taskRes.data?.message || 'Gagal membuat task gambar. Kemungkinan wajib menyertakan Cloudflare Turnstile Token.';
-    throw new Error(errorMsg)
-  }
-  
-  const taskId = taskRes.data.taskId
-
-  // 5. Polling Result dengan batas maksimal 15 kali percobaan (75 detik)
-  let attempts = 0;
-  const maxAttempts = 15;
-
-  while (attempts < maxAttempts) {
-    const checkRes = await session.post('https://nanobanana.im/api/img/nano-banana5/taskResult', { taskId }, {
-      headers: { 'Cookie': cookieHeader }
-    })
-
-    if (checkRes.data && checkRes.data.status === 1) {
-      return checkRes.data.imgAfterSrc
-    }
+async function generateImage(prompt) {
+  try {
+    const targetUrl = `https://v2.api-varhad.my.id/ai/text2image?prompt=${encodeURIComponent(prompt)}`;
     
-    attempts++;
-    await delay(5000);
-  }
+    // Mengambil gambar dalam bentuk arraybuffer
+    const response = await axios.get(targetUrl, {
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
 
-  throw new Error('Proses pembuatan gambar timeout pada server target.');
+    return {
+      buffer: Buffer.from(response.data),
+      contentType: response.headers['content-type'] || 'image/png'
+    };
+  } catch (error) {
+    throw new Error(error.response ? `API Error: ${error.response.status}` : error.message);
+  }
 }
 
 // ==========================================
@@ -140,28 +34,26 @@ async function nanobanana(prompt, customToken = "") {
 
 router.get("/", async (req, res) => {
   try {
-    const text = req.query.text;
-    const token = req.query.token || ""; // Menerima token jika ada
+    const text = req.query.text || req.query.prompt;
 
     if (!text) {
       return res.status(400).json({
         status: false,
-        message: "Masukkan parameter 'text'. Contoh: ?text=anime girl wearing a futuristic cyberpunk outfit"
+        message: "Masukkan parameter 'text' atau 'prompt'. Contoh: ?text=cat"
       });
     }
 
-    const imageUrl = await nanobanana(text, token);
+    const { buffer, contentType } = await generateImage(text);
 
-    return res.json({
-      status: true,
-      creator: "ArulzXD",
-      result: imageUrl
+    // Mengirimkan buffer gambar secara langsung
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Content-Length': buffer.length
     });
 
-  } catch (error) {
-    // Cetak error ke console terminal Express untuk mempermudah debugging
-    console.error("[ERROR NANO BANANA]:", error.response ? error.response.data : error.message);
+    return res.end(buffer);
 
+  } catch (error) {
     return res.status(500).json({
       status: false,
       creator: "ArulzXD",
