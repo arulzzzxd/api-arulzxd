@@ -1485,37 +1485,45 @@ router.get('/apilist', (req, res) => {
   res.json({ categories });
 });
 
-// === REAL-TIME TRAFFIC LOG ENGINE (SSE) ===
-let trafficClients = [];
+// === VERCEL REAL-TIME TRAFFIC LOG STREAM ===
+let vercelLogClients = [];
 
-// Endpoint SSE untuk dikoneksikan ke Frontend
-app.get('/api/live-traffic', (req, res) => {
+// Endpoint SSE untuk dibaca oleh frontend home.html
+app.get('/api/live-traffic-vercel', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    trafficClients.push(res);
+    vercelLogClients.push(res);
 
     req.on('close', () => {
-        trafficClients = trafficClients.filter(client => client !== res);
+        vercelLogClients = vercelLogClients.filter(client => client !== res);
     });
 });
 
-// Middleware penangkap request API asli (/api/category/endpoint)
-app.use('/api/:category/:endpoint', (req, res, next) => {
+// Middleware Global Penangkap Log Vercel Request
+app.use((req, res, next) => {
     res.on('finish', () => {
-        const fullPath = req.originalUrl.split('?')[0]; // Ambil jalur tanpa query sensitif
-        const logData = {
-            method: req.method,
-            status: res.statusCode,
-            path: fullPath,
-            time: new Date().toLocaleTimeString('id-ID', { hour12: false })
-        };
+        const path = req.originalUrl.split('?')[0];
 
-        // Broadcast log real-time ke seluruh client yang membuka home.html
-        trafficClients.forEach(client => {
-            client.write(`data: ${JSON.stringify(logData)}\n\n`);
-        });
+        // FILTER: Hanya ambil yang diawali /api/ dan abaikan /api/user-status / static
+        if (path.startsWith('/api/') && path !== '/api/user-status' && path !== '/api/live-traffic-vercel' && path !== '/api/apilist') {
+            
+            const now = new Date();
+            const timeFormatted = now.toLocaleTimeString('id-ID', { hour12: false }); // Format: 04:21:09
+
+            const logPayload = {
+                status: res.statusCode,
+                method: req.method,
+                path: path,
+                time: timeFormatted
+            };
+
+            // Pancarkan ke widget home.html secara real-time
+            vercelLogClients.forEach(client => {
+                client.write(`data: ${JSON.stringify(logPayload)}\n\n`);
+            });
+        }
     });
     next();
 });
