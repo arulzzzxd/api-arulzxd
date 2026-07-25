@@ -228,32 +228,32 @@
     </footer>
 
     <script>
-    // Memblokir Touch Gesture Zoom & Keyboard Zoom
+    // Memblokir Pinch Zoom / Gesture Zoom
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
     });
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-    let trafficLogs = [];
+    let vercelLogs = [];
 
-    function renderTrafficLogs() {
+    function renderVercelLogs() {
         const container = document.getElementById("trafficLogContainer");
         if (!container) return;
 
-        if (trafficLogs.length === 0) {
+        if (vercelLogs.length === 0) {
             container.innerHTML = `
-                <div class="text-slate-500 text-xs font-mono py-4 text-center animate-pulse">
-                    Menunggu trafik request API masuk...
+                <div class="text-slate-500 text-xs font-mono py-5 text-center animate-pulse">
+                    Menunggu request /api/ masuk dari Vercel...
                 </div>`;
             return;
         }
 
-        container.innerHTML = trafficLogs.map(log => `
+        container.innerHTML = vercelLogs.map(log => `
             <div class="bg-slate-900/70 border border-white/10 rounded-xl p-2.5 hover:border-cyan-500/40 transition-all flex flex-col gap-1.5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
-                        <span class="${log.status < 400 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'} border font-bold px-2 py-0.5 rounded text-[10px]">
+                        <span class="${log.status === 200 || log.status === 304 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'} border font-bold px-2 py-0.5 rounded text-[10px]">
                             [${log.status}]
                         </span>
                         <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold px-2 py-0.5 rounded text-[10px]">
@@ -270,26 +270,26 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        renderTrafficLogs();
+        renderVercelLogs();
 
-        // MENGHUBUNGKAN LANGSUNG KE REAL-TIME STREAM SERVER (SSE)
-        const eventSource = new EventSource('/api/live-traffic');
+        // MENGHUBUNGKAN STREAM LOG REAL-TIME VERCEL
+        const eventSource = new EventSource('/api/live-traffic-vercel');
 
         eventSource.onmessage = (event) => {
-            const newLog = JSON.parse(event.data);
-            
-            // Masukkan log baru dari server ke urutan paling atas
-            trafficLogs.unshift(newLog);
-            if (trafficLogs.length > 5) trafficLogs.pop(); // Batasi tampilan 5 log terakhir
+            const logData = JSON.parse(event.data);
 
-            renderTrafficLogs();
+            // Masukkan log baru dari Vercel ke posisi teratas
+            vercelLogs.unshift(logData);
+            if (vercelLogs.length > 5) vercelLogs.pop(); // Batasi max 5 baris di widget
+
+            renderVercelLogs();
         };
 
         eventSource.onerror = () => {
-            console.warn("Koneksi live traffic terputus, mencoba menghubungkan kembali...");
+            console.warn("Stream Vercel Traffic terputus, mencoba menghubungkan kembali...");
         };
 
-        // Fetch Status User Login
+        // Fetch User Status
         fetch('/api/user-status')
             .then(res => res.json())
             .then(data => {
