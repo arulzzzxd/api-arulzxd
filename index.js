@@ -1189,6 +1189,10 @@ app.get('/uploader', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'uploader.html'));
 });
 
+app.get('/feedback', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'feedback.html'));
+});
+
 app.get('/pastecode', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'pastecode.html'));
 });
@@ -2014,7 +2018,7 @@ app.get('/doc', (req, res) => {
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                Bug Report & Feedback
+                Feedback
             </a>
             
             <a href="/privacy" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
