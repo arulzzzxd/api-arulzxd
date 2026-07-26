@@ -1081,42 +1081,105 @@ app.post('/api/feedback', async (req, res) => {
             }
         });
 
-        // Mapping Tipe Laporan ke Teks & Warna Lencana
+        // Mapping Tipe Laporan
         let kategoriTeks = 'Laporan Bug';
-        let categoryColor = '#ef4444'; // Red for bug
+        let categoryColor = '#ef4444';
         
         switch (type) {
             case 'suggestion':
                 kategoriTeks = 'Saran / Fitur Baru';
-                categoryColor = '#f59e0b'; // Amber
+                categoryColor = '#f59e0b';
                 break;
             case 'question':
                 kategoriTeks = 'Pertanyaan Umum';
-                categoryColor = '#06b6d4'; // Cyan
+                categoryColor = '#06b6d4';
                 break;
             case 'other':
                 kategoriTeks = 'Lainnya';
-                categoryColor = '#8b5cf6'; // Purple
+                categoryColor = '#8b5cf6';
                 break;
             default:
                 kategoriTeks = 'Laporan Bug / Error';
                 categoryColor = '#ef4444';
         }
 
-        const mailOptions = {
+        // ==========================================
+        // 1. EMAIL NOTIFIKASI UNTUK ADMIN
+        // ==========================================
+        const adminMailOptions = {
             from: `"${email}" <supportarulzxd@gmail.com>`, 
             to: 'supportarulzxd@gmail.com', 
             replyTo: email, 
             subject: `[${type.toUpperCase()}] Feedback Baru dari Dashboard API`,
             html: `
-            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6;">
+            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, sans-serif; color: #f3f4f6;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
+                    <tr>
+                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff;">
+                                ARULZ<span style="color: #22d3ee;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b;">v2.0</span>
+                            </h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px;">
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 50px;">
+                                    <span style="color: #22d3ee; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                        ⚡ NEW FEEDBACK TRANSMISSION
+                                    </span>
+                                </div>
+                            </div>
+                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px 0;">
+                                Halo Admin <strong style="color: #ffffff;">ArulzXD</strong>, sistem menerima laporan baru dari pengguna:
+                            </p>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin-bottom: 20px;">
+                                <tr>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #22d3ee; font-family: monospace; text-align: right; font-weight: 600;">${email}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
+                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
+                                        <span style="color: ${categoryColor}; background-color: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">${kategoriTeks}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 10px; font-family: monospace; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">// LOG_MESSAGE_PAYLOAD</div>
+                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
+                            </div>
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;">Balas Email Pengguna</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                            <p style="font-size: 11px; color: #64748b; margin: 0;">© 2026 Api ArulzXD. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            `
+        };
+
+        // ==========================================
+        // 2. EMAIL BALASAN OTOMATIS UNTUK PENGGUNA (USER)
+        // ==========================================
+        const userMailOptions = {
+            from: '"Support ArulzXD" <supportarulzxd@gmail.com>', 
+            to: email, 
+            subject: `[Received] Terima Kasih atas Feedback Anda - API-ARULZXD`,
+            html: `
+            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #f3f4f6;">
                 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
                     
                     <!-- Cyber Banner Header -->
                     <tr>
                         <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
                             <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">
-                                ARULZ<span style="color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">v2.0</span>
+                                ARULZ<span style="color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">API</span>
                             </h1>
                         </td>
                     </tr>
@@ -1125,49 +1188,47 @@ app.post('/api/feedback', async (req, res) => {
                     <tr>
                         <td style="padding: 30px;">
                             
-                            <!-- Status Indicator -->
+                            <!-- Status Confirmation Badge -->
                             <div style="text-align: center; margin-bottom: 25px;">
-                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 50px;">
-                                    <span style="color: #22d3ee; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
-                                        ⚡ NEW FEEDBACK TRANSMISSION
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 50px;">
+                                    <span style="color: #34d399; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                        ✔ TRANSMISSION CONFIRMED
                                     </span>
                                 </div>
                             </div>
 
-                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px 0;">
-                                Halo Admin <strong style="color: #ffffff;">ArulzXD</strong>, sistem berhasil menerima masukan baru dari pengguna dengan rincian berikut:
+                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #ffffff; text-align: center;">
+                                Halo, Agen Developer! 👋
+                            </h2>
+
+                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.7; text-align: center; margin: 0 0 25px 0;">
+                                Terima kasih telah menghubungi kami. Laporan/masukan Anda telah <strong style="color: #22d3ee;">berhasil diterima</strong> oleh server dan telah diteruskan ke tim pengembang kami untuk segera ditinjau.
                             </p>
 
-                            <!-- Metadata Grid -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
-                                <tr>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #22d3ee; font-family: monospace; text-align: right; font-weight: 600;">
-                                        ${email}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
-                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
-                                        <span style="color: ${categoryColor}; background-color: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">
-                                            ${kategoriTeks}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Message Content Box -->
-                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 20px; position: relative;">
-                                <div style="font-size: 10px; font-family: monospace; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">
-                                    // LOG_MESSAGE_PAYLOAD
+                            <!-- Ringkasan Pesan yang Dikirim User -->
+                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 14px; padding: 20px; margin-bottom: 25px;">
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; margin-bottom: 12px; font-size: 12px;">
+                                    <span style="color: #64748b; font-family: monospace;">TIPE TRANSMISI:</span>
+                                    <span style="color: ${categoryColor}; font-weight: 700; font-family: monospace;">${kategoriTeks.toUpperCase()}</span>
                                 </div>
-                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
+                                <div style="font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">// SALINAN_PESAN_ANDA</div>
+                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.6;">${message}</p>
                             </div>
 
-                            <!-- Action Quick Link Button -->
-                            <div style="text-align: center; margin-top: 30px;">
-                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);">
-                                    Balas Email Pengguna
+                            <!-- Info Estimasi Respons -->
+                            <div style="background-color: rgba(6, 182, 212, 0.05); border-left: 3px solid #06b6d4; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 30px;">
+                                <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                                    📌 <strong style="color: #ffffff;">Catatan:</strong> Tim kami biasanya memproses dan membalas masukan dalam kurun waktu <span style="color: #22d3ee;">1x24 jam</span>. Pengguna paket Premium/VIP akan diprioritaskan.
+                                </p>
+                            </div>
+
+                            <!-- Quick Action Buttons -->
+                            <div style="text-align: center;">
+                                <a href="https://arulz-xd.my.id/doc" style="display: inline-block; padding: 12px 24px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                    Lihat Dokumentasi
+                                </a>
+                                <a href="https://arulz-xd.my.id" style="display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);">
+                                    Kembali ke Dashboard
                                 </a>
                             </div>
 
@@ -1177,8 +1238,8 @@ app.post('/api/feedback', async (req, res) => {
                     <!-- Cyber Footer -->
                     <tr>
                         <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                            <p style="font-size: 11px; color: #475569; margin: 0 0 10px 0; font-family: monospace;">
-                                SYSTEM_TIME: ${new Date().toISOString()} | NODE_ENV: PRODUCTION
+                            <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; font-family: monospace;">
+                                EMAIL AUTOMATED RESPONSE | DO NOT REPLY DIRECTLY TO THIS EMAIL
                             </p>
                             <p style="font-size: 11px; color: #64748b; margin: 0;">
                                 © 2026 <a href="https://arulz-xd.my.id" style="color: #22d3ee; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
@@ -1191,15 +1252,19 @@ app.post('/api/feedback', async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        // Kirim email ke admin & email balasan ke pengguna sekaligus
+        await Promise.all([
+            transporter.sendMail(adminMailOptions),
+            transporter.sendMail(userMailOptions)
+        ]);
 
         res.json({ 
             status: true, 
-            message: "Feedback berhasil dikirim ke email admin!" 
+            message: "Feedback berhasil dikirim ke admin & email konfirmasi balasan telah dikirim ke pengguna!" 
         });
 
     } catch (error) {
-        console.error("Gagal mengirim email penerimaan:", error);
+        console.error("Gagal mengirim email feedback:", error);
         res.status(500).json({ 
             status: false, 
             message: "Terjadi kesalahan pada sistem pengiriman email." 
