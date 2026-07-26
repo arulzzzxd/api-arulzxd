@@ -810,15 +810,12 @@ function isVipAuthorized(identifierObj, providedKey) {
     const userEmail = (identifierObj.email || "").toLowerCase().trim();
     const username = (identifierObj.username || "").toLowerCase().trim();
 
-    // Cari key pemilik di VIP_USERS.js
     const exactVipKey = Object.keys(VIP_USERS).find(k => {
         const cleanK = k.toLowerCase().trim();
         return (cleanK && (cleanK === userEmail || cleanK === username));
     });
 
-    if (!exactVipKey) return false; // Identifier tidak ada di VIP_USERS.js
-
-    // Pastikan API Key yang dikirim COCOK dengan API Key milik akun VIP tersebut
+    if (!exactVipKey) return false;
     return VIP_USERS[exactVipKey] === providedKey;
 }
 
@@ -837,7 +834,7 @@ function getApiKeyType(userKey, user = null) {
         if (user && isVipAuthorized(user, userKey)) {
             return 'vip';
         }
-        return 'free'; // Jika dipakai oleh user bukan VIP, turunkan status ke 'free'
+        return 'free'; 
     }
 
     if (userKey.startsWith('arulz-') && userKey.split('-').length >= 3) {
@@ -849,8 +846,6 @@ function getApiKeyType(userKey, user = null) {
 app.get('/api/user-limit', (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    // PERBAIKAN 1: Ambil userKey langsung dari req.user jika parameter kosong
-    // Menggunakan req.user yang sudah divalidasi oleh middleware checkAuthSession
     if (!userKey && req.user && req.user.apiKey) {
         userKey = req.user.apiKey;
     }
@@ -859,7 +854,6 @@ app.get('/api/user-limit', (req, res) => {
         return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
     }
 
-    // PERBAIKAN 2: Teruskan 'req.user' ke getApiKeyType agar validasi kepemilikan VIP berhasil
     const keyType = getApiKeyType(userKey, req.user);
     const maxLimit = getUserMaxLimit(keyType);
 
@@ -875,33 +869,180 @@ app.get('/api/user-limit', (req, res) => {
     });
 });
 
+const getLimitMessage = (keyType, limitCount) => {
+    if (keyType === 'premium') {
+        return `Limit API Key Premium Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket VIP untuk menikmati akses Unlimited tanpa batasan limit!`;
+    }
+    
+    return `Limit API Key Free Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket Premium (1.000 req/hari) atau VIP (Unlimited) untuk melanjutkan!`;
+};
+
+const validateApiKey = async (req, res, next) => {
+    if (req.path === '/apilist') {
+        return next();
+    }
+
+    let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
+
+    // Fallback otomatis ke user yang sedang terautentikasi session web dashboard
+    if (!userKey && req.user && req.user.apiKey) {
+        userKey = req.user.apiKey;
+    }
+
+    if (!userKey) {
+        return res.status(403).json({
+            status: false,
+            creator: "Arulz-XD",
+            message: "API Key mana? masukkan parameter ?apikey=MasukkanApiKey"
+        });
+    }
+
+    const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
+    let callerUser = req.user || null;
+
+    if (!callerUser) {
+        const callerIdentifier = req.query.username || req.body?.username || req.headers['x-username'] || 
+                                 req.query.email || req.body?.email || req.headers['x-email'];
+
+        if (callerIdentifier) {
+            const cleanIdentifier = callerIdentifier.toLowerCase().trim();
+            callerUser = await User.findOne({
+                $or: [{ username: cleanIdentifier }, { email: cleanIdentifier }]
+            });
+        }
+    }
+
+    if (isVipKeyString) {
+        if (!callerUser || !isVipAuthorized(callerUser, userKey)) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Akses Ditolak! API Key VIP ini terproteksi dan TIDAK BISA digunakan oleh pengguna publik."
+            });
+        }
+    }
+
+    if (!callerUser) {
+        try {
+            callerUser = await User.findOne({ apikey: userKey });
+        } catch (dbErr) {
+            console.error("Gagal verifikasi API Key di Database:", dbErr.message);
+            return res.status(500).json({ status: false, message: "Internal server error." });
+        }
+    }
+
+    if (!callerUser) {
+        return res.status(403).json({
+            status: false,
+            creator: "Arulz-XD",
+            message: "API Key salah atau tidak terdaftar!"
+        });
+    }
+
+    req.user = callerUser;
+    req.activeApiKey = userKey;
+
+    let finalRole = (callerUser.role || 'Free User').toLowerCase();
+
+    try {
+        const pathParts = req.path.split('/');
+        const currentCategory = pathParts[1]; 
+        const currentRouteName = pathParts[2];   
+
+        if (currentCategory && currentRouteName) {
+            const routeFilePath = path.join(apiPath, currentCategory, `${currentRouteName}.js`);
+            if (fs.existsSync(routeFilePath)) {
+                const routeModule = require(routeFilePath);
+
+                if (routeModule.status === "error" || routeModule.status === "perbaikan") {
+                    return res.status(503).json({
+                        status: false,
+                        creator: "Arulz-XD",
+                        message: "Fitur ini sedang dalam perbaikan / maintenance!"
+                    });
+                }
+
+                if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
+                    return res.status(403).json({
+                        status: false,
+                        creator: "Arulz-XD",
+                        message: "Endpoint ini khusus pengguna Premium!"
+                    });
+                }
+
+                if (routeModule.type === "vip" && !finalRole.includes("vip")) {
+                    return res.status(403).json({
+                        status: false,
+                        creator: "Arulz-XD",
+                        message: "Endpoint eksklusif ini khusus pengguna VIP!"
+                    });
+                }
+            }
+        }
+
+        next();
+    } catch (e) {
+        console.error("Gagal memvalidasi status/type router:", e.message);
+        return res.status(500).json({ status: false, message: "Internal server error." });
+    }
+};
+
+const trackAndEnforceLimit = (req, res, next) => {
+    if (req.path === '/apilist') return next();
+
+    const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
+    if (!userKey) return next();
+
+    const keyType = getApiKeyType(userKey, req.user);
+    const maxLimit = getUserMaxLimit(keyType);
+
+    if (USER_LIMIT_TRACKER[userKey] === undefined) {
+        USER_LIMIT_TRACKER[userKey] = 0;
+    }
+
+    // Blokir langsung jika limit sudah terlampaui / habis
+    if (keyType !== 'vip' && USER_LIMIT_TRACKER[userKey] >= maxLimit) {
+        return res.status(429).json({
+            status: false,
+            creator: "ArulzXD",
+            message: getLimitMessage(keyType, maxLimit)
+        });
+    }
+
+    // Tambah counter jika limit belum habis
+    if (keyType !== 'vip') {
+        USER_LIMIT_TRACKER[userKey] += 1;
+    }
+
+    next();
+};
+
 const apiKeyLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, 
     keyGenerator: (req) => {
-        return req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip; 
+        return req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip; 
     },
     validate: {
-        keyGeneratorIpFallback: false // Menghilangkan Warning IPv6 di Vercel Logs
+        keyGeneratorIpFallback: false
     },
     skip: (req, res) => {
-        const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
+        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
         return getApiKeyType(userKey, req.user) === 'vip';
     },
     max: (req, res) => {
-        const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
+        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
         if (getApiKeyType(userKey, req.user) === 'premium') return 1000;
         return 100; 
     },
     handler: (req, res) => {
-        const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
+        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
         const keyType = getApiKeyType(userKey, req.user);
-        const userType = keyType === 'premium' ? "Premium" : "Free";
         const limitCount = keyType === 'premium' ? 1000 : 100;
 
         res.status(429).json({
             status: false,
             creator: "ArulzXD",
-            message: `Limit API Key ${userType} Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket VIP untuk Unlimited limit!`
+            message: getLimitMessage(keyType, limitCount)
         });
     },
     standardHeaders: true, 
@@ -1237,121 +1378,6 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
 
-const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist') {
-        return next();
-    }
-
-    const userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
-
-    if (!userKey) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulz-XD",
-            message: "API Key mana? masukkan parameter ?apikey=MasukkanApiKey"
-        });
-    }
-
-    // Cek apakah key yang dikirim merupakan string API Key VIP
-    const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
-
-    let callerUser = null;
-
-    // A. Pengguna Login via Web Dashboard (memiliki cookie / session JWT)
-    if (req.user) {
-        callerUser = req.user;
-    } 
-    // B. Panggilan API luar (Bot, Postman, cURL)
-    else {
-        // Ambil identifier pemanggil (username / email) yang dikirim melalui parameter/header
-        const callerIdentifier = req.query.username || req.body?.username || req.headers['x-username'] || 
-                                 req.query.email || req.body?.email || req.headers['x-email'];
-
-        if (callerIdentifier) {
-            const cleanIdentifier = callerIdentifier.toLowerCase().trim();
-            callerUser = await User.findOne({
-                $or: [{ username: cleanIdentifier }, { email: cleanIdentifier }]
-            });
-        }
-    }
-
-    // --- PROTEKSI KETAT API KEY VIP ---
-    if (isVipKeyString) {
-        // Jika pemanggil TIDAK ADA (belum login & tidak mengirim identifier username/email),
-        // ATAU pemanggil BUKAN pengguna resmi yang terdaftar di VIP_USERS.js:
-        if (!callerUser || !isVipAuthorized(callerUser, userKey)) {
-            return res.status(403).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Akses Ditolak! API Key VIP ini terproteksi dan TIDAK BISA digunakan oleh pengguna publik, Free, Premium, atau pengguna yang belum terautentikasi."
-            });
-        }
-    }
-
-    // Jika bukan key VIP, cari data user di DB berdasarkan apikey (fallback standar)
-    if (!callerUser) {
-        try {
-            callerUser = await User.findOne({ apikey: userKey });
-        } catch (dbErr) {
-            console.error("Gagal verifikasi API Key di Database:", dbErr.message);
-            return res.status(500).json({ status: false, message: "Internal server error during database key verification." });
-        }
-    }
-
-    if (!callerUser) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulz-XD",
-            message: "API Key salah atau tidak terdaftar! Silakan registrasi/cek profile akun Anda."
-        });
-    }
-
-    req.user = callerUser;
-    let finalRole = (callerUser.role || 'Free User').toLowerCase();
-
-    try {
-        const pathParts = req.path.split('/');
-        const currentCategory = pathParts[1]; 
-        const currentRouteName = pathParts[2];   
-
-        if (currentCategory && currentRouteName) {
-            const routeFilePath = path.join(apiPath, currentCategory, `${currentRouteName}.js`);
-            if (fs.existsSync(routeFilePath)) {
-                const routeModule = require(routeFilePath);
-
-                if (routeModule.status === "error" || routeModule.status === "perbaikan") {
-                    return res.status(503).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Fitur ini sedang dalam perbaikan / maintenance!"
-                    });
-                }
-
-                if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint ini khusus pengguna Premium! Hubungi Developer untuk upgrade."
-                    });
-                }
-
-                if (routeModule.type === "vip" && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint eksklusif ini khusus pengguna VIP! Hubungi Developer untuk akses."
-                    });
-                }
-            }
-        }
-
-        next();
-    } catch (e) {
-        console.error("Gagal memvalidasi status/type router:", e.message);
-        return res.status(500).json({ status: false, message: "Internal server error during authorization validation." });
-    }
-};
-
 router.use(validateApiKey);
 
 router.use((req, res, next) => {
@@ -1509,7 +1535,7 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
-app.use('/api', router, validateApiKey, apiKeyLimiter);
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, router);
 
 app.get('/script.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'script.js'));
