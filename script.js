@@ -91,6 +91,10 @@ function toggleCategory(catIdx) {
     }
 }
 
+// SVG Icon Helper untuk Plus (+) & Minus (-)
+const SVG_PLUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>`;
+const SVG_MINUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>`;
+
 // Fungsi Toggle Detail Formulir Endpoint (+ / -)
 function toggleEndpoint(catIdx, epIdx) {
     const epDiv = document.getElementById(`ep-${catIdx}-${epIdx}`);
@@ -99,13 +103,14 @@ function toggleEndpoint(catIdx, epIdx) {
         const isHidden = epDiv.classList.contains('hidden');
         if (isHidden) {
             epDiv.classList.remove('hidden');
-            epIcon.textContent = '−';
+            epIcon.innerHTML = SVG_MINUS;
         } else {
             epDiv.classList.add('hidden');
-            epIcon.textContent = '+';
+            epIcon.innerHTML = SVG_PLUS;
         }
     }
 }
+
 
 // Fungsi Menutup Sidebar Menu Bio & Overlay
 function closeSidebarMenu() {
@@ -758,11 +763,10 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
         isRequestInProgress = false;
         executeBtn.disabled = false;
         executeBtn.classList.remove('btn-loading');
-
         spinner.style.display = ''; 
         spinner.classList.remove('active');
-
         executeBtn.innerHTML = originalBtnHtml;
+        fetchAndUpdateUserLimit();
     }
 }
 
@@ -781,9 +785,6 @@ function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
     if (responseDiv) responseDiv.classList.add('hidden');
 
-    const icon = document.getElementById(`ep-icon-${catIdx}-${epIdx}`);
-    if (icon) icon.textContent = '+';
-
     const form = document.getElementById(`form-${catIdx}-${epIdx}`);
     if (form) {
         form.reset(); 
@@ -801,6 +802,7 @@ function clearResponse(catIdx, epIdx, endpointType) {
         }
     }
 }
+
 
 function renderCategoryFilters() {
     const container = document.getElementById('categoryFilters');
@@ -947,7 +949,9 @@ function loadApis() {
                             </div>
                         </div>
                     </div>
-                    <span id="ep-icon-${catIdx}-${epIdx}" class="text-base font-bold text-cyan-400 light-mode:text-cyan-600 px-2 code-font">+</span>
+                    <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
+                   ${SVG_PLUS}
+                 </span>
                 </button>
                 <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
                     <p class="text-xs mb-4 ${isLightMode ? 'text-slate-700' : 'opacity-80'}">${item.desc}</p>
@@ -1332,47 +1336,58 @@ function initImageLightbox() {
 }
 
 async function fetchAndUpdateUserLimit() {
-    // Berikan toleransi waktu 150ms agar state login/cookie/API Key ter-render sempurna di window
-    setTimeout(async () => {
-        try {
-            const urlParams = new URLSearchParams(window.location.search);
-            // Ambil dari URL, jika tidak ada ambil dari global variable displayApiKey yang di-inject index.js
-            const apiKey = urlParams.get('apikey') || (typeof displayApiKey !== 'undefined' ? displayApiKey : '');
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Prioritas pencarian API Key: URL Param -> Global Variable -> LocalStorage -> Form Input
+        let apiKey = urlParams.get('apikey') 
+            || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
 
-            const response = await fetch(`/api/user-limit?apikey=${apiKey}`);
-            if (!response.ok) return;
+        if (!apiKey) {
+            const firstApiKeyInput = document.querySelector('input[name="apikey"]');
+            if (firstApiKeyInput && firstApiKeyInput.value) {
+                apiKey = firstApiKeyInput.value;
+            }
+        }
+
+        // Panggil endpoint user-limit (cookie auth_session akan otomatis terkirim via credentials)
+        const response = await fetch(`/api/user-limit?apikey=${encodeURIComponent(apiKey)}`, {
+            headers: { 'Cache-Control': 'no-cache' }
+        });
+
+        if (!response.ok) return;
+        
+        const data = await response.json();
+
+        const limitUsedEl = document.getElementById('userLimitUsed');
+        const limitMaxEl = document.getElementById('userLimitMax');
+        const limitBadgeEl = document.getElementById('userLimitBadge');
+
+        if (limitUsedEl && limitMaxEl) {
+            // Update UI jika data dari server valid
+            if (data.limitUsed !== undefined && data.limitUsed !== null) {
+                limitUsedEl.textContent = data.limitUsed;
+            }
+            if (data.maxLimit !== undefined && data.maxLimit !== null) {
+                limitMaxEl.textContent = data.maxLimit;
+            }
             
-            const data = await response.json();
-
-            const limitUsedEl = document.getElementById('userLimitUsed');
-            const limitMaxEl = document.getElementById('userLimitMax');
-            const limitBadgeEl = document.getElementById('userLimitBadge');
-
-            if (limitUsedEl && limitMaxEl) {
-                // PROTEKSI BUG: Jika nilai yang kembali tidak valid atau null, jangan paksa ubah ke 0
-                if (data.limitUsed !== undefined && data.limitUsed !== null) {
-                    limitUsedEl.textContent = data.limitUsed;
-                }
-                if (data.maxLimit !== undefined && data.maxLimit !== null) {
-                    limitMaxEl.textContent = data.maxLimit;
-                }
+            if (limitBadgeEl && data.type) {
+                limitBadgeEl.textContent = data.type.toUpperCase();
                 
-                if (limitBadgeEl && data.type) {
-                    limitBadgeEl.textContent = data.type.toUpperCase();
-                    // Atur warna badge tier secara dinamis
-                    if (data.type === 'vip') {
-                        limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest";
-                    } else if (data.type === 'premium') {
-                        limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest";
-                    } else {
-                        limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest";
-                    }
+                // Ubah styling badge secara konsisten
+                if (data.type === 'vip') {
+                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
+                } else if (data.type === 'premium') {
+                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest border border-amber-500/30";
+                } else {
+                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest border border-white/5";
                 }
             }
-        } catch (error) {
-            console.error("Gagal memperbarui data limit:", error);
         }
-    }, 150); // Delay aman 150 milidetik untuk mencegah sinkronisasi balapan (race condition)
+    } catch (error) {
+        console.error("Gagal memperbarui data limit di UI:", error);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1380,23 +1380,6 @@ const apiPath = path.join(__dirname, 'api');
 
 router.use(validateApiKey);
 
-router.use((req, res, next) => {
-    const userKey = req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
-    if (userKey) {
-        if (!USER_LIMIT_TRACKER[userKey]) {
-            USER_LIMIT_TRACKER[userKey] = 0;
-        }
-
-        const keyType = getApiKeyType(userKey);
-        const maxLimit = getUserMaxLimit(keyType);
-
-        if (keyType !== 'vip' && USER_LIMIT_TRACKER[userKey] < maxLimit) {
-            USER_LIMIT_TRACKER[userKey] += 1;
-        }
-    }
-    next();
-});
-
 const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
 
 for (const category of endpointDirs) {
