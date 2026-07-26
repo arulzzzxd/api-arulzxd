@@ -1,57 +1,66 @@
-const axios = require('axios');
-const express = require('express');
+const express = require("express");
+const axios = require("axios");
+
 const router = express.Router();
 
-// Fungsi untuk generate gambar dari prompt
-async function text2image(prompt) {
-    try {
-        const targetUrl = `https://v2.api-varhad.my.id/ai/text2image?prompt=${encodeURIComponent(prompt)}`;
-        
-        // 1. Ambil JSON dari API target
-        const { data } = await axios.get(targetUrl, {
+async function text2Image(prompt) {
+    const { data } = await axios.get(
+        "https://v2.api-varhad.my.id/ai/text2image",
+        {
+            params: { prompt },
+            timeout: 60000,
             headers: {
-                'Accept': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            },
-            timeout: 30000
-        });
-
-        if (!data || !data.status || !data.result || !data.result.image) {
-            throw new Error("Gagal mengambil gambar dari API target");
+                "User-Agent": "Mozilla/5.0"
+            }
         }
+    );
 
-        // 2. Download gambar menjadi buffer
-        const response = await axios.get(data.result.image, { 
-            responseType: 'arraybuffer',
-            timeout: 15000 
-        });
-
-        return Buffer.from(response.data);
-    } catch (error) {
-        throw error;
+    if (!data.status) {
+        throw new Error(data.message || "Gagal membuat gambar.");
     }
+
+    return data.result;
 }
 
-// Endpoint utama Router
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const prompt = req.query.prompt;
+        const { prompt } = req.query;
 
         if (!prompt) {
-            return res.status(400).json({ error: "Masukkan parameter 'prompt'. Contoh: ?prompt=cat" });
+            return res.status(400).json({
+                status: false,
+                creator: "ArulzXD",
+                message: "Parameter prompt diperlukan.",
+                example: "/api/ai/text2image?prompt=anime girl"
+            });
         }
 
-        const imageBuffer = await text2image(prompt);
-        res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': imageBuffer.length,
+        const imageUrl = await text2Image(prompt);
+
+        const response = await axios.get(imageUrl, {
+            responseType: "stream",
+            headers: {
+                "User-Agent": "Mozilla/5.0"
+            }
         });
-        res.end(imageBuffer);
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
+
+        res.setHeader(
+            "Content-Type",
+            response.headers["content-type"] || "image/png"
+        );
+
+        response.data.pipe(res);
+
+    } catch (err) {
+        res.status(500).json({
+            status: false,
+            creator: "ArulzXD",
+            message: err.response?.data?.message || err.message
+        });
     }
 });
 
-router.status = "ready"; 
+router.status = "ready";
 router.type = "free";
+
 module.exports = router;
