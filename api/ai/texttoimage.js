@@ -24,7 +24,7 @@ async function text2Image(prompt) {
 
 router.get("/", async (req, res) => {
     try {
-        const { prompt } = req.query;
+        const prompt = req.query.prompt;
 
         if (!prompt) {
             return res.status(400).json({
