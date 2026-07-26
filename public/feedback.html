@@ -3,95 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback & Bug Report - API-ARULZXD</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <title>Feedback - API-ArulzXD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#020617', // Latar belakang utama (lebih gelap)
+                            900: '#0f172a', // Latar kartu / input
+                            800: '#1e293b',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+            background-color: #020617;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 20%);
+            background-attachment: fixed;
         }
-        .glass-card {
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        .cyber-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(34, 211, 238, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
-        .neon-glow {
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+
+        .neon-border-cyan {
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 5px rgba(6, 182, 212, 0.1);
         }
-        .neon-success {
-            box-shadow: 0 0 25px rgba(34, 211, 238, 0.25);
+
+        /* Styling unik untuk kartu radio */
+        .feedback-type-card {
+            transition: all 0.25s ease-out;
+            position: relative;
+            overflow: hidden;
         }
+
+        .feedback-type-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(6, 182, 212, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .feedback-type-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        /* State ketika radio di-check */
+        input[type="radio"]:checked + .feedback-type-content {
+            background-color: rgba(6, 182, 212, 0.1);
+            border-color: #22d3ee;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
+
+        input[type="radio"]:checked + .feedback-type-content i {
+            color: #22d3ee;
+            transform: scale(1.1);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+
+        @keyframes pulse-cyan {
+            0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
+            50% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.35); }
+        }
+        .neon-pulse { animation: pulse-cyan 3s infinite; }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+<body class="text-slate-300 min-h-screen font-sans antialiased relative">
 
-    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <!-- Overlay Tekstur Grid Cyberpunk -->
+    <div class="fixed inset-0 z-0 opacity-[0.03] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg stroke=&quot;%23ffffff&quot; stroke-width=&quot;0.5&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v2zm0-30V0h-2v4h-4v2h4v4h2V6h4v2zM6 34v-4H4v4H0v2h4v4h2v-4h4v2zm0-30V0H4v4H0v2h4v4h2V6h4v2z&quot;%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
 
-    <!-- Container Utama -->
-    <div id="cardContainer" class="w-full max-w-lg glass-card rounded-2xl p-6 md:p-8 neon-glow relative z-10 transition-all duration-500 transform scale-100 opacity-100">
+    <div class="relative z-10 min-h-screen flex flex-col">
         
-        <!-- Bagian Konten Form (Bungkus Dalam ID agar mudah dimanipulasi) -->
-        <div id="formContent" class="transition-all duration-300 opacity-100 block">
-            <a href="/" class="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-400 transition-colors mb-6 group font-mono">
-                <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Kembali ke Dashboard
-            </a>
+        <!-- Header / Nav (Minimalis) -->
+        <header class="w-full p-4 md:p-6 border-b border-white/5 bg-dark-950/50 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2.5">
+                    <img src="https://arulz-xd.my.id/files/X1F0Cn.png" alt="Logo" class="w-9 h-9 rounded-full border border-cyan-500/30">
+                    <span class="font-mono font-bold text-lg text-white tracking-tight">Arulz<span class="text-cyan-400">XD</span> <span class="text-xs text-slate-500 font-normal">API</span></span>
+                </a>
+                <a href="/doc" class="text-xs font-semibold text-slate-400 hover:text-cyan-400 transition-colors tracking-wider uppercase flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/5">
+                    <i class="fa-solid fa-book text-cyan-500"></i> Docs
+                </a>
+            </div>
+        </header>
 
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-2xl mb-4 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-                    <i class="fa-solid fa-comment-dots"></i>
+        <!-- Main Content (Full Selayar) -->
+        <main class="flex-1 grid grid-cols-1 md:grid-cols-2">
+            
+            <!-- KOLOM KIRI: Info & Kontak (Seperti Gambar 1) -->
+            <div class="p-8 md:p-16 lg:p-24 bg-dark-900/50 border-r border-white/5">
+                <div class="max-w-md mx-auto md:mx-0">
+                    <a href="/" class="inline-flex items-center gap-2 text-xs font-mono text-cyan-600 hover:text-cyan-400 transition-colors mb-10 group">
+                        <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i> Dashboard
+                    </a>
+
+                    <div class="mb-12">
+                        <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 inline-flex">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> SUPPORT CENTER
+                        </span>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-white mt-4 tracking-tighter leading-tight">Hubungi<br> Kami<span class="text-cyan-400">.</span></h1>
+                        <p class="text-slate-400 mt-5 leading-relaxed text-sm md:text-base">Punya pertanyaan, menemukan bug, atau punya ide fitur baru? Kami di sini untuk mendengarkan. Feedback Anda membantu kami berkembang.</p>
+                    </div>
+
+                    <!-- Panel Info (Mirip Gambar 1) -->
+                    <div class="cyber-panel rounded-2xl p-6 md:p-8 space-y-6 neon-pulse border border-cyan-500/20">
+                        <h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2.5">
+                            <i class="fa-solid fa-bolt text-cyan-400 text-sm"></i> Butuh respons cepat?
+                        </h3>
+                        
+                        <!-- Item 1: Email -->
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-red-950/30 border border-red-500/20 text-red-400 text-xl">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Dukungan Email</h4>
+                                <p class="text-xs font-mono text-cyan-400 select-all">supportarulzxd@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <!-- Item 2: Waktu -->
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-xl">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Waktu Respons</h4>
+                                <p class="text-xs text-slate-400">Tim kami biasanya membalas dalam waktu 24 jam.</p>
+                            </div>
+                        </div>
+
+                        <!-- Item 3: Prioritas -->
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-amber-950/30 border border-amber-500/20 text-amber-400 text-xl">
+                                <i class="fa-solid fa-shield-heart"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Prioritas Premium/VIP</h4>
+                                <p class="text-xs text-slate-400">Laporan dari akun berbayar diproses terlebih dahulu.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">Kirim Feedback</h1>
-                <p class="text-sm text-slate-400 mt-1">Bantu kami meningkatkan kualitas layanan API-ARULZXD</p>
             </div>
 
-            <form id="feedbackForm" class="space-y-5">
-                <div>
-                    <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Email Pengirim</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 text-sm">
-                            <i class="fa-solid fa-envelope"></i>
-                        </span>
-                        <input type="email" id="email" required
-                            class="w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-white/10 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 font-mono text-cyan-300" 
-                            placeholder="nama@email.com">
+            <!-- KOLOM KANAN: Form Feedback (Cyberpunk Style) -->
+            <div id="cardContainer" class="p-8 md:p-16 lg:p-24 flex items-center justify-center relative relative">
+                
+                <!-- Efek Sinar Glow Belakang -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+                <div id="formContent" class="w-full max-w-lg cyber-panel rounded-3xl p-8 md:p-10 relative z-10 neon-border-cyan transition-all duration-300 opacity-100 block">
+                    
+                    <div class="text-center mb-10">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-dark-950/80 border border-cyan-500/30 text-cyan-400 text-3xl mb-5 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                            <i class="fa-solid fa-comment-dots"></i>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white m-0">Kirim <span class="text-cyan-400">Feedback</span></h2>
+                        <p class="text-sm text-slate-400 mt-2 max-w-xs mx-auto">Isi formulir di bawah ini secara detail.</p>
                     </div>
+
+                    <form id="feedbackForm" class="space-y-6">
+                        <!-- Input Email -->
+                        <div>
+                            <label for="email" class="block text-[11px] font-bold font-mono uppercase tracking-widest text-cyan-600 mb-2.5">Email Pengirim</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 text-sm">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </span>
+                                <input type="email" id="email" required
+                                    class="w-full pl-11 pr-4 py-3.5 bg-dark-950/80 border border-white/5 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 font-mono text-cyan-300" 
+                                    placeholder="nama@email.com">
+                            </div>
+                        </div>
+
+                        <!-- Tipe Laporan (Grid seperti Gambar 1) -->
+                        <div>
+                            <label class="block text-[11px] font-bold font-mono uppercase tracking-widest text-cyan-600 mb-2.5">Tipe Laporan / Umpan Balik</label>
+                            <div class="grid grid-cols-2 gap-3.5">
+                                <!-- Option 1: Bug -->
+                                <label class="feedback-type-card cursor-pointer group">
+                                    <input type="radio" name="report_type" value="bug" checked class="hidden peer">
+                                    <div class="feedback-type-content flex flex-col items-center justify-center text-center gap-2.5 p-5 bg-dark-950/60 border border-white/5 rounded-xl hover:border-cyan-500/40 transition-all duration-200 h-full peer-checked:neon-border-cyan">
+                                        <i class="fa-solid fa-bug text-xl text-red-500 group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold text-slate-200 tracking-tight">Laporan Bug</span>
+                                    </div>
+                                </label>
+                                
+                                <!-- Option 2: Suggestion -->
+                                <label class="feedback-type-card cursor-pointer group">
+                                    <input type="radio" name="report_type" value="suggestion" class="hidden peer">
+                                    <div class="feedback-type-content flex flex-col items-center justify-center text-center gap-2.5 p-5 bg-dark-950/60 border border-white/5 rounded-xl hover:border-cyan-500/40 transition-all duration-200 h-full peer-checked:neon-border-cyan">
+                                        <i class="fa-solid fa-lightbulb text-xl text-yellow-400 group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold text-slate-200 tracking-tight">Saran Fitur</span>
+                                    </div>
+                                </label>
+
+                                <!-- Option 3: Question (Tambahan) -->
+                                <label class="feedback-type-card cursor-pointer group">
+                                    <input type="radio" name="report_type" value="question" class="hidden peer">
+                                    <div class="feedback-type-content flex flex-col items-center justify-center text-center gap-2.5 p-5 bg-dark-950/60 border border-white/5 rounded-xl hover:border-cyan-500/40 transition-all duration-200 h-full peer-checked:neon-border-cyan">
+                                        <i class="fa-solid fa-circle-question text-xl text-cyan-400 group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold text-slate-200 tracking-tight">Pertanyaan</span>
+                                    </div>
+                                </label>
+                                
+                                <!-- Option 4: Other (Tambahan) -->
+                                <label class="feedback-type-card cursor-pointer group">
+                                    <input type="radio" name="report_type" value="other" class="hidden peer">
+                                    <div class="feedback-type-content flex flex-col items-center justify-center text-center gap-2.5 p-5 bg-dark-950/60 border border-white/5 rounded-xl hover:border-cyan-500/40 transition-all duration-200 h-full peer-checked:neon-border-cyan">
+                                        <i class="fa-solid fa-comment-dots text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs font-semibold text-slate-200 tracking-tight">Lainnya</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pesan -->
+                        <div>
+                            <label for="message" class="block text-[11px] font-bold font-mono uppercase tracking-widest text-cyan-600 mb-2.5">Isi Laporan / Pesan</label>
+                            <textarea id="message" rows="5" required
+                                class="w-full px-4 py-3.5 bg-dark-950/80 border border-white/5 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 resize-none leading-relaxed"
+                                placeholder="Jelaskan secara detail kendala, pertanyaan, atau saran hebat Anda..."></textarea>
+                        </div>
+
+                        <!-- Tombol Kirim -->
+                        <button type="submit" id="submitBtn"
+                            class="w-full py-4 px-6 bg-gradient-to-r from-cyan-600 to-cyan-400 hover:from-cyan-500 hover:to-cyan-300 text-dark-950 font-extrabold rounded-xl transition-all shadow-[0_4px_15px_rgba(6,182,212,0.3)] hover:shadow-[0_4px_25px_rgba(6,182,212,0.5)] active:scale-[0.98] flex items-center justify-center gap-2.5 text-sm uppercase tracking-wider cursor-pointer">
+                            <i class="fa-solid fa-paper-plane"></i> Kirim Laporan
+                        </button>
+                    </form>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tipe Laporan</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950/40 border border-white/5 rounded-xl cursor-pointer hover:border-cyan-500/50 transition-all has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-500/5 text-sm group">
-                            <input type="radio" name="report_type" value="bug" checked class="hidden">
-                            <i class="fa-solid fa-bug text-red-400 group-hover:scale-110 transition-transform"></i> Bug Report
-                        </label>
-                        <label class="flex items-center justify-center gap-2 p-3 bg-slate-950/40 border border-white/5 rounded-xl cursor-pointer hover:border-cyan-500/50 transition-all has-[:checked]:border-cyan-500 delegate-has has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-500/5 text-sm group">
-                            <input type="radio" name="report_type" value="suggestion" class="hidden">
-                            <i class="fa-solid fa-lightbulb text-yellow-400 group-hover:scale-110 transition-transform"></i> Saran / Fitur
-                        </label>
-                    </div>
-                </div>
+            </div>
+        </main>
 
-                <div>
-                    <label for="message" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Isi Pesan / Laporan</label>
-                    <textarea id="message" rows="4" required
-                        class="w-full px-4 py-3 bg-slate-950/60 border border-white/10 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm transition-all placeholder:text-slate-600 resize-none"
-                        placeholder="Jelaskan secara detail kendala atau saran kamu..."></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn"
-                    class="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(6,182,212,0.3)] hover:shadow-[0_4px_20px_rgba(6,182,212,0.5)] active:scale-[0.99] flex items-center justify-center gap-2 text-sm mt-2 cursor-pointer">
-                    <i class="fa-solid fa-paper-plane"></i> Kirim Laporan
-                </button>
-            </form>
-        </div>
-
+        <!-- Footer Minimalis -->
+        <footer class="w-full p-5 border-t border-white/5 text-center bg-dark-950/50">
+            <p class="text-[10px] font-mono text-slate-600 uppercase tracking-widest">&copy; 2026 API-ARULZXD Server. All rights reserved.</p>
+        </footer>
     </div>
 
+    <!-- JavaScript (Diperbarui untuk menangani tipe laporan baru) -->
     <script>
         document.getElementById('feedbackForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -100,12 +286,13 @@
             const formContent = document.getElementById('formContent');
             
             const emailData = document.getElementById('email').value;
+            // Mengambil nilai radio yang di-check
             const typeData = document.querySelector('input[name="report_type"]:checked')?.value || 'bug';
             const messageData = document.getElementById('message').value;
 
             // Loading State
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Mengirim Laporan...`;
+            submitBtn.innerHTML = \`<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Mengirim...<span class="text-xs opacity-60 ml-1">(Sabar ya)</span>\`;
 
             fetch('/api/feedback', {
                 method: 'POST',
@@ -127,29 +314,26 @@
                     setTimeout(() => {
                         formContent.style.display = 'none';
                         
-                        // Menambahkan efek glow neon sukses pada card
-                        cardContainer.classList.replace('neon-glow', 'neon-success');
-                        
-                        // Menyisipkan template UI Sukses Modern ke dalam card utama
-                        cardContainer.innerHTML = `
-                            <div class="text-center py-6 animate-fade-in transition-all duration-500">
-                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/40 text-emerald-400 text-4xl mb-6 shadow-[0_0_25px_rgba(16,185,129,0.3)] animate-bounce">
-                                    <i class="fa-solid fa-circle-check"></i>
+                        // Menyisipkan template UI Sukses Cyberpunk ke dalam cardContainer
+                        cardContainer.innerHTML = \`
+                            <div class="w-full max-w-lg cyber-panel rounded-3xl p-10 relative z-10 text-center neon-border-cyan animate-fade-in border border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.15)]">
+                                <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-950/60 border-2 border-emerald-500/40 text-emerald-400 text-5xl mb-8 shadow-[0_0_30px_rgba(16,185,129,0.25)]">
+                                    <i class="fa-solid fa-circle-check animate-pulse"></i>
                                 </div>
-                                <h2 class="text-2xl font-bold text-white mb-2 tracking-wide">Laporan Berhasil Dikirim!</h2>
-                                <p class="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed mb-8">
-                                    Terima kasih banyak. Feedback atau laporan bug kamu telah tersimpan aman di database kami dan sistem otomatis telah diteruskan ke email administrator.
+                                <h2 class="text-3xl font-extrabold text-white mb-3 tracking-tighter">Transmisi Berhasil<span class="text-emerald-400">!</span></h2>
+                                <p class="text-sm text-slate-400 max-w-xs mx-auto leading-relaxed mb-10">
+                                    Terima kasih, Agen. Laporan Anda (<span class="text-emerald-400 font-mono">\${typeData.toUpperCase()}</span>) telah tersimpan aman di database utama kami dan sistem otomatis telah meneruskannya ke administrator.
                                 </p>
-                                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                    <button onclick="window.location.reload()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-900 border border-white/10 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 font-medium rounded-xl text-sm transition-all cursor-pointer">
-                                        <i class="fa-solid fa-pen-to-square mr-2"></i> Kirim Baru
+                                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                    <button onclick="window.location.reload()" class="w-full sm:w-auto px-6 py-3.5 bg-dark-950 border border-white/10 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 font-bold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square mr-2.5"></i> Kirim Baru
                                     </button>
-                                    <a href="/" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl text-sm text-center transition-all shadow-[0_4px_10px_rgba(6,182,212,0.2)] cursor-pointer">
-                                        <i class="fa-solid fa-house mr-1"></i> Dashboard
+                                    <a href="/" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-400 hover:from-emerald-500 hover:to-emerald-300 text-dark-950 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_4px_10px_rgba(16,185,129,0.2)] text-center cursor-pointer">
+                                        <i class="fa-solid fa-house mr-2"></i> Dashboard
                                     </a>
                                 </div>
                             </div>
-                        `;
+                        \`;
                     }, 300);
 
                 } else {
@@ -159,13 +343,13 @@
             })
             .catch(err => {
                 console.error('Error:', err);
-                alert('Terjadi kesalahan saat menghubungi server.');
+                alert('Terjadi kesalahan sistem saat menghubungi server.');
                 resetButton();
             });
 
             function resetButton() {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Laporan`;
+                submitBtn.innerHTML = \`<i class="fa-solid fa-paper-plane mr-2"></i> Kirim Laporan\`;
             }
         });
     </script>
