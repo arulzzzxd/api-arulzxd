@@ -1081,69 +1081,113 @@ app.post('/api/feedback', async (req, res) => {
             }
         });
 
-        const kategoriTeks = type === 'suggestion' ? 'Saran / Fitur' : 'Laporan Bug';
-        const subjectTeks = type === 'suggestion' ? 'Saran' : 'Laporan Bug';
+        // Mapping Tipe Laporan ke Teks & Warna Lencana
+        let kategoriTeks = 'Laporan Bug';
+        let categoryColor = '#ef4444'; // Red for bug
+        
+        switch (type) {
+            case 'suggestion':
+                kategoriTeks = 'Saran / Fitur Baru';
+                categoryColor = '#f59e0b'; // Amber
+                break;
+            case 'question':
+                kategoriTeks = 'Pertanyaan Umum';
+                categoryColor = '#06b6d4'; // Cyan
+                break;
+            case 'other':
+                kategoriTeks = 'Lainnya';
+                categoryColor = '#8b5cf6'; // Purple
+                break;
+            default:
+                kategoriTeks = 'Laporan Bug / Error';
+                categoryColor = '#ef4444';
+        }
 
         const mailOptions = {
             from: `"${email}" <supportarulzxd@gmail.com>`, 
             to: 'supportarulzxd@gmail.com', 
             replyTo: email, 
-            subject: `[${type.toUpperCase()}] Laporan Baru dari Dashboard API`,
+            subject: `[${type.toUpperCase()}] Feedback Baru dari Dashboard API`,
             html: `
-                <div style="background-color: #0f0f11; padding: 30px 15px; font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #e4e4e7;">
-                    <div style="max-w: 600px; margin: 0 auto; background-color: #18181c; border: 1px solid #27272a; border-radius: 16px; overflow: hidden; padding: 30px;">
-                        <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #27272a;">
-                            <h1 style="margin: 0; font-size: 24px; font-weight: 800; tracking-spacing: 2px; color: #ffffff;">
-                                Arulz<span style="color: #a1a1aa;">XD</span>
+            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f3f4f6;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
+                    
+                    <!-- Cyber Banner Header -->
+                    <tr>
+                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">
+                                ARULZ<span style="color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">v2.0</span>
                             </h1>
-                        </div>
-                        <div style="padding: 30px 0 20px 0;">
-                            <h2 style="margin: 0 0 10px 0; font-size: 26px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-                                Pesan Diterima! ✅
-                            </h2>
-                            <div style="margin-bottom: 25px;">
-                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background-color: #27272a; color: #a1a1aa; padding: 6px 12px; border-radius: 6px;">
-                                    Action: feedback-received
-                                </span>
-                            </div>
-                            <p style="font-size: 15px; color: #d4d4d8; line-height: 1.6; margin: 0 0 20px 0;">
-                                Halo <strong style="color: #ffffff;">Arulzxd</strong>, terima kasih telah menghubungi kami.
-                            </p>
-                            <div style="background-color: rgba(21, 128, 61, 0.1); border: 1px solid #16a34a; border-radius: 10px; padding: 15px 20px; margin-bottom: 30px; text-align: center;">
-                                <p style="margin: 0; color: #4ade80; font-size: 14px; font-weight: 500;">
-                                    Feedback kamu telah kami terima dan akan segera ditinjau oleh tim kami.
-                                </p>
-                            </div>
-                            <div style="border-bottom: 1px solid #27272a; padding-bottom: 12px; margin-bottom: 20px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px;">
-                                    <span style="color: #a1a1aa;">Kategori</span>
-                                    <strong style="color: #ffffff; font-family: monospace;">${kategoriTeks}</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 14px;">
-                                    <span style="color: #a1a1aa;">Subject</span>
-                                    <strong style="color: #ffffff;">${subjectTeks}</strong>
+                        </td>
+                    </tr>
+
+                    <!-- Content Area -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            
+                            <!-- Status Indicator -->
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 50px;">
+                                    <span style="color: #22d3ee; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                        ⚡ NEW FEEDBACK TRANSMISSION
+                                    </span>
                                 </div>
                             </div>
-                            <div style="background-color: #111113; border: 1px solid #27272a; border-radius: 10px; padding: 20px; margin-top: 15px;">
-                                <p style="margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #e4e4e7; white-space: pre-wrap; line-height: 1.6;">${message}</p>
-                            </div>
-                        </div>
-                        <div style="margin-top: 20px; padding-top: 25px; border-top: 1px solid #27272a; text-align: center;">
-                            <p style="font-size: 12px; color: #71717a; margin: 0 0 20px 0; line-height: 1.5;">
-                                Email ini dikirim otomatis oleh sistem Api Arulz-XD. Jangan balas email ini.
+
+                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px 0;">
+                                Halo Admin <strong style="color: #ffffff;">ArulzXD</strong>, sistem berhasil menerima masukan baru dari pengguna dengan rincian berikut:
                             </p>
-                            <div style="margin-bottom: 25px; font-size: 13px; font-weight: 600;">
-                                <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 12px;">Home</a>
-                                <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 12px;">Docs</a>
-                                <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 12px;">File Upload</a>
-                                <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 12px;">Pastecode</a>
+
+                            <!-- Metadata Grid -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
+                                <tr>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #22d3ee; font-family: monospace; text-align: right; font-weight: 600;">
+                                        ${email}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
+                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
+                                        <span style="color: ${categoryColor}; background-color: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">
+                                            ${kategoriTeks}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Message Content Box -->
+                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 20px; position: relative;">
+                                <div style="font-size: 10px; font-family: monospace; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">
+                                    // LOG_MESSAGE_PAYLOAD
+                                </div>
+                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
                             </div>
-                            <p style="font-size: 12px; color: #71717a; margin: 0;">
-                                © 2026 Api ArulzXD. All rights reserved.
+
+                            <!-- Action Quick Link Button -->
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);">
+                                    Balas Email Pengguna
+                                </a>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Cyber Footer -->
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                            <p style="font-size: 11px; color: #475569; margin: 0 0 10px 0; font-family: monospace;">
+                                SYSTEM_TIME: ${new Date().toISOString()} | NODE_ENV: PRODUCTION
                             </p>
-                        </div>
-                    </div>
-                </div>
+                            <p style="font-size: 11px; color: #64748b; margin: 0;">
+                                © 2026 <a href="https://arulz-xd.my.id" style="color: #22d3ee; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
             `
         };
 
@@ -1162,7 +1206,6 @@ app.post('/api/feedback', async (req, res) => {
         });
     }
 });
-
 
 app.get('/database/download', async (req, res) => {
     const imageUrl = req.query.url || "https://arulz-uploader.vercel.app/files/CVmlrD.jpg";
