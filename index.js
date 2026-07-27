@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
+const Casaku = require('casaku');
 const axios = require('axios');
 const mime = require('mime-types');
 const nodemailer = require('nodemailer');
@@ -33,9 +34,6 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haq
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
-
-// === 1. IMPORT DEPENDENSI TAMBAHAN ===
-const Casaku = require('casaku'); // Pastikan sudah dipasang via: npm i casaku
 
 // === 2. INISIALISASI CASAKU ===
 // Ambil License Key & Webhook Secret dari Kredensial Casaku Kamu
