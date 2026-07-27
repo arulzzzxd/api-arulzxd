@@ -29,10 +29,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-// ✅ KODE PERBAIKAN
 const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894";
-const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
-
+const casaku = new Casaku(CASAKU_API_KEY);
 
 // Memory Storage sementara untuk transaksi
 const TRANSACTIONS = {};
@@ -49,7 +47,10 @@ function getProdukData() {
 // =============================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        const { produkIndex, username, qty } = req.body;
+        const qty = req.body.qty;
+        const produkIndex = req.body.produkIndex;
+        const username = req.body.username;
+
         const produkList = getProdukData();
         const produk = produkList[produkIndex];
 
@@ -66,25 +67,34 @@ app.post('/api/store/create-payment', async (req, res) => {
         const totalHarga = hargaSatuan * quantity;
         const idTrx = 'TRX-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
-        // Panggil SDK Casaku untuk membuat Deposit QRIS
-        const deposit = await casaku.createDeposit({
+        // 🌟 Menggunakan method generateQRISv2 dari SDK Casaku
+        const deposit = await casaku.generateQRISv2({
+            qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
             amount: totalHarga,
-            code: 'QRIS',
-            note: `Pembelian ${produk.nama} (${username})`
+            packageIds: ["id.dana"],
+            qrType: "dynamic",
+            paymentMethod: "qris",
+            useQris: true,
+            useUniqueCode: true
         });
 
-        // Simpan transaksi
+        // Tangkap data transaksi dari respons Casaku
+        const trxData = deposit.data || deposit;
+        const transactionId = trxData.transactionId || trxData.id || idTrx;
+        const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
+        const finalAmount = trxData.totalAmount || totalHarga;
+
+        // Simpan transaksi di memory
         TRANSACTIONS[idTrx] = {
             idTrx,
+            transactionId, // Disimpan untuk pengecekan nanti
             produkIndex,
             namaProduk: produk.nama,
-            // Mengambil link produk dari produk.json (link/download_link/produk_url)
             produkLink: produk.link || produk.download_link || produk.file_url || "https://arulz-xd.my.id/files/product-default",
             username,
             qty: quantity,
-            totalHarga,
-            depositId: deposit.id || deposit.deposit_id || deposit.trx_id || idTrx,
-            qrUrl: deposit.qr_url || deposit.qris_url || deposit.qr_image || deposit.qris,
+            totalHarga: finalAmount,
+            qrUrl: qrContent,
             status: 'PENDING',
             createdAt: Date.now()
         };
@@ -92,9 +102,12 @@ app.post('/api/store/create-payment', async (req, res) => {
         res.json({
             status: true,
             idTrx,
-            totalHarga,
-            qrUrl: TRANSACTIONS[idTrx].qrUrl,
-            payUrl: deposit.pay_url || deposit.checkout_url || null
+            totalHarga: finalAmount,
+            // Jika qrContent berupa raw QR String (000201...), ubah jadi gambar QR via API Google/QRServer
+            qrUrl: qrContent.startsWith('http') 
+                ? qrContent 
+                : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`,
+            payUrl: null
         });
 
     } catch (error) {
@@ -106,12 +119,14 @@ app.post('/api/store/create-payment', async (req, res) => {
     }
 });
 
+
 // =============================================================
 // 2. ENDPOINT: CEK STATUS PEMBAYARAN REALTIME (POLLING)
 // =============================================================
 app.get('/api/store/check-payment/:idTrx', async (req, res) => {
     try {
-        const { idTrx } = req.params;
+        const idTrx = req.query.idTrx;
+
         const trx = TRANSACTIONS[idTrx];
 
         if (!trx) {
@@ -128,12 +143,15 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
             });
         }
 
-        // Verifikasi langsung ke API Casaku
+        // Verifikasi pembayaran
         let isPaid = false;
         try {
-            const checkRes = await casaku.checkDeposit(trx.depositId);
-            if (checkRes && (checkRes.status === 'SUCCESS' || checkRes.status === 'PAID' || checkRes.paid === true)) {
-                isPaid = true;
+            // Jika SDK memiliki method checkStatus atau sejenisnya
+            if (typeof casaku.checkStatus === 'function') {
+                const checkRes = await casaku.checkStatus(trx.transactionId);
+                if (checkRes && (checkRes.status === 'SUCCESS' || checkRes.paid === true)) {
+                    isPaid = true;
+                }
             }
         } catch (err) {
             console.log("Menunggu pembayaran casaku:", err.message);
@@ -142,7 +160,7 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
         if (isPaid) {
             trx.status = 'SUCCESS';
 
-            // Kurangi stok & tambah terjual di produk.json
+            // Kurangi stok & tambah terjual di produk.json[span_8](start_span)[span_8](end_span)
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
             if (fs.existsSync(pathProduk)) {
                 const produkList = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
@@ -175,6 +193,7 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
         res.status(500).json({ status: false, message: "Gagal mengecek status pembayaran." });
     }
 });
+
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
