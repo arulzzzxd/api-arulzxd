@@ -29,8 +29,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
+// ✅ KODE PERBAIKAN
 const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894";
-const casaku = new Casaku(CASAKU_API_KEY);
+const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
+
 
 // Memory Storage sementara untuk transaksi
 const TRANSACTIONS = {};
