@@ -1,16 +1,19 @@
 [
   {
+    "id": "PROD-001",
     "nama": "Premium API Key (1 Bulan Access)",
     "harga": 35000,
-    "harga_diskon": 25000,
+    "harga_diskon": 1,
     "kategori": "Layanan API",
     "badge": "Terlaris",
     "terjual": 1420,
     "stok": 50,
     "gambar": "https://arulz-xd.my.id/files/X1F0Cn.png",
-    "deskripsi": "Akses penuh ke semua fitur API premium selama 30 hari dengan kuota harian tanpa batas dan respons server super cepat."
+    "deskripsi": "Akses penuh ke semua fitur API premium selama 30 hari dengan kuota harian tanpa batas dan respons server super cepat.",
+    "konten": "API Key Anda: arulz-premium-30days-xyz123. Dokumentasi penggunaan: https://arulz-xd.my.id/doc"
   },
   {
+    "id": "PROD-002",
     "nama": "Source Code Bot WhatsApp Multi-Device V2",
     "harga": 120000,
     "harga_diskon": 75000,
@@ -19,9 +22,11 @@
     "terjual": 850,
     "stok": 15,
     "gambar": "https://arulz-xd.my.id/files/K4Sf61.png",
-    "deskripsi": "Source code bot WhatsApp stabil berbasis Baileys multi-device. Mudah dikonfigurasi dan dilengkapi fitur otomatisasi mutakhir."
+    "deskripsi": "Source code bot WhatsApp stabil berbasis Baileys multi-device. Mudah dikonfigurasi dan dilengkapi fitur otomatisasi mutakhir.",
+    "konten": "Download Link Source Code: https://arulz-xd.my.id/files/sc-wa-v2.zip (Password Unzip: arulzxd2026)"
   },
   {
+    "id": "PROD-003",
     "nama": "Hosting Node.js Instan",
     "harga": 50000,
     "harga_diskon": 0,
@@ -30,6 +35,7 @@
     "terjual": 310,
     "stok": 0,
     "gambar": "https://arulz-xd.my.id/files/X1F0Cn.png",
-    "deskripsi": "Hosting server Node.js siap pakai dengan uptime 99.9%, cocok untuk kebutuhan running bot/API ringan Anda."
+    "deskripsi": "Hosting server Node.js siap pakai dengan uptime 99.9%, cocok untuk kebutuhan running bot/API ringan Anda.",
+    "konten": "Akses Panel Hosting: https://panel.arulz-xd.my.id | User: demo | Pass: demo123"
   }
 ]
