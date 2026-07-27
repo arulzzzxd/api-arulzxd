@@ -30,7 +30,9 @@ app.use(cookieParser());
 app.set('trust proxy', 1);
 
 const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894";
-const casaku = new Casaku(CASAKU_API_KEY);
+
+// Perbaikan: bungkus dalam object { licenseKey: ... }
+const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
 
 // Memory Storage sementara untuk transaksi
 const TRANSACTIONS = {};
@@ -123,12 +125,12 @@ app.post('/api/store/create-payment', async (req, res) => {
 // =============================================================
 // 2. ENDPOINT: CEK STATUS PEMBAYARAN REALTIME (POLLING)
 // =============================================================
-app.get('/api/store/check-payment/:idTrx', async (req, res) => {
+app.get('/api/store/check-payment', async (req, res) => {
     try {
         const idTrx = req.query.idTrx;
 
         const trx = TRANSACTIONS[idTrx];
-
+        
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
