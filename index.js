@@ -66,7 +66,7 @@ app.post('/api/store/checkout', async (req, res) => {
     try {
         const produkIndex = req.body.produkIndex;
         const qty = req.body.qty;
-        const username = req.body.username
+        const username = req.body.username;
 
         // Baca data dari database/produk.json
         const pathProduk = path.join(__dirname, 'database', 'produk.json');
@@ -86,17 +86,12 @@ app.post('/api/store/checkout', async (req, res) => {
         const totalHarga = hargaUnit * (parseInt(qty) || 1);
         const orderId = "TRX-" + crypto.randomBytes(4).toString('hex').toUpperCase();
 
-        // Panggil SDK Casaku generateQRISv2 dengan ID QRIS milik IDZHARUL STORE
-        const trx = await casaku.generateQRISv2({
-            qr_id: CASAKU_QR_ID,
-            amount: totalHarga,
-            packageIds: ["id.dana"],
-            qrType: "dynamic",
-            paymentMethod: "qris",
-            useQris: true,
-            useUniqueCode: true,
-            reference_id: orderId
-        });
+        // Gantilah bagian ini di endpoint /api/store/checkout
+const trx = await casaku.generateQRISv2({
+    qr_id: CASAKU_QR_ID,
+    amount: totalHarga,
+    reference_id: orderId
+});
 
         const finalAmount = trx.amount || totalHarga;
         const targetLink = produkTarget.link_produk;
@@ -116,7 +111,7 @@ app.post('/api/store/checkout', async (req, res) => {
         return res.json({
             status: true,
             orderId: orderId,
-            qrString: trx.qr_id || trx.qr_string || trx.qrCode || trx.qr_url,
+            qrString: trx.qr_string || trx.qrCode || trx.qr_url,
             amount: finalAmount
         });
 
