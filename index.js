@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
-const Casaku = require('casaku');
+const { Casaku } = require('casaku');
 const axios = require('axios');
 const mime = require('mime-types');
 const nodemailer = require('nodemailer');
@@ -35,12 +35,11 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
-// === 2. INISIALISASI CASAKU ===
-// Ambil License Key & Webhook Secret dari Kredensial Casaku Kamu
 const casaku = new Casaku({
-    licenseKey: process.env.CASAKU_LICENSE_KEY || 'cashify_23ce260911c4154455029c3462ddb365bda13494',
-    webhookSecret: process.env.CASAKU_WEBHOOK_SECRET || 'cashify_85ab94cd86b0a54a421be37a9ecb0138741d23fd'
+    licenseKey: process.env.CASAKU_LICENSE_KEY || 'cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894',
+    webhookSecret: process.env.CASAKU_WEBHOOK_SECRET || 'cashify_85ab94cd86b0a54a421be37a9ecb0138741d23fdfb88890a5a0b2d54eb2403c1c2a2d10f114b319783a56d63bd82fc579f00ed9e8cc9b2925e660714f9d94c02'
 });
+
 
 // ID QRIS Statis dari Dashboard Casaku (IDZHARUL STORE)
 const CASAKU_QR_ID = process.env.CASAKU_QR_ID || "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a";
