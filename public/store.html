@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArulzXD Store - Cyberpunk Marketplace</title>
+    <title>ArulzXD Store - Marketplace</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Plus Jakarta Sans & Orbitron -->
@@ -147,8 +147,7 @@
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
-
-                    <!-- Loading Skeleton Animation -->
+                    <!-- Skeleton Loader -->
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
                         <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
                         <div class="h-4 bg-slate-800 rounded w-3/4"></div>
@@ -166,11 +165,13 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP CHECKOUT -->
+    <!-- MODAL POPUP CHECKOUT & PEMBAYARAN OTOMATIS -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200" id="modalContent">
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
-                <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
+        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all duration-200" id="modalContent">
+            
+            <!-- HEADER MODAL -->
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder rounded-t-2xl">
+                <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan" id="modalHeaderTitle">
                     <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
                 </h3>
                 <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg transition">
@@ -178,6 +179,7 @@
                 </button>
             </div>
 
+            <!-- STEP 1: FORM PENGISIAN DATA PEMESANAN -->
             <form id="orderForm" onsubmit="submitOrder(event)" class="p-5 space-y-4">
                 <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
                     <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
@@ -201,49 +203,80 @@
                         <span id="modalStockInfo" class="text-[10px] text-slate-400">Tersisa: 0</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="updateQuantity(-1)" 
-                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
-                            -
-                        </button>
-                        <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" 
-                               class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
-                        <button type="button" onclick="updateQuantity(1)" 
-                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
-                            +
-                        </button>
+                        <button type="button" onclick="updateQuantity(-1)" class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">-</button>
+                        <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
+                        <button type="button" onclick="updateQuantity(1)" class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">+</button>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between px-1">
+                <!-- PILIHAN METODE PEMBAYARAN -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Metode Pembayaran</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 bg-cyberDark border border-cyberCyan/60 p-2.5 rounded-xl cursor-pointer hover:border-cyberCyan transition">
+                            <input type="radio" name="paymentMethod" value="casaku" checked class="accent-cyberCyan">
+                            <span class="text-[11px] font-bold text-slate-200"><i class="fa-solid fa-qrcode text-cyberCyan"></i> Casaku QRIS</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-cyberDark border border-cyberBorder p-2.5 rounded-xl cursor-pointer hover:border-cyberCyan transition">
+                            <input type="radio" name="paymentMethod" value="whatsapp" class="accent-cyberCyan">
+                            <span class="text-[11px] font-bold text-slate-200"><i class="fa-brands fa-whatsapp text-emerald-400"></i> WhatsApp</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">Username / Nama Pembeli <span class="text-cyberCyan">*</span></label>
+                    <input type="text" id="usernameInput" required placeholder="Masukkan username Anda" class="w-full px-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 focus:outline-none focus:border-cyberCyan">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">Catatan Tambahan (Opsional)</label>
+                    <textarea id="noteInput" rows="2" placeholder="Catatan khusus..." class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 focus:outline-none focus:border-cyberCyan resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center justify-between px-1 pt-1">
                     <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
-                    <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                    <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan">Rp 0</span>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
-                        Username / Nama Pembeli <span class="text-cyberCyan">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
-                            <i class="fa-regular fa-user"></i>
-                        </span>
-                        <input type="text" id="usernameInput" required placeholder="Masukkan username Anda"
-                               class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
-                        Catatan Tambahan (Opsional)
-                    </label>
-                    <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                              class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
-                </div>
-
-                <button type="submit" id="btnSubmitOrder" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2 mt-2">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Pesanan ke WhatsApp
+                <button type="submit" id="btnSubmitOrder" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> Lanjutkan Pembayaran
                 </button>
             </form>
+
+            <!-- STEP 2: DISPLAY QRIS (CASAKU) -->
+            <div id="paymentArea" class="p-5 text-center hidden space-y-4">
+                <div class="bg-cyberDark p-3 rounded-xl border border-cyberBorder inline-block">
+                    <img id="qrisImage" src="" alt="QRIS" class="w-48 h-48 mx-auto rounded-lg">
+                </div>
+                <p class="text-xs text-slate-300">Scan QRIS di atas menggunakan e-Wallet (Gopay, OVO, Dana, LinkAja) atau Mobile Banking Anda.</p>
+                
+                <div class="flex items-center justify-center gap-2 text-xs text-cyberCyan font-mono bg-cyberDark/60 py-2 rounded-lg border border-cyberBorder">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span>Menunggu Pembayaran Masuk...</span>
+                </div>
+            </div>
+
+            <!-- STEP 3: SUKSES (BARANG OTOMATIS MUNCIUL) -->
+            <div id="successArea" class="p-5 hidden space-y-4 text-center">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/40 text-xl">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h4 class="font-bold text-sm text-white font-cyber">Pembayaran Berhasil!</h4>
+                <p class="text-xs text-slate-400">Terima kasih, produk Anda telah siap di bawah ini:</p>
+
+                <div class="bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-left space-y-2">
+                    <span class="text-[10px] font-bold text-cyberCyan font-mono uppercase">Detail / Konten Produk:</span>
+                    <div id="productResultContent" class="text-xs font-mono text-slate-200 bg-black/50 p-2.5 rounded-lg border border-cyberBorder select-all break-all">
+                        -
+                    </div>
+                </div>
+
+                <button onclick="copyProductContent()" class="w-full bg-cyberCyan/20 border border-cyberCyan text-cyberCyan font-bold py-2 rounded-xl text-xs hover:bg-cyberCyan hover:text-cyberDark transition">
+                    <i class="fa-regular fa-copy"></i> Salin Konten Produk
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -255,11 +288,11 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let DATA_PRODUK = [];
-
         let KATEGORI_AKTIF = 'all';
         let SELECTED_PRODUCT = null;
         let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
+        let statusPollInterval = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
@@ -391,7 +424,6 @@
                     </div>
                 `;
 
-                // LOGIKA WHATSAPP EXPAND DESKRIPSI (TANPA POPUP)
                 const maxChar = 65;
                 const deskripsiTeks = produk.deskripsi || 'Tidak ada deskripsi.';
                 const isLong = deskripsiTeks.length > maxChar;
@@ -412,7 +444,6 @@
                                     ${produk.nama}
                                 </h4>
                                 
-                                <!-- DESKRIPSI PRODUK STYLE WHATSAPP -->
                                 <div class="text-[11px] text-slate-400 min-h-[2.5rem]">
                                     <div class="flex items-start gap-1.5">
                                         <span class="relative flex h-2 w-2 mt-1 flex-shrink-0">
@@ -453,11 +484,9 @@
             }).join('');
         }
 
-        // FUNGSI KONTROL EXPAND DESKRIPSI (GAYA WA)
         function toggleWaDesc(index) {
             const textElem = document.getElementById(`desc-text-${index}`);
             const btnElem = document.getElementById(`desc-btn-${index}`);
-
             if (!textElem || !btnElem) return;
 
             if (textElem.classList.contains('line-clamp-2')) {
@@ -491,6 +520,11 @@
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
+
+            // Sembunyikan QRIS & Sukses saat baru dibuka
+            document.getElementById('orderForm').classList.remove('hidden');
+            document.getElementById('paymentArea').classList.add('hidden');
+            document.getElementById('successArea').classList.add('hidden');
 
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
@@ -528,7 +562,11 @@
         }
 
         function closeCheckoutModal() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
             document.getElementById('checkoutModal').classList.add('hidden');
+            document.getElementById('orderForm').classList.remove('hidden');
+            document.getElementById('paymentArea').classList.add('hidden');
+            document.getElementById('successArea').classList.add('hidden');
             document.getElementById('orderForm').reset();
             SELECTED_PRODUCT = null;
             CURRENT_ORDER_ID = '';
@@ -541,26 +579,90 @@
 
             const username = document.getElementById('usernameInput').value.trim();
             const note = document.getElementById('noteInput').value.trim();
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const totalHarga = hargaUnit * CURRENT_QTY;
 
-            let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
-            message += `*--- DETAIL PESANAN BARU ---*\n`;
-            message += `🔖 *ID TRX:* ${CURRENT_ORDER_ID}\n`;
-            message += `👤 *Username:* ${username}\n`;
-            message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
-            message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
-            message += `💰 *Harga Satuan:* ${formatRupiah(hargaUnit)}\n`;
-            message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
-            if (note) {
-                message += `📝 *Catatan:* ${note}\n`;
+            if (paymentMethod === 'whatsapp') {
+                let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
+                message += `*--- DETAIL PESANAN BARU ---*\n`;
+                message += `🔖 *ID TRX:* ${CURRENT_ORDER_ID}\n`;
+                message += `📦 *ID Produk:* ${SELECTED_PRODUCT.id || 'N/A'}\n`;
+                message += `👤 *Username:* ${username}\n`;
+                message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
+                message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
+                message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
+                if (note) message += `📝 *Catatan:* ${note}\n`;
+
+                window.open(`https://wa.me/6285122629940?text=${encodeURIComponent(message)}`, '_blank');
+                closeCheckoutModal();
+            } else {
+                document.getElementById('btnSubmitOrder').disabled = true;
+                document.getElementById('btnSubmitOrder').innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses QRIS...`;
+
+                fetch('/api/casaku/create-transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: CURRENT_ORDER_ID,
+                        productId: SELECTED_PRODUCT.id,
+                        qty: CURRENT_QTY,
+                        username: username,
+                        note: note
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('btnSubmitOrder').disabled = false;
+                    document.getElementById('btnSubmitOrder').innerHTML = `<i class="fa-solid fa-bolt"></i> Lanjutkan Pembayaran`;
+
+                    if (data.status) {
+                        document.getElementById('orderForm').classList.add('hidden');
+                        document.getElementById('paymentArea').classList.remove('hidden');
+
+                        const qrString = data.qrisContent || `https://casaku.id/pay/${CURRENT_ORDER_ID}`;
+                        document.getElementById('qrisImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrString)}`;
+
+                        startPollingStatus(CURRENT_ORDER_ID);
+                    } else {
+                        alert(data.message || 'Gagal membuat transaksi Casaku');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('btnSubmitOrder').disabled = false;
+                    document.getElementById('btnSubmitOrder').innerHTML = `<i class="fa-solid fa-bolt"></i> Lanjutkan Pembayaran`;
+                    alert('Terjadi kesalahan jaringan.');
+                });
             }
-            message += `\nMohon informasi metode pembayaran selanjutnya. Terima kasih!`;
+        }
 
-            const waLink = `https://wa.me/6285122629940?text=${encodeURIComponent(message)}`;
+        function startPollingStatus(orderId) {
+            if (statusPollInterval) clearInterval(statusPollInterval);
 
-            window.open(waLink, '_blank');
-            closeCheckoutModal();
+            statusPollInterval = setInterval(() => {
+                fetch(`/api/casaku/check-status/${orderId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'PAID') {
+                            clearInterval(statusPollInterval);
+
+                            document.getElementById('paymentArea').classList.add('hidden');
+                            document.getElementById('successArea').classList.remove('hidden');
+                            document.getElementById('productResultContent').innerText = data.content || 'Produk Berhasil Diaktifkan!';
+
+                            fetchProduk();
+                        }
+                    })
+                    .catch(err => console.error("Error polling:", err));
+            }, 3000);
+        }
+
+        function copyProductContent() {
+            const text = document.getElementById('productResultContent').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Konten produk berhasil disalin!');
+            });
         }
 
         window.addEventListener('DOMContentLoaded', fetchProduk);
