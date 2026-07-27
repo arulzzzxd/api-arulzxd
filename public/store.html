@@ -271,28 +271,29 @@
         }
 
         function startPaymentPolling(idTrx) {
-            if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
+    if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
-            POLLING_INTERVAL = setInterval(async () => {
-                try {
-                    const res = await fetch(`/api/store/check-payment/${idTrx}`);
-                    const data = await res.json();
+    POLLING_INTERVAL = setInterval(async () => {
+        try {
+            // Ubah endpoint URL dari /check-payment/${idTrx} ke /check-payment?idTrx=${idTrx}
+            const res = await fetch(`/api/store/check-payment?idTrx=${idTrx}`);
+            const data = await res.json();
 
-                    if (data.status && data.paid) {
-                        clearInterval(POLLING_INTERVAL);
+            if (data.status && data.paid) {
+                clearInterval(POLLING_INTERVAL);
 
-                        // TAMPILKAN LINK PRODUK
-                        document.getElementById('productSuccessLink').href = data.produkLink;
-                        document.getElementById('productSuccessLink').innerText = data.produkLink;
+                // TAMPILKAN LINK PRODUK
+                document.getElementById('productSuccessLink').href = data.produkLink;
+                document.getElementById('productSuccessLink').innerText = data.produkLink;
 
-                        document.getElementById('stepPayment').classList.add('hidden');
-                        document.getElementById('stepSuccess').classList.remove('hidden');
-                    }
-                } catch (e) {
-                    console.log("Error polling:", e);
-                }
-            }, 3000);
+                document.getElementById('stepPayment').classList.add('hidden');
+                document.getElementById('stepSuccess').classList.remove('hidden');
+            }
+        } catch (e) {
+            console.log("Error polling:", e);
         }
+    }, 3000);
+}
 
         function closeCheckoutModal() {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
