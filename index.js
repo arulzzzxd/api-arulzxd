@@ -28,6 +28,153 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
+// Database transaksi dalam memori (Atau simpan ke MongoDB/JSON file)
+const ORDERS_DB = {}; 
+
+// Konfigurasi Merchant Casaku.id
+const CASAKU_CONFIG = {
+    apiKey: process.env.CASAKU_API_KEY || 'cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894',
+    merchantId: process.env.CASAKU_MERCHANT_ID || '5b52c7c1-3932-4db6-a06d-a594d6f4bc9a',
+    baseUrl: 'https://api.casaku.id' // Sesuaikan endpoint API resmi Casaku.id
+};
+
+// 1. Endpoint Membuat Transaksi Casaku
+app.post('/api/casaku/create-transaction', async (req, res) => {
+    try {
+        const { orderId, productId, qty, username, note } = req.body;
+
+        if (!orderId || !productId || !qty) {
+            return res.status(400).json({ status: false, message: 'Data pesanan tidak lengkap.' });
+        }
+
+        // Ambil data produk dari database/produk.json
+        const pathProduk = path.join(__dirname, 'database', 'produk.json');
+        
+        if (!fs.existsSync(pathProduk)) {
+            return res.status(500).json({ status: false, message: 'Database produk.json tidak ditemukan!' });
+        }
+
+        const rawData = fs.readFileSync(pathProduk, 'utf8');
+        const produkList = JSON.parse(rawData);
+
+        const product = produkList.find(p => p.id === productId);
+        if (!product) {
+            return res.status(404).json({ status: false, message: 'Produk tidak ditemukan!' });
+        }
+
+        if (product.stok < qty) {
+            return res.status(400).json({ status: false, message: 'Stok produk tidak mencukupi.' });
+        }
+
+        const hargaSatuan = product.harga_diskon > 0 ? product.harga_diskon : product.harga;
+        const totalHarga = hargaSatuan * qty;
+
+        // Panggil API Casaku.id untuk buat invoice / deposit QRIS
+        const casakuResponse = await axios.post(`${CASAKU_CONFIG.baseUrl}/create-invoice`, {
+            merchant_id: CASAKU_CONFIG.merchantId,
+            api_key: CASAKU_CONFIG.apiKey,
+            amount: totalHarga,
+            ref_id: orderId,
+            customer_name: username || 'Pembeli Store',
+            note: note || `Pembelian ${product.nama}`
+        }, { timeout: 10000 }).catch(err => {
+            console.error("Casaku API Call Error:", err.message);
+            return null;
+        });
+
+        // Fallback valid QRIS String / URL
+        const qrisData = (casakuResponse && casakuResponse.data) ? casakuResponse.data : {
+            // Gunakan format QRIS standar atau Payment Link Casaku sebagai fallback
+            qr_content: `https://casaku.id/pay/${orderId}`, 
+            payment_url: `https://casaku.id/pay/${orderId}`
+        };
+
+        // Simpan transaksi di DB Memori
+        ORDERS_DB[orderId] = {
+            orderId,
+            productId: product.id,
+            productName: product.nama,
+            qty,
+            totalHarga,
+            username,
+            status: 'PENDING', // PENDING, PAID, EXPIRED
+            content: product.konten || 'Terima kasih telah membeli produk ini!',
+            createdAt: new Date()
+        };
+
+        res.json({
+            status: true,
+            orderId: orderId,
+            totalHarga: totalHarga,
+            qrisContent: qrisData.qr_content || qrisData.payment_url || '',
+            paymentUrl: qrisData.payment_url || '',
+            message: 'Transaksi berhasil dibuat'
+        });
+
+    } catch (error) {
+        console.error("Error create transaction:", error);
+        res.status(500).json({ status: false, message: 'Gagal membuat transaksi pembayaran.' });
+    }
+});
+
+// 2. Webhook Callback dari Casaku.id saat Pembayaran Berhasil
+app.post('/api/casaku/webhook', express.json(), (req, res) => {
+    try {
+        const { ref_id, status, amount } = req.body; // Sesuaikan parameter callback Casaku
+
+        console.log(`[CASAKU WEBHOOK] Ref ID: ${ref_id} | Status: ${status} | Amount: ${amount}`);
+
+        const order = ORDERS_DB[ref_id];
+        if (order && (status === 'PAID' || status === 'success' || status === 'SUCCESS')) {
+            order.status = 'PAID';
+            order.paidAt = new Date();
+
+            // Kurangi stok & Tambah jumlah terjual di database/produk.json
+            const pathProduk = path.join(__dirname, 'database', 'produk.json');
+            const rawData = fs.readFileSync(pathProduk, 'utf8');
+            let produkList = JSON.parse(rawData);
+
+            const prodIndex = produkList.findIndex(p => p.id === order.productId);
+            if (prodIndex !== -1) {
+                produkList[prodIndex].stok = Math.max(0, produkList[prodIndex].stok - order.qty);
+                produkList[prodIndex].terjual = (produkList[prodIndex].terjual || 0) + order.qty;
+                fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
+            }
+        }
+
+        res.status(200).json({ status: 'OK' });
+    } catch (error) {
+        console.error("Webhook Error:", error);
+        res.status(500).json({ status: 'ERROR' });
+    }
+});
+
+// 3. Endpoint Pengecekan Status Transaksi (Polling dari Frontend)
+app.get('/api/casaku/check-status/:orderId', (req, res) => {
+    const { orderId } = req.params;
+    const order = ORDERS_DB[orderId];
+
+    if (!order) {
+        return res.status(404).json({ status: false, message: 'Pesanan tidak ditemukan' });
+    }
+
+    if (order.status === 'PAID') {
+        return res.json({
+            status: 'PAID',
+            message: 'Pembayaran Berhasil!',
+            productName: order.productName,
+            qty: order.qty,
+            content: order.content // Barang/Konten dikirimkan otomatis setelah lunas
+        });
+    }
+
+    return res.json({
+        status: order.status,
+        message: 'Menunggu pembayaran...'
+    });
+});
+
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
 mongoose.connect(MONGODB_URI)
