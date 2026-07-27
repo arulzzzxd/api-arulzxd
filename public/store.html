@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArulzXD Store</title>
+    <title>ArulzXD Store - Marketplace Pembayaran Otomatis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -18,206 +19,287 @@
                     },
                     colors: {
                         cyberCyan: '#00f3ff',
+                        cyberCyanDark: '#008b94',
                         cyberDark: '#050b14',
                         cyberCard: '#0a1628',
                         cyberBorder: '#162a45'
+                    },
+                    boxShadow: {
+                        glowCyan: '0 0 15px rgba(0, 243, 255, 0.35)',
+                        glowCyanSm: '0 0 8px rgba(0, 243, 255, 0.25)',
                     }
                 }
             }
         }
     </script>
+    <style>
+        body { background-color: #050b14; color: #e2e8f0; }
+        .bg-cyber-grid {
+            background-image: linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-<body class="font-sans antialiased bg-cyberDark text-slate-100 min-h-screen">
+<body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
 
-    <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder p-4">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <a href="/" class="text-2xl font-black font-cyber text-cyberCyan">Arulz<span class="text-white">Store</span></a>
-            <a href="/doc" class="text-sm font-semibold hover:text-cyberCyan">Docs API</a>
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder shadow-glowCyanSm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <a href="/" class="text-2xl font-black font-cyber text-cyberCyan drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
+                Arulz<span class="text-white">Store</span>
+            </a>
+            <div class="flex-1 max-w-xl relative">
+                <input type="text" id="searchInput" oninput="renderProduk()" placeholder="Cari modul / produk..." 
+                       class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition">
+            </div>
         </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-black font-cyber text-white mb-6">Store <span class="text-cyberCyan">Casaku + MongoDB</span></h1>
-        
-        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+    <!-- CONTAINER UTAMA -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="mb-6 p-6 bg-cyberCard rounded-2xl border border-cyberBorder relative overflow-hidden">
+            <h1 class="text-3xl font-black text-white font-cyber">
+                Arulz<span class="text-cyberCyan">XD</span> Store
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Pembayaran Otomatis via QRIS / Casaku • Instant Product Delivery</p>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
     </div>
 
-    <!-- MODAL POPUP CHECKOUT -->
-    <div id="checkoutModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-cyberCard w-full max-w-md rounded-2xl border border-cyberCyan/40 p-5 relative">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
+    <!-- MODAL CHECKOUT & PEMBAYARAN CASAKU -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cyberCard w-full max-w-md rounded-2xl border border-cyberCyan/40 p-5 shadow-glowCyan relative">
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <!-- STEP 1: FORM PEMBELIAN -->
-            <form id="orderForm" onsubmit="processCasakuPay(event)" class="space-y-4">
-                <h3 class="font-bold text-sm font-cyber text-cyberCyan flex items-center gap-2">
-                    <i class="fa-solid fa-cart-shopping"></i> Checkout Pembayaran
+            <!-- STEP 1: FORM PEMESANAN -->
+            <div id="stepForm">
+                <h3 class="font-bold text-base font-cyber text-cyberCyan mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-cart-shopping"></i> Checkout Produk
                 </h3>
 
-                <div class="bg-cyberDark p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
-                    <img id="modalProductImg" src="" class="w-12 h-12 rounded object-cover">
+                <div class="bg-cyberDark p-3 rounded-xl border border-cyberBorder mb-4 flex items-center gap-3">
+                    <img id="modalProductImage" src="" class="w-12 h-12 rounded-lg object-cover">
                     <div>
-                        <p id="modalProductName" class="text-xs font-bold text-white"></p>
-                        <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan"></p>
+                        <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
+                        <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan mt-0.5"></p>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold mb-1">Username Pembeli:</label>
-                    <input type="text" id="usernameInput" required placeholder="Masukkan nama/username Anda" class="w-full bg-cyberDark border border-cyberBorder rounded-lg p-2 text-xs focus:outline-none focus:border-cyberCyan text-white">
-                </div>
-
-                <button type="submit" id="btnSubmit" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs transition">
-                    Bayar Otomatis via QRIS Casaku
-                </button>
-            </form>
-
-            <!-- STEP 2: DISPLAY QRIS DINAMIS -->
-            <div id="qrisSection" class="hidden text-center space-y-4 py-2">
-                <h3 class="font-bold text-sm font-cyber text-cyberCyan">Scan QRIS Untuk Membayar</h3>
-                
-                <div class="bg-white p-3 rounded-xl inline-block shadow-lg">
-                    <img id="qrisImage" src="" alt="QRIS Code" class="w-48 h-48 mx-auto object-contain">
-                </div>
-
-                <p class="text-xs text-slate-300">Total Tagihan: <strong id="qrisAmount" class="text-cyberCyan font-cyber">Rp 0</strong></p>
-                
-                <div id="statusBadge" class="text-xs font-mono text-amber-400 animate-pulse">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu pembayaran terdeteksi di MongoDB...
-                </div>
-
-                <!-- STEP 3: HASIL LINK PRODUK (Selesai) -->
-                <div id="successResult" class="hidden bg-emerald-950/80 border border-emerald-500/50 p-4 rounded-xl text-left space-y-2">
-                    <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs font-cyber">
-                        <i class="fa-solid fa-circle-check"></i> PEMBAYARAN SUKSES!
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 font-semibold mb-1">Username Pembeli:</label>
+                        <input type="text" id="usernameInput" required placeholder="Masukkan nama/username Anda"
+                               class="w-full px-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-white focus:outline-none focus:border-cyberCyan">
                     </div>
-                    <p class="text-[11px] text-slate-300">Transaksi terverifikasi. Klik tombol di bawah untuk mengakses produk:</p>
-                    
-                    <a id="downloadLinkBtn" href="#" target="_blank" class="block text-center w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-cyber py-2 rounded-lg text-xs transition shadow-lg">
-                        <i class="fa-solid fa-download"></i> Buka Link Produk / Download
-                    </a>
+
+                    <div>
+                        <label class="block text-xs text-slate-300 font-semibold mb-1">Jumlah Beli:</label>
+                        <input type="number" id="qtyInput" value="1" min="1" oninput="updateTotal()"
+                               class="w-full px-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-white focus:outline-none focus:border-cyberCyan">
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-xs font-bold">Total Pembayaran:</span>
+                        <span id="modalTotalHarga" class="text-sm font-bold font-cyber text-cyberCyan">Rp 0</span>
+                    </div>
+
+                    <button onclick="processAutoPayment()" id="btnPay" class="w-full mt-3 bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-qrcode"></i> Bayar Otomatis Sekarang
+                    </button>
                 </div>
             </div>
 
+            <!-- STEP 2: METODE QRIS CASAKU & REALTIME CHECK -->
+            <div id="stepPayment" class="hidden text-center space-y-4">
+                <h3 class="font-bold text-sm font-cyber text-cyberCyan">Scan QRIS Pembayaran</h3>
+                <p class="text-[11px] text-slate-400">Silakan scan kode QRIS menggunakan M-Banking / E-Wallet Anda.</p>
+
+                <div class="bg-white p-3 rounded-xl inline-block shadow-lg mx-auto">
+                    <img id="qrisImage" src="" alt="QRIS Payment" class="w-52 h-52 object-contain mx-auto">
+                </div>
+
+                <div class="bg-cyberDark p-3 rounded-lg border border-cyberBorder text-left text-xs space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">ID TRX:</span>
+                        <span id="trxIdDisplay" class="font-mono text-cyberCyan font-bold"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Total Tagihan:</span>
+                        <span id="trxTotalDisplay" class="font-bold text-white"></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center gap-2 text-xs text-amber-400 font-semibold animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran Otomatis...
+                </div>
+            </div>
+
+            <!-- STEP 3: SUKSES & LINK PRODUK -->
+            <div id="stepSuccess" class="hidden text-center space-y-4">
+                <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl mx-auto">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h3 class="font-bold text-base font-cyber text-emerald-400">Pembayaran Berhasil!</h3>
+                <p class="text-xs text-slate-300">Terima kasih atas pembelian Anda. Berikut link produk/script Anda:</p>
+
+                <div class="bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-left">
+                    <p class="text-[10px] text-slate-400 uppercase font-mono">LINK AKSES PRODUK:</p>
+                    <a id="productSuccessLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold underline break-all block mt-1 hover:text-cyan-300">
+                        Loading Link...
+                    </a>
+                </div>
+
+                <button onclick="closeCheckoutModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs">
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         let DATA_PRODUK = [];
         let SELECTED_INDEX = null;
-        let pollingTimer = null;
+        let POLLING_INTERVAL = null;
 
         function formatRupiah(angka) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         }
 
-        async function loadProduk() {
+        async function fetchProduk() {
             try {
                 const res = await fetch('/database/produk');
                 DATA_PRODUK = await res.json();
-                
-                const grid = document.getElementById('productGrid');
-                grid.innerHTML = DATA_PRODUK.map((item, idx) => `
-                    <div class="bg-cyberCard border border-cyberBorder rounded-xl p-3 flex flex-col justify-between">
-                        <img src="${item.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-full h-36 object-cover rounded-lg mb-2">
-                        <h4 class="text-xs font-bold text-white mb-1">${item.nama}</h4>
-                        <p class="text-cyberCyan font-cyber font-bold text-xs mb-3">${formatRupiah(item.harga_diskon || item.harga)}</p>
-                        <button onclick="openModal(${idx})" class="w-full bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-bold py-2 rounded-lg text-xs font-cyber transition">
-                            Beli Otomatis
-                        </button>
-                    </div>
-                `).join('');
+                renderProduk();
             } catch (err) {
-                console.error("Error loading products:", err);
+                console.error("Gagal load produk:", err);
             }
         }
 
-        function openModal(idx) {
-            SELECTED_INDEX = idx;
-            const item = DATA_PRODUK[idx];
+        function renderProduk() {
+            const grid = document.getElementById('productGrid');
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = DATA_PRODUK.filter(p => p.nama.toLowerCase().includes(keyword));
+
+            grid.innerHTML = filtered.map((p, idx) => {
+                const isOutOfStock = p.stok !== undefined && p.stok <= 0;
+                const harga = p.harga_diskon > 0 ? p.harga_diskon : p.harga;
+
+                return `
+                    <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 flex flex-col justify-between">
+                        <div>
+                            <img src="${p.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-full h-36 object-cover rounded-lg mb-2">
+                            <h4 class="text-xs font-bold text-white line-clamp-1">${p.nama}</h4>
+                            <p class="text-[11px] text-slate-400 line-clamp-2 mt-1">${p.deskripsi}</p>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-cyberCyan font-bold text-sm font-cyber">${formatRupiah(harga)}</p>
+                            <button onclick="openCheckout(${idx})" ${isOutOfStock ? 'disabled' : ''} 
+                                    class="w-full mt-2 bg-cyberCyan/10 border border-cyberCyan/40 text-cyberCyan hover:bg-cyberCyan hover:text-cyberDark font-bold py-1.5 rounded-lg text-xs transition">
+                                ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openCheckout(index) {
+            SELECTED_INDEX = index;
+            const item = DATA_PRODUK[index];
             document.getElementById('modalProductName').innerText = item.nama;
             document.getElementById('modalProductPrice').innerText = formatRupiah(item.harga_diskon || item.harga);
-            document.getElementById('modalProductImg').src = item.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            document.getElementById('modalProductImage').src = item.gambar;
 
-            document.getElementById('orderForm').classList.remove('hidden');
-            document.getElementById('qrisSection').classList.add('hidden');
-            document.getElementById('successResult').classList.add('hidden');
+            document.getElementById('stepForm').classList.remove('hidden');
+            document.getElementById('stepPayment').classList.add('hidden');
+            document.getElementById('stepSuccess').classList.add('hidden');
             document.getElementById('checkoutModal').classList.remove('hidden');
+
+            updateTotal();
         }
 
-        async function processCasakuPay(e) {
-            e.preventDefault();
-            const username = document.getElementById('usernameInput').value;
-            const btn = document.getElementById('btnSubmit');
+        function updateTotal() {
+            const item = DATA_PRODUK[SELECTED_INDEX];
+            const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+            const harga = item.harga_diskon > 0 ? item.harga_diskon : item.harga;
+            document.getElementById('modalTotalHarga').innerText = formatRupiah(harga * qty);
+        }
 
-            btn.disabled = true;
-            btn.innerText = "Memproses QRIS MongoDB...";
+        async function processAutoPayment() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const qty = document.getElementById('qtyInput').value;
+
+            if (!username) return alert("Silakan isi username Anda.");
+
+            const btnPay = document.getElementById('btnPay');
+            btnPay.disabled = true;
+            btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses QRIS...';
 
             try {
-                const response = await fetch('/api/store/checkout', {
+                const res = await fetch('/api/store/create-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        produkIndex: SELECTED_INDEX,
-                        qty: 1,
-                        username: username
-                    })
+                    body: JSON.stringify({ produkIndex: SELECTED_INDEX, username, qty })
                 });
 
-                const data = await response.json();
+                const data = await res.json();
                 if (!data.status) throw new Error(data.message);
 
-                document.getElementById('orderForm').classList.add('hidden');
-                document.getElementById('qrisSection').classList.remove('hidden');
+                // Tampilkan QRIS Casaku
+                document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
+                document.getElementById('trxIdDisplay').innerText = data.idTrx;
+                document.getElementById('trxTotalDisplay').innerText = formatRupiah(data.totalHarga);
 
-                const qrUrl = data.qrString.startsWith('http') 
-                    ? data.qrString 
-                    : `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(data.qrString)}`;
+                document.getElementById('stepForm').classList.add('hidden');
+                document.getElementById('stepPayment').classList.remove('hidden');
 
-                document.getElementById('qrisImage').src = qrUrl;
-                document.getElementById('qrisAmount').innerText = formatRupiah(data.amount);
-
-                // Polling Pengecekan Status ke MongoDB
-                startPolling(data.orderId);
+                // Polling cek pembayaran setiap 3 detik
+                startPaymentPolling(data.idTrx);
 
             } catch (err) {
-                alert("Gagal: " + err.message);
+                alert(err.message || "Gagal membuat pembayaran.");
             } finally {
-                btn.disabled = false;
-                btn.innerText = "Bayar Otomatis via QRIS Casaku";
+                btnPay.disabled = false;
+                btnPay.innerHTML = '<i class="fa-solid fa-qrcode"></i> Bayar Otomatis Sekarang';
             }
         }
 
-        function startPolling(orderId) {
-            if (pollingTimer) clearInterval(pollingTimer);
+        function startPaymentPolling(idTrx) {
+            if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
-            pollingTimer = setInterval(async () => {
+            POLLING_INTERVAL = setInterval(async () => {
                 try {
-                    const res = await fetch(`/api/store/check-status/${orderId}`);
+                    const res = await fetch(`/api/store/check-payment/${idTrx}`);
                     const data = await res.json();
 
                     if (data.status && data.paid) {
-                        clearInterval(pollingTimer);
-                        document.getElementById('statusBadge').classList.add('hidden');
-                        document.getElementById('successResult').classList.remove('hidden');
-                        
-                        // Set Link Produk
-                        document.getElementById('downloadLinkBtn').href = data.linkProduk;
+                        clearInterval(POLLING_INTERVAL);
+
+                        // TAMPILKAN LINK PRODUK
+                        document.getElementById('productSuccessLink').href = data.produkLink;
+                        document.getElementById('productSuccessLink').innerText = data.produkLink;
+
+                        document.getElementById('stepPayment').classList.add('hidden');
+                        document.getElementById('stepSuccess').classList.remove('hidden');
                     }
                 } catch (e) {
-                    console.log("Polling error:", e);
+                    console.log("Error polling:", e);
                 }
-            }, 3000); // Polling setiap 3 detik
+            }, 3000);
         }
 
-        function closeModal() {
-            if (pollingTimer) clearInterval(pollingTimer);
+        function closeCheckoutModal() {
+            if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
             document.getElementById('checkoutModal').classList.add('hidden');
         }
 
-        window.addEventListener('DOMContentLoaded', loadProduk);
+        window.addEventListener('DOMContentLoaded', fetchProduk);
     </script>
 </body>
 </html>
