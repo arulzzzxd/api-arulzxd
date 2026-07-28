@@ -35,29 +35,11 @@ app.set('trust proxy', 1);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
-mongoose.set('bufferCommands', false);
+mongoose.set('bufferCommands', true);
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000,
-            connectTimeoutMS: 10000,
-        });
-        console.log('📦 Berhasil terhubung ke MongoDB!');
-
-        // Hapus indeks lama 'orderId_1' jika masih ada di database
-        try {
-            await mongoose.connection.collection('transactions').dropIndex('orderId_1');
-            console.log('🧹 Berhasil menghapus index lama orderId_1');
-        } catch (e) {
-            // Abaikan jika index sudah tidak ada
-        }
-    } catch (err) {
-        console.error('❌ Gagal koneksi ke MongoDB:', err.message);
-    }
-};
-
-connectDB();
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
+    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err.message));
 
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
@@ -89,8 +71,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 const transactionSchema = new mongoose.Schema({
-    idTrx: { type: String, required: true, unique: true },
-    transactionId: { type: String, required: true },
+    transactionId: { type: String, required: true, unique: true },
     namaProduk: { type: String, required: true },
     produkLink: { type: String, required: true },
     qty: { type: Number, required: true },
@@ -114,15 +95,15 @@ function getProdukData() {
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-async function markTransactionAsPaid(idTrx) {
+async function markTransactionAsPaid(transactionId) {
     try {
-        const trx = await TransactionModel.findOne({ idTrx: idTrx });
+        const trx = await TransactionModel.findOne({ transactionId: transactionId });
         if (!trx || trx.status === 'SUCCESS') return false;
 
         trx.status = 'SUCCESS';
         await trx.save();
 
-        console.log(`✅ [SUCCESS] Transaksi ${idTrx} berhasil diperbarui di MongoDB!`);
+        console.log(`✅ [SUCCESS] Transaksi ${transactionId} berhasil diperbarui di MongoDB!`);
         return true;
     } catch (err) {
         console.error("❌ Gagal memperbarui status transaksi di MongoDB:", err.message);
@@ -130,31 +111,18 @@ async function markTransactionAsPaid(idTrx) {
     }
 }
 
-// =========================================================================
-// 1. ENDPOINT PEMBUATAN PEMBAYARAN (FIXED MONGOOSE TIMEOUT)
-// =========================================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        if (mongoose.connection.readyState !== 1) {
-            console.log("Reconnecting to MongoDB...");
-            await connectDB();
-            if (mongoose.connection.readyState !== 1) {
-                return res.status(503).json({
-                    status: false,
-                    message: "Database belum siap. Silakan coba beberapa detik lagi."
-                });
-            }
-        }
-
         const { qty, produkIndex, activeTrxId } = req.body;
 
+        // Cek jika ada transaksi aktif sebelumnya memakai transactionId
         if (activeTrxId) {
-            const existingTrx = await TransactionModel.findOne({ idTrx: activeTrxId });
+            const existingTrx = await TransactionModel.findOne({ transactionId: activeTrxId }).lean();
             if (existingTrx) {
                 if (Date.now() < new Date(existingTrx.expiresAt).getTime() && existingTrx.status === 'PENDING') {
                     return res.json({
                         status: true,
-                        idTrx: existingTrx.idTrx,
+                        transactionId: existingTrx.transactionId,
                         totalHarga: existingTrx.totalHarga,
                         qrUrl: existingTrx.qrUrl,
                         expiresAt: existingTrx.expiresAt,
@@ -179,8 +147,8 @@ app.post('/api/store/create-payment', async (req, res) => {
         const quantity = parseInt(qty) || 1;
         const hargaSatuan = (produk.harga_diskon && produk.harga_diskon > 0) ? produk.harga_diskon : produk.harga;
         const totalHarga = hargaSatuan * quantity;
-        const idTrx = 'TRX-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
+        // Generate QRIS melalui SDK Casaku
         const deposit = await casaku.generateQRISv2({
             qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
             amount: totalHarga,
@@ -192,7 +160,7 @@ app.post('/api/store/create-payment', async (req, res) => {
         });
 
         const trxData = deposit.data || deposit;
-        const casakuTxnId = trxData.transactionId; 
+        const casakuTxnId = trxData.transactionId || trxData.id || trxData.trx_id; 
         const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
         const finalAmount = trxData.totalAmount || totalHarga;
 
@@ -202,9 +170,8 @@ app.post('/api/store/create-payment', async (req, res) => {
 
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
+        // Simpan langsung ke MongoDB
         await TransactionModel.create({
-            idTrx,
-            orderId: idTrx,
             transactionId: casakuTxnId,
             namaProduk: produk.nama,
             produkLink: produk.link,
@@ -216,9 +183,9 @@ app.post('/api/store/create-payment', async (req, res) => {
             expiresAt: expiresAt
         });
 
-        res.json({
+        return res.json({
             status: true,
-            idTrx,
+            transactionId: casakuTxnId,
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             expiresAt: expiresAt,
@@ -227,35 +194,31 @@ app.post('/api/store/create-payment', async (req, res) => {
 
     } catch (error) {
         console.error("Gagal membuat pembayaran Casaku:", error);
-        res.status(500).json({
+        return res.status(500).json({
             status: false,
             message: "Gagal memproses pembayaran otomatis: " + (error.message || error)
         });
     }
 });
 
-// =========================================================================
-// ENDPOINT CHECK PAYMENT (DIPERCEPAT & DIOPTIMALKAN)
-// =========================================================================
-app.get('/api/store/check-payment/:idTrx', async (req, res) => {
-    // Matikan HTTP Cache agar tidak terkena Status 304
+app.get('/api/store/check-payment/', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
     try {
-        const idTrx = req.query.idTrx;
-        if (!idTrx) {
+        const transactionId = req.query.transactionId || req.query.idTrx;
+        if (!transactionId) {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
         }
 
-        // Cek langsung dari MongoDB secara instan
-        const trx = await TransactionModel.findOne({ idTrx }).lean();
+        // Cek langsung ke MongoDB
+        const trx = await TransactionModel.findOne({ transactionId }).lean();
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
-        // 1. Jika Pembayaran Berhasil (Diperbarui oleh Webhook / Status Casaku)
+        // 1. Jika Status SUKSES
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -269,7 +232,7 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
         // 2. Cek Kedaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
-                await TransactionModel.updateOne({ idTrx }, { status: 'EXPIRED' });
+                await TransactionModel.updateOne({ transactionId }, { status: 'EXPIRED' });
             }
             return res.json({
                 status: false,
@@ -278,7 +241,7 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
             });
         }
 
-        // 3. Fallback Cek Status Aktif ke API Casaku
+        // 3. Fallback Cek Status ke SDK Casaku
         let isPaid = false;
         try {
             if (typeof casaku.checkStatus === 'function' && trx.transactionId) {
@@ -291,11 +254,11 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
                 }
             }
         } catch (err) {
-            // Tetap tangani error tanpa memperlambat respon
+            // Ignored to avoid slowing down response
         }
 
         if (isPaid) {
-            await markTransactionAsPaid(idTrx);
+            await markTransactionAsPaid(transactionId);
             return res.json({
                 status: true,
                 paid: true,
@@ -313,48 +276,75 @@ app.get('/api/store/check-payment/:idTrx', async (req, res) => {
     }
 });
 
-// =========================================================================
-// WEBHOOK CASAKU (INSTANT REAL-TIME UPDATE)
-// =========================================================================
-app.post('/api/webhook/casaku', async (req, res) => {
-    try {
-        const signature = req.headers['x-casaku-signature'];
-        const payloadRaw = req.rawBody || JSON.stringify(req.body);
-        
-        // Parsing & Verifikasi Payload Webhook
-        const payload = parseWebhook(payloadRaw, signature, WEBHOOK_SECRET);
-        
-        if (payload) {
-            const status = String(payload.status || payload.transaction_status || '').toLowerCase();
-            const transactionId = payload.transactionId || payload.trx_id || payload.id || payload.reference_id;
-            const amount = payload.amount || payload.totalAmount || payload.gross_amount;
+app.post("/api/store/webhook", async (req, res) => {
+  let event;
+  try {
+    // Verifikasi webhook signature dari Casaku
+    const signature = req.headers["x-casaku-signature"];
+    const rawBody = req.rawBody || JSON.stringify(req.body);
+    
+    event = parseWebhook(
+      rawBody,
+      signature,
+      process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500"
+    );
+  } catch (err) {
+    console.error("❌ [WEBHOOK ERROR]: Invalid Signature", err.message);
+    return res.status(401).json({ error: "Invalid signature" });
+  }
 
-            // Cek jika status menunjukkan pembayaran berhasil
-            if (['paid', 'success', 'settled', 'berhasil'].includes(status)) {
-                // Cari transaksi berdasarkan transactionId atau nominal + status PENDING
-                const trx = await TransactionModel.findOne({
-                    $or: [
-                        { transactionId: transactionId },
-                        { idTrx: transactionId },
-                        { totalHarga: amount, status: 'PENDING' }
-                    ]
-                });
+  if (event) {
+    const status = String(event.status || event.transaction_status || '').toLowerCase();
+    const transactionId = event.transactionId || event.trx_id || event.id;
+    const amount = event.amount || event.totalAmount;
 
-                if (trx) {
-                    await markTransactionAsPaid(trx.idTrx);
-                    console.log(`✅ [WEBHOOK INSTAN] Transaksi ${trx.idTrx} otomatis LUNAS via Webhook.`);
-                } else {
-                    console.warn(`⚠️ [WEBHOOK] Transaksi tidak ditemukan di DB untuk ID: ${transactionId}`);
-                }
+    // Cek jika status pembayaran berhasil
+    if (['paid', 'success', 'settled', 'berhasil'].includes(status)) {
+      try {
+        // 1. Cari transaksi di MongoDB berdasarkan transactionId
+        const trx = await TransactionModel.findOne({
+          $or: [
+            { transactionId: transactionId },
+            { totalHarga: amount, status: 'PENDING' }
+          ]
+        });
+
+        if (trx && trx.status !== 'SUCCESS') {
+          // 2. Tandai status sebagai SUCCESS di MongoDB
+          trx.status = 'SUCCESS';
+          await trx.save();
+
+          // 3. Potong stok & Tambah angka terjual di produk.json
+          const pathProduk = path.join(__dirname, 'database', 'produk.json');
+          if (fs.existsSync(pathProduk)) {
+            const produkList = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+            
+            // Cari produk berdasarkan nama yang tersimpan di transaksi
+            const produkIdx = produkList.findIndex(p => p.nama === trx.namaProduk);
+
+            if (produkIdx !== -1) {
+              if (produkList[produkIdx].stok !== undefined && produkList[produkIdx].stok > 0) {
+                produkList[produkIdx].stok = Math.max(0, produkList[produkIdx].stok - trx.qty);
+              }
+              produkList[produkIdx].terjual = (produkList[produkIdx].terjual || 0) + trx.qty;
+
+              // Simpan kembali ke file produk.json
+              fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
+              console.log(`📦 [STOK UPDATED] Stok produk '${trx.namaProduk}' berkurang ${trx.qty}`);
             }
-        }
+          }
 
-        return res.json({ success: true, message: "Webhook processed successfully" });
-    } catch (err) {
-        console.error("❌ [WEBHOOK ERROR]:", err.message);
-        return res.status(401).json({ error: "Invalid signature or payload error" });
+          console.log(`✅ [WEBHOOK SUCCESS] Transaksi ${trx.transactionId} LUNAS & stok diperbarui!`);
+        }
+      } catch (dbErr) {
+        console.error("❌ Gagal memproses update database via Webhook:", dbErr.message);
+      }
     }
+  }
+
+  return res.json({ success: true, message: "Webhook processed" });
 });
+
 
 passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
     async (usernameOrEmail, password, done) => {
