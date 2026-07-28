@@ -1160,7 +1160,7 @@ const getLimitMessage = (keyType, limitCount) => {
 };
 
 const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist') {
+    if (req.path === '/apilist' || req.path === '/database/produk' || req.originalUrl === '/database/produk') {
         return next();
     }
 
@@ -1772,8 +1772,6 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
 
-router.use(validateApiKey);
-
 const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
 
 for (const category of endpointDirs) {
@@ -1911,6 +1909,25 @@ app.get('/api/server-status', (req, res) => {
         loadAverage: loadAvg
     });
 });
+// Tempatkan sebelum middleware validateApiKey
+app.get('/database/produk', (req, res) => {
+    const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
+    
+    fs.readFile(pathProduk, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Gagal membaca database produk:", err);
+            return res.status(500).json({ error: "Gagal memuat data produk" });
+        }
+        try {
+            const produk = JSON.parse(data);
+            res.json(produk);
+        } catch (parseError) {
+            res.status(500).json({ error: "Format database produk rusak" });
+        }
+    });
+});
+
+router.use(validateApiKey);
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, router);
 
@@ -1932,24 +1949,6 @@ app.get('/upgrade-apikey', (req, res) => {
 
 app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
-});
-
-app.get('/database/produk', (req, res) => {
-    // Sesuaikan path ke file produk.json Anda
-    const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
-    
-    fs.readFile(pathProduk, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Gagal membaca database produk:", err);
-            return res.status(500).json({ error: "Gagal memuat data produk" });
-        }
-        try {
-            const produk = JSON.parse(data);
-            res.json(produk);
-        } catch (parseError) {
-            res.status(500).json({ error: "Format database produk rusak" });
-        }
-    });
 });
 
 app.get('/store', (req, res) => {
