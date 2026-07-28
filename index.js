@@ -182,7 +182,7 @@ app.get('/api/store/payment-stream', async (req, res) => {
             if (typeof casaku.checkStatus === 'function') {
                 checkStatusRes = await casaku.checkStatus({ id: transactionId });
             } else {
-                const axiosRes = await axios.get(`https://casaku.id/api/v1/transaction/${transactionId}`, {
+                const axiosRes = await axios.get(`https://api.casaku.id/api/generate/check-status/${transactionId}`, {
                     headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
                 });
                 checkStatusRes = axiosRes.data;
@@ -372,7 +372,7 @@ app.get('/api/store/check-payment', async (req, res) => {
             if (typeof casaku.checkStatus === 'function') {
                 checkStatusRes = await casaku.checkStatus({ id: transactionId });
             } else {
-                const axiosRes = await axios.get(`https://casaku.id/api/v1/transaction/${transactionId}`, {
+                const axiosRes = await axios.get(`https://api.casaku.id/api/generate/check-status/${transactionId}`, {
                     headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
                 });
                 checkStatusRes = axiosRes.data;
