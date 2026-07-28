@@ -6,7 +6,31 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
-const { Casaku, parseWebhook } = require('casaku');
+const {
+  CasakuConfig,
+  CasakuResponse,
+  PaymentStatus,
+  GenerateQRISv1Params,
+  QRISv1Data,
+  GenerateQRISv2Params,
+  QRISv2Data,
+  CheckStatusData,
+  CancelData,
+  ListParams,
+  ListData,
+  ListItem,
+  DeleteParams,
+  ProfileData,
+  WatchOptions,
+  WalletShortcutOptions,
+  QRImageOptions,
+  WebhookPayload,
+  CasakuPackage,
+  Casaku,
+  parseWebhook
+} = require("casaku");
+const EventEmitter = require('events');
+const paymentEvents = new EventEmitter();
 const axios = require('axios');
 const mime = require('mime-types');
 const nodemailer = require('nodemailer');
@@ -25,11 +49,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
-app.use(express.json({
-    verify: (req, _res, buf) => {
-        req.rawBody = buf; // Simpan raw buffer untuk HMAC
-    }
-}));
+app.use(express.json({ verify: (req, _res, buf) => (req.rawBody = buf) }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -107,25 +127,79 @@ function getProdukData() {
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-async function markTransactionAsPaid(transactionId) {
+// === ENDPOINT REALTIME (SERVER-SENT EVENTS / SSE) ===
+app.get('/api/store/payment-stream', async (req, res) => {
+    const transactionId = req.query.transactionId;
+    if (!transactionId) {
+        return res.status(400).send("transactionId required");
+    }
+
+    // Header wajib untuk SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering di proxy (Vercel/Nginx)
+
+    console.log(`🔌 Client terhubung ke realtime stream Trx: ${transactionId}`);
+
+    // Cek status awal di DB
+    const trx = await TransactionModel.findOne({ transactionId: String(transactionId) }).lean();
+    if (trx && trx.status === 'SUCCESS') {
+        res.write(`data: ${JSON.stringify({ paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk })}\n\n`);
+        return res.end();
+    }
+
+    // Listener Realtime Event (Instant Trigger dari Webhook)
+    const onPaidListener = (data) => {
+        if (data.transactionId === String(transactionId)) {
+            console.log(`⚡ [REALTIME PUSH] Transaksi ${transactionId} terkonfirmasi!`);
+            res.write(`data: ${JSON.stringify({ paid: true, produkLink: data.produkLink, namaProduk: data.namaProduk })}\n\n`);
+            res.end(); // Tutup stream setelah sukses
+        }
+    };
+
+    paymentEvents.on('payment_success', onPaidListener);
+
+    // Ping / Heartbeat setiap 5 detik agar Vercel Serverless tidak memutus koneksi
+    const heartbeat = setInterval(() => {
+        res.write(': heartbeat\n\n');
+    }, 5000);
+
+    // Cleanup jika koneksi terputus/dibatalkan
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        paymentEvents.removeListener('payment_success', onPaidListener);
+    });
+});
+
+// === FUNCTION UPDATE TRANSAKSI (DENGAN EMITTER PUSH) ===
+async function markTransactionAsPaid(trx) {
     try {
-        const trx = await TransactionModel.findOne({ transactionId: transactionId });
-        if (!trx || trx.status === 'SUCCESS') return false;
+        if (!trx || trx.status === 'SUCCESS') return true;
 
         trx.status = 'SUCCESS';
         await trx.save();
 
-        console.log(`✅ [SUCCESS] Transaksi ${transactionId} berhasil diperbarui di MongoDB!`);
+        // ⚡ PUSH EVENT REALTIME SECARA INSTANT KEPADA KLIEN YANG BUKA SSE STREAM
+        paymentEvents.emit('payment_success', {
+            transactionId: String(trx.transactionId),
+            produkLink: trx.produkLink,
+            namaProduk: trx.namaProduk
+        });
+
+        console.log(`✅ [AUTOMATIC INSTANT] Transaksi ${trx.transactionId} LUNAS & Pushed!`);
         return true;
     } catch (err) {
-        console.error("❌ Gagal memperbarui status transaksi di MongoDB:", err.message);
+        console.error("❌ Gagal memperbarui status transaksi:", err.message);
         return false;
     }
 }
 
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        const { qty, produkIndex, activeTrxId } = req.body;
+        const qty = req.body.qty;
+        const produkIndex = req.body.produkIndex;
+        const activeTrxId = req.body.activeTrxId;
 
         if (activeTrxId) {
             const existingTrx = await TransactionModel.findOne({ transactionId: activeTrxId }).lean();
@@ -212,7 +286,7 @@ app.post('/api/store/create-payment', async (req, res) => {
     }
 });
 
-// === ENDPOINT CHECK-PAYMENT SUPER FAST (OPTIMIZED) ===
+// === ENDPOINT CHECK-PAYMENT AUTO FALLBACK (SERP / OTOMATIS) ===
 app.get('/api/store/check-payment/', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -224,13 +298,12 @@ app.get('/api/store/check-payment/', async (req, res) => {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
         }
 
-        // Cek langsung ke MongoDB (In-Memory Index Read < 5ms)
-        const trx = await TransactionModel.findOne({ transactionId }).lean();
+        const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
-        // 1. Jika Status SUKSES di MongoDB (Otomatis dari Webhook)
+        // 1. Jika sudah sukses
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -241,10 +314,11 @@ app.get('/api/store/check-payment/', async (req, res) => {
             });
         }
 
-        // 2. Cek Kedaluwarsa
+        // 2. Jika Kedaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
-                await TransactionModel.updateOne({ transactionId }, { status: 'EXPIRED' });
+                trx.status = 'EXPIRED';
+                await trx.save();
             }
             return res.json({
                 status: false,
@@ -253,7 +327,37 @@ app.get('/api/store/check-payment/', async (req, res) => {
             });
         }
 
-        // Cepat kembalikan status pending tanpa memanggil API Casaku eksternal
+        // 3. AUTO-FALLBACK: Cek Langsung ke Server Casaku jika webhook belum memproses
+        try {
+            let checkStatusRes = null;
+            if (typeof casaku.checkStatus === 'function') {
+                checkStatusRes = await casaku.checkStatus({ id: transactionId });
+            } else {
+                // Direct Axios Fallback
+                const axiosRes = await axios.get(`https://casaku.id/api/v1/transaction/${transactionId}`, {
+                    headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
+                });
+                checkStatusRes = axiosRes.data;
+            }
+
+            const resData = checkStatusRes?.data || checkStatusRes || {};
+            const liveStatus = String(resData.status || resData.transaction_status || '').toLowerCase();
+
+            if (['paid', 'success', 'settled', 'berhasil', 'lunas'].includes(liveStatus)) {
+                await markTransactionAsPaid(trx);
+                return res.json({
+                    status: true,
+                    paid: true,
+                    message: "Pembayaran Berhasil!",
+                    produkLink: trx.produkLink,
+                    namaProduk: trx.namaProduk
+                });
+            }
+        } catch (checkErr) {
+            // Silently skip jika API Casaku sibuk/error
+        }
+
+        // Kembali ke status pending
         return res.json({ status: true, paid: false, message: "Menunggu pembayaran..." });
 
     } catch (error) {
@@ -262,9 +366,10 @@ app.get('/api/store/check-payment/', async (req, res) => {
     }
 });
 
+// === ENDPOINT WEBHOOK AUTOMATIC (INSTANT CALLBACK) ===
 app.post("/api/store/webhook", async (req, res) => {
   try {
-    let event = req.body;
+    let event = req.body.event;
 
     try {
       const signature = req.headers["x-casaku-signature"] || req.headers["x-casaku-sec"];
@@ -298,25 +403,8 @@ app.post("/api/store/webhook", async (req, res) => {
         ]
       });
 
-      if (trx && trx.status !== 'SUCCESS') {
-        trx.status = 'SUCCESS';
-        await trx.save();
-
-        const pathProduk = path.join(__dirname, 'database', 'produk.json');
-        if (fs.existsSync(pathProduk)) {
-          const produkList = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-          const produkIdx = produkList.findIndex(p => p.nama === trx.namaProduk);
-
-          if (produkIdx !== -1) {
-            if (produkList[produkIdx].stok !== undefined && produkList[produkIdx].stok > 0) {
-              produkList[produkIdx].stok = Math.max(0, produkList[produkIdx].stok - trx.qty);
-            }
-            produkList[produkIdx].terjual = (produkList[produkIdx].terjual || 0) + trx.qty;
-            fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
-          }
-        }
-
-        console.log(`✅ [AUTOMATIC SUCCESS] Transaksi ${trx.transactionId} LUNAS via Webhook!`);
+      if (trx) {
+        await markTransactionAsPaid(trx);
       }
     }
 
