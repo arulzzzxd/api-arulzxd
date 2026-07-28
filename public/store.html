@@ -178,7 +178,7 @@
                 </button>
             </div>
 
-            <!-- STEP 1: FORM PEMESANAN (DUA TOMBOL PEMBAYARAN) -->
+            <!-- STEP 1: FORM UTAMA CHECKOUT -->
             <div id="stepForm" class="p-5 space-y-4">
                 <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
                     <img id="modalProductImage" src="" alt="Product Preview" class="w-14 h-14 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
@@ -215,40 +215,47 @@
                     <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
-                        Username Pembeli <span class="text-cyberCyan">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
-                            <i class="fa-regular fa-user"></i>
-                        </span>
-                        <input type="text" id="usernameInput" required placeholder="Masukkan username Anda"
-                               class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                <!-- FIELD KHUSUS PESANAN MANUAL WHATSAPP (SEMBUNYI SECARA DEFAULT) -->
+                <div id="manualFields" class="hidden space-y-3 pt-1 border-t border-cyberBorder/50">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
+                            Nama / Username WhatsApp <span class="text-cyberCyan">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                                <i class="fa-regular fa-user"></i>
+                            </span>
+                            <input type="text" id="usernameInput" placeholder="Masukkan nama Anda"
+                                   class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                        </div>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
+                            Catatan Tambahan (Opsional)
+                        </label>
+                        <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
+                                  class="w-full p-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                    </div>
+
+                    <button type="button" onclick="submitManualPayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-green-900/50 transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Pesanan ke WhatsApp
+                    </button>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
-                        Catatan Tambahan (Opsional)
-                    </label>
-                    <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                              class="w-full p-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
-                </div>
-
-                <!-- OPSI PEMBAYARAN -->
-                <div class="pt-2 grid grid-cols-1 gap-3">
+                <!-- TOMBOL UTAMA PEMBAYARAN -->
+                <div id="paymentOptionBtns" class="pt-2 grid grid-cols-1 gap-3">
                     <button type="button" onclick="processAutoPayment()" id="btnAutoPay" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)
                     </button>
                     
-                    <button type="button" onclick="processManualPayment()" id="btnManualPay" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-green-900/50 transition flex items-center justify-center gap-2">
+                    <button type="button" onclick="showManualFields()" id="btnManualPay" class="w-full bg-green-600/20 border border-green-500/40 hover:bg-green-600 text-green-400 hover:text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
                         <i class="fa-brands fa-whatsapp text-sm"></i> Pesan Manual (WhatsApp)
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 2: METODE QRIS CASAKU, EXPIRATION TIMER & REALTIME CHECK -->
+            <!-- STEP 2: METODE QRIS CASAKU -->
             <div id="stepPayment" class="hidden text-center space-y-4 p-5">
                 <div class="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
                     <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
@@ -554,12 +561,21 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
             
-            document.getElementById('usernameInput').value = '';
-            document.getElementById('noteInput').value = '';
+            // Sembunyikan field manual & Tampilkan tombol opsi awal
+            if (document.getElementById('usernameInput')) document.getElementById('usernameInput').value = '';
+            if (document.getElementById('noteInput')) document.getElementById('noteInput').value = '';
+            document.getElementById('manualFields').classList.add('hidden');
+            document.getElementById('paymentOptionBtns').classList.remove('hidden');
+
             document.getElementById('stepForm').classList.remove('hidden');
             document.getElementById('stepPayment').classList.add('hidden');
             document.getElementById('stepSuccess').classList.add('hidden');
             document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function showManualFields() {
+            document.getElementById('manualFields').classList.remove('hidden');
+            document.getElementById('paymentOptionBtns').classList.add('hidden');
         }
 
         function updateQuantity(change) {
@@ -609,14 +625,14 @@
             closeCheckoutModal();
         }
 
-        // --- METHOD 1: PEMBAYARAN MANUAL WHATSAPP ---
-        function processManualPayment() {
+        // --- PEMBAYARAN MANUAL (KHUSUS WHATSAPP MEMAKAI USERNAME & CATATAN) ---
+        function submitManualPayment() {
             const item = DATA_PRODUK[SELECTED_INDEX];
             if (!item) return;
 
             const username = document.getElementById('usernameInput').value.trim();
             const note = document.getElementById('noteInput').value.trim();
-            if (!username) return alert("Username pembeli wajib diisi!");
+            if (!username) return alert("Username / Nama Pembeli wajib diisi!");
 
             const orderId = generateUniqueOrderId();
             const hargaUnit = item.harga_diskon || item.harga;
@@ -638,14 +654,9 @@
             closeCheckoutModal();
         }
 
-        // --- METHOD 2: PEMBAYARAN OTOMATIS QRIS DENGAN KONSISTENSI & TIMER ---
+        // --- PEMBAYARAN OTOMATIS (MURNI TANPA KANTONG USERNAME / CATATAN) ---
         async function processAutoPayment(existingTrxId = null) {
-            const username = document.getElementById('usernameInput').value.trim();
             const qty = document.getElementById('qtyInput').value;
-
-            if (!existingTrxId && !username) {
-                return alert("Username pembeli wajib diisi!");
-            }
 
             const btnPay = document.getElementById('btnAutoPay');
             if (btnPay) {
@@ -653,7 +664,6 @@
                 btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses QRIS...';
             }
 
-            // Memeriksa ID transaksi aktif yang tersimpan di localStorage
             const activeTrxId = existingTrxId || localStorage.getItem('activeTrxId');
 
             try {
@@ -662,7 +672,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         produkIndex: SELECTED_INDEX, 
-                        username, 
                         qty,
                         activeTrxId 
                     })
@@ -671,7 +680,6 @@
                 const data = await res.json();
                 if (!data.status) throw new Error(data.message);
 
-                // Simpan ID transaksi aktif ke localStorage
                 localStorage.setItem('activeTrxId', data.idTrx);
 
                 document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
@@ -683,7 +691,6 @@
                 document.getElementById('stepPayment').classList.remove('hidden');
                 document.getElementById('checkoutModal').classList.remove('hidden');
 
-                // Jalankan Timer Hitung Mundur & Polling Cepat
                 startCountdownTimer(data.expiresAt);
                 startPaymentPolling(data.idTrx);
 
@@ -698,7 +705,7 @@
             }
         }
 
-        // Timer Hitung Mundur 15 Menit Real-Time
+        // Timer Hitung Mundur Real-Time
         function startCountdownTimer(expiresAt) {
             if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -727,7 +734,7 @@
             }, 1000);
         }
 
-        // Polling Pengecekan Status Dipercepat (1.5 Detik per request)
+        // Polling Pengecekan Status Instan (1 Detik per Request)
         function startPaymentPolling(idTrx) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
@@ -740,10 +747,9 @@
                         clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
-                        // Hapus ID transaksi setelah berhasil
                         localStorage.removeItem('activeTrxId');
 
-                        document.getElementById('productSuccessLink').href = data.produkLink || '#';
+                        document.getElementById('productSuccessLink').href = data.produkLink;
                         document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
 
                         document.getElementById('stepPayment').classList.add('hidden');
@@ -761,13 +767,12 @@
                 } catch (e) {
                     console.log("Error saat memproses polling status:", e);
                 }
-            }, 1500); // Polling instan per 1.5 detik
+            }, 1000); // Check per 1 detik (1000ms)
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchProduk();
             
-            // Cek apakah user memiliki transaksi aktif saat baru membuka/refresh web
             const activeTrxId = localStorage.getItem('activeTrxId');
             if (activeTrxId) {
                 processAutoPayment(activeTrxId);
