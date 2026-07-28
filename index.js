@@ -36,8 +36,22 @@ app.set('trust proxy', 1);
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
 mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
+    .then(async () => {
+        console.log('📦 Berhasil terhubung ke MongoDB!');
+        
+        // Hapus index lama 'idTrx_1' jika masih tersisa di DB
+        try {
+            await mongoose.connection.collection('transactions').dropIndex('idTrx_1');
+            console.log('🗑️ Index lama idTrx_1 berhasil dihapus!');
+        } catch (err) {
+            // Abaikan jika index sudah terhapus sebelumnya
+            if (err.code !== 27) { 
+                console.log('ℹ️ Catatan Index:', err.message);
+            }
+        }
+    })
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err.message));
+
 
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
