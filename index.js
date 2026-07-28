@@ -27,17 +27,27 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json({
     verify: (req, _res, buf) => {
-        req.rawBody = buf; // Menyimpan raw buffer untuk verifikasi HMAC
+        req.rawBody = buf; // Simpan raw buffer untuk HMAC
     }
-}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
-    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+mongoose.set('bufferCommands', false);
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout jika server tidak dapat ditemukan
+            connectTimeoutMS: 10000,
+        });
+        console.log('📦 Berhasil terhubung ke MongoDB!');
+    } catch (err) {
+        console.error('❌ Gagal koneksi ke MongoDB:', err.message);
+    }
+};
+connectDB();
 
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
@@ -68,7 +78,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-// Schema Transaksi dengan Batas Waktu Expiration (15 Menit)
 const transactionSchema = new mongoose.Schema({
     idTrx: { type: String, required: true, unique: true },
     transactionId: { type: String, required: true },
@@ -78,7 +87,7 @@ const transactionSchema = new mongoose.Schema({
     qty: { type: Number, required: true },
     totalHarga: { type: Number, required: true },
     qrUrl: { type: String, required: true },
-    status: { type: String, default: 'PENDING' }, // 'PENDING', 'SUCCESS', 'EXPIRED', 'CANCELLED'
+    status: { type: String, default: 'PENDING' },
     createdAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, required: true }
 });
@@ -90,14 +99,12 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474f
 
 const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
 
-// Helper untuk membaca database produk.json
 function getProdukData() {
     const pathProduk = path.join(__dirname, 'database', 'produk.json');
     if (!fs.existsSync(pathProduk)) return [];
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// Helper untuk Tandai Lunas & Update Status di Database MongoDB
 async function markTransactionAsPaid(idTrx) {
     try {
         const trx = await TransactionModel.findOne({ idTrx: idTrx });
@@ -115,17 +122,27 @@ async function markTransactionAsPaid(idTrx) {
 }
 
 // =========================================================================
-// 1. ENDPOINT PEMBUATAN / PENGAMBILAN PEMBAYARAN REUSABLE
+// 1. ENDPOINT PEMBUATAN PEMBAYARAN (FIXED MONGOOSE TIMEOUT)
 // =========================================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
+        // Cek status koneksi MongoDB (1 = connected)
+        if (mongoose.connection.readyState !== 1) {
+            console.log("Reconnecting to MongoDB...");
+            await connectDB();
+            if (mongoose.connection.readyState !== 1) {
+                return res.status(503).json({
+                    status: false,
+                    message: "Database belum siap. Silakan coba beberapa detik lagi."
+                });
+            }
+        }
+
         const { qty, produkIndex, username, activeTrxId } = req.body;
 
-        // Jika user memuat ulang web dan memiliki ID transaksi aktif yang tersimpan
         if (activeTrxId) {
             const existingTrx = await TransactionModel.findOne({ idTrx: activeTrxId });
             if (existingTrx) {
-                // Cek apakah belum expired
                 if (Date.now() < new Date(existingTrx.expiresAt).getTime() && existingTrx.status === 'PENDING') {
                     return res.json({
                         status: true,
@@ -175,10 +192,8 @@ app.post('/api/store/create-payment', async (req, res) => {
             ? qrContent 
             : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`;
 
-        // Batas Waktu Pembayaran Ditentukan 15 Menit
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // Simpan Transaksi Permanen ke MongoDB
         await TransactionModel.create({
             idTrx,
             transactionId: casakuTxnId,
@@ -212,10 +227,14 @@ app.post('/api/store/create-payment', async (req, res) => {
 });
 
 // =========================================================================
-// 2. ENDPOINT CHECK PAYMENT (DENGAN PENGECEKAN CEPAT & STATUS KADALUWARSA)
+// 2. ENDPOINT CHECK PAYMENT
 // =========================================================================
 app.get('/api/store/check-payment', async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+
         const { idTrx } = req.query;
         if (!idTrx) {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
@@ -227,7 +246,6 @@ app.get('/api/store/check-payment', async (req, res) => {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
-        // 1. Cek Apakah Sudah Sukses di DB
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -238,7 +256,6 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
-        // 2. Cek Apakah Sudah Kadaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
                 trx.status = 'EXPIRED';
@@ -251,7 +268,6 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
-        // 3. Pengecekan Cepat via API Casaku (Fallback jika Webhook Terlambat)
         let isPaid = false;
         try {
             if (typeof casaku.checkStatus === 'function') {
@@ -264,7 +280,7 @@ app.get('/api/store/check-payment', async (req, res) => {
                 }
             }
         } catch (err) {
-            // Polling tetap cepat meskipun API eksternal timeout/pending
+            // Polling error fallback
         }
 
         if (isPaid) {
