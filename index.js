@@ -92,7 +92,7 @@ app.post('/api/store/create-payment', async (req, res) => {
             transactionId, // Disimpan untuk pengecekan nanti
             produkIndex,
             namaProduk: produk.nama,
-            produkLink: produk.link || produk.download_link || produk.file_url || "https://arulz-xd.my.id/files/product-default",
+            produkLink: produk.link,
             username,
             qty: quantity,
             totalHarga: finalAmount,
