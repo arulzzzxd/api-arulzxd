@@ -129,6 +129,31 @@ async function markTransactionAsPaid(trx) {
     }
 }
 
+app.get('/api/store/payment-stream', (req, res) => {
+    const transactionId = req.query.transactionId;
+    if (!transactionId) return res.status(400).send("transactionId required");
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Listener saat event pembayaran sukses dipicu
+    const onPaymentSuccess = async (data) => {
+        if (String(data.transactionId) === String(transactionId)) {
+            res.write(`data: ${JSON.stringify({ paid: true, produkLink: data.produkLink, namaProduk: data.namaProduk })}\n\n`);
+            paymentEvents.removeListener('payment_success', onPaymentSuccess);
+            res.end();
+        }
+    };
+
+    paymentEvents.on('payment_success', onPaymentSuccess);
+
+    req.on('close', () => {
+        paymentEvents.removeListener('payment_success', onPaymentSuccess);
+    });
+});
+
 // 1. ENDPOINT: Create Payment (Generate QRIS v2 Casaku)
 app.post('/api/store/create-payment', async (req, res) => {
     try {
@@ -180,7 +205,7 @@ app.post('/api/store/create-payment', async (req, res) => {
             qrType: "dynamic",
             paymentMethod: "qris",
             useQris: true,
-            prefix: "CSK"
+            prefix: "TRX"
         };
 
         const response = await axios.post(`${CASAKU_BASE_URL}/api/generate/v2/qris`, casakuPayload, {
@@ -249,10 +274,12 @@ app.get('/api/store/check-payment', async (req, res) => {
         const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
         if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
 
+        // Jika DB sudah tercatat SUCCESS
         if (trx.status === 'SUCCESS') {
             return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
         }
 
+        // Cek jika transaksi kadaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
                 trx.status = 'EXPIRED';
@@ -261,19 +288,30 @@ app.get('/api/store/check-payment', async (req, res) => {
             return res.json({ status: false, expired: true, message: "Transaksi kedaluwarsa." });
         }
 
-        // Direct Check Casaku Official Endpoint
+        // Auto Check langsung ke API Casaku untuk verifikasi status mutasi
         try {
-            const statusRes = await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, {
-                transactionId: String(transactionId)
-            }, {
+            const statusRes = await axios.get(`${CASAKU_BASE_URL}/api/transaction/detail/${transactionId}`, {
                 headers: { 'x-license-key': CASAKU_LICENSE_KEY }
+            }).catch(async () => {
+                // Fallback jika endpoint detail menggunakan POST check-status
+                return await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, {
+                    transactionId: String(transactionId)
+                }, {
+                    headers: { 'x-license-key': CASAKU_LICENSE_KEY }
+                });
             });
 
-            if (statusRes.data?.status === 200 && statusRes.data?.data?.status === 'paid') {
+            const resData = statusRes.data;
+            const isPaid = (resData?.status === 200 || resData?.success) && 
+                           (resData?.data?.status === 'paid' || resData?.data?.status === 'SUCCESS' || resData?.data?.isPaid === true);
+
+            if (isPaid) {
                 await markTransactionAsPaid(trx);
                 return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
             }
-        } catch (err) {}
+        } catch (err) {
+            console.log("Auto-check API Casaku pending / log error:", err.message);
+        }
 
         return res.json({ status: true, paid: false, message: "Menunggu pembayaran..." });
     } catch (error) {
@@ -284,28 +322,14 @@ app.get('/api/store/check-payment', async (req, res) => {
 // 4. ENDPOINT: Webhook Callback
 app.post('/api/store/webhook', async (req, res) => {
     try {
-        const signatureHeader = req.headers['x-casaku-signature'];
-        const rawBody = req.rawBody || JSON.stringify(req.body);
-
-        // 1. Verifikasi Kredensial HMAC-SHA256
-        if (signatureHeader && WEBHOOK_SECRET) {
-            const calculatedSignature = crypto
-                .createHmac('sha256', WEBHOOK_SECRET)
-                .update(rawBody)
-                .digest('hex');
-
-            if (calculatedSignature !== signatureHeader) {
-                console.warn("⚠️ Webhook Signature Mismatch! Permintaan ditolak.");
-                return res.status(401).json({ status: false, message: "Invalid signature" });
-            }
-        }
-
         const payload = req.body;
-        console.log("🔔 [WEBHOOK CASAKU VALID]:", payload);
+        console.log("🔔 [WEBHOOK CASAKU RECEIVED]:", payload);
 
-        // 2. Eksekusi Pembayaran Lunas
-        if (payload.status === 'paid' && payload.transactionId) {
-            const trx = await TransactionModel.findOne({ transactionId: String(payload.transactionId) });
+        const trxId = payload.transactionId || payload.trx_id || payload.data?.transactionId;
+        const status = payload.status || payload.data?.status;
+
+        if ((status === 'paid' || status === 'SUCCESS') && trxId) {
+            const trx = await TransactionModel.findOne({ transactionId: String(trxId) });
             if (trx) {
                 await markTransactionAsPaid(trx);
             }
@@ -317,7 +341,6 @@ app.post('/api/store/webhook', async (req, res) => {
         return res.status(500).json({ error: "Internal Webhook Error" });
     }
 });
-
 
 // 5. ENDPOINT TAMBAHAN: Profile & Cancel Casaku
 app.get('/api/store/casaku-profile', async (req, res) => {
