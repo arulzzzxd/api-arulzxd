@@ -728,37 +728,37 @@
         function startPaymentPolling(transactionId) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
-            POLLING_INTERVAL = setInterval(async () => {
-                try {
-                    const res = await fetch(`/api/store/check-payment?transactionId=${transactionId}`);
-                    const data = await res.json();
+// Menjadi ini (3000 ms = 3 detik):
+POLLING_INTERVAL = setInterval(async () => {
+    try {
+        const res = await fetch(`/api/store/check-payment?transactionId=${transactionId}`);
+        const data = await res.json();
 
-                    if (data.status && data.paid) {
-                        clearInterval(POLLING_INTERVAL);
-                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+        if (data.status && data.paid) {
+            clearInterval(POLLING_INTERVAL);
+            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
-                        localStorage.removeItem('activeTrxId');
+            localStorage.removeItem('activeTrxId');
 
-                        document.getElementById('productSuccessLink').href = data.produkLink;
-                        document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
+            document.getElementById('productSuccessLink').href = data.produkLink;
+            document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
 
-                        document.getElementById('stepPayment').classList.add('hidden');
-                        document.getElementById('stepSuccess').classList.remove('hidden');
+            document.getElementById('stepPayment').classList.add('hidden');
+            document.getElementById('stepSuccess').classList.remove('hidden');
 
-                        fetchProduk(true);
-                    } else if (data.expired) {
-                        clearInterval(POLLING_INTERVAL);
-                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+            fetchProduk(true);
+        } else if (data.expired) {
+            clearInterval(POLLING_INTERVAL);
+            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
-                        localStorage.removeItem('activeTrxId');
-                        alert("Waktu pembayaran telah habis!");
-                        closeCheckoutModal();
-                    }
-                } catch (e) {
-                    console.log("Error saat memproses polling status:", e);
-                }
-            }, 1000);
+            localStorage.removeItem('activeTrxId');
+            alert("Waktu pembayaran telah habis!");
+            closeCheckoutModal();
         }
+    } catch (e) {
+        console.log("Error saat memproses polling status:", e);
+    }
+}, 3000);
 
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchProduk();
