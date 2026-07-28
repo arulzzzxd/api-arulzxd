@@ -29,6 +29,57 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
+
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
+    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+
+app.use(compression()); 
+app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: 'arulzxd_secret_session_key_99', 
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    password: { type: String, default: null }, // Null jika terdaftar via OAuth (Google/GitHub)
+    provider: { type: String, default: 'local' }, // 'local', 'github', atau 'google'
+    providerId: { type: String, default: null },   // ID unik dari GitHub / Google
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    apikey: { type: String, required: true, unique: true },
+    role: { type: String, default: 'Free User' },
+    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
+    createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+
+// Tambahkan Schema Transaksi di bawah schema User
+const transactionSchema = new mongoose.Schema({
+    idTrx: { type: String, required: true, unique: true },
+    transactionId: { type: String, required: true },
+    username: { type: String, required: true },
+    namaProduk: { type: String, required: true },
+    produkLink: { type: String, required: true },
+    qty: { type: Number, required: true },
+    totalHarga: { type: Number, required: true },
+    status: { type: String, default: 'PENDING' },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const TransactionModel = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+
 const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
 
 // Perbaikan: bungkus dalam object { licenseKey: ... }
@@ -44,9 +95,6 @@ function getProdukData() {
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// =============================================================
-// 1. ENDPOINT: BUAT PEMBAYARAN OTOMATIS (QRIS VIA CASAKU)
-// =============================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
         const qty = req.body.qty;
@@ -69,7 +117,7 @@ app.post('/api/store/create-payment', async (req, res) => {
         const totalHarga = hargaSatuan * quantity;
         const idTrx = 'TRX-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
-        // 🌟 Menggunakan method generateQRISv2 dari SDK Casaku
+        // Menggunakan method generateQRISv2 dari SDK Casaku
         const deposit = await casaku.generateQRISv2({
             qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
             amount: totalHarga,
@@ -80,16 +128,18 @@ app.post('/api/store/create-payment', async (req, res) => {
             useUniqueCode: true
         });
 
-        // Tangkap data transaksi dari respons Casaku
+        // Tangkap data respons dari Casaku
         const trxData = deposit.data || deposit;
-        const transactionId = trxData.transactionId || trxData.id || idTrx;
+        
+        // ⚠️ AMBIL TRANSACTION ID ASLI DARI CASAKU (biasanya berformat 'txn_...')
+        const casakuTxnId = trxData.transactionId; 
         const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
         const finalAmount = trxData.totalAmount || totalHarga;
 
-        // Simpan transaksi di memory
+        // Simpan transaksi dengan mencantumkan casakuTxnId yang benar
         TRANSACTIONS[idTrx] = {
             idTrx,
-            transactionId, // Disimpan untuk pengecekan nanti
+            transactionId: casakuTxnId, // 👈 Kunci utama agar checkStatus berhasil!
             produkIndex,
             namaProduk: produk.nama,
             produkLink: produk.link,
@@ -105,7 +155,6 @@ app.post('/api/store/create-payment', async (req, res) => {
             status: true,
             idTrx,
             totalHarga: finalAmount,
-            // Jika qrContent berupa raw QR String (000201...), ubah jadi gambar QR via API Google/QRServer
             qrUrl: qrContent.startsWith('http') 
                 ? qrContent 
                 : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`,
@@ -121,14 +170,9 @@ app.post('/api/store/create-payment', async (req, res) => {
     }
 });
 
-
-// =============================================================
-// 2. ENDPOINT: CEK STATUS PEMBAYARAN REALTIME (POLLING)
-// =============================================================
 app.get('/api/store/check-payment', async (req, res) => {
     try {
         const idTrx = req.query.idTrx;
-
         const trx = TRANSACTIONS[idTrx];
         
         if (!trx) {
@@ -147,28 +191,20 @@ app.get('/api/store/check-payment', async (req, res) => {
 
         let isPaid = false;
         try {
-            // Pastikan method ini sesuai dengan SDK Anda (biasanya 'checkStatus', 'cekStatus', atau 'getTransaction')
             if (typeof casaku.checkStatus === 'function') {
+                // Gunakan transactionId asli dari Casaku (misal: txn_xxx)
                 const checkRes = await casaku.checkStatus(trx.transactionId);
-                
-                // Payment gateway sering membungkus response di dalam property 'data'
                 const resData = checkRes.data || checkRes;
                 
-                // Ambil string status dan ubah ke huruf kapital untuk mempermudah pengecekan
-                const statusPembayaran = (resData.status || resData.payment_status || '').toUpperCase();
+                const statusPembayaran = (resData.status || '').toLowerCase();
                 
-                // Deteksi berbagai format status sukses ('SUCCESS', 'PAID', 'SETTLED', dll)
-                if (statusPembayaran === 'SUCCESS' || statusPembayaran === 'PAID' || statusPembayaran === 'SETTLED' || resData.paid === true) {
+                // Berdasarkan dokumentasi Casaku, status lunas bisa berupa 'paid' atau 'success'
+                if (statusPembayaran === 'success' || statusPembayaran === 'paid' || statusPembayaran === 'settled' || resData.paid === true) {
                     isPaid = true;
                 }
-            } else {
-                console.error("Method checkStatus tidak ditemukan di instance SDK Casaku Anda.");
-                // Jika Anda tidak tahu methodnya, uncomment baris di bawah ini untuk melihat isi SDK:
-                // console.log("Method yang tersedia:", Object.keys(casaku));
             }
         } catch (err) {
-            // Tampilkan error yang spesifik agar mudah di-debug
-            console.log("Polling pembayaran - Error:", err.response?.data || err.message);
+            console.log("Menunggu pembayaran casaku - Error:", err.response?.data || err.message);
         }
 
         if (isPaid) {
@@ -207,42 +243,6 @@ app.get('/api/store/check-payment', async (req, res) => {
         res.status(500).json({ status: false, message: "Gagal mengecek status pembayaran." });
     }
 });
-
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
-
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
-    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
-
-app.use(compression()); 
-app.use(express.urlencoded({ extended: true }));
-
-app.use(session({
-    secret: 'arulzxd_secret_session_key_99', 
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    password: { type: String, default: null }, // Null jika terdaftar via OAuth (Google/GitHub)
-    provider: { type: String, default: 'local' }, // 'local', 'github', atau 'google'
-    providerId: { type: String, default: null },   // ID unik dari GitHub / Google
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    apikey: { type: String, required: true, unique: true },
-    role: { type: String, default: 'Free User' },
-    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
-    createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
