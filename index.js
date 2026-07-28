@@ -121,7 +121,6 @@ async function markTransactionAsPaid(idTrx) {
     }
 }
 
-// --- 1. ENDPOINT PEMBUATAN PEMBAYARAN ---
 app.post('/api/store/create-payment', async (req, res) => {
     try {
         const { qty, produkIndex, username } = req.body;
