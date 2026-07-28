@@ -215,7 +215,7 @@
                     <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
                 </div>
 
-                <!-- FIELD KHUSUS PESANAN MANUAL WHATSAPP (SEMBUNYI SECARA DEFAULT) -->
+                <!-- FIELD KHUSUS PESANAN MANUAL WHATSAPP -->
                 <div id="manualFields" class="hidden space-y-3 pt-1 border-t border-cyberBorder/50">
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
@@ -338,15 +338,6 @@
                 return (jumlah / 1000).toFixed(1).replace('.0', '') + 'RB+ terjual';
             }
             return jumlah + ' terjual';
-        }
-
-        function generateUniqueOrderId() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let randomStr = '';
-            for (let i = 0; i < 6; i++) {
-                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return `TRX-${randomStr}`;
         }
 
         function formatRupiah(angka) {
@@ -625,7 +616,7 @@
             closeCheckoutModal();
         }
 
-        // --- PEMBAYARAN MANUAL (KHUSUS WHATSAPP MEMAKAI USERNAME & CATATAN) ---
+        // --- PEMBAYARAN MANUAL (WHATSAPP) ---
         function submitManualPayment() {
             const item = DATA_PRODUK[SELECTED_INDEX];
             if (!item) return;
@@ -634,13 +625,11 @@
             const note = document.getElementById('noteInput').value.trim();
             if (!username) return alert("Username / Nama Pembeli wajib diisi!");
 
-            const orderId = generateUniqueOrderId();
             const hargaUnit = item.harga_diskon || item.harga;
             const totalHarga = hargaUnit * CURRENT_QTY;
 
             let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
             message += `*--- DETAIL PESANAN BARU ---*\n`;
-            message += `🔖 *ID TRX:* ${orderId}\n`;
             message += `👤 *Username:* ${username}\n`;
             message += `📦 *Produk:* ${item.nama}\n`;
             message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
@@ -654,7 +643,7 @@
             closeCheckoutModal();
         }
 
-        // --- PEMBAYARAN OTOMATIS (MURNI TANPA KANTONG USERNAME / CATATAN) ---
+        // --- PEMBAYARAN OTOMATIS (CASAKU TRANSACTION ID) ---
         async function processAutoPayment(existingTrxId = null) {
             const qty = document.getElementById('qtyInput').value;
 
@@ -680,10 +669,11 @@
                 const data = await res.json();
                 if (!data.status) throw new Error(data.message);
 
-                localStorage.setItem('activeTrxId', data.idTrx);
+                const trxId = data.transactionId;
+                localStorage.setItem('activeTrxId', trxId);
 
                 document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
-                document.getElementById('trxIdDisplay').innerText = data.idTrx;
+                document.getElementById('trxIdDisplay').innerText = trxId;
                 document.getElementById('trxProductDisplay').innerText = data.namaProduk || 'Produk Store';
                 document.getElementById('trxTotalDisplay').innerText = formatRupiah(data.totalHarga);
 
@@ -692,7 +682,7 @@
                 document.getElementById('checkoutModal').classList.remove('hidden');
 
                 startCountdownTimer(data.expiresAt);
-                startPaymentPolling(data.idTrx);
+                startPaymentPolling(trxId);
 
             } catch (err) {
                 alert(err.message || "Gagal membuat pembayaran otomatis.");
@@ -734,13 +724,13 @@
             }, 1000);
         }
 
-        // Polling Pengecekan Status Instan (1 Detik per Request)
-        function startPaymentPolling(idTrx) {
+        // Polling Status Pembayaran Menggunakan transactionId
+        function startPaymentPolling(transactionId) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
             POLLING_INTERVAL = setInterval(async () => {
                 try {
-                    const res = await fetch(`/api/store/check-payment?idTrx=${idTrx}`);
+                    const res = await fetch(`/api/store/check-payment?transactionId=${transactionId}`);
                     const data = await res.json();
 
                     if (data.status && data.paid) {
@@ -767,7 +757,7 @@
                 } catch (e) {
                     console.log("Error saat memproses polling status:", e);
                 }
-            }, 1000); // Check per 1 detik (1000ms)
+            }, 1000);
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
