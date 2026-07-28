@@ -29,6 +29,7 @@ app.use(express.json({
     verify: (req, _res, buf) => {
         req.rawBody = buf; // Simpan raw buffer untuk HMAC
     }
+}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
