@@ -35,8 +35,6 @@ app.set('trust proxy', 1);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
-mongoose.set('bufferCommands', true);
-
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err.message));
