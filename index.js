@@ -6,29 +6,6 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
-const {
-  CasakuConfig,
-  CasakuResponse,
-  PaymentStatus,
-  GenerateQRISv1Params,
-  QRISv1Data,
-  GenerateQRISv2Params,
-  QRISv2Data,
-  CheckStatusData,
-  CancelData,
-  ListParams,
-  ListData,
-  ListItem,
-  DeleteParams,
-  ProfileData,
-  WatchOptions,
-  WalletShortcutOptions,
-  QRImageOptions,
-  WebhookPayload,
-  CasakuPackage,
-  Casaku,
-  parseWebhook
-} = require("casaku");
 const EventEmitter = require('events');
 const paymentEvents = new EventEmitter();
 const axios = require('axios');
@@ -49,11 +26,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
-app.use(express.json({
-    verify: (req, _res, buf) => {
-        req.rawBody = buf; // Simpan raw buffer untuk HMAC
-    }
-}));
+app.use(express.json({ verify: (req, _res, buf) => (req.rawBody = buf) }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -106,114 +79,34 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
+// Konfigurasi Kredensial Casaku
+const CASAKU_BASE_URL = "https://api.casaku.id";
+const CASAKU_LICENSE_KEY = process.env.CASAKU_LICENSE_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500";
+
+// Mongo DB Schema
 const transactionSchema = new mongoose.Schema({
-    transactionId: { type: String, required: true, unique: true, index: true }, // Index ditambahkan untuk query super cepat
+    transactionId: { type: String, required: true, unique: true, index: true },
     namaProduk: { type: String, required: true },
     produkLink: { type: String, required: true },
     qty: { type: Number, required: true },
     totalHarga: { type: Number, required: true },
     qrUrl: { type: String, required: true },
-    status: { type: String, default: 'PENDING' },
+    status: { type: String, default: 'PENDING' }, // PENDING, SUCCESS, EXPIRED, CANCEL
     createdAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, required: true }
 });
 
 const TransactionModel = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500";
-
-const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
-
+// Helper membaca produk.json
 function getProdukData() {
     const pathProduk = path.join(__dirname, 'database', 'produk.json');
     if (!fs.existsSync(pathProduk)) return [];
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// === ENDPOINT REALTIME (SERVER-SENT EVENTS / SSE) ===
-app.get('/api/store/payment-stream', async (req, res) => {
-    const transactionId = req.query.transactionId;
-    if (!transactionId) {
-        return res.status(400).send("transactionId required");
-    }
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-
-    console.log(`🔌 Client terhubung ke realtime stream Trx: ${transactionId}`);
-
-    // Helper pemicu sukses
-    const sendSuccess = (trxData) => {
-        res.write(`data: ${JSON.stringify({ paid: true, produkLink: trxData.produkLink, namaProduk: trxData.namaProduk })}\n\n`);
-        res.end();
-    };
-
-    // 1. Cek DB Awal
-    const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
-    if (trx && trx.status === 'SUCCESS') {
-        return sendSuccess(trx);
-    }
-
-    // 2. Listener Webhook Instant
-    const onPaidListener = (data) => {
-        if (data.transactionId === String(transactionId)) {
-            sendSuccess(data);
-        }
-    };
-    paymentEvents.on('payment_success', onPaidListener);
-
-    // 3. Fallback Periodic Status Check (tiap 3 detik) jika Webhook terlambat/lokal
-    const checkInterval = setInterval(async () => {
-        try {
-            const currentTrx = await TransactionModel.findOne({ transactionId: String(transactionId) });
-            if (!currentTrx) return;
-
-            if (currentTrx.status === 'SUCCESS') {
-                sendSuccess(currentTrx);
-                clearInterval(checkInterval);
-                return;
-            }
-
-            // Cek langsung ke API Casaku
-            let checkStatusRes = null;
-            if (typeof casaku.checkStatus === 'function') {
-                checkStatusRes = await casaku.checkStatus({ id: transactionId });
-            } else {
-                const axiosRes = await axios.get(`https://api.casaku.id/api/generate/check-status/${transactionId}`, {
-                    headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
-                });
-                checkStatusRes = axiosRes.data;
-            }
-
-            const resData = checkStatusRes?.data || checkStatusRes || {};
-            const liveStatus = String(resData.status || resData.transaction_status || '').toLowerCase();
-
-            if (['paid', 'success', 'settled', 'berhasil', 'lunas'].includes(liveStatus)) {
-                await markTransactionAsPaid(currentTrx);
-                sendSuccess(currentTrx);
-                clearInterval(checkInterval);
-            }
-        } catch (e) {
-            // Abaikan error jaringan sementara
-        }
-    }, 3000);
-
-    // Heartbeat Keep-Alive
-    const heartbeat = setInterval(() => {
-        res.write(': heartbeat\n\n');
-    }, 5000);
-
-    req.on('close', () => {
-        clearInterval(heartbeat);
-        clearInterval(checkInterval);
-        paymentEvents.removeListener('payment_success', onPaidListener);
-    });
-});
-
-// === FUNCTION UPDATE TRANSAKSI (DENGAN EMITTER PUSH) ===
+// Helper Update Transaksi ke LUNAS
 async function markTransactionAsPaid(trx) {
     try {
         if (!trx || trx.status === 'SUCCESS') return true;
@@ -221,31 +114,33 @@ async function markTransactionAsPaid(trx) {
         trx.status = 'SUCCESS';
         await trx.save();
 
-        // ⚡ PUSH EVENT REALTIME SECARA INSTANT KEPADA KLIEN YANG BUKA SSE STREAM
+        // Push event ke listener SSE
         paymentEvents.emit('payment_success', {
             transactionId: String(trx.transactionId),
             produkLink: trx.produkLink,
             namaProduk: trx.namaProduk
         });
 
-        console.log(`✅ [AUTOMATIC INSTANT] Transaksi ${trx.transactionId} LUNAS & Pushed!`);
+        console.log(`✅ [LUNAS] Transaksi ${trx.transactionId} telah diverifikasi.`);
         return true;
     } catch (err) {
-        console.error("❌ Gagal memperbarui status transaksi:", err.message);
+        console.error("❌ Gagal update status transaksi:", err.message);
         return false;
     }
 }
 
+// 1. ENDPOINT: Create Payment (Generate QRIS v2 Casaku)
 app.post('/api/store/create-payment', async (req, res) => {
     try {
         const qty = req.body.qty;
         const produkIndex = req.body.produkIndex;
         const activeTrxId = req.body.activeTrxId;
 
+        // 1. Cek jika transaksi sebelumnya masih aktif & pending
         if (activeTrxId) {
             const existingTrx = await TransactionModel.findOne({ transactionId: activeTrxId }).lean();
-            if (existingTrx) {
-                if (Date.now() < new Date(existingTrx.expiresAt).getTime() && existingTrx.status === 'PENDING') {
+            if (existingTrx && existingTrx.status === 'PENDING') {
+                if (Date.now() < new Date(existingTrx.expiresAt).getTime()) {
                     return res.json({
                         status: true,
                         transactionId: existingTrx.transactionId,
@@ -259,6 +154,7 @@ app.post('/api/store/create-payment', async (req, res) => {
             }
         }
 
+        // 2. Ambil data produk
         const produkList = getProdukData();
         const produk = produkList[produkIndex];
 
@@ -272,46 +168,61 @@ app.post('/api/store/create-payment', async (req, res) => {
 
         const quantity = parseInt(qty) || 1;
         const hargaSatuan = (produk.harga_diskon && produk.harga_diskon > 0) ? produk.harga_diskon : produk.harga;
-        const totalHarga = hargaSatuan * quantity;
+        const amount = hargaSatuan * quantity;
 
-        const deposit = await casaku.generateQRISv2({
-            qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
-            amount: totalHarga,
+        // 3. Request ke API Casaku v2 dengan struktur payload yang ditentukan
+        const casakuPayload = {
+            qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a", // atau ganti dynamic: `qr-${Date.now()}`
+            amount: amount,
+            useUniqueCode: true,
             packageIds: ["id.dana"],
+            expiredInMinutes: 15,
             qrType: "dynamic",
             paymentMethod: "qris",
             useQris: true,
-            useUniqueCode: true
+            prefix: "CSK"
+        };
+
+        const response = await axios.post(`${CASAKU_BASE_URL}/api/generate/v2/qris`, casakuPayload, {
+            headers: {
+                'x-license-key': CASAKU_LICENSE_KEY,
+                'Content-Type': 'application/json'
+            }
         });
 
-        const trxData = deposit.data || deposit;
-        console.log("📦 Respon Buat QRIS Casaku:", JSON.stringify(trxData));
+        const resBody = response.data;
+        if (resBody.status !== 200 || !resBody.data) {
+            throw new Error(resBody.message || "Gagal memperoleh data QRIS dari Casaku.");
+        }
 
-        const casakuTxnId = trxData.id || trxData.transactionId || trxData.trx_id || trxData.deposit_id; 
-        const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
-        const finalAmount = trxData.totalAmount || totalHarga;
+        const casakuData = resBody.data;
+        const transactionId = String(casakuData.transactionId);
+        const finalAmount = casakuData.totalAmount || amount;
+        const qrString = casakuData.qr_string || casakuData.payment_url;
 
-        const qrImageUrl = qrContent.startsWith('http') 
-            ? qrContent 
-            : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`;
+        // Konversi QR String menjadi URL gambar QR Code
+        const qrImageUrl = qrString.startsWith('http') 
+            ? qrString 
+            : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrString)}`;
 
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + (casakuData.expiredInMinutes || 15) * 60 * 1000);
 
+        // 4. Simpan Transaksi Baru ke DB
         await TransactionModel.create({
-            transactionId: String(casakuTxnId),
+            transactionId: transactionId,
             namaProduk: produk.nama,
-            produkLink: produk.link,
+            produkLink: produk.link || '#',
             qty: quantity,
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             status: 'PENDING',
-            createdAt: new Date(),
             expiresAt: expiresAt
         });
 
+        // 5. Kirim respon balik ke frontend
         return res.json({
             status: true,
-            transactionId: casakuTxnId,
+            transactionId: transactionId,
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             expiresAt: expiresAt,
@@ -319,39 +230,27 @@ app.post('/api/store/create-payment', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Gagal membuat pembayaran Casaku:", error);
+        console.error("Error Create Payment Casaku:", error.response?.data || error.message);
         return res.status(500).json({
             status: false,
-            message: "Gagal memproses pembayaran otomatis: " + (error.message || error)
+            message: "Gagal memproses pembayaran otomatis: " + (error.response?.data?.message || error.message)
         });
     }
 });
 
-// === ENDPOINT CHECK-PAYMENT AUTO FALLBACK (SERP / OTOMATIS) ===
+// 3. ENDPOINT: HTTP Polling Check Status Fallback
 app.get('/api/store/check-payment', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     try {
         const transactionId = req.query.transactionId;
-        if (!transactionId) {
-            return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
-        }
+        if (!transactionId) return res.status(400).json({ status: false, message: "transactionId required" });
 
         const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
-        if (!trx) {
-            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
-        }
+        if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
 
         if (trx.status === 'SUCCESS') {
-            return res.json({
-                status: true,
-                paid: true,
-                message: "Pembayaran Berhasil!",
-                produkLink: trx.produkLink,
-                namaProduk: trx.namaProduk
-            });
+            return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
         }
 
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
@@ -359,95 +258,90 @@ app.get('/api/store/check-payment', async (req, res) => {
                 trx.status = 'EXPIRED';
                 await trx.save();
             }
-            return res.json({
-                status: false,
-                expired: true,
-                message: "Waktu pembayaran telah habis."
-            });
+            return res.json({ status: false, expired: true, message: "Transaksi kedaluwarsa." });
         }
 
-        // Direct Check Casaku
+        // Direct Check Casaku Official Endpoint
         try {
-            let checkStatusRes = null;
-            if (typeof casaku.checkStatus === 'function') {
-                checkStatusRes = await casaku.checkStatus({ id: transactionId });
-            } else {
-                const axiosRes = await axios.get(`https://api.casaku.id/api/generate/check-status/${transactionId}`, {
-                    headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
-                });
-                checkStatusRes = axiosRes.data;
-            }
+            const statusRes = await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, {
+                transactionId: String(transactionId)
+            }, {
+                headers: { 'x-license-key': CASAKU_LICENSE_KEY }
+            });
 
-            const resData = checkStatusRes?.data || checkStatusRes || {};
-            const liveStatus = String(resData.status || resData.transaction_status || '').toLowerCase();
-
-            if (['paid', 'success', 'settled', 'berhasil', 'lunas'].includes(liveStatus)) {
+            if (statusRes.data?.status === 200 && statusRes.data?.data?.status === 'paid') {
                 await markTransactionAsPaid(trx);
-                return res.json({
-                    status: true,
-                    paid: true,
-                    message: "Pembayaran Berhasil!",
-                    produkLink: trx.produkLink,
-                    namaProduk: trx.namaProduk
-                });
+                return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
             }
-        } catch (checkErr) {}
+        } catch (err) {}
 
         return res.json({ status: true, paid: false, message: "Menunggu pembayaran..." });
-
     } catch (error) {
-        console.error("Error Cek Pembayaran:", error);
-        res.status(500).json({ status: false, message: "Gagal mengecek status pembayaran." });
+        res.status(500).json({ status: false, message: "Gagal mengecek status." });
     }
 });
 
-// === ENDPOINT WEBHOOK AUTOMATIC (INSTANT CALLBACK) ===
-app.post("/api/store/webhook", async (req, res) => {
-  try {
-    let event = req.body.event;
-
+// 4. ENDPOINT: Webhook Callback
+app.post('/api/store/webhook', async (req, res) => {
     try {
-      const signature = req.headers["x-casaku-signature"] || req.headers["x-casaku-sec"];
-      const rawBody = req.rawBody || JSON.stringify(req.body);
-      if (signature && typeof parseWebhook === 'function') {
-        event = parseWebhook(rawBody, signature, WEBHOOK_SECRET);
-      }
-    } catch (sigErr) {
-      console.warn("⚠️ Webhook Signature skipped/failed:", sigErr.message);
+        const signatureHeader = req.headers['x-casaku-signature'];
+        const rawBody = req.rawBody || JSON.stringify(req.body);
+
+        // 1. Verifikasi Kredensial HMAC-SHA256
+        if (signatureHeader && WEBHOOK_SECRET) {
+            const calculatedSignature = crypto
+                .createHmac('sha256', WEBHOOK_SECRET)
+                .update(rawBody)
+                .digest('hex');
+
+            if (calculatedSignature !== signatureHeader) {
+                console.warn("⚠️ Webhook Signature Mismatch! Permintaan ditolak.");
+                return res.status(401).json({ status: false, message: "Invalid signature" });
+            }
+        }
+
+        const payload = req.body;
+        console.log("🔔 [WEBHOOK CASAKU VALID]:", payload);
+
+        // 2. Eksekusi Pembayaran Lunas
+        if (payload.status === 'paid' && payload.transactionId) {
+            const trx = await TransactionModel.findOne({ transactionId: String(payload.transactionId) });
+            if (trx) {
+                await markTransactionAsPaid(trx);
+            }
+        }
+
+        return res.json({ status: 200, message: "Webhook processed successfully" });
+    } catch (err) {
+        console.error("❌ Webhook Error:", err.message);
+        return res.status(500).json({ error: "Internal Webhook Error" });
     }
+});
 
-    console.log("🔔 [WEBHOOK RECEIVED]:", JSON.stringify(event));
 
-    const status = String(
-      event.status || 
-      event.transaction_status || 
-      event.payment_status || 
-      (event.data && event.data.status) || 
-      ''
-    ).toLowerCase();
-
-    const transactionId = event.transactionId || event.trx_id || event.id || (event.data && event.data.id);
-    const amount = event.amount || event.totalAmount || (event.data && event.data.amount);
-
-    if (['paid', 'success', 'settled', 'berhasil', 'lunas'].includes(status)) {
-      
-      const trx = await TransactionModel.findOne({
-        $or: [
-          { transactionId: String(transactionId) },
-          { totalHarga: Number(amount), status: 'PENDING' }
-        ]
-      });
-
-      if (trx) {
-        await markTransactionAsPaid(trx);
-      }
+// 5. ENDPOINT TAMBAHAN: Profile & Cancel Casaku
+app.get('/api/store/casaku-profile', async (req, res) => {
+    try {
+        const response = await axios.get(`${CASAKU_BASE_URL}/api/profile`, {
+            headers: { 'x-license-key': CASAKU_LICENSE_KEY }
+        });
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ status: false, message: err.message });
     }
+});
 
-    return res.json({ success: true, message: "Webhook processed successfully" });
-  } catch (err) {
-    console.error("❌ [WEBHOOK ERROR]:", err.message);
-    return res.status(500).json({ error: "Internal Webhook Error" });
-  }
+app.post('/api/store/cancel-payment', async (req, res) => {
+    try {
+        const { transactionId } = req.body;
+        await axios.post(`${CASAKU_BASE_URL}/api/generate/cancel-status`, { transactionId }, {
+            headers: { 'x-license-key': CASAKU_LICENSE_KEY }
+        });
+        await TransactionModel.findOneAndUpdate({ transactionId }, { status: 'CANCEL' });
+        res.json({ status: true, message: "Transaksi dibatalkan." });
+    } catch (err) {
+        res.status(500).json({ status: false, message: err.message });
+    }
 });
 
 passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
