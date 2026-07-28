@@ -82,7 +82,6 @@ const User = mongoose.models.User || mongoose.model('User', userSchema);
 const transactionSchema = new mongoose.Schema({
     idTrx: { type: String, required: true, unique: true },
     transactionId: { type: String, required: true },
-    username: { type: String, required: true },
     namaProduk: { type: String, required: true },
     produkLink: { type: String, required: true },
     qty: { type: Number, required: true },
@@ -127,7 +126,6 @@ async function markTransactionAsPaid(idTrx) {
 // =========================================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        // Cek status koneksi MongoDB (1 = connected)
         if (mongoose.connection.readyState !== 1) {
             console.log("Reconnecting to MongoDB...");
             await connectDB();
@@ -139,7 +137,7 @@ app.post('/api/store/create-payment', async (req, res) => {
             }
         }
 
-        const { qty, produkIndex, username, activeTrxId } = req.body;
+        const { qty, produkIndex, activeTrxId } = req.body;
 
         if (activeTrxId) {
             const existingTrx = await TransactionModel.findOne({ idTrx: activeTrxId });
@@ -198,7 +196,6 @@ app.post('/api/store/create-payment', async (req, res) => {
         await TransactionModel.create({
             idTrx,
             transactionId: casakuTxnId,
-            username: username || 'Guest',
             namaProduk: produk.nama,
             produkLink: produk.link,
             qty: quantity,
@@ -228,7 +225,7 @@ app.post('/api/store/create-payment', async (req, res) => {
 });
 
 // =========================================================================
-// 2. ENDPOINT CHECK PAYMENT
+// ENDPOINT CHECK PAYMENT (DIPERCEPAT & DIOPTIMALKAN)
 // =========================================================================
 app.get('/api/store/check-payment', async (req, res) => {
     try {
@@ -236,17 +233,17 @@ app.get('/api/store/check-payment', async (req, res) => {
             await connectDB();
         }
 
-        const { idTrx } = req.query;
+        const idTrx = req.query.idTrx;
         if (!idTrx) {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
         }
 
         const trx = await TransactionModel.findOne({ idTrx });
-        
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
+        // 1. Cek dari Database MongoDB (Tercepat dari Webhook)
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -257,6 +254,7 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
+        // 2. Cek Kedaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
                 trx.status = 'EXPIRED';
@@ -269,19 +267,20 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
+        // 3. Fallback Active Check Status Ke API Casaku
         let isPaid = false;
         try {
             if (typeof casaku.checkStatus === 'function') {
                 const checkRes = await casaku.checkStatus(trx.transactionId);
                 const resData = checkRes.data || checkRes;
-                const statusPembayaran = (resData.status || '').toLowerCase();
+                const statusPembayaran = String(resData.status || '').toLowerCase();
                 
-                if (['success', 'paid', 'settled'].includes(statusPembayaran) || resData.paid === true) {
+                if (['success', 'paid', 'settled', 'berhasil'].includes(statusPembayaran) || resData.paid === true) {
                     isPaid = true;
                 }
             }
         } catch (err) {
-            // Polling error fallback
+            console.error("⚠️ Fallback Active Check Status Error:", err.message);
         }
 
         if (isPaid) {
@@ -304,7 +303,7 @@ app.get('/api/store/check-payment', async (req, res) => {
 });
 
 // =========================================================================
-// 3. WEBHOOK CASAKU (VERIFIKASI REAL-TIME MENGGUNAKAN HMAC-SHA256)
+// WEBHOOK CASAKU (INSTANT REAL-TIME UPDATE)
 // =========================================================================
 app.post('/api/webhook/casaku', async (req, res) => {
     try {
@@ -312,31 +311,30 @@ app.post('/api/webhook/casaku', async (req, res) => {
         const payloadRaw = req.rawBody || JSON.stringify(req.body);
         const payload = parseWebhook(payloadRaw, signature, WEBHOOK_SECRET);
         
-        if (payload && (payload.status === 'paid' || payload.status === 'success')) {
-            const trx = await TransactionModel.findOne({ transactionId: payload.transactionId });
+        if (payload) {
+            const status = String(payload.status || '').toLowerCase();
+            const transactionId = payload.transactionId || payload.trx_id;
 
-            if (trx) {
-                if (trx.totalHarga === payload.amount) {
+            if (['paid', 'success', 'settled'].includes(status)) {
+                // Cari berdasarkan transactionId atau ID unik pembayaran
+                const trx = await TransactionModel.findOne({
+                    $or: [
+                        { transactionId: transactionId },
+                        { totalHarga: payload.amount, status: 'PENDING' }
+                    ]
+                });
+
+                if (trx) {
                     await markTransactionAsPaid(trx.idTrx);
-                    console.log(`✅ [WEBHOOK] Transaksi ${trx.idTrx} LUNAS via Webhook.`);
+                    console.log(`✅ [WEBHOOK INSTAN] Transaksi ${trx.idTrx} LUNAS via Webhook.`);
                 }
             }
         }
 
-        return res.json({ success: true, message: "Webhook processed" });
+        return res.json({ success: true, message: "Webhook processed successfully" });
     } catch (err) {
         console.error("❌ [WEBHOOK ERROR]:", err.message);
         return res.status(401).json({ error: "Invalid signature or payload error" });
-    }
-});
-
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (err) {
-        done(err, null);
     }
 });
 
