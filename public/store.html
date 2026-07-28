@@ -684,7 +684,10 @@
                 document.getElementById('checkoutModal').classList.remove('hidden');
 
                 startCountdownTimer(data.expiresAt);
+                
+                // Panggil kedua metode agar status langsung terdeteksi seketika saat pembayaran selesai
                 startPaymentRealtime(trxId);
+                startPaymentPolling(trxId);
 
             } catch (err) {
                 alert(err.message || "Gagal membuat pembayaran otomatis.");
@@ -740,6 +743,7 @@
 
                     if (data.paid) {
                         paymentEventSource.close();
+                        if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
                         localStorage.removeItem('activeTrxId');
@@ -772,6 +776,7 @@
                     const data = await res.json();
 
                     if (data.status && data.paid) {
+                        if (paymentEventSource) paymentEventSource.close();
                         clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -785,6 +790,7 @@
 
                         fetchProduk(true);
                     } else if (data.expired) {
+                        if (paymentEventSource) paymentEventSource.close();
                         clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -795,7 +801,7 @@
                 } catch (e) {
                     console.log("Error saat memproses polling status:", e);
                 }
-            }, 4000);
+            }, 3000);
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
