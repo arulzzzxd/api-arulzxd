@@ -49,7 +49,11 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
-app.use(express.json({ verify: (req, _res, buf) => (req.rawBody = buf) }));
+app.use(express.json({
+    verify: (req, _res, buf) => {
+        req.rawBody = buf; // Simpan raw buffer untuk HMAC
+    }
+}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -134,40 +138,77 @@ app.get('/api/store/payment-stream', async (req, res) => {
         return res.status(400).send("transactionId required");
     }
 
-    // Header wajib untuk SSE
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering di proxy (Vercel/Nginx)
+    res.setHeader('X-Accel-Buffering', 'no');
 
     console.log(`🔌 Client terhubung ke realtime stream Trx: ${transactionId}`);
 
-    // Cek status awal di DB
-    const trx = await TransactionModel.findOne({ transactionId: String(transactionId) }).lean();
-    if (trx && trx.status === 'SUCCESS') {
-        res.write(`data: ${JSON.stringify({ paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk })}\n\n`);
-        return res.end();
-    }
-
-    // Listener Realtime Event (Instant Trigger dari Webhook)
-    const onPaidListener = (data) => {
-        if (data.transactionId === String(transactionId)) {
-            console.log(`⚡ [REALTIME PUSH] Transaksi ${transactionId} terkonfirmasi!`);
-            res.write(`data: ${JSON.stringify({ paid: true, produkLink: data.produkLink, namaProduk: data.namaProduk })}\n\n`);
-            res.end(); // Tutup stream setelah sukses
-        }
+    // Helper pemicu sukses
+    const sendSuccess = (trxData) => {
+        res.write(`data: ${JSON.stringify({ paid: true, produkLink: trxData.produkLink, namaProduk: trxData.namaProduk })}\n\n`);
+        res.end();
     };
 
+    // 1. Cek DB Awal
+    const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
+    if (trx && trx.status === 'SUCCESS') {
+        return sendSuccess(trx);
+    }
+
+    // 2. Listener Webhook Instant
+    const onPaidListener = (data) => {
+        if (data.transactionId === String(transactionId)) {
+            sendSuccess(data);
+        }
+    };
     paymentEvents.on('payment_success', onPaidListener);
 
-    // Ping / Heartbeat setiap 5 detik agar Vercel Serverless tidak memutus koneksi
+    // 3. Fallback Periodic Status Check (tiap 3 detik) jika Webhook terlambat/lokal
+    const checkInterval = setInterval(async () => {
+        try {
+            const currentTrx = await TransactionModel.findOne({ transactionId: String(transactionId) });
+            if (!currentTrx) return;
+
+            if (currentTrx.status === 'SUCCESS') {
+                sendSuccess(currentTrx);
+                clearInterval(checkInterval);
+                return;
+            }
+
+            // Cek langsung ke API Casaku
+            let checkStatusRes = null;
+            if (typeof casaku.checkStatus === 'function') {
+                checkStatusRes = await casaku.checkStatus({ id: transactionId });
+            } else {
+                const axiosRes = await axios.get(`https://casaku.id/api/v1/transaction/${transactionId}`, {
+                    headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
+                });
+                checkStatusRes = axiosRes.data;
+            }
+
+            const resData = checkStatusRes?.data || checkStatusRes || {};
+            const liveStatus = String(resData.status || resData.transaction_status || '').toLowerCase();
+
+            if (['paid', 'success', 'settled', 'berhasil', 'lunas'].includes(liveStatus)) {
+                await markTransactionAsPaid(currentTrx);
+                sendSuccess(currentTrx);
+                clearInterval(checkInterval);
+            }
+        } catch (e) {
+            // Abaikan error jaringan sementara
+        }
+    }, 3000);
+
+    // Heartbeat Keep-Alive
     const heartbeat = setInterval(() => {
         res.write(': heartbeat\n\n');
     }, 5000);
 
-    // Cleanup jika koneksi terputus/dibatalkan
     req.on('close', () => {
         clearInterval(heartbeat);
+        clearInterval(checkInterval);
         paymentEvents.removeListener('payment_success', onPaidListener);
     });
 });
@@ -287,7 +328,7 @@ app.post('/api/store/create-payment', async (req, res) => {
 });
 
 // === ENDPOINT CHECK-PAYMENT AUTO FALLBACK (SERP / OTOMATIS) ===
-app.get('/api/store/check-payment/', async (req, res) => {
+app.get('/api/store/check-payment', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -303,7 +344,6 @@ app.get('/api/store/check-payment/', async (req, res) => {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
-        // 1. Jika sudah sukses
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -314,7 +354,6 @@ app.get('/api/store/check-payment/', async (req, res) => {
             });
         }
 
-        // 2. Jika Kedaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
                 trx.status = 'EXPIRED';
@@ -327,13 +366,12 @@ app.get('/api/store/check-payment/', async (req, res) => {
             });
         }
 
-        // 3. AUTO-FALLBACK: Cek Langsung ke Server Casaku jika webhook belum memproses
+        // Direct Check Casaku
         try {
             let checkStatusRes = null;
             if (typeof casaku.checkStatus === 'function') {
                 checkStatusRes = await casaku.checkStatus({ id: transactionId });
             } else {
-                // Direct Axios Fallback
                 const axiosRes = await axios.get(`https://casaku.id/api/v1/transaction/${transactionId}`, {
                     headers: { 'Authorization': `Bearer ${CASAKU_API_KEY}` }
                 });
@@ -353,11 +391,8 @@ app.get('/api/store/check-payment/', async (req, res) => {
                     namaProduk: trx.namaProduk
                 });
             }
-        } catch (checkErr) {
-            // Silently skip jika API Casaku sibuk/error
-        }
+        } catch (checkErr) {}
 
-        // Kembali ke status pending
         return res.json({ status: true, paid: false, message: "Menunggu pembayaran..." });
 
     } catch (error) {
