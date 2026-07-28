@@ -79,25 +79,15 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
+// === IN-MEMORY DATABASE (GANTI MONGODB) ===
+// Digunakan untuk menyimpan pengguna & transaksi di memori RAM server
+global.users = []; 
+global.transactions = {}; // Store transaksi: { transactionId: { ...dataTrx } }
+
 // Konfigurasi Kredensial Casaku
 const CASAKU_BASE_URL = "https://api.casaku.id";
 const CASAKU_LICENSE_KEY = process.env.CASAKU_LICENSE_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500";
-
-// Mongo DB Schema
-const transactionSchema = new mongoose.Schema({
-    transactionId: { type: String, required: true, unique: true, index: true },
-    namaProduk: { type: String, required: true },
-    produkLink: { type: String, required: true },
-    qty: { type: Number, required: true },
-    totalHarga: { type: Number, required: true },
-    qrUrl: { type: String, required: true },
-    status: { type: String, default: 'PENDING' }, // PENDING, SUCCESS, EXPIRED, CANCEL
-    createdAt: { type: Date, default: Date.now },
-    expiresAt: { type: Date, required: true }
-});
-
-const TransactionModel = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
 // Helper membaca produk.json
 function getProdukData() {
@@ -106,13 +96,12 @@ function getProdukData() {
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// Helper Update Transaksi ke LUNAS
+// Helper Update Transaksi ke LUNAS dalam Session/Memory
 async function markTransactionAsPaid(trx) {
     try {
         if (!trx || trx.status === 'SUCCESS') return true;
 
         trx.status = 'SUCCESS';
-        await trx.save();
 
         // Push event ke listener SSE
         paymentEvents.emit('payment_success', {
@@ -121,7 +110,7 @@ async function markTransactionAsPaid(trx) {
             namaProduk: trx.namaProduk
         });
 
-        console.log(`✅ [LUNAS] Transaksi ${trx.transactionId} telah diverifikasi.`);
+        console.log(`✅ [LUNAS] Transaksi ${trx.transactionId} telah diverifikasi (Session Memory).`);
         return true;
     } catch (err) {
         console.error("❌ Gagal update status transaksi:", err.message);
@@ -129,6 +118,9 @@ async function markTransactionAsPaid(trx) {
     }
 }
 
+// ----------------------------------------------------
+// ENDPOINT PAYMENT STREAM (SSE)
+// ----------------------------------------------------
 app.get('/api/store/payment-stream', (req, res) => {
     const transactionId = req.query.transactionId;
     if (!transactionId) return res.status(400).send("transactionId required");
@@ -138,7 +130,6 @@ app.get('/api/store/payment-stream', (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    // Listener saat event pembayaran sukses dipicu
     const onPaymentSuccess = async (data) => {
         if (String(data.transactionId) === String(transactionId)) {
             res.write(`data: ${JSON.stringify({ paid: true, produkLink: data.produkLink, namaProduk: data.namaProduk })}\n\n`);
@@ -154,16 +145,18 @@ app.get('/api/store/payment-stream', (req, res) => {
     });
 });
 
-// 1. ENDPOINT: Create Payment (Generate QRIS v2 Casaku)
+// ----------------------------------------------------
+// 1. ENDPOINT: Create Payment (Via Session/Memory)
+// ----------------------------------------------------
 app.post('/api/store/create-payment', async (req, res) => {
     try {
         const qty = req.body.qty;
         const produkIndex = req.body.produkIndex;
         const activeTrxId = req.body.activeTrxId;
 
-        // 1. Cek jika transaksi sebelumnya masih aktif & pending
-        if (activeTrxId) {
-            const existingTrx = await TransactionModel.findOne({ transactionId: activeTrxId }).lean();
+        // 1. Cek jika transaksi sebelumnya masih aktif di memori session
+        if (activeTrxId && global.transactions[activeTrxId]) {
+            const existingTrx = global.transactions[activeTrxId];
             if (existingTrx && existingTrx.status === 'PENDING') {
                 if (Date.now() < new Date(existingTrx.expiresAt).getTime()) {
                     return res.json({
@@ -195,9 +188,9 @@ app.post('/api/store/create-payment', async (req, res) => {
         const hargaSatuan = (produk.harga_diskon && produk.harga_diskon > 0) ? produk.harga_diskon : produk.harga;
         const amount = hargaSatuan * quantity;
 
-        // 3. Request ke API Casaku v2 dengan struktur payload yang ditentukan
+        // 3. Request ke API Casaku v2
         const casakuPayload = {
-            qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a", // atau ganti dynamic: `qr-${Date.now()}`
+            qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
             amount: amount,
             useUniqueCode: true,
             packageIds: ["id.dana"],
@@ -225,15 +218,14 @@ app.post('/api/store/create-payment', async (req, res) => {
         const finalAmount = casakuData.totalAmount || amount;
         const qrString = casakuData.qr_string || casakuData.payment_url;
 
-        // Konversi QR String menjadi URL gambar QR Code
         const qrImageUrl = qrString.startsWith('http') 
             ? qrString 
             : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrString)}`;
 
         const expiresAt = new Date(Date.now() + (casakuData.expiredInMinutes || 15) * 60 * 1000);
 
-        // 4. Simpan Transaksi Baru ke DB
-        await TransactionModel.create({
+        // 4. Simpan Transaksi Baru ke Memori Global & Session
+        const newTrxData = {
             transactionId: transactionId,
             namaProduk: produk.nama,
             produkLink: produk.link || '#',
@@ -241,8 +233,12 @@ app.post('/api/store/create-payment', async (req, res) => {
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             status: 'PENDING',
+            createdAt: new Date(),
             expiresAt: expiresAt
-        });
+        };
+
+        global.transactions[transactionId] = newTrxData;
+        req.session.activeTrxId = transactionId; // Simpan ke session client juga
 
         // 5. Kirim respon balik ke frontend
         return res.json({
@@ -263,7 +259,9 @@ app.post('/api/store/create-payment', async (req, res) => {
     }
 });
 
-// 3. ENDPOINT: HTTP Polling Check Status Fallback
+// ----------------------------------------------------
+// 2. ENDPOINT: Check Status (Polling via Session / Memory)
+// ----------------------------------------------------
 app.get('/api/store/check-payment', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
@@ -271,29 +269,25 @@ app.get('/api/store/check-payment', async (req, res) => {
         const transactionId = req.query.transactionId;
         if (!transactionId) return res.status(400).json({ status: false, message: "transactionId required" });
 
-        const trx = await TransactionModel.findOne({ transactionId: String(transactionId) });
-        if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
+        const trx = global.transactions[transactionId];
+        if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan di memori." });
 
-        // Jika DB sudah tercatat SUCCESS
+        // Jika tercatat SUCCESS
         if (trx.status === 'SUCCESS') {
             return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
         }
 
         // Cek jika transaksi kadaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
-            if (trx.status !== 'EXPIRED') {
-                trx.status = 'EXPIRED';
-                await trx.save();
-            }
+            trx.status = 'EXPIRED';
             return res.json({ status: false, expired: true, message: "Transaksi kedaluwarsa." });
         }
 
-        // Auto Check langsung ke API Casaku untuk verifikasi status mutasi
+        // Auto Check langsung ke API Casaku
         try {
             const statusRes = await axios.get(`${CASAKU_BASE_URL}/api/transaction/detail/${transactionId}`, {
                 headers: { 'x-license-key': CASAKU_LICENSE_KEY }
             }).catch(async () => {
-                // Fallback jika endpoint detail menggunakan POST check-status
                 return await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, {
                     transactionId: String(transactionId)
                 }, {
@@ -319,7 +313,9 @@ app.get('/api/store/check-payment', async (req, res) => {
     }
 });
 
-// 4. ENDPOINT: Webhook Callback
+// ----------------------------------------------------
+// 3. ENDPOINT: Webhook Callback
+// ----------------------------------------------------
 app.post('/api/store/webhook', async (req, res) => {
     try {
         const payload = req.body;
@@ -329,7 +325,7 @@ app.post('/api/store/webhook', async (req, res) => {
         const status = payload.status || payload.data?.status;
 
         if ((status === 'paid' || status === 'SUCCESS') && trxId) {
-            const trx = await TransactionModel.findOne({ transactionId: String(trxId) });
+            const trx = global.transactions[trxId];
             if (trx) {
                 await markTransactionAsPaid(trx);
             }
@@ -342,25 +338,19 @@ app.post('/api/store/webhook', async (req, res) => {
     }
 });
 
-// 5. ENDPOINT TAMBAHAN: Profile & Cancel Casaku
-app.get('/api/store/casaku-profile', async (req, res) => {
-    try {
-        const response = await axios.get(`${CASAKU_BASE_URL}/api/profile`, {
-            headers: { 'x-license-key': CASAKU_LICENSE_KEY }
-        });
-        res.json(response.data);
-    } catch (err) {
-        res.status(500).json({ status: false, message: err.message });
-    }
-});
-
+// ----------------------------------------------------
+// 4. ENDPOINT: Cancel Payment
+// ----------------------------------------------------
 app.post('/api/store/cancel-payment', async (req, res) => {
     try {
         const { transactionId } = req.body;
         await axios.post(`${CASAKU_BASE_URL}/api/generate/cancel-status`, { transactionId }, {
             headers: { 'x-license-key': CASAKU_LICENSE_KEY }
         });
-        await TransactionModel.findOneAndUpdate({ transactionId }, { status: 'CANCEL' });
+        
+        if (global.transactions[transactionId]) {
+            global.transactions[transactionId].status = 'CANCEL';
+        }
         res.json({ status: true, message: "Transaksi dibatalkan." });
     } catch (err) {
         res.status(500).json({ status: false, message: err.message });
