@@ -40,14 +40,23 @@ mongoose.set('bufferCommands', false);
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000, // Timeout jika server tidak dapat ditemukan
+            serverSelectionTimeoutMS: 5000,
             connectTimeoutMS: 10000,
         });
         console.log('📦 Berhasil terhubung ke MongoDB!');
+
+        // Hapus indeks lama 'orderId_1' jika masih ada di database
+        try {
+            await mongoose.connection.collection('transactions').dropIndex('orderId_1');
+            console.log('🧹 Berhasil menghapus index lama orderId_1');
+        } catch (e) {
+            // Abaikan jika index sudah tidak ada
+        }
     } catch (err) {
         console.error('❌ Gagal koneksi ke MongoDB:', err.message);
     }
 };
+
 connectDB();
 
 app.use(compression()); 
@@ -195,6 +204,7 @@ app.post('/api/store/create-payment', async (req, res) => {
 
         await TransactionModel.create({
             idTrx,
+            orderId: idTrx,
             transactionId: casakuTxnId,
             namaProduk: produk.nama,
             produkLink: produk.link,
@@ -227,23 +237,25 @@ app.post('/api/store/create-payment', async (req, res) => {
 // =========================================================================
 // ENDPOINT CHECK PAYMENT (DIPERCEPAT & DIOPTIMALKAN)
 // =========================================================================
-app.get('/api/store/check-payment', async (req, res) => {
-    try {
-        if (mongoose.connection.readyState !== 1) {
-            await connectDB();
-        }
+app.get('/api/store/check-payment/:idTrx', async (req, res) => {
+    // Matikan HTTP Cache agar tidak terkena Status 304
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
+    try {
         const idTrx = req.query.idTrx;
         if (!idTrx) {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
         }
 
-        const trx = await TransactionModel.findOne({ idTrx });
+        // Cek langsung dari MongoDB secara instan
+        const trx = await TransactionModel.findOne({ idTrx }).lean();
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
-        // 1. Cek dari Database MongoDB (Tercepat dari Webhook)
+        // 1. Jika Pembayaran Berhasil (Diperbarui oleh Webhook / Status Casaku)
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -257,8 +269,7 @@ app.get('/api/store/check-payment', async (req, res) => {
         // 2. Cek Kedaluwarsa
         if (Date.now() > new Date(trx.expiresAt).getTime()) {
             if (trx.status !== 'EXPIRED') {
-                trx.status = 'EXPIRED';
-                await trx.save();
+                await TransactionModel.updateOne({ idTrx }, { status: 'EXPIRED' });
             }
             return res.json({
                 status: false,
@@ -267,10 +278,10 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
-        // 3. Fallback Active Check Status Ke API Casaku
+        // 3. Fallback Cek Status Aktif ke API Casaku
         let isPaid = false;
         try {
-            if (typeof casaku.checkStatus === 'function') {
+            if (typeof casaku.checkStatus === 'function' && trx.transactionId) {
                 const checkRes = await casaku.checkStatus(trx.transactionId);
                 const resData = checkRes.data || checkRes;
                 const statusPembayaran = String(resData.status || '').toLowerCase();
@@ -280,7 +291,7 @@ app.get('/api/store/check-payment', async (req, res) => {
                 }
             }
         } catch (err) {
-            console.error("⚠️ Fallback Active Check Status Error:", err.message);
+            // Tetap tangani error tanpa memperlambat respon
         }
 
         if (isPaid) {
@@ -309,24 +320,31 @@ app.post('/api/webhook/casaku', async (req, res) => {
     try {
         const signature = req.headers['x-casaku-signature'];
         const payloadRaw = req.rawBody || JSON.stringify(req.body);
+        
+        // Parsing & Verifikasi Payload Webhook
         const payload = parseWebhook(payloadRaw, signature, WEBHOOK_SECRET);
         
         if (payload) {
-            const status = String(payload.status || '').toLowerCase();
-            const transactionId = payload.transactionId || payload.trx_id;
+            const status = String(payload.status || payload.transaction_status || '').toLowerCase();
+            const transactionId = payload.transactionId || payload.trx_id || payload.id || payload.reference_id;
+            const amount = payload.amount || payload.totalAmount || payload.gross_amount;
 
-            if (['paid', 'success', 'settled'].includes(status)) {
-                // Cari berdasarkan transactionId atau ID unik pembayaran
+            // Cek jika status menunjukkan pembayaran berhasil
+            if (['paid', 'success', 'settled', 'berhasil'].includes(status)) {
+                // Cari transaksi berdasarkan transactionId atau nominal + status PENDING
                 const trx = await TransactionModel.findOne({
                     $or: [
                         { transactionId: transactionId },
-                        { totalHarga: payload.amount, status: 'PENDING' }
+                        { idTrx: transactionId },
+                        { totalHarga: amount, status: 'PENDING' }
                     ]
                 });
 
                 if (trx) {
                     await markTransactionAsPaid(trx.idTrx);
-                    console.log(`✅ [WEBHOOK INSTAN] Transaksi ${trx.idTrx} LUNAS via Webhook.`);
+                    console.log(`✅ [WEBHOOK INSTAN] Transaksi ${trx.idTrx} otomatis LUNAS via Webhook.`);
+                } else {
+                    console.warn(`⚠️ [WEBHOOK] Transaksi tidak ditemukan di DB untuk ID: ${transactionId}`);
                 }
             }
         }
