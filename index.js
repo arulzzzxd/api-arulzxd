@@ -145,18 +145,30 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
-        // Verifikasi pembayaran
         let isPaid = false;
         try {
-            // Jika SDK memiliki method checkStatus atau sejenisnya
+            // Pastikan method ini sesuai dengan SDK Anda (biasanya 'checkStatus', 'cekStatus', atau 'getTransaction')
             if (typeof casaku.checkStatus === 'function') {
                 const checkRes = await casaku.checkStatus(trx.transactionId);
-                if (checkRes && (checkRes.status === 'SUCCESS' || checkRes.paid === true)) {
+                
+                // Payment gateway sering membungkus response di dalam property 'data'
+                const resData = checkRes.data || checkRes;
+                
+                // Ambil string status dan ubah ke huruf kapital untuk mempermudah pengecekan
+                const statusPembayaran = (resData.status || resData.payment_status || '').toUpperCase();
+                
+                // Deteksi berbagai format status sukses ('SUCCESS', 'PAID', 'SETTLED', dll)
+                if (statusPembayaran === 'SUCCESS' || statusPembayaran === 'PAID' || statusPembayaran === 'SETTLED' || resData.paid === true) {
                     isPaid = true;
                 }
+            } else {
+                console.error("Method checkStatus tidak ditemukan di instance SDK Casaku Anda.");
+                // Jika Anda tidak tahu methodnya, uncomment baris di bawah ini untuk melihat isi SDK:
+                // console.log("Method yang tersedia:", Object.keys(casaku));
             }
         } catch (err) {
-            console.log("Menunggu pembayaran casaku:", err.message);
+            // Tampilkan error yang spesifik agar mudah di-debug
+            console.log("Polling pembayaran - Error:", err.response?.data || err.message);
         }
 
         if (isPaid) {
