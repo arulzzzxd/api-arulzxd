@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
+const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_23ce260911c4154455029e3462ddb365bda13494cb7a1f79de69b0e305432894";
 
 // Perbaikan: bungkus dalam object { licenseKey: ... }
 const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
@@ -162,7 +162,7 @@ app.get('/api/store/check-payment', async (req, res) => {
         if (isPaid) {
             trx.status = 'SUCCESS';
 
-            // Kurangi stok & tambah terjual di produk.json[span_8](start_span)[span_8](end_span)
+            // Kurangi stok & tambah terjual di produk.json
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
             if (fs.existsSync(pathProduk)) {
                 const produkList = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
