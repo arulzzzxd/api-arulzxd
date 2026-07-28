@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json({
     verify: (req, _res, buf) => {
-        req.rawBody = buf; // Menyimpan raw buffer untuk verifikasi signature HMAC
+        req.rawBody = buf; // Menyimpan raw buffer untuk verifikasi HMAC
     }
 }));
 app.use(cookieParser());
@@ -68,8 +68,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-
-// Tambahkan Schema Transaksi di bawah schema User
+// Schema Transaksi dengan Batas Waktu Expiration (15 Menit)
 const transactionSchema = new mongoose.Schema({
     idTrx: { type: String, required: true, unique: true },
     transactionId: { type: String, required: true },
@@ -78,8 +77,10 @@ const transactionSchema = new mongoose.Schema({
     produkLink: { type: String, required: true },
     qty: { type: Number, required: true },
     totalHarga: { type: Number, required: true },
-    status: { type: String, default: 'PENDING' },
-    createdAt: { type: Date, default: Date.now }
+    qrUrl: { type: String, required: true },
+    status: { type: String, default: 'PENDING' }, // 'PENDING', 'SUCCESS', 'EXPIRED', 'CANCELLED'
+    createdAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true }
 });
 
 const TransactionModel = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
@@ -88,9 +89,6 @@ const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_aaeb9d60b04cb094ca
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500";
 
 const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
-
-// Storage Sementara (In-Memory Tracking)
-const TRANSACTIONS = {};
 
 // Helper untuk membaca database produk.json
 function getProdukData() {
@@ -102,16 +100,11 @@ function getProdukData() {
 // Helper untuk Tandai Lunas & Update Status di Database MongoDB
 async function markTransactionAsPaid(idTrx) {
     try {
-        // 1. Cari transaksi di MongoDB
         const trx = await TransactionModel.findOne({ idTrx: idTrx });
         if (!trx || trx.status === 'SUCCESS') return false;
 
-        // 2. Tandai status sebagai SUCCESS
         trx.status = 'SUCCESS';
         await trx.save();
-
-        // 3. Opsional: Update stok produk jika produk Anda disimpan di MongoDB Schema Produk
-        // await ProductModel.findByIdAndUpdate(trx.produkId, { $inc: { stok: -trx.qty, terjual: trx.qty } });
 
         console.log(`✅ [SUCCESS] Transaksi ${idTrx} berhasil diperbarui di MongoDB!`);
         return true;
@@ -121,9 +114,32 @@ async function markTransactionAsPaid(idTrx) {
     }
 }
 
+// =========================================================================
+// 1. ENDPOINT PEMBUATAN / PENGAMBILAN PEMBAYARAN REUSABLE
+// =========================================================================
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        const { qty, produkIndex, username } = req.body;
+        const { qty, produkIndex, username, activeTrxId } = req.body;
+
+        // Jika user memuat ulang web dan memiliki ID transaksi aktif yang tersimpan
+        if (activeTrxId) {
+            const existingTrx = await TransactionModel.findOne({ idTrx: activeTrxId });
+            if (existingTrx) {
+                // Cek apakah belum expired
+                if (Date.now() < new Date(existingTrx.expiresAt).getTime() && existingTrx.status === 'PENDING') {
+                    return res.json({
+                        status: true,
+                        idTrx: existingTrx.idTrx,
+                        totalHarga: existingTrx.totalHarga,
+                        qrUrl: existingTrx.qrUrl,
+                        expiresAt: existingTrx.expiresAt,
+                        namaProduk: existingTrx.namaProduk,
+                        message: "Memuat kembali transaksi aktif..."
+                    });
+                }
+            }
+        }
+
         const produkList = getProdukData();
         const produk = produkList[produkIndex];
 
@@ -155,45 +171,35 @@ app.post('/api/store/create-payment', async (req, res) => {
         const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
         const finalAmount = trxData.totalAmount || totalHarga;
 
-        // Simpan transaksi
-        TRANSACTIONS[idTrx] = {
+        const qrImageUrl = qrContent.startsWith('http') 
+            ? qrContent 
+            : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`;
+
+        // Batas Waktu Pembayaran Ditentukan 15 Menit
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        // Simpan Transaksi Permanen ke MongoDB
+        await TransactionModel.create({
             idTrx,
             transactionId: casakuTxnId,
-            produkIndex,
+            username: username || 'Guest',
             namaProduk: produk.nama,
-            produkLink: produk.link || '#',
-            username,
+            produkLink: produk.link,
             qty: quantity,
             totalHarga: finalAmount,
-            qrUrl: qrContent,
+            qrUrl: qrImageUrl,
             status: 'PENDING',
-            createdAt: Date.now()
-        };
-
-        // Simpan juga ke MongoDB untuk permanensi
-        try {
-            await TransactionModel.create({
-                idTrx,
-                transactionId: casakuTxnId,
-                username,
-                produkIndex,
-                namaProduk: produk.nama,
-                produkLink: produk.link || '#',
-                qty: quantity,
-                totalHarga: finalAmount,
-                status: 'PENDING'
-            });
-        } catch (dbErr) {
-            console.error("Gagal simpan transaksi MongoDB:", dbErr.message);
-        }
+            createdAt: new Date(),
+            expiresAt: expiresAt
+        });
 
         res.json({
             status: true,
             idTrx,
             totalHarga: finalAmount,
-            qrUrl: qrContent.startsWith('http') 
-                ? qrContent 
-                : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`
+            qrUrl: qrImageUrl,
+            expiresAt: expiresAt,
+            namaProduk: produk.nama
         });
 
     } catch (error) {
@@ -205,7 +211,9 @@ app.post('/api/store/create-payment', async (req, res) => {
     }
 });
 
-// --- 2. ENDPOINT CHECK PAYMENT (POLLING USER FRONTEND) ---
+// =========================================================================
+// 2. ENDPOINT CHECK PAYMENT (DENGAN PENGECEKAN CEPAT & STATUS KADALUWARSA)
+// =========================================================================
 app.get('/api/store/check-payment', async (req, res) => {
     try {
         const { idTrx } = req.query;
@@ -213,13 +221,13 @@ app.get('/api/store/check-payment', async (req, res) => {
             return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
         }
 
-        // Cari transaksi dari MongoDB
         const trx = await TransactionModel.findOne({ idTrx });
         
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
         }
 
+        // 1. Cek Apakah Sudah Sukses di DB
         if (trx.status === 'SUCCESS') {
             return res.json({
                 status: true,
@@ -230,7 +238,20 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
-        // Cek langsung ke API Casaku jika belum bertandakan lunas
+        // 2. Cek Apakah Sudah Kadaluwarsa
+        if (Date.now() > new Date(trx.expiresAt).getTime()) {
+            if (trx.status !== 'EXPIRED') {
+                trx.status = 'EXPIRED';
+                await trx.save();
+            }
+            return res.json({
+                status: false,
+                expired: true,
+                message: "Waktu pembayaran telah habis. Transaksi dibatalkan."
+            });
+        }
+
+        // 3. Pengecekan Cepat via API Casaku (Fallback jika Webhook Terlambat)
         let isPaid = false;
         try {
             if (typeof casaku.checkStatus === 'function') {
@@ -243,7 +264,7 @@ app.get('/api/store/check-payment', async (req, res) => {
                 }
             }
         } catch (err) {
-            console.log("Menunggu pembayaran casaku - Pending...");
+            // Polling tetap cepat meskipun API eksternal timeout/pending
         }
 
         if (isPaid) {
@@ -265,27 +286,22 @@ app.get('/api/store/check-payment', async (req, res) => {
     }
 });
 
-// --- 3. WEBHOOK ENDPOINT (VERIFIKASI HMAC-SHA256 & OTOMATIS TANDAI LUNAS) ---
+// =========================================================================
+// 3. WEBHOOK CASAKU (VERIFIKASI REAL-TIME MENGGUNAKAN HMAC-SHA256)
+// =========================================================================
 app.post('/api/webhook/casaku', async (req, res) => {
     try {
         const signature = req.headers['x-casaku-signature'];
-        
-        // Dapatkan raw buffer body jika tersedia, atau jadikan stringified req.body sebagai fallback
         const payloadRaw = req.rawBody || JSON.stringify(req.body);
-        
-        // Verifikasi Signature
         const payload = parseWebhook(payloadRaw, signature, WEBHOOK_SECRET);
         
         if (payload && (payload.status === 'paid' || payload.status === 'success')) {
-            // Cari transaksi berdasarkan transactionId milik Casaku di database MongoDB
             const trx = await TransactionModel.findOne({ transactionId: payload.transactionId });
 
             if (trx) {
                 if (trx.totalHarga === payload.amount) {
                     await markTransactionAsPaid(trx.idTrx);
-                    console.log(`✅ [WEBHOOK] Transaksi ${trx.idTrx} berhasil ditandai LUNAS via Webhook.`);
-                } else {
-                    console.warn(`⚠️ [WEBHOOK] Nominal tidak sesuai untuk TRX: ${trx.idTrx}`);
+                    console.log(`✅ [WEBHOOK] Transaksi ${trx.idTrx} LUNAS via Webhook.`);
                 }
             }
         }
