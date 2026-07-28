@@ -248,8 +248,15 @@
                 </div>
             </div>
 
-            <!-- STEP 2: METODE QRIS CASAKU & REALTIME CHECK -->
+            <!-- STEP 2: METODE QRIS CASAKU, EXPIRATION TIMER & REALTIME CHECK -->
             <div id="stepPayment" class="hidden text-center space-y-4 p-5">
+                <div class="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
+                    <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+                        <i class="fa-regular fa-clock"></i> Sisa Waktu Pembayaran:
+                    </span>
+                    <span id="paymentTimer" class="font-mono text-xs font-bold text-amber-300 animate-pulse">15:00</span>
+                </div>
+
                 <h3 class="font-bold text-sm font-cyber text-cyberCyan">Scan QRIS Pembayaran</h3>
                 <p class="text-[11px] text-slate-400">Silakan scan kode QRIS menggunakan M-Banking / E-Wallet Anda.</p>
 
@@ -258,6 +265,10 @@
                 </div>
 
                 <div class="bg-cyberDark p-3 rounded-lg border border-cyberBorder text-left text-xs space-y-1 mt-2">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Produk:</span>
+                        <span id="trxProductDisplay" class="font-bold text-white truncate max-w-[180px]"></span>
+                    </div>
                     <div class="flex justify-between">
                         <span class="text-slate-400">ID TRX:</span>
                         <span id="trxIdDisplay" class="font-mono text-cyberCyan font-bold"></span>
@@ -268,9 +279,13 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center gap-2 text-xs text-amber-400 font-semibold animate-pulse pt-2">
+                <div class="flex items-center justify-center gap-2 text-xs text-cyberCyan font-semibold animate-pulse pt-1">
                     <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran Otomatis...
                 </div>
+                
+                <button onclick="cancelActivePayment()" class="text-xs text-red-400 hover:text-red-300 underline font-semibold transition mt-2">
+                    Batalkan Transaksi Ini
+                </button>
             </div>
 
             <!-- STEP 3: SUKSES & LINK PRODUK -->
@@ -307,6 +322,7 @@
         let SELECTED_INDEX = null;
         let CURRENT_QTY = 1;
         let POLLING_INTERVAL = null;
+        let COUNTDOWN_INTERVAL = null;
         let AUTO_REFRESH_INTERVAL = null;
 
         function formatTerjual(jumlah) {
@@ -334,7 +350,6 @@
             }).format(angka);
         }
 
-        // Silent fetch digunakan untuk polling stok otomatis di background tanpa mengganggu antarmuka
         async function fetchProduk(isSilent = false) {
             const statusElem = document.getElementById('serverStatus');
             try {
@@ -350,7 +365,6 @@
                 }
 
                 const modal = document.getElementById('checkoutModal');
-                // Tampilkan perubahan stok jika modal sedang tidak digunakan
                 if (!modal || modal.classList.contains('hidden') || !isSilent) {
                     renderProduk();
                 }
@@ -540,7 +554,6 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
             
-            // Reset langkah modal
             document.getElementById('usernameInput').value = '';
             document.getElementById('noteInput').value = '';
             document.getElementById('stepForm').classList.remove('hidden');
@@ -586,8 +599,14 @@
 
         function closeCheckoutModal() {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
+            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
             document.getElementById('checkoutModal').classList.add('hidden');
             SELECTED_INDEX = null;
+        }
+
+        function cancelActivePayment() {
+            localStorage.removeItem('activeTrxId');
+            closeCheckoutModal();
         }
 
         // --- METHOD 1: PEMBAYARAN MANUAL WHATSAPP ---
@@ -619,44 +638,96 @@
             closeCheckoutModal();
         }
 
-        // --- METHOD 2: PEMBAYARAN OTOMATIS QRIS ---
-        async function processAutoPayment() {
+        // --- METHOD 2: PEMBAYARAN OTOMATIS QRIS DENGAN KONSISTENSI & TIMER ---
+        async function processAutoPayment(existingTrxId = null) {
             const username = document.getElementById('usernameInput').value.trim();
             const qty = document.getElementById('qtyInput').value;
-            if (!username) return alert("Username pembeli wajib diisi!");
+
+            if (!existingTrxId && !username) {
+                return alert("Username pembeli wajib diisi!");
+            }
 
             const btnPay = document.getElementById('btnAutoPay');
-            btnPay.disabled = true;
-            btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses QRIS...';
+            if (btnPay) {
+                btnPay.disabled = true;
+                btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses QRIS...';
+            }
+
+            // Memeriksa ID transaksi aktif yang tersimpan di localStorage
+            const activeTrxId = existingTrxId || localStorage.getItem('activeTrxId');
 
             try {
                 const res = await fetch('/api/store/create-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ produkIndex: SELECTED_INDEX, username, qty })
+                    body: JSON.stringify({ 
+                        produkIndex: SELECTED_INDEX, 
+                        username, 
+                        qty,
+                        activeTrxId 
+                    })
                 });
 
                 const data = await res.json();
                 if (!data.status) throw new Error(data.message);
 
+                // Simpan ID transaksi aktif ke localStorage
+                localStorage.setItem('activeTrxId', data.idTrx);
+
                 document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
                 document.getElementById('trxIdDisplay').innerText = data.idTrx;
+                document.getElementById('trxProductDisplay').innerText = data.namaProduk || 'Produk Store';
                 document.getElementById('trxTotalDisplay').innerText = formatRupiah(data.totalHarga);
 
                 document.getElementById('stepForm').classList.add('hidden');
                 document.getElementById('stepPayment').classList.remove('hidden');
+                document.getElementById('checkoutModal').classList.remove('hidden');
 
-                // Mulai polling pengecekan status secara real-time
+                // Jalankan Timer Hitung Mundur & Polling Cepat
+                startCountdownTimer(data.expiresAt);
                 startPaymentPolling(data.idTrx);
 
             } catch (err) {
                 alert(err.message || "Gagal membuat pembayaran otomatis.");
+                localStorage.removeItem('activeTrxId');
             } finally {
-                btnPay.disabled = false;
-                btnPay.innerHTML = '<i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)';
+                if (btnPay) {
+                    btnPay.disabled = false;
+                    btnPay.innerHTML = '<i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)';
+                }
             }
         }
 
+        // Timer Hitung Mundur 15 Menit Real-Time
+        function startCountdownTimer(expiresAt) {
+            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+
+            const timerElem = document.getElementById('paymentTimer');
+            const expiryTime = new Date(expiresAt).getTime();
+
+            COUNTDOWN_INTERVAL = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = expiryTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(COUNTDOWN_INTERVAL);
+                    if (timerElem) timerElem.innerText = "EXPIRED";
+                    localStorage.removeItem('activeTrxId');
+                    alert("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
+                    closeCheckoutModal();
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                if (timerElem) {
+                    timerElem.innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                }
+            }, 1000);
+        }
+
+        // Polling Pengecekan Status Dipercepat (1.5 Detik per request)
         function startPaymentPolling(idTrx) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
@@ -667,6 +738,10 @@
 
                     if (data.status && data.paid) {
                         clearInterval(POLLING_INTERVAL);
+                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+
+                        // Hapus ID transaksi setelah berhasil
+                        localStorage.removeItem('activeTrxId');
 
                         document.getElementById('productSuccessLink').href = data.produkLink || '#';
                         document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
@@ -674,25 +749,36 @@
                         document.getElementById('stepPayment').classList.add('hidden');
                         document.getElementById('stepSuccess').classList.remove('hidden');
 
-                        // Ambil ulang data produk setelah transaksi sukses
                         fetchProduk(true);
+                    } else if (data.expired) {
+                        clearInterval(POLLING_INTERVAL);
+                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+
+                        localStorage.removeItem('activeTrxId');
+                        alert("Waktu pembayaran telah habis!");
+                        closeCheckoutModal();
                     }
                 } catch (e) {
                     console.log("Error saat memproses polling status:", e);
                 }
-            }, 3000); // Interval polling 3 detik
+            }, 1500); // Polling instan per 1.5 detik
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchProduk();
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchProduk();
             
-            // Auto-refresh background setiap 15 detik
+            // Cek apakah user memiliki transaksi aktif saat baru membuka/refresh web
+            const activeTrxId = localStorage.getItem('activeTrxId');
+            if (activeTrxId) {
+                processAutoPayment(activeTrxId);
+            }
+
             AUTO_REFRESH_INTERVAL = setInterval(() => {
                 const modal = document.getElementById('checkoutModal');
                 if (!modal || modal.classList.contains('hidden')) {
                     fetchProduk(true);
                 }
-            }, 15000);
+            }, 1500);
         });
     </script>
 </body>
