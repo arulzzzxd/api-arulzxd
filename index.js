@@ -99,39 +99,26 @@ function getProdukData() {
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// Helper untuk Tandai Lunas & Update Stok / Terjual
+// Helper untuk Tandai Lunas & Update Status di Database MongoDB
 async function markTransactionAsPaid(idTrx) {
-    const trx = TRANSACTIONS[idTrx];
-    if (!trx || trx.status === 'SUCCESS') return false;
-
-    trx.status = 'SUCCESS';
-
-    // Update Data di database/produk.json
-    const pathProduk = path.join(__dirname, 'database', 'produk.json');
-    if (fs.existsSync(pathProduk)) {
-        try {
-            const produkList = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-            if (produkList[trx.produkIndex]) {
-                if (produkList[trx.produkIndex].stok !== undefined && produkList[trx.produkIndex].stok > 0) {
-                    produkList[trx.produkIndex].stok -= trx.qty;
-                    if (produkList[trx.produkIndex].stok < 0) produkList[trx.produkIndex].stok = 0;
-                }
-                produkList[trx.produkIndex].terjual = (produkList[trx.produkIndex].terjual || 0) + trx.qty;
-                fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
-            }
-        } catch (err) {
-            console.error("Gagal memperbarui stok/terjual produk.json:", err);
-        }
-    }
-
-    // Update Status Transaksi di MongoDB jika ada
     try {
-        await TransactionModel.findOneAndUpdate({ idTrx: idTrx }, { status: 'SUCCESS' });
-    } catch (e) {
-        console.error("Gagal update status transaksi MongoDB:", e.message);
-    }
+        // 1. Cari transaksi di MongoDB
+        const trx = await TransactionModel.findOne({ idTrx: idTrx });
+        if (!trx || trx.status === 'SUCCESS') return false;
 
-    return true;
+        // 2. Tandai status sebagai SUCCESS
+        trx.status = 'SUCCESS';
+        await trx.save();
+
+        // 3. Opsional: Update stok produk jika produk Anda disimpan di MongoDB Schema Produk
+        // await ProductModel.findByIdAndUpdate(trx.produkId, { $inc: { stok: -trx.qty, terjual: trx.qty } });
+
+        console.log(`✅ [SUCCESS] Transaksi ${idTrx} berhasil diperbarui di MongoDB!`);
+        return true;
+    } catch (err) {
+        console.error("❌ Gagal memperbarui status transaksi di MongoDB:", err.message);
+        return false;
+    }
 }
 
 // --- 1. ENDPOINT PEMBUATAN PEMBAYARAN ---
@@ -222,8 +209,13 @@ app.post('/api/store/create-payment', async (req, res) => {
 // --- 2. ENDPOINT CHECK PAYMENT (POLLING USER FRONTEND) ---
 app.get('/api/store/check-payment', async (req, res) => {
     try {
-        const idTrx = req.query.idTrx;
-        const trx = TRANSACTIONS[idTrx];
+        const { idTrx } = req.query;
+        if (!idTrx) {
+            return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
+        }
+
+        // Cari transaksi dari MongoDB
+        const trx = await TransactionModel.findOne({ idTrx });
         
         if (!trx) {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
@@ -239,6 +231,7 @@ app.get('/api/store/check-payment', async (req, res) => {
             });
         }
 
+        // Cek langsung ke API Casaku jika belum bertandakan lunas
         let isPaid = false;
         try {
             if (typeof casaku.checkStatus === 'function') {
@@ -278,31 +271,30 @@ app.post('/api/webhook/casaku', async (req, res) => {
     try {
         const signature = req.headers['x-casaku-signature'];
         
-        // Verifikasi signature menggunakan fungsi parseWebhook bawaan SDK Casaku
-        const payload = parseWebhook(req.rawBody, signature, WEBHOOK_SECRET);
+        // Dapatkan raw buffer body jika tersedia, atau jadikan stringified req.body sebagai fallback
+        const payloadRaw = req.rawBody || JSON.stringify(req.body);
         
-        // Payload berisi: { transactionId, amount, packageName, appName, status, paidAt }
+        // Verifikasi Signature
+        const payload = parseWebhook(payloadRaw, signature, WEBHOOK_SECRET);
+        
         if (payload && (payload.status === 'paid' || payload.status === 'success')) {
-            // Cari transaksi berdasarkan transactionId milik Casaku
-            const matchTrxKey = Object.keys(TRANSACTIONS).find(
-                key => TRANSACTIONS[key].transactionId === payload.transactionId
-            );
+            // Cari transaksi berdasarkan transactionId milik Casaku di database MongoDB
+            const trx = await TransactionModel.findOne({ transactionId: payload.transactionId });
 
-            if (matchTrxKey) {
-                // Cross-check nominal sebelum menandai lunas
-                if (TRANSACTIONS[matchTrxKey].totalHarga === payload.amount) {
-                    await markTransactionAsPaid(matchTrxKey);
-                    console.log(`✅ [WEBHOOK] Transaksi ${matchTrxKey} berhasil ditandai LUNAS via Webhook.`);
+            if (trx) {
+                if (trx.totalHarga === payload.amount) {
+                    await markTransactionAsPaid(trx.idTrx);
+                    console.log(`✅ [WEBHOOK] Transaksi ${trx.idTrx} berhasil ditandai LUNAS via Webhook.`);
                 } else {
-                    console.warn(`⚠️ [WEBHOOK] Nominal tidak sesuai untuk ${matchTrxKey}`);
+                    console.warn(`⚠️ [WEBHOOK] Nominal tidak sesuai untuk TRX: ${trx.idTrx}`);
                 }
             }
         }
 
         return res.json({ success: true, message: "Webhook processed" });
     } catch (err) {
-        console.error("❌ [WEBHOOK ERROR]: Signature invalid atau parsing gagal:", err.message);
-        return res.status(401).json({ error: "Invalid signature or bad payload" });
+        console.error("❌ [WEBHOOK ERROR]:", err.message);
+        return res.status(401).json({ error: "Invalid signature or payload error" });
     }
 });
 
