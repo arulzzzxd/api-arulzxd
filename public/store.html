@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArulzXD Store - Marketplace</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Plus Jakarta Sans & Orbitron -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
@@ -72,20 +75,24 @@
 </head>
 <body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
 
+    <!-- TOP NAVBAR -->
     <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder shadow-glowCyanSm">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Logo -->
             <a href="/" class="flex-shrink-0 text-2xl font-black font-cyber tracking-wider text-cyberCyan drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
                 Arulz<span class="text-white">Store</span>
             </a>
 
+            <!-- Search Bar -->
             <div class="flex-1 max-w-xl relative">
-                <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan..." 
+                <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan cyberpunk..." 
                        class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyan transition">
                 <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition" aria-label="Search">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
             </div>
 
+            <!-- Menu Kanan -->
             <div class="flex items-center gap-4 text-slate-300">
                 <a href="/doc" class="text-sm font-semibold hover:text-cyberCyan transition hidden sm:block">Docs API</a>
                 <a href="/doc?showProfile=true" class="text-lg hover:text-cyberCyan transition relative" aria-label="Profile">
@@ -95,8 +102,10 @@
         </div>
     </nav>
 
+    <!-- MAIN CONTAINER -->
     <div class="max-w-6xl mx-auto px-4 py-6">
 
+        <!-- HEADER UTAMA WEBSITE -->
         <div class="mb-6 p-6 sm:p-8 bg-cyberCard rounded-2xl border border-cyberBorder shadow-xl relative overflow-hidden">
             <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyberCyan/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="relative z-10 max-w-2xl">
@@ -107,14 +116,16 @@
                     Arulz<span class="text-cyberCyan drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]">XD</span> Store
                 </h1>
                 <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-                    Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat.
+                    Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat, Otomatis & Manual.
                 </p>
             </div>
             <i class="fa-solid fa-microchip absolute -right-6 -bottom-8 text-9xl text-cyberCyan/5 rotate-12 pointer-events-none"></i>
         </div>
 
+        <!-- AREA UTAMA (KATEGORI & PRODUK) -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
 
+            <!-- SIDEBAR KATEGORI -->
             <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder shadow-md sticky top-20 z-30">
                 <h3 class="font-bold text-xs font-cyber text-slate-200 mb-3 uppercase tracking-wider flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-cyberCyan"></i> Kategori Produk
@@ -126,6 +137,7 @@
                 </div>
             </div>
 
+            <!-- LIST GRID PRODUK -->
             <div class="md:col-span-3">
                 <div class="flex items-center justify-between mb-4 bg-cyberCard p-3 rounded-xl border border-cyberBorder shadow-md">
                     <p class="text-xs text-slate-400 font-medium tracking-wide">
@@ -135,6 +147,7 @@
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
+                    <!-- Loading Skeleton Animation -->
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
                         <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
                         <div class="h-4 bg-slate-800 rounded w-3/4"></div>
@@ -152,7 +165,7 @@
         </div>
     </div>
 
-    <!-- MODAL CHECKOUT -->
+    <!-- MODAL POPUP CHECKOUT MULTI METODE -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
         <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all duration-200 relative" id="modalContent">
             
@@ -165,7 +178,7 @@
                 </button>
             </div>
 
-            <!-- STEP 1: FORM -->
+            <!-- STEP 1: FORM UTAMA CHECKOUT -->
             <div id="stepForm" class="p-5 space-y-4">
                 <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
                     <img id="modalProductImage" src="" alt="Product Preview" class="w-14 h-14 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
@@ -202,37 +215,47 @@
                     <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
                 </div>
 
+                <!-- FIELD KHUSUS PESANAN MANUAL WHATSAPP -->
                 <div id="manualFields" class="hidden space-y-3 pt-1 border-t border-cyberBorder/50">
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
                             Nama / Username WhatsApp <span class="text-cyberCyan">*</span>
                         </label>
-                        <input type="text" id="usernameInput" placeholder="Masukkan nama Anda"
-                               class="w-full px-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                                <i class="fa-regular fa-user"></i>
+                            </span>
+                            <input type="text" id="usernameInput" placeholder="Masukkan nama Anda"
+                                   class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                        </div>
                     </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
-                            Catatan (Opsional)
+                            Catatan Tambahan (Opsional)
                         </label>
                         <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                                  class="w-full p-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition resize-none"></textarea>
+                                  class="w-full p-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
                     </div>
-                    <button type="button" onclick="submitManualPayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+
+                    <button type="button" onclick="submitManualPayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-green-900/50 transition flex items-center justify-center gap-2">
                         <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Pesanan ke WhatsApp
                     </button>
                 </div>
 
+                <!-- TOMBOL UTAMA PEMBAYARAN -->
                 <div id="paymentOptionBtns" class="pt-2 grid grid-cols-1 gap-3">
                     <button type="button" onclick="processAutoPayment()" id="btnAutoPay" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)
                     </button>
+                    
                     <button type="button" onclick="showManualFields()" id="btnManualPay" class="w-full bg-green-600/20 border border-green-500/40 hover:bg-green-600 text-green-400 hover:text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
                         <i class="fa-brands fa-whatsapp text-sm"></i> Pesan Manual (WhatsApp)
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 2: METODE QRIS -->
+            <!-- STEP 2: METODE QRIS CASAKU -->
             <div id="stepPayment" class="hidden text-center space-y-4 p-5">
                 <div class="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
                     <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
@@ -272,7 +295,7 @@
                 </button>
             </div>
 
-            <!-- STEP 3: SUKSES -->
+            <!-- STEP 3: SUKSES & LINK PRODUK -->
             <div id="stepSuccess" class="hidden text-center space-y-4 p-5">
                 <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-3xl mx-auto shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                     <i class="fa-solid fa-check"></i>
@@ -294,10 +317,12 @@
         </div>
     </div>
 
+    <!-- FOOTER -->
     <footer class="bg-cyberCard border-t border-cyberBorder mt-16 py-6 text-center text-xs text-slate-500 font-medium">
         <p>© 2026 Arulz-XD Store. All rights reserved.</p>
     </footer>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         let DATA_PRODUK = [];
         let KATEGORI_AKTIF = 'all';
@@ -306,15 +331,22 @@
         let POLLING_INTERVAL = null;
         let COUNTDOWN_INTERVAL = null;
         let AUTO_REFRESH_INTERVAL = null;
+        let paymentEventSource = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
-            if (jumlah >= 1000) return (jumlah / 1000).toFixed(1).replace('.0', '') + 'RB+ terjual';
+            if (jumlah >= 1000) {
+                return (jumlah / 1000).toFixed(1).replace('.0', '') + 'RB+ terjual';
+            }
             return jumlah + ' terjual';
         }
 
         function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
         }
 
         async function fetchProduk(isSilent = false) {
@@ -336,6 +368,7 @@
                     renderProduk();
                 }
             } catch (error) {
+                console.error('Fetch Error:', error);
                 if (statusElem && !isSilent) {
                     statusElem.innerText = '● OFFLINE';
                     statusElem.className = 'text-red-500 font-bold';
@@ -350,11 +383,14 @@
             const categories = ['all', ...new Set(DATA_PRODUK.map(p => p.kategori).filter(Boolean))];
 
             container.innerHTML = categories.map(cat => {
+                const isAll = cat === 'all';
+                const label = isAll ? 'Semua Produk' : cat;
                 const isSelected = KATEGORI_AKTIF === cat;
+
                 return `
                     <button onclick="selectCategory('${cat}')" data-category="${cat}" 
                             class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition whitespace-nowrap font-cyber ${isSelected ? 'bg-cyberCyan text-cyberDark shadow-glowCyanSm' : 'text-slate-400 hover:bg-cyberDark hover:text-cyberCyan'}">
-                        ${cat === 'all' ? 'Semua Produk' : cat}
+                        ${label}
                     </button>
                 `;
             }).join('');
@@ -384,7 +420,8 @@
             const filtered = DATA_PRODUK.filter(item => {
                 const matchKategori = KATEGORI_AKTIF === 'all' || item.kategori === KATEGORI_AKTIF;
                 const matchNama = item.nama && item.nama.toLowerCase().includes(keyword);
-                return matchKategori && matchNama;
+                const matchDeskripsi = item.deskripsi && item.deskripsi.toLowerCase().includes(keyword);
+                return matchKategori && (matchNama || matchDeskripsi);
             });
 
             document.getElementById('productCount').innerText = filtered.length;
@@ -399,35 +436,79 @@
 
             grid.innerHTML = filtered.map((produk) => {
                 const originalIndex = DATA_PRODUK.indexOf(produk);
+                const badgeHtml = (produk.badge && produk.badge.trim() !== "") 
+                    ? `<span class="absolute top-2 left-2 bg-cyberCyan text-cyberDark font-cyber text-[9px] font-black px-1.5 py-0.5 rounded shadow-glowCyanSm z-10 uppercase tracking-wider">${produk.badge}</span>` 
+                    : '';
+
                 const isOutOfStock = produk.stok !== undefined && produk.stok <= 0;
+
+                const stokBadge = isOutOfStock 
+                    ? `<span class="text-[10px] text-red-400 font-semibold bg-red-950/60 border border-red-800/50 px-1.5 py-0.5 rounded">Stok Habis</span>`
+                    : `<span class="text-[10px] text-emerald-400 font-semibold">Stok: ${produk.stok}</span>`;
+
+                let hargaHtml = produk.harga_diskon ? `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-500 line-through">${formatRupiah(produk.harga)}</span>
+                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
+                    </div>
+                ` : `
+                    <div class="flex flex-col">
+                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga)}</span>
+                    </div>
+                `;
+
+                const maxChar = 65;
+                const deskripsiTeks = produk.deskripsi || 'Tidak ada deskripsi.';
+                const isLong = deskripsiTeks.length > maxChar;
 
                 return `
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group">
                         <div class="relative bg-cyberDark pt-[100%] overflow-hidden flex-shrink-0">
                             <img src="${produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" 
                                  alt="${produk.nama}" 
-                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300 opacity-90 group-hover:opacity-100 ${isOutOfStock ? 'grayscale brightness-50' : ''}">
+                                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300 opacity-90 group-hover:opacity-100 ${isOutOfStock ? 'grayscale brightness-50' : ''}"
+                                 loading="lazy">
+                            ${badgeHtml}
                         </div>
                         
                         <div class="p-3 flex flex-col flex-1 justify-between">
                             <div class="space-y-1.5">
-                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 line-clamp-2 min-h-[2rem] leading-tight">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 line-clamp-2 min-h-[2rem] leading-tight" title="${produk.nama}">
                                     ${produk.nama}
                                 </h4>
+                                
+                                <div class="text-[11px] text-slate-400 min-h-[2.5rem]">
+                                    <div class="flex items-start gap-1.5">
+                                        <span class="relative flex h-2 w-2 mt-1 flex-shrink-0">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberCyan opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-cyberCyan"></span>
+                                        </span>
+                                        <div class="leading-relaxed flex-1">
+                                            <p id="desc-text-${originalIndex}" class="line-clamp-2 transition-all duration-300">
+                                                ${deskripsiTeks}
+                                            </p>
+                                            ${isLong ? `
+                                                <button onclick="toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-cyberCyan font-bold hover:underline mt-0.5 inline-block text-[10px]">
+                                                    ... baca selengkapnya
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                                    <span>${isOutOfStock ? '<span class="text-red-400">Stok Habis</span>' : `Stok: ${produk.stok}`}</span>
+                                    <span>${stokBadge}</span>
                                     <span><i class="fa-solid fa-fire text-amber-500 mr-1"></i>${formatTerjual(produk.terjual)}</span>
                                 </div>
                                 
                                 <div class="pt-1 border-t border-cyberBorder/50">
-                                    <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber">${formatRupiah(produk.harga_diskon || produk.harga)}</span>
+                                    ${hargaHtml}
                                 </div>
                             </div>
                             
                             <button onclick="openCheckoutModal(${originalIndex})" 
                                     ${isOutOfStock ? 'disabled' : ''}
-                                    class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500' : 'bg-cyberCyan/10 hover:bg-cyberCyan text-cyberCyan hover:text-cyberDark'} border border-cyberCyan/40 font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
+                                    class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed' : 'bg-cyberCyan/10 hover:bg-cyberCyan border-cyberCyan/40 text-cyberCyan hover:text-cyberDark shadow-glowCyanSm'} border font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
                                 <i class="fa-solid fa-cart-shopping"></i> ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
                         </div>
@@ -436,7 +517,24 @@
             }).join('');
         }
 
-        function filterProduk() { renderProduk(); }
+        function toggleWaDesc(index) {
+            const textElem = document.getElementById(`desc-text-${index}`);
+            const btnElem = document.getElementById(`desc-btn-${index}`);
+
+            if (!textElem || !btnElem) return;
+
+            if (textElem.classList.contains('line-clamp-2')) {
+                textElem.classList.remove('line-clamp-2');
+                btnElem.innerText = 'Sembunyikan';
+            } else {
+                textElem.classList.add('line-clamp-2');
+                btnElem.innerText = '... baca selengkapnya';
+            }
+        }
+
+        function filterProduk() {
+            renderProduk();
+        }
 
         function openCheckoutModal(index) {
             SELECTED_INDEX = index;
@@ -455,6 +553,9 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
             
+            // Sembunyikan field manual & Tampilkan tombol opsi awal
+            if (document.getElementById('usernameInput')) document.getElementById('usernameInput').value = '';
+            if (document.getElementById('noteInput')) document.getElementById('noteInput').value = '';
             document.getElementById('manualFields').classList.add('hidden');
             document.getElementById('paymentOptionBtns').classList.remove('hidden');
 
@@ -500,10 +601,12 @@
             const item = DATA_PRODUK[SELECTED_INDEX];
             if (!item) return;
             const hargaUnit = item.harga_diskon || item.harga;
-            document.getElementById('modalTotalPrice').innerText = formatRupiah(hargaUnit * CURRENT_QTY);
+            const total = hargaUnit * CURRENT_QTY;
+            document.getElementById('modalTotalPrice').innerText = formatRupiah(total);
         }
 
         function closeCheckoutModal() {
+            if (paymentEventSource) paymentEventSource.close();
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
             if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
             document.getElementById('checkoutModal').classList.add('hidden');
@@ -515,6 +618,7 @@
             closeCheckoutModal();
         }
 
+        // --- PEMBAYARAN MANUAL (WHATSAPP) ---
         function submitManualPayment() {
             const item = DATA_PRODUK[SELECTED_INDEX];
             if (!item) return;
@@ -531,13 +635,17 @@
             message += `👤 *Username:* ${username}\n`;
             message += `📦 *Produk:* ${item.nama}\n`;
             message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
+            message += `💰 *Harga Satuan:* ${formatRupiah(hargaUnit)}\n`;
             message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
             if (note) message += `📝 *Catatan:* ${note}\n`;
+            message += `\nMohon informasi metode pembayaran selanjutnya. Terima kasih!`;
 
-            window.open(`https://wa.me/6285122629940?text=${encodeURIComponent(message)}`, '_blank');
+            const waLink = `https://wa.me/6285122629940?text=${encodeURIComponent(message)}`;
+            window.open(waLink, '_blank');
             closeCheckoutModal();
         }
 
+        // --- PEMBAYARAN OTOMATIS (CASAKU TRANSACTION ID) ---
         async function processAutoPayment(existingTrxId = null) {
             const qty = document.getElementById('qtyInput').value;
 
@@ -566,7 +674,7 @@
                 const trxId = data.transactionId;
                 localStorage.setItem('activeTrxId', trxId);
 
-                document.getElementById('qrisImage').src = data.qrUrl;
+                document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
                 document.getElementById('trxIdDisplay').innerText = trxId;
                 document.getElementById('trxProductDisplay').innerText = data.namaProduk || 'Produk Store';
                 document.getElementById('trxTotalDisplay').innerText = formatRupiah(data.totalHarga);
@@ -576,7 +684,7 @@
                 document.getElementById('checkoutModal').classList.remove('hidden');
 
                 startCountdownTimer(data.expiresAt);
-                startPaymentPolling(trxId);
+                startPaymentRealtime(trxId);
 
             } catch (err) {
                 alert(err.message || "Gagal membuat pembayaran otomatis.");
@@ -589,6 +697,7 @@
             }
         }
 
+        // Timer Hitung Mundur Real-Time
         function startCountdownTimer(expiresAt) {
             if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -596,13 +705,14 @@
             const expiryTime = new Date(expiresAt).getTime();
 
             COUNTDOWN_INTERVAL = setInterval(() => {
-                const distance = expiryTime - new Date().getTime();
+                const now = new Date().getTime();
+                const distance = expiryTime - now;
 
                 if (distance <= 0) {
                     clearInterval(COUNTDOWN_INTERVAL);
                     if (timerElem) timerElem.innerText = "EXPIRED";
                     localStorage.removeItem('activeTrxId');
-                    alert("Waktu pembayaran telah habis.");
+                    alert("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
                     closeCheckoutModal();
                     return;
                 }
@@ -616,7 +726,43 @@
             }, 1000);
         }
 
-        // === POLLING TERCEPAT (500ms) ===
+        // Status Pembayaran Real-Time Instant via EventSource (SSE)
+        function startPaymentRealtime(transactionId) {
+            if (paymentEventSource) {
+                paymentEventSource.close();
+            }
+
+            paymentEventSource = new EventSource(`/api/store/payment-stream?transactionId=${transactionId}`);
+
+            paymentEventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+
+                    if (data.paid) {
+                        paymentEventSource.close();
+                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
+
+                        localStorage.removeItem('activeTrxId');
+
+                        document.getElementById('productSuccessLink').href = data.produkLink;
+                        document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
+
+                        document.getElementById('stepPayment').classList.add('hidden');
+                        document.getElementById('stepSuccess').classList.remove('hidden');
+
+                        fetchProduk(true);
+                    }
+                } catch (e) {
+                    console.error("Error SSE Data:", e);
+                }
+            };
+
+            paymentEventSource.onerror = function(err) {
+                console.warn("Koneksi realtime terputus, mencoba menghubungkan kembali...", err);
+            };
+        }
+
+        // Polling Fallback Opsional
         function startPaymentPolling(transactionId) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
@@ -647,9 +793,9 @@
                         closeCheckoutModal();
                     }
                 } catch (e) {
-                    console.log("Error polling status:", e);
+                    console.log("Error saat memproses polling status:", e);
                 }
-            }, 500); // <-- DIUBAH MENJADI 500 MILIDETIK
+            }, 4000);
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
