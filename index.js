@@ -60,7 +60,9 @@ app.use(passport.session());
 app.post('/api/create-payment-link', async (req, res) => {
     try {
         const { produkNama, customerName, qty } = req.body;
-        const pathProduk = path.join(__dirname, '../database', 'produk.json'); 
+        
+        // 🛠️ PERBAIKAN: Gunakan 'database' bukan '../database'
+        const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
         
         if (!fs.existsSync(pathProduk)) {
             return res.status(500).json({ status: false, message: 'File produk.json tidak ditemukan' });
@@ -80,13 +82,13 @@ app.post('/api/create-payment-link', async (req, res) => {
         const totalHarga = hargaUnit * quantity;
         const orderId = `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-        // Request Ke Midtrans Payment Link API
+        // Payload Midtrans Payment Link API
         const midtransPayload = {
             transaction_details: {
                 order_id: orderId,
                 gross_amount: totalHarga
             },
-            usage_limit: 1, // Sesuai tangkapan layar pengaturan (Batasan penggunaan: 1)
+            usage_limit: 1,
             item_details: [{
                 id: orderId,
                 name: item.nama.substring(0, 50),
@@ -108,7 +110,6 @@ app.post('/api/create-payment-link', async (req, res) => {
             }
         });
 
-        // Simpan sementara detail link produk berdasar order_id
         if (!global.paymentStore) global.paymentStore = {};
         global.paymentStore[orderId] = {
             link: item.link,
