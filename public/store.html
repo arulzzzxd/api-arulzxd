@@ -87,7 +87,7 @@
             <div class="flex-1 max-w-xl relative">
                 <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan cyberpunk..." 
                        class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyan transition">
-                <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition" aria-label="Search">
+                <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
             </div>
@@ -95,7 +95,7 @@
             <!-- Menu Kanan -->
             <div class="flex items-center gap-4 text-slate-300">
                 <a href="/doc" class="text-sm font-semibold hover:text-cyberCyan transition hidden sm:block">Docs API</a>
-                <a href="/doc?showProfile=true" class="text-lg hover:text-cyberCyan transition relative" aria-label="Profile">
+                <a href="/doc?showProfile=true" class="text-lg hover:text-cyberCyan transition relative">
                     <i class="fa-regular fa-user"></i>
                 </a>
             </div>
@@ -116,7 +116,7 @@
                     Arulz<span class="text-cyberCyan drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]">XD</span> Store
                 </h1>
                 <p class="text-sm text-slate-400 mt-2 leading-relaxed">
-                    Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat, Otomatis & Manual.
+                    Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat & Otomatis.
                 </p>
             </div>
             <i class="fa-solid fa-microchip absolute -right-6 -bottom-8 text-9xl text-cyberCyan/5 rotate-12 pointer-events-none"></i>
@@ -147,6 +147,7 @@
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
+
                     <!-- Loading Skeleton Animation -->
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
                         <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
@@ -165,23 +166,26 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP CHECKOUT MULTI METODE -->
+    <!-- MODAL POPUP CHECKOUT -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all duration-200 relative" id="modalContent">
-            
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder rounded-t-2xl">
+        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200" id="modalContent">
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
                 <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
-                    <i class="fa-solid fa-cart-flatbed"></i> Checkout Produk
+                    <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
                 </h3>
-                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg transition" aria-label="Close modal">
+                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <!-- STEP 1: FORM UTAMA CHECKOUT -->
-            <div id="stepForm" class="p-5 space-y-4">
+            <form id="orderForm" onsubmit="submitOrder(event)" class="p-5 space-y-4">
+                <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
+                    <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
+                    <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
+                </div>
+
                 <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
-                    <img id="modalProductImage" src="" alt="Product Preview" class="w-14 h-14 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
+                    <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
                     <div class="overflow-hidden flex-1">
                         <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
                         <div class="flex items-center justify-between mt-1">
@@ -210,110 +214,44 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between px-1 border-b border-cyberBorder pb-2">
+                <div class="flex items-center justify-between px-1">
                     <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
                     <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
                 </div>
 
-                <!-- FIELD KHUSUS PESANAN MANUAL WHATSAPP -->
-                <div id="manualFields" class="hidden space-y-3 pt-1 border-t border-cyberBorder/50">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
-                            Nama / Username WhatsApp <span class="text-cyberCyan">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
-                                <i class="fa-regular fa-user"></i>
-                            </span>
-                            <input type="text" id="usernameInput" placeholder="Masukkan nama Anda"
-                                   class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
-                        </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
+                        Username / Nama Pembeli <span class="text-cyberCyan">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                            <i class="fa-regular fa-user"></i>
+                        </span>
+                        <input type="text" id="usernameInput" required placeholder="Masukkan username Anda"
+                               class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
-                            Catatan Tambahan (Opsional)
-                        </label>
-                        <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                                  class="w-full p-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
+                        Catatan Tambahan (Opsional)
+                    </label>
+                    <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
+                              class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                </div>
 
-                    <button type="button" onclick="submitManualPayment()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-green-900/50 transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Kirim Pesanan ke WhatsApp
+                <div class="flex flex-col gap-2 mt-3">
+                    <!-- Tombol Bayar Otomatis Midtrans Payment Link (Navigasi Langsung / Tanpa Tab Baru) -->
+                    <button type="button" onclick="payWithMidtransLink()" id="btnSubmitMidtrans" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt text-sm"></i> Bayar Otomatis (Midtrans)
+                    </button>
+
+                    <!-- Tombol WhatsApp Manual -->
+                    <button type="submit" id="btnSubmitOrder" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Pesan Manual via WhatsApp
                     </button>
                 </div>
-
-                <!-- TOMBOL UTAMA PEMBAYARAN -->
-                <div id="paymentOptionBtns" class="pt-2 grid grid-cols-1 gap-3">
-                    <button type="button" onclick="processAutoPayment()" id="btnAutoPay" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)
-                    </button>
-                    
-                    <button type="button" onclick="showManualFields()" id="btnManualPay" class="w-full bg-green-600/20 border border-green-500/40 hover:bg-green-600 text-green-400 hover:text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Pesan Manual (WhatsApp)
-                    </button>
-                </div>
-            </div>
-
-            <!-- STEP 2: METODE QRIS CASAKU -->
-            <div id="stepPayment" class="hidden text-center space-y-4 p-5">
-                <div class="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
-                    <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
-                        <i class="fa-regular fa-clock"></i> Sisa Waktu Pembayaran:
-                    </span>
-                    <span id="paymentTimer" class="font-mono text-xs font-bold text-amber-300 animate-pulse">15:00</span>
-                </div>
-
-                <h3 class="font-bold text-sm font-cyber text-cyberCyan">Scan QRIS Pembayaran</h3>
-                <p class="text-[11px] text-slate-400">Silakan scan kode QRIS menggunakan M-Banking / E-Wallet Anda.</p>
-
-                <div class="bg-white p-3 rounded-xl inline-block shadow-lg mx-auto">
-                    <img id="qrisImage" src="" alt="QRIS Payment" class="w-48 h-48 sm:w-52 sm:h-52 object-contain mx-auto">
-                </div>
-
-                <div class="bg-cyberDark p-3 rounded-lg border border-cyberBorder text-left text-xs space-y-1 mt-2">
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Produk:</span>
-                        <span id="trxProductDisplay" class="font-bold text-white truncate max-w-[180px]"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">ID TRX:</span>
-                        <span id="trxIdDisplay" class="font-mono text-cyberCyan font-bold"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Total Tagihan:</span>
-                        <span id="trxTotalDisplay" class="font-bold text-white"></span>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-center gap-2 text-xs text-cyberCyan font-semibold animate-pulse pt-1">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran Otomatis...
-                </div>
-                
-                <button onclick="cancelActivePayment()" class="text-xs text-red-400 hover:text-red-300 underline font-semibold transition mt-2">
-                    Batalkan Transaksi Ini
-                </button>
-            </div>
-
-            <!-- STEP 3: SUKSES & LINK PRODUK -->
-            <div id="stepSuccess" class="hidden text-center space-y-4 p-5">
-                <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-3xl mx-auto shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <h3 class="font-bold text-lg font-cyber text-emerald-400 drop-shadow-md">Pembayaran Berhasil!</h3>
-                <p class="text-xs text-slate-300">Terima kasih atas pembelian Anda. Berikut tautan akses ke produk Anda:</p>
-
-                <div class="bg-cyberDark p-4 rounded-xl border border-cyberCyan/40 text-left mt-4 shadow-inner">
-                    <p class="text-[10px] text-slate-500 uppercase font-mono font-bold mb-1">LINK AKSES PRODUK:</p>
-                    <a id="productSuccessLink" href="#" target="_blank" rel="noopener noreferrer" class="text-sm text-cyberCyan font-bold underline break-all block hover:text-cyan-300 transition">
-                        Loading Link...
-                    </a>
-                </div>
-
-                <button onclick="closeCheckoutModal()" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition border border-slate-600">
-                    Selesai & Tutup
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -325,12 +263,11 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let DATA_PRODUK = [];
+
         let KATEGORI_AKTIF = 'all';
-        let SELECTED_INDEX = null;
+        let SELECTED_PRODUCT = null;
+        let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
-        let POLLING_INTERVAL = null;
-        let COUNTDOWN_INTERVAL = null;
-        let AUTO_REFRESH_INTERVAL = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
@@ -338,6 +275,15 @@
                 return (jumlah / 1000).toFixed(1).replace('.0', '') + 'RB+ terjual';
             }
             return jumlah + ' terjual';
+        }
+
+        function generateUniqueOrderId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let randomStr = '';
+            for (let i = 0; i < 6; i++) {
+                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return `TRX-${randomStr}`;
         }
 
         function formatRupiah(angka) {
@@ -348,7 +294,7 @@
             }).format(angka);
         }
 
-        async function fetchProduk(isSilent = false) {
+        async function fetchProduk() {
             const statusElem = document.getElementById('serverStatus');
             try {
                 const response = await fetch('/database/produk');
@@ -356,39 +302,38 @@
 
                 DATA_PRODUK = await response.json();
 
-                if (statusElem && !isSilent) {
+                if (statusElem) {
                     statusElem.innerText = '● ONLINE';
                     statusElem.className = 'text-cyberCyan font-bold animate-pulse';
-                    generateKategoriButtons();
                 }
 
-                const modal = document.getElementById('checkoutModal');
-                if (!modal || modal.classList.contains('hidden') || !isSilent) {
-                    renderProduk();
-                }
+                generateKategoriButtons();
+                renderProduk();
             } catch (error) {
                 console.error('Fetch Error:', error);
-                if (statusElem && !isSilent) {
+                if (statusElem) {
                     statusElem.innerText = '● OFFLINE';
                     statusElem.className = 'text-red-500 font-bold';
                 }
+
+                document.getElementById('productGrid').innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-red-950/30 text-red-400 text-xs font-semibold rounded-xl border border-red-800/40">
+                        <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i> Gagal mengambil data dari server (/database/produk). Pastikan server Express aktif.
+                    </div>
+                `;
             }
         }
 
         function generateKategoriButtons() {
             const container = document.getElementById('categoryContainer');
-            if (!container) return;
-
             const categories = ['all', ...new Set(DATA_PRODUK.map(p => p.kategori).filter(Boolean))];
 
             container.innerHTML = categories.map(cat => {
                 const isAll = cat === 'all';
                 const label = isAll ? 'Semua Produk' : cat;
-                const isSelected = KATEGORI_AKTIF === cat;
-
                 return `
                     <button onclick="selectCategory('${cat}')" data-category="${cat}" 
-                            class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition whitespace-nowrap font-cyber ${isSelected ? 'bg-cyberCyan text-cyberDark shadow-glowCyanSm' : 'text-slate-400 hover:bg-cyberDark hover:text-cyberCyan'}">
+                            class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition whitespace-nowrap font-cyber ${isAll ? 'bg-cyberCyan text-cyberDark shadow-glowCyanSm' : 'text-slate-400 hover:bg-cyberDark hover:text-cyberCyan'}">
                         ${label}
                     </button>
                 `;
@@ -412,13 +357,11 @@
         function renderProduk() {
             const grid = document.getElementById('productGrid');
             const emptyState = document.getElementById('emptyState');
-            if (!grid) return;
-
-            const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
 
             const filtered = DATA_PRODUK.filter(item => {
                 const matchKategori = KATEGORI_AKTIF === 'all' || item.kategori === KATEGORI_AKTIF;
-                const matchNama = item.nama && item.nama.toLowerCase().includes(keyword);
+                const matchNama = item.nama.toLowerCase().includes(keyword);
                 const matchDeskripsi = item.deskripsi && item.deskripsi.toLowerCase().includes(keyword);
                 return matchKategori && (matchNama || matchDeskripsi);
             });
@@ -427,11 +370,11 @@
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
-                if (emptyState) emptyState.classList.remove('hidden');
+                emptyState.classList.remove('hidden');
                 return;
             }
 
-            if (emptyState) emptyState.classList.add('hidden');
+            emptyState.classList.add('hidden');
 
             grid.innerHTML = filtered.map((produk) => {
                 const originalIndex = DATA_PRODUK.indexOf(produk);
@@ -497,7 +440,7 @@
 
                                 <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
                                     <span>${stokBadge}</span>
-                                    <span><i class="fa-solid fa-fire text-amber-500 mr-1"></i>${formatTerjual(produk.terjual)}</span>
+                                    <span>${formatTerjual(produk.terjual)}</span>
                                 </div>
                                 
                                 <div class="pt-1 border-t border-cyberBorder/50">
@@ -536,43 +479,30 @@
         }
 
         function openCheckoutModal(index) {
-            SELECTED_INDEX = index;
-            const item = DATA_PRODUK[index];
-            if (!item || (item.stok !== undefined && item.stok <= 0)) return;
+            SELECTED_PRODUCT = DATA_PRODUK[index];
+            if (!SELECTED_PRODUCT || (SELECTED_PRODUCT.stok !== undefined && SELECTED_PRODUCT.stok <= 0)) return;
 
+            CURRENT_ORDER_ID = generateUniqueOrderId();
             CURRENT_QTY = 1;
-            const hargaFinal = item.harga_diskon || item.harga;
 
-            document.getElementById('modalProductName').innerText = item.nama;
+            const hargaFinal = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
+
+            document.getElementById('modalOrderId').innerText = CURRENT_ORDER_ID;
+            document.getElementById('modalProductName').innerText = SELECTED_PRODUCT.nama;
             document.getElementById('modalProductPrice').innerText = formatRupiah(hargaFinal);
-            document.getElementById('modalProductSold').innerText = formatTerjual(item.terjual);
-            document.getElementById('modalProductImage').src = item.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
-            document.getElementById('modalStockInfo').innerText = `Tersisa: ${item.stok !== undefined ? item.stok : 'Tersedia'}`;
+            document.getElementById('modalProductSold').innerText = formatTerjual(SELECTED_PRODUCT.terjual);
+            document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
-            
-            // Sembunyikan field manual & Tampilkan tombol opsi awal
-            if (document.getElementById('usernameInput')) document.getElementById('usernameInput').value = '';
-            if (document.getElementById('noteInput')) document.getElementById('noteInput').value = '';
-            document.getElementById('manualFields').classList.add('hidden');
-            document.getElementById('paymentOptionBtns').classList.remove('hidden');
 
-            document.getElementById('stepForm').classList.remove('hidden');
-            document.getElementById('stepPayment').classList.add('hidden');
-            document.getElementById('stepSuccess').classList.add('hidden');
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
 
-        function showManualFields() {
-            document.getElementById('manualFields').classList.remove('hidden');
-            document.getElementById('paymentOptionBtns').classList.add('hidden');
-        }
-
         function updateQuantity(change) {
-            const item = DATA_PRODUK[SELECTED_INDEX];
-            if (!item) return;
-            const maxStok = item.stok !== undefined ? item.stok : 999;
+            if (!SELECTED_PRODUCT) return;
+            const maxStok = SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 999;
 
             let newQty = CURRENT_QTY + change;
             if (newQty >= 1 && newQty <= maxStok) {
@@ -583,9 +513,8 @@
         }
 
         function onQtyInputChange() {
-            const item = DATA_PRODUK[SELECTED_INDEX];
-            if (!item) return;
-            const maxStok = item.stok !== undefined ? item.stok : 999;
+            if (!SELECTED_PRODUCT) return;
+            const maxStok = SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 999;
             let val = parseInt(document.getElementById('qtyInput').value) || 1;
 
             if (val < 1) val = 1;
@@ -597,186 +526,96 @@
         }
 
         function updateTotalPrice() {
-            const item = DATA_PRODUK[SELECTED_INDEX];
-            if (!item) return;
-            const hargaUnit = item.harga_diskon || item.harga;
+            if (!SELECTED_PRODUCT) return;
+            const hargaUnit = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
             const total = hargaUnit * CURRENT_QTY;
             document.getElementById('modalTotalPrice').innerText = formatRupiah(total);
         }
 
         function closeCheckoutModal() {
-            if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
-            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
             document.getElementById('checkoutModal').classList.add('hidden');
-            SELECTED_INDEX = null;
+            document.getElementById('orderForm').reset();
+            SELECTED_PRODUCT = null;
+            CURRENT_ORDER_ID = '';
+            CURRENT_QTY = 1;
         }
 
-        function cancelActivePayment() {
-            localStorage.removeItem('activeTrxId');
-            closeCheckoutModal();
+        // FUNGSI PEMBAYARAN MIDTRANS TANPA TAB BARU (SAME WINDOW)
+        async function payWithMidtransLink() {
+            if (!SELECTED_PRODUCT) return;
+
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Harap isi Username / Nama Pembeli terlebih dahulu!');
+                document.getElementById('usernameInput').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitMidtrans');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengalihkan Pembayaran...`;
+
+            try {
+                const response = await fetch('/api/create-payment-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        produkNama: SELECTED_PRODUCT.nama,
+                        customerName: username,
+                        qty: CURRENT_QTY
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.status) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    alert('Gagal memproses link pembayaran: ' + (data.message || 'Server error'));
+                    return;
+                }
+
+                // Mengalihkan secara langsung tanpa tab baru
+                window.location.href = data.payment_url;
+
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                alert('Terjadi kesalahan jaringan.');
+            }
         }
 
-        // --- PEMBAYARAN MANUAL (WHATSAPP) ---
-        function submitManualPayment() {
-            const item = DATA_PRODUK[SELECTED_INDEX];
-            if (!item) return;
+        function submitOrder(event) {
+            event.preventDefault();
+            if (!SELECTED_PRODUCT || !CURRENT_ORDER_ID) return;
 
             const username = document.getElementById('usernameInput').value.trim();
             const note = document.getElementById('noteInput').value.trim();
-            if (!username) return alert("Username / Nama Pembeli wajib diisi!");
-
-            const hargaUnit = item.harga_diskon || item.harga;
+            const hargaUnit = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
             const totalHarga = hargaUnit * CURRENT_QTY;
 
             let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
             message += `*--- DETAIL PESANAN BARU ---*\n`;
+            message += `🔖 *ID TRX:* ${CURRENT_ORDER_ID}\n`;
             message += `👤 *Username:* ${username}\n`;
-            message += `📦 *Produk:* ${item.nama}\n`;
+            message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
             message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
             message += `💰 *Harga Satuan:* ${formatRupiah(hargaUnit)}\n`;
             message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
-            if (note) message += `📝 *Catatan:* ${note}\n`;
+            if (note) {
+                message += `📝 *Catatan:* ${note}\n`;
+            }
             message += `\nMohon informasi metode pembayaran selanjutnya. Terima kasih!`;
 
             const waLink = `https://wa.me/6285122629940?text=${encodeURIComponent(message)}`;
-            window.open(waLink, '_blank');
-            closeCheckoutModal();
+
+            // Navigasi WhatsApp juga dilakukan di jendela yang sama
+            window.location.href = waLink;
         }
 
-        // --- PEMBAYARAN OTOMATIS (CASAKU TRANSACTION ID) ---
-        async function processAutoPayment(existingTrxId = null) {
-            const qty = document.getElementById('qtyInput').value;
-
-            const btnPay = document.getElementById('btnAutoPay');
-            if (btnPay) {
-                btnPay.disabled = true;
-                btnPay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses QRIS...';
-            }
-
-            const activeTrxId = existingTrxId || localStorage.getItem('activeTrxId');
-
-            try {
-                const res = await fetch('/api/store/create-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        produkIndex: SELECTED_INDEX, 
-                        qty,
-                        activeTrxId 
-                    })
-                });
-
-                const data = await res.json();
-                if (!data.status) throw new Error(data.message);
-
-                const trxId = data.transactionId;
-                localStorage.setItem('activeTrxId', trxId);
-
-                document.getElementById('qrisImage').src = data.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qrUrl)}`;
-                document.getElementById('trxIdDisplay').innerText = trxId;
-                document.getElementById('trxProductDisplay').innerText = data.namaProduk || 'Produk Store';
-                document.getElementById('trxTotalDisplay').innerText = formatRupiah(data.totalHarga);
-
-                document.getElementById('stepForm').classList.add('hidden');
-                document.getElementById('stepPayment').classList.remove('hidden');
-                document.getElementById('checkoutModal').classList.remove('hidden');
-
-                startCountdownTimer(data.expiresAt);
-                startPaymentPolling(trxId);
-
-            } catch (err) {
-                alert(err.message || "Gagal membuat pembayaran otomatis.");
-                localStorage.removeItem('activeTrxId');
-            } finally {
-                if (btnPay) {
-                    btnPay.disabled = false;
-                    btnPay.innerHTML = '<i class="fa-solid fa-qrcode text-sm"></i> Bayar Otomatis (QRIS Instan)';
-                }
-            }
-        }
-
-        // Timer Hitung Mundur Real-Time
-        function startCountdownTimer(expiresAt) {
-            if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
-
-            const timerElem = document.getElementById('paymentTimer');
-            const expiryTime = new Date(expiresAt).getTime();
-
-            COUNTDOWN_INTERVAL = setInterval(() => {
-                const now = new Date().getTime();
-                const distance = expiryTime - now;
-
-                if (distance <= 0) {
-                    clearInterval(COUNTDOWN_INTERVAL);
-                    if (timerElem) timerElem.innerText = "EXPIRED";
-                    localStorage.removeItem('activeTrxId');
-                    alert("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
-                    closeCheckoutModal();
-                    return;
-                }
-
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                if (timerElem) {
-                    timerElem.innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                }
-            }, 1000);
-        }
-
-        // Polling Status Pembayaran Real-time (Setiap 2 Detik)
-function startPaymentPolling(transactionId) {
-    if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
-
-    POLLING_INTERVAL = setInterval(async () => {
-        try {
-            const res = await fetch(`/api/store/check-payment?transactionId=${transactionId}`);
-            const data = await res.json();
-
-            // Jika backend mendeteksi status SUKSES/LUNAS
-            if (data.status && data.paid) {
-                clearInterval(POLLING_INTERVAL);
-                if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
-
-                localStorage.removeItem('activeTrxId');
-
-                // Tampilkan Link Produk ke Pembeli
-                document.getElementById('productSuccessLink').href = data.produkLink;
-                document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
-
-                document.getElementById('stepPayment').classList.add('hidden');
-                document.getElementById('stepSuccess').classList.remove('hidden');
-
-                fetchProduk(true);
-            } else if (data.expired) {
-                clearInterval(POLLING_INTERVAL);
-                if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
-
-                localStorage.removeItem('activeTrxId');
-                alert("Waktu pembayaran telah habis!");
-                closeCheckoutModal();
-            }
-        } catch (e) {
-            console.log("Error saat memproses polling status:", e);
-        }
-    }, 2000); // Diubah ke 2000ms (2 detik) agar langsung lunas secara instan
-}
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            await fetchProduk();
-            
-            const activeTrxId = localStorage.getItem('activeTrxId');
-            if (activeTrxId) {
-                processAutoPayment(activeTrxId);
-            }
-
-            AUTO_REFRESH_INTERVAL = setInterval(() => {
-                const modal = document.getElementById('checkoutModal');
-                if (!modal || modal.classList.contains('hidden')) {
-                    fetchProduk(true);
-                }
-            }, 1500);
-        });
+        window.addEventListener('DOMContentLoaded', fetchProduk);
     </script>
 </body>
 </html>
