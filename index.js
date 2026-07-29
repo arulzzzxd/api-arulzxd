@@ -6,8 +6,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
-const EventEmitter = require('events');
-const paymentEvents = new EventEmitter();
+const { Casaku, parseWebhook } = require('casaku');
 const axios = require('axios');
 const mime = require('mime-types');
 const nodemailer = require('nodemailer');
@@ -26,7 +25,11 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
-app.use(express.json({ verify: (req, _res, buf) => (req.rawBody = buf) }));
+app.use(express.json({
+    verify: (req, _res, buf) => {
+        req.rawBody = buf; // Simpan raw buffer untuk HMAC
+    }
+}));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -79,86 +82,55 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-// === IN-MEMORY DATABASE (GANTI MONGODB) ===
-// Digunakan untuk menyimpan pengguna & transaksi di memori RAM server
-global.users = []; 
-global.transactions = {}; // Store transaksi: { transactionId: { ...dataTrx } }
+const transactionSchema = new mongoose.Schema({
+    transactionId: { type: String, required: true, unique: true, index: true }, // Index ditambahkan untuk query super cepat
+    namaProduk: { type: String, required: true },
+    produkLink: { type: String, required: true },
+    qty: { type: Number, required: true },
+    totalHarga: { type: Number, required: true },
+    qrUrl: { type: String, required: true },
+    status: { type: String, default: 'PENDING' },
+    createdAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true }
+});
 
-// Konfigurasi Kredensial Casaku
-const CASAKU_BASE_URL = "https://api.casaku.id";
-const CASAKU_LICENSE_KEY = process.env.CASAKU_LICENSE_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
+const TransactionModel = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+
+const CASAKU_API_KEY = process.env.CASAKU_API_KEY || "cashify_aaeb9d60b04cb094caf45b8c3447049965ce0fc49cb21df763d24f87621074d0";
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "casaku_sec_7a7a14ce68e474fc1dc283161782d500";
 
-// Helper membaca produk.json
+const casaku = new Casaku({ licenseKey: CASAKU_API_KEY });
+
 function getProdukData() {
     const pathProduk = path.join(__dirname, 'database', 'produk.json');
     if (!fs.existsSync(pathProduk)) return [];
     return JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
 }
 
-// Helper Update Transaksi ke LUNAS dalam Session/Memory
-async function markTransactionAsPaid(trx) {
+async function markTransactionAsPaid(transactionId) {
     try {
-        if (!trx || trx.status === 'SUCCESS') return true;
+        const trx = await TransactionModel.findOne({ transactionId: transactionId });
+        if (!trx || trx.status === 'SUCCESS') return false;
 
         trx.status = 'SUCCESS';
+        await trx.save();
 
-        // Push event ke listener SSE
-        paymentEvents.emit('payment_success', {
-            transactionId: String(trx.transactionId),
-            produkLink: trx.produkLink,
-            namaProduk: trx.namaProduk
-        });
-
-        console.log(`✅ [LUNAS] Transaksi ${trx.transactionId} telah diverifikasi (Session Memory).`);
+        console.log(`✅ [SUCCESS] Transaksi ${transactionId} berhasil diperbarui di MongoDB!`);
         return true;
     } catch (err) {
-        console.error("❌ Gagal update status transaksi:", err.message);
+        console.error("❌ Gagal memperbarui status transaksi di MongoDB:", err.message);
         return false;
     }
 }
 
-// ----------------------------------------------------
-// ENDPOINT PAYMENT STREAM (SSE)
-// ----------------------------------------------------
-app.get('/api/store/payment-stream', (req, res) => {
-    const transactionId = req.query.transactionId;
-    if (!transactionId) return res.status(400).send("transactionId required");
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-
-    const onPaymentSuccess = async (data) => {
-        if (String(data.transactionId) === String(transactionId)) {
-            res.write(`data: ${JSON.stringify({ paid: true, produkLink: data.produkLink, namaProduk: data.namaProduk })}\n\n`);
-            paymentEvents.removeListener('payment_success', onPaymentSuccess);
-            res.end();
-        }
-    };
-
-    paymentEvents.on('payment_success', onPaymentSuccess);
-
-    req.on('close', () => {
-        paymentEvents.removeListener('payment_success', onPaymentSuccess);
-    });
-});
-
-// ----------------------------------------------------
-// 1. ENDPOINT: Create Payment (Via Session/Memory)
-// ----------------------------------------------------
 app.post('/api/store/create-payment', async (req, res) => {
     try {
-        const qty = req.body.qty;
-        const produkIndex = req.body.produkIndex;
-        const activeTrxId = req.body.activeTrxId;
+        const { qty, produkIndex, activeTrxId } = req.body;
 
-        // 1. Cek jika transaksi sebelumnya masih aktif di memori session
-        if (activeTrxId && global.transactions[activeTrxId]) {
-            const existingTrx = global.transactions[activeTrxId];
-            if (existingTrx && existingTrx.status === 'PENDING') {
-                if (Date.now() < new Date(existingTrx.expiresAt).getTime()) {
+        if (activeTrxId) {
+            const existingTrx = await TransactionModel.findOne({ transactionId: activeTrxId }).lean();
+            if (existingTrx) {
+                if (Date.now() < new Date(existingTrx.expiresAt).getTime() && existingTrx.status === 'PENDING') {
                     return res.json({
                         status: true,
                         transactionId: existingTrx.transactionId,
@@ -172,7 +144,6 @@ app.post('/api/store/create-payment', async (req, res) => {
             }
         }
 
-        // 2. Ambil data produk
         const produkList = getProdukData();
         const produk = produkList[produkIndex];
 
@@ -186,64 +157,46 @@ app.post('/api/store/create-payment', async (req, res) => {
 
         const quantity = parseInt(qty) || 1;
         const hargaSatuan = (produk.harga_diskon && produk.harga_diskon > 0) ? produk.harga_diskon : produk.harga;
-        const amount = hargaSatuan * quantity;
+        const totalHarga = hargaSatuan * quantity;
 
-        // 3. Request ke API Casaku v2
-        const casakuPayload = {
+        const deposit = await casaku.generateQRISv2({
             qr_id: "5b52c7c1-3932-4db6-a06d-a594d6f4bc9a",
-            amount: amount,
-            useUniqueCode: true,
+            amount: totalHarga,
             packageIds: ["id.dana"],
-            expiredInMinutes: 15,
             qrType: "dynamic",
             paymentMethod: "qris",
             useQris: true,
-            prefix: "TRX"
-        };
-
-        const response = await axios.post(`${CASAKU_BASE_URL}/api/generate/v2/qris`, casakuPayload, {
-            headers: {
-                'x-license-key': CASAKU_LICENSE_KEY,
-                'Content-Type': 'application/json'
-            }
+            useUniqueCode: true
         });
 
-        const resBody = response.data;
-        if (resBody.status !== 200 || !resBody.data) {
-            throw new Error(resBody.message || "Gagal memperoleh data QRIS dari Casaku.");
-        }
+        const trxData = deposit.data || deposit;
+        console.log("📦 Respon Buat QRIS Casaku:", JSON.stringify(trxData));
 
-        const casakuData = resBody.data;
-        const transactionId = String(casakuData.transactionId);
-        const finalAmount = casakuData.totalAmount || amount;
-        const qrString = casakuData.qr_string || casakuData.payment_url;
+        const casakuTxnId = trxData.id || trxData.transactionId || trxData.trx_id || trxData.deposit_id; 
+        const qrContent = trxData.qr_string || trxData.qr_url || trxData.qris;
+        const finalAmount = trxData.totalAmount || totalHarga;
 
-        const qrImageUrl = qrString.startsWith('http') 
-            ? qrString 
-            : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrString)}`;
+        const qrImageUrl = qrContent.startsWith('http') 
+            ? qrContent 
+            : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrContent)}`;
 
-        const expiresAt = new Date(Date.now() + (casakuData.expiredInMinutes || 15) * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // 4. Simpan Transaksi Baru ke Memori Global & Session
-        const newTrxData = {
-            transactionId: transactionId,
+        await TransactionModel.create({
+            transactionId: String(casakuTxnId),
             namaProduk: produk.nama,
-            produkLink: produk.link || '#',
+            produkLink: produk.link,
             qty: quantity,
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             status: 'PENDING',
             createdAt: new Date(),
             expiresAt: expiresAt
-        };
+        });
 
-        global.transactions[transactionId] = newTrxData;
-        req.session.activeTrxId = transactionId; // Simpan ke session client juga
-
-        // 5. Kirim respon balik ke frontend
         return res.json({
             status: true,
-            transactionId: transactionId,
+            transactionId: casakuTxnId,
             totalHarga: finalAmount,
             qrUrl: qrImageUrl,
             expiresAt: expiresAt,
@@ -251,110 +204,172 @@ app.post('/api/store/create-payment', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error Create Payment Casaku:", error.response?.data || error.message);
+        console.error("Gagal membuat pembayaran Casaku:", error);
         return res.status(500).json({
             status: false,
-            message: "Gagal memproses pembayaran otomatis: " + (error.response?.data?.message || error.message)
+            message: "Gagal memproses pembayaran otomatis: " + (error.message || error)
         });
     }
 });
 
-// ----------------------------------------------------
-// 2. ENDPOINT: Check Status (Polling via Session / Memory)
-// ----------------------------------------------------
-app.get('/api/store/check-payment', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+// === ENDPOINT CHECK-PAYMENT SUPER FAST (OPTIMIZED) ===
+app.get('/api/store/check-payment/', async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     try {
         const transactionId = req.query.transactionId;
-        if (!transactionId) return res.status(400).json({ status: false, message: "transactionId required" });
+        if (!transactionId) {
+            return res.status(400).json({ status: false, message: "ID Transaksi wajib diisi." });
+        }
 
-        const trx = global.transactions[transactionId];
-        if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan di memori." });
+        // Cek langsung ke MongoDB (In-Memory Index Read < 5ms)
+        const trx = await TransactionModel.findOne({ transactionId }).lean();
+        if (!trx) {
+            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan." });
+        }
 
-        // Jika tercatat SUCCESS
+        // 1. Jika Status SUKSES di MongoDB (Otomatis dari Webhook)
         if (trx.status === 'SUCCESS') {
-            return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
-        }
-
-        // Cek jika transaksi kadaluwarsa
-        if (Date.now() > new Date(trx.expiresAt).getTime()) {
-            trx.status = 'EXPIRED';
-            return res.json({ status: false, expired: true, message: "Transaksi kedaluwarsa." });
-        }
-
-        // Auto Check langsung ke API Casaku
-        try {
-            const statusRes = await axios.get(`${CASAKU_BASE_URL}/api/transaction/detail/${transactionId}`, {
-                headers: { 'x-license-key': CASAKU_LICENSE_KEY }
-            }).catch(async () => {
-                return await axios.post(`${CASAKU_BASE_URL}/api/generate/check-status`, {
-                    transactionId: String(transactionId)
-                }, {
-                    headers: { 'x-license-key': CASAKU_LICENSE_KEY }
-                });
+            return res.json({
+                status: true,
+                paid: true,
+                message: "Pembayaran Berhasil!",
+                produkLink: trx.produkLink,
+                namaProduk: trx.namaProduk
             });
-
-            const resData = statusRes.data;
-            const isPaid = (resData?.status === 200 || resData?.success) && 
-                           (resData?.data?.status === 'paid' || resData?.data?.status === 'SUCCESS' || resData?.data?.isPaid === true);
-
-            if (isPaid) {
-                await markTransactionAsPaid(trx);
-                return res.json({ status: true, paid: true, produkLink: trx.produkLink, namaProduk: trx.namaProduk });
-            }
-        } catch (err) {
-            console.log("Auto-check API Casaku pending / log error:", err.message);
         }
 
+        // 2. Cek Kedaluwarsa
+        if (Date.now() > new Date(trx.expiresAt).getTime()) {
+            if (trx.status !== 'EXPIRED') {
+                await TransactionModel.updateOne({ transactionId }, { status: 'EXPIRED' });
+            }
+            return res.json({
+                status: false,
+                expired: true,
+                message: "Waktu pembayaran telah habis."
+            });
+        }
+
+        // Cepat kembalikan status pending tanpa memanggil API Casaku eksternal
         return res.json({ status: true, paid: false, message: "Menunggu pembayaran..." });
+
     } catch (error) {
-        res.status(500).json({ status: false, message: "Gagal mengecek status." });
+        console.error("Error Cek Pembayaran:", error);
+        res.status(500).json({ status: false, message: "Gagal mengecek status pembayaran." });
     }
 });
 
-// ----------------------------------------------------
-// 3. ENDPOINT: Webhook Callback
-// ----------------------------------------------------
-app.post('/api/store/webhook', async (req, res) => {
-    try {
-        const payload = req.body;
-        console.log("🔔 [WEBHOOK CASAKU RECEIVED]:", payload);
+app.post("/api/store/webhook", async (req, res) => {
+  try {
+    // 1. Ambil header signature
+    const signature = req.headers["x-casaku-signature"];
 
-        const trxId = payload.transactionId || payload.trx_id || payload.data?.transactionId;
-        const status = payload.status || payload.data?.status;
+    if (!signature) {
+      console.warn("⚠️ Webhook ditolak: Header X-Casaku-Signature tidak ditemukan.");
+      return res.status(401).json({ error: "Unauthorized: Missing signature header." });
+    }
 
-        if ((status === 'paid' || status === 'SUCCESS') && trxId) {
-            const trx = global.transactions[trxId];
-            if (trx) {
-                await markTransactionAsPaid(trx);
+    if (!WEBHOOK_SECRET) {
+      console.error("❌ WEBHOOK_SECRET belum dikonfigurasi di server.");
+      return res.status(500).json({ error: "Server misconfiguration." });
+    }
+
+    // 2. Gunakan raw body (Buffer) yang belum di-parse
+    // Pastikan app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } })) sudah terpasang.
+    const rawBodyBuffer = req.rawBody || Buffer.from("");
+
+    // 3. Hitung HMAC-SHA256 menggunakan raw body sebagai message dan WEBHOOK_SECRET sebagai key
+    const computedSignature = crypto
+      .createHmac("sha256", WEBHOOK_SECRET)
+      .update(rawBodyBuffer)
+      .digest("hex");
+
+    // 4. Bandingkan constant-time menggunakan crypto.timingSafeEqual
+    const signatureBuffer = Buffer.from(signature, "hex");
+    const computedBuffer = Buffer.from(computedSignature, "hex");
+
+    let isSignatureValid = false;
+
+    if (signatureBuffer.length === computedBuffer.length) {
+      isSignatureValid = crypto.timingSafeEqual(signatureBuffer, computedBuffer);
+    }
+
+    if (!isSignatureValid) {
+      console.warn("⚠️ Webhook ditolak: Signature HMAC tidak valid!");
+      return res.status(401).json({ error: "Unauthorized: Invalid signature." });
+    }
+
+    // --- PROSES PAYLOAD KETIKA SIGNATURE VALID ---
+    const payload = safeDecodePayload(req.body);
+    console.log("✅ [WEBHOOK SIGNATURE VERIFIED]:", payload);
+
+    const status = String(
+      payload.status ||
+      payload.transaction_status ||
+      payload.payment_status ||
+      (payload.data && payload.data.status) ||
+      ""
+    ).toLowerCase();
+
+    const transactionId = String(
+      payload.transactionId ||
+      payload.trx_id ||
+      payload.id ||
+      (payload.data && payload.data.id) ||
+      ""
+    );
+
+    const amount = Number(
+      payload.amount ||
+      payload.totalAmount ||
+      (payload.data && payload.data.amount) ||
+      0
+    );
+
+    // Update status transaksi di MongoDB
+    if (["paid", "success", "settled", "berhasil", "lunas"].includes(status)) {
+      const trx = await TransactionModel.findOne({
+        $or: [
+          { transactionId: transactionId },
+          { totalHarga: amount, status: "PENDING" }
+        ]
+      });
+
+      if (trx && trx.status !== "SUCCESS") {
+        trx.status = "SUCCESS";
+        await trx.save();
+
+        // Update stok pada database/produk.json
+        const pathProduk = path.join(__dirname, "database", "produk.json");
+        if (fs.existsSync(pathProduk)) {
+          const produkList = JSON.parse(fs.readFileSync(pathProduk, "utf8"));
+          const produkIdx = produkList.findIndex((p) => p.nama === trx.namaProduk);
+
+          if (produkIdx !== -1) {
+            if (produkList[produkIdx].stok !== undefined && produkList[produkIdx].stok > 0) {
+              produkList[produkIdx].stok = Math.max(0, produkList[produkIdx].stok - trx.qty);
             }
+            produkList[produkIdx].terjual = (produkList[produkIdx].terjual || 0) + trx.qty;
+            fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
+          }
         }
 
-        return res.json({ status: 200, message: "Webhook processed successfully" });
-    } catch (err) {
-        console.error("❌ Webhook Error:", err.message);
-        return res.status(500).json({ error: "Internal Webhook Error" });
+        console.log(`🎉 [SUCCESS] Transaksi ${trx.transactionId} telah diperbarui di MongoDB!`);
+      }
     }
-});
 
-// ----------------------------------------------------
-// 4. ENDPOINT: Cancel Payment
-// ----------------------------------------------------
-app.post('/api/store/cancel-payment', async (req, res) => {
-    try {
-        const { transactionId } = req.body;
-        await axios.post(`${CASAKU_BASE_URL}/api/generate/cancel-status`, { transactionId }, {
-            headers: { 'x-license-key': CASAKU_LICENSE_KEY }
-        });
-        
-        if (global.transactions[transactionId]) {
-            global.transactions[transactionId].status = 'CANCEL';
-        }
-        res.json({ status: true, message: "Transaksi dibatalkan." });
-    } catch (err) {
-        res.status(500).json({ status: false, message: err.message });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Webhook verified and processed successfully.",
+    });
+
+  } catch (error) {
+    console.error("❌ [WEBHOOK ERROR]:", error.message);
+    return res.status(500).json({ error: "Internal Webhook Error" });
+  }
 });
 
 passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
