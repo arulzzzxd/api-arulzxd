@@ -262,9 +262,22 @@ app.get('/api/store/check-payment/', async (req, res) => {
     }
 });
 
+// === HELPER DECODE PAYLOAD SAFE ===
+function safeDecodePayload(body) {
+  if (!body) return {};
+  if (typeof body === 'object') return body;
+  try {
+    return JSON.parse(body.toString('utf8'));
+  } catch (err) {
+    console.error("⚠️ Gagal mengekstrak JSON payload:", err.message);
+    return {};
+  }
+}
+
+// === ENDPOINT WEBHOOK AUTOMATIC MARK AS PAID ===
 app.post("/api/store/webhook", async (req, res) => {
   try {
-    // 1. Ambil header signature
+    // 1. Verifikasi Signature HMAC Header
     const signature = req.headers["x-casaku-signature"];
 
     if (!signature) {
@@ -277,22 +290,16 @@ app.post("/api/store/webhook", async (req, res) => {
       return res.status(500).json({ error: "Server misconfiguration." });
     }
 
-    // 2. Gunakan raw body (Buffer) yang belum di-parse
-    // Pastikan app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } })) sudah terpasang.
     const rawBodyBuffer = req.rawBody || Buffer.from("");
-
-    // 3. Hitung HMAC-SHA256 menggunakan raw body sebagai message dan WEBHOOK_SECRET sebagai key
     const computedSignature = crypto
       .createHmac("sha256", WEBHOOK_SECRET)
       .update(rawBodyBuffer)
       .digest("hex");
 
-    // 4. Bandingkan constant-time menggunakan crypto.timingSafeEqual
     const signatureBuffer = Buffer.from(signature, "hex");
     const computedBuffer = Buffer.from(computedSignature, "hex");
 
     let isSignatureValid = false;
-
     if (signatureBuffer.length === computedBuffer.length) {
       isSignatureValid = crypto.timingSafeEqual(signatureBuffer, computedBuffer);
     }
@@ -302,7 +309,7 @@ app.post("/api/store/webhook", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized: Invalid signature." });
     }
 
-    // --- PROSES PAYLOAD KETIKA SIGNATURE VALID ---
+    // 2. Dekode Payload
     const payload = safeDecodePayload(req.body);
     console.log("✅ [WEBHOOK SIGNATURE VERIFIED]:", payload);
 
@@ -329,8 +336,9 @@ app.post("/api/store/webhook", async (req, res) => {
       0
     );
 
-    // Update status transaksi di MongoDB
+    // 3. PROSES TANDAI LUNAS OTOMATIS
     if (["paid", "success", "settled", "berhasil", "lunas"].includes(status)) {
+      // Cari transaksi PENDING berdasarkan ID Transaksi atau Nominal
       const trx = await TransactionModel.findOne({
         $or: [
           { transactionId: transactionId },
@@ -338,26 +346,31 @@ app.post("/api/store/webhook", async (req, res) => {
         ]
       });
 
-      if (trx && trx.status !== "SUCCESS") {
-        trx.status = "SUCCESS";
-        await trx.save();
+      if (trx) {
+        if (trx.status !== "SUCCESS") {
+          // Ganti status menjadi SUCCESS / LUNAS di MongoDB
+          trx.status = "SUCCESS";
+          await trx.save();
 
-        // Update stok pada database/produk.json
-        const pathProduk = path.join(__dirname, "database", "produk.json");
-        if (fs.existsSync(pathProduk)) {
-          const produkList = JSON.parse(fs.readFileSync(pathProduk, "utf8"));
-          const produkIdx = produkList.findIndex((p) => p.nama === trx.namaProduk);
+          // Potong Stok Produk & Tambah Terjual di database/produk.json
+          const pathProduk = path.join(__dirname, "database", "produk.json");
+          if (fs.existsSync(pathProduk)) {
+            const produkList = JSON.parse(fs.readFileSync(pathProduk, "utf8"));
+            const produkIdx = produkList.findIndex((p) => p.nama === trx.namaProduk);
 
-          if (produkIdx !== -1) {
-            if (produkList[produkIdx].stok !== undefined && produkList[produkIdx].stok > 0) {
-              produkList[produkIdx].stok = Math.max(0, produkList[produkIdx].stok - trx.qty);
+            if (produkIdx !== -1) {
+              if (produkList[produkIdx].stok !== undefined && produkList[produkIdx].stok > 0) {
+                produkList[produkIdx].stok = Math.max(0, produkList[produkIdx].stok - trx.qty);
+              }
+              produkList[produkIdx].terjual = (produkList[produkIdx].terjual || 0) + trx.qty;
+              fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
             }
-            produkList[produkIdx].terjual = (produkList[produkIdx].terjual || 0) + trx.qty;
-            fs.writeFileSync(pathProduk, JSON.stringify(produkList, null, 2));
           }
-        }
 
-        console.log(`🎉 [SUCCESS] Transaksi ${trx.transactionId} telah diperbarui di MongoDB!`);
+          console.log(`🎉 [SUCCESS] Transaksi ${trx.transactionId} OTOMATIS DITANDAI LUNAS!`);
+        }
+      } else {
+        console.warn(`⚠️ Transaksi dengan ID "${transactionId}" atau nominal ${amount} tidak ditemukan.`);
       }
     }
 
