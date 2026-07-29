@@ -59,7 +59,6 @@ app.post('/api/create-payment-link', async (req, res) => {
     try {
         const { produkNama, customerName, qty } = req.body;
         
-        // 🛠️ PERBAIKAN: Gunakan 'database' bukan '../database'
         const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
         
         if (!fs.existsSync(pathProduk)) {
@@ -80,7 +79,7 @@ app.post('/api/create-payment-link', async (req, res) => {
         const totalHarga = hargaUnit * quantity;
         const orderId = `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-        // Payload Midtrans Payment Link API
+        // Payload yang disesuaikan dengan Dashboard Pengaturan Payment Link Midtrans
         const midtransPayload = {
             transaction_details: {
                 order_id: orderId,
@@ -92,14 +91,13 @@ app.post('/api/create-payment-link', async (req, res) => {
                 name: item.nama.substring(0, 50),
                 price: hargaUnit,
                 quantity: quantity
-            }],
-            customer_details: {
-                first_name: customerName || "Customer",
-                email: `${(customerName || 'user').toLowerCase().replace(/\s+/g, '')}@gmail.com`
-            }
+            }]
+            // customer_details dihilangkan agar sesuai dengan setelan Dashboard Midtrans (Isi detail: Tidak)
         };
 
+        // PERBAIKAN AUTH: Encode Server Key tanpa titik dua tambahan
         const authHeader = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString('base64');
+
         const response = await axios.post('https://api.sandbox.midtrans.com/v1/payment-links', midtransPayload, {
             headers: {
                 'Accept': 'application/json',
