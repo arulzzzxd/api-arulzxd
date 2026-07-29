@@ -265,7 +265,7 @@
                 </div>
 
                 <h3 class="font-bold text-sm font-cyber text-cyberCyan">Scan QRIS Pembayaran</h3>
-                <p class="text-[11px] text-slate-400">Silakan scan kode QRIS menggunakan M-Banking / E-Wallet Anda. Status akan ditandai lunas otomatis!</p>
+                <p class="text-[11px] text-slate-400">Silakan scan kode QRIS menggunakan M-Banking / E-Wallet Anda.</p>
 
                 <div class="bg-white p-3 rounded-xl inline-block shadow-lg mx-auto">
                     <img id="qrisImage" src="" alt="QRIS Payment" class="w-48 h-48 sm:w-52 sm:h-52 object-contain mx-auto">
@@ -287,7 +287,7 @@
                 </div>
 
                 <div class="flex items-center justify-center gap-2 text-xs text-cyberCyan font-semibold animate-pulse pt-1">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Deteksi Pembayaran Otomatis...
+                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran Otomatis...
                 </div>
                 
                 <button onclick="cancelActivePayment()" class="text-xs text-red-400 hover:text-red-300 underline font-semibold transition mt-2">
@@ -300,8 +300,8 @@
                 <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-3xl mx-auto shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                     <i class="fa-solid fa-check"></i>
                 </div>
-                <h3 class="font-bold text-lg font-cyber text-emerald-400 drop-shadow-md">Pembayaran Lunas Otomatis!</h3>
-                <p class="text-xs text-slate-300">Terima kasih, transaksi Anda telah terverifikasi. Berikut tautan akses ke produk Anda:</p>
+                <h3 class="font-bold text-lg font-cyber text-emerald-400 drop-shadow-md">Pembayaran Berhasil!</h3>
+                <p class="text-xs text-slate-300">Terima kasih atas pembelian Anda. Berikut tautan akses ke produk Anda:</p>
 
                 <div class="bg-cyberDark p-4 rounded-xl border border-cyberCyan/40 text-left mt-4 shadow-inner">
                     <p class="text-[10px] text-slate-500 uppercase font-mono font-bold mb-1">LINK AKSES PRODUK:</p>
@@ -331,7 +331,6 @@
         let POLLING_INTERVAL = null;
         let COUNTDOWN_INTERVAL = null;
         let AUTO_REFRESH_INTERVAL = null;
-        let paymentEventSource = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
@@ -553,6 +552,7 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
             
+            // Sembunyikan field manual & Tampilkan tombol opsi awal
             if (document.getElementById('usernameInput')) document.getElementById('usernameInput').value = '';
             if (document.getElementById('noteInput')) document.getElementById('noteInput').value = '';
             document.getElementById('manualFields').classList.add('hidden');
@@ -605,7 +605,6 @@
         }
 
         function closeCheckoutModal() {
-            if (paymentEventSource) paymentEventSource.close();
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
             if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
             document.getElementById('checkoutModal').classList.add('hidden');
@@ -683,9 +682,6 @@
                 document.getElementById('checkoutModal').classList.remove('hidden');
 
                 startCountdownTimer(data.expiresAt);
-                
-                // Aktifkan pemantauan otomatis (SSE Realtime & Polling Fallback)
-                startPaymentRealtime(trxId);
                 startPaymentPolling(trxId);
 
             } catch (err) {
@@ -728,44 +724,7 @@
             }, 1000);
         }
 
-        // Otomatis Deteksi Lunas Real-Time Instant via EventSource (SSE)
-        function startPaymentRealtime(transactionId) {
-            if (paymentEventSource) {
-                paymentEventSource.close();
-            }
-
-            paymentEventSource = new EventSource(`/api/store/payment-stream?transactionId=${transactionId}`);
-
-            paymentEventSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-
-                    if (data.paid) {
-                        paymentEventSource.close();
-                        if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
-                        if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
-
-                        localStorage.removeItem('activeTrxId');
-
-                        document.getElementById('productSuccessLink').href = data.produkLink;
-                        document.getElementById('productSuccessLink').innerText = data.produkLink || 'Klik disini untuk mengunduh';
-
-                        document.getElementById('stepPayment').classList.add('hidden');
-                        document.getElementById('stepSuccess').classList.remove('hidden');
-
-                        fetchProduk(true);
-                    }
-                } catch (e) {
-                    console.error("Error SSE Data:", e);
-                }
-            };
-
-            paymentEventSource.onerror = function(err) {
-                console.warn("Koneksi realtime terputus, mencoba menghubungkan kembali...", err);
-            };
-        }
-
-        // Otomatis Deteksi Lunas via Polling Fallback
+        // Polling Status Pembayaran Menggunakan transactionId
         function startPaymentPolling(transactionId) {
             if (POLLING_INTERVAL) clearInterval(POLLING_INTERVAL);
 
@@ -775,7 +734,6 @@
                     const data = await res.json();
 
                     if (data.status && data.paid) {
-                        if (paymentEventSource) paymentEventSource.close();
                         clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -789,7 +747,6 @@
 
                         fetchProduk(true);
                     } else if (data.expired) {
-                        if (paymentEventSource) paymentEventSource.close();
                         clearInterval(POLLING_INTERVAL);
                         if (COUNTDOWN_INTERVAL) clearInterval(COUNTDOWN_INTERVAL);
 
@@ -800,7 +757,7 @@
                 } catch (e) {
                     console.log("Error saat memproses polling status:", e);
                 }
-            }, 3000);
+            }, 10000);
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
