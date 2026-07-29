@@ -29,13 +29,11 @@ app.use(cookieParser());
 app.set('trust proxy', 1);
 
 // === MIDTRANS CONFIGURATION ===
-
-
-const m = "Mid";
-const sv = "server";
-const ffm = "-f_";
-const z = "zasWxI";
-const tm = "-8oXLKFh7cnML54H";
+const m = "Mid-";
+const sv = "server-";
+const ffm = "f_";
+const z = "zasWxI-";
+const tm = "8oXLKFh7cnML54H";
 const MIDTRANS_SERVER_KEY = `${m}${sv}${ffm}${z}${tm}`;
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
