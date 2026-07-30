@@ -35,22 +35,22 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Styling Khusus Mode Gist RAW */
+        /* Styling Khusus Mode Gist RAW (Dark Theme) */
         body.gist-raw-mode {
-            background: #ffffff !important;
-            color: #1f2328 !important;
+            background: #0d1117 !important;
+            color: #e6edf3 !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace !important;
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace !important;
         }
         .gist-raw-container {
-            padding: 12px 16px;
+            padding: 16px;
             white-space: pre-wrap;
             word-wrap: break-word;
             font-size: 13px;
-            line-height: 1.45;
-            color: #1f2328;
-            background: #ffffff;
+            line-height: 1.5;
+            color: #e6edf3;
+            background: #0d1117;
         }
 
         /* Kontainer Tombol Utama di Pojok Kiri Atas */
@@ -388,7 +388,7 @@
         if (!target) return;
         const t = translations[currentLang];
 
-        // LOGIKA MODE RAW SEPERTI GITHUB GIST RAW
+        // LOGIKA MODE RAW (BG HITAM, TEKS PUTIH)
         if (viewId && isRawMode) {
             const current = pastes.find(p => p.id.toString() === viewId.toString());
             if (!current) { 
@@ -396,10 +396,8 @@
                 return; 
             }
             
-            // Tambahkan class khusus untuk menirukan tampilan GitHub Gist RAW
             document.body.classList.add('gist-raw-mode');
             
-            // Sembunyikan elemen UI lainnya
             const topLeftNav = document.querySelector('.top-left-nav');
             const mainFooter = document.getElementById('main-footer');
             if (topLeftNav) topLeftNav.style.display = 'none';
