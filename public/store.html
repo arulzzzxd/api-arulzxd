@@ -707,8 +707,11 @@
                 const qrisString = result.data.paymentNumber;
                 qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
 
+                // Ambil nominal amount langsung dari API QRIS PayWuz / Backend (yang sudah termasuk fee / kode unik)
+                const finalAmount = (result.data && result.data.amount) ? result.data.amount : totalHarga;
+
                 // Tampilkan Total yang Harus Dibayar & Order ID
-                document.getElementById('qrisTotalAmount').innerText = formatRupiah(totalHarga);
+                document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
                 document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
                 // Render QRIS
