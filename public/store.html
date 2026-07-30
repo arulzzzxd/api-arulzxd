@@ -10,6 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode JS Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- SweetAlert2 CSS & JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         tailwind.config = {
@@ -70,6 +74,40 @@
         input[type='number']::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
+        }
+
+        /* Styling Custom SweetAlert2 Tema Cyberpunk */
+        .swal2-popup.cyber-swal {
+            background: #0a1628 !important;
+            border: 1px solid #162a45 !important;
+            border-radius: 16px !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.25) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .swal2-title.cyber-swal-title {
+            color: #00f3ff !important;
+            font-family: 'Orbitron', sans-serif !important;
+            font-size: 1.1rem !important;
+        }
+        .swal2-html-container.cyber-swal-text {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+        }
+        .swal2-confirm.cyber-swal-confirm {
+            background: #00f3ff !important;
+            color: #050b14 !important;
+            font-weight: 800 !important;
+            font-family: 'Orbitron', sans-serif !important;
+            border-radius: 8px !important;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4) !important;
+        }
+        .swal2-cancel.cyber-swal-cancel {
+            background: #1e293b !important;
+            color: #f87171 !important;
+            font-weight: 700 !important;
+            border: 1px solid #7f1d1d !important;
+            border-radius: 8px !important;
         }
     </style>
 </head>
@@ -147,7 +185,6 @@
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
-
                     <!-- Loading Skeleton Animation -->
                     <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
                         <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
@@ -166,9 +203,11 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP CHECKOUT -->
+    <!-- MODAL POPUP CHECKOUT (OTOMATIS PAYWUZ & MANUAL WA) -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200" id="modalContent">
+        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200 overflow-hidden" id="modalContent">
+            
+            <!-- Modal Header -->
             <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
                 <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
                     <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
@@ -178,7 +217,8 @@
                 </button>
             </div>
 
-            <form id="orderForm" onsubmit="submitOrder(event)" class="p-5 space-y-4">
+            <!-- TAMPILAN STEP 1: FORM UTAMA -->
+            <form id="orderForm" onsubmit="handleFormSubmit(event)" class="p-5 space-y-4">
                 <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
                     <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
                     <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
@@ -240,18 +280,63 @@
                               class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
                 </div>
 
-                <div class="flex flex-col gap-2 mt-3">
-                    <!-- Tombol Bayar Otomatis Midtrans Payment Link (Navigasi Langsung / Tanpa Tab Baru) -->
-                    <button type="button" onclick="payWithMidtransLink()" id="btnSubmitMidtrans" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-bolt text-sm"></i> Bayar Otomatis (Midtrans)
+                <!-- PILIHAN METODE PEMBAYARAN -->
+                <div class="pt-2 border-t border-cyberBorder space-y-2">
+                    <label class="block text-xs font-bold text-slate-300">Pilih Metode Pembayaran:</label>
+                    
+                    <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> Bayar Otomatis (QRIS Fast)
                     </button>
 
-                    <!-- Tombol WhatsApp Manual -->
-                    <button type="submit" id="btnSubmitOrder" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Pesan Manual via WhatsApp
+                    <button type="submit" id="btnPayManual" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Order Manual via WhatsApp
                     </button>
                 </div>
             </form>
+
+            <!-- TAMPILAN STEP 2: QRIS OTOMATIS -->
+            <div id="paymentStep2" class="hidden p-5 flex flex-col items-center justify-center space-y-4">
+                <div class="text-center">
+                    <p class="text-xs text-slate-300 font-semibold">Scan QRIS Otomatis untuk Membayar</p>
+                    <p class="text-[10px] text-slate-500">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
+                </div>
+
+                <!-- Container QR Code -->
+                <div class="bg-white p-3 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex items-center justify-center" id="qrcodeContainer"></div>
+
+                <!-- Status Indicator -->
+                <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
+                </div>
+
+                <button onclick="cancelPayment()" class="text-xs text-red-400 hover:underline pt-1">
+                    Batalkan Transaksi
+                </button>
+            </div>
+
+            <!-- TAMPILAN STEP 3: SUKSES & LINK PRODUK -->
+            <div id="paymentStep3" class="hidden p-5 flex flex-col items-center justify-center space-y-4 text-center">
+                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-bold text-white font-cyber">Pembayaran Berhasil!</h4>
+                    <p class="text-xs text-slate-400 mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
+                </div>
+
+                <!-- Box Link Access Product -->
+                <div class="w-full bg-cyberDark border border-cyberCyan/50 p-3 rounded-xl">
+                    <p class="text-[10px] text-slate-400 font-mono mb-1">LINK AKSES PRODUK / SCRIPT:</p>
+                    <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold break-all hover:underline flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> <span id="productLinkText">Akses Link Produk</span>
+                    </a>
+                </div>
+
+                <button onclick="closeCheckoutModal()" class="w-full bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-slate-300 text-xs font-bold py-2.5 rounded-xl transition">
+                    Tutup
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -263,11 +348,11 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         let DATA_PRODUK = [];
-
         let KATEGORI_AKTIF = 'all';
         let SELECTED_PRODUCT = null;
         let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
+        let pollingInterval = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
@@ -278,12 +363,7 @@
         }
 
         function generateUniqueOrderId() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let randomStr = '';
-            for (let i = 0; i < 6; i++) {
-                randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return `TRX-${randomStr}`;
+            return `TRX-${Date.now().toString().slice(-6)}`;
         }
 
         function formatRupiah(angka) {
@@ -485,7 +565,7 @@
             CURRENT_ORDER_ID = generateUniqueOrderId();
             CURRENT_QTY = 1;
 
-            const hargaFinal = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
+            const hargaFinal = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
 
             document.getElementById('modalOrderId').innerText = CURRENT_ORDER_ID;
             document.getElementById('modalProductName').innerText = SELECTED_PRODUCT.nama;
@@ -496,6 +576,11 @@
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
+
+            // Reset Tampilan Modal
+            document.getElementById('orderForm').classList.remove('hidden');
+            document.getElementById('paymentStep2').classList.add('hidden');
+            document.getElementById('paymentStep3').classList.add('hidden');
 
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
@@ -527,12 +612,13 @@
 
         function updateTotalPrice() {
             if (!SELECTED_PRODUCT) return;
-            const hargaUnit = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
+            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const total = hargaUnit * CURRENT_QTY;
             document.getElementById('modalTotalPrice').innerText = formatRupiah(total);
         }
 
         function closeCheckoutModal() {
+            if (pollingInterval) clearInterval(pollingInterval);
             document.getElementById('checkoutModal').classList.add('hidden');
             document.getElementById('orderForm').reset();
             SELECTED_PRODUCT = null;
@@ -540,64 +626,210 @@
             CURRENT_QTY = 1;
         }
 
-        // FUNGSI PEMBAYARAN MIDTRANS TANPA TAB BARU (SAME WINDOW)
-        async function payWithMidtransLink() {
-            if (!SELECTED_PRODUCT) return;
-
+        // ==================== METODE 1: PEMBAYARAN OTOMATIS (QRIS PAYWUZ) ====================
+        async function processAutoPayment() {
             const username = document.getElementById('usernameInput').value.trim();
             if (!username) {
-                alert('Harap isi Username / Nama Pembeli terlebih dahulu!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'DATA BELUM LENGKAP',
+                    text: 'Harap isi Username / Nama Pembeli terlebih dahulu!',
+                    customClass: {
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        htmlContainer: 'cyber-swal-text',
+                        confirmButton: 'cyber-swal-confirm'
+                    }
+                });
                 document.getElementById('usernameInput').focus();
                 return;
             }
 
-            const btn = document.getElementById('btnSubmitMidtrans');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengalihkan Pembayaran...`;
+            const btnAuto = document.getElementById('btnPayAuto');
+            btnAuto.disabled = true;
+            btnAuto.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat QRIS...`;
+
+            // SweetAlert Loading State
+            Swal.fire({
+                title: 'GENERATING QRIS',
+                text: 'Sedang menghubungkan ke gateway PayWuz...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                customClass: {
+                    popup: 'cyber-swal',
+                    title: 'cyber-swal-title',
+                    htmlContainer: 'cyber-swal-text'
+                }
+            });
 
             try {
-                const response = await fetch('/api/create-payment-link', {
+                const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
+                const totalHarga = hargaUnit * CURRENT_QTY;
+
+                const res = await fetch('/transactions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        produkNama: SELECTED_PRODUCT.nama,
-                        customerName: username,
-                        qty: CURRENT_QTY
+                        orderId: CURRENT_ORDER_ID,
+                        amount: totalHarga,
+                        itemDetails: SELECTED_PRODUCT
                     })
                 });
 
-                const data = await response.json();
+                const result = await res.json();
+                if (!result.status) throw new Error(result.message || "Gagal menghasilkan QRIS");
 
-                if (!data.status) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    alert('Gagal memproses link pembayaran: ' + (data.message || 'Server error'));
-                    return;
-                }
+                const qrisString = result.data.paymentNumber;
 
-                // Mengalihkan secara langsung tanpa tab baru
-                window.location.href = data.payment_url;
+                // Render QRIS
+                const qrContainer = document.getElementById('qrcodeContainer');
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: qrisString,
+                    width: 180,
+                    height: 180
+                });
+
+                // Tutup SweetAlert Loading
+                Swal.close();
+
+                // Tampilkan Tampilan QRIS
+                document.getElementById('orderForm').classList.add('hidden');
+                document.getElementById('paymentStep2').classList.remove('hidden');
+
+                // Polling Status dari Server (MongoDB)
+                startStatusPolling();
 
             } catch (err) {
-                console.error(err);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                alert('Terjadi kesalahan jaringan.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'TRANSAKSI GAGAL',
+                    text: err.message,
+                    customClass: {
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        htmlContainer: 'cyber-swal-text',
+                        confirmButton: 'cyber-swal-confirm'
+                    }
+                });
+                btnAuto.disabled = false;
+                btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis (QRIS Fast)`;
             }
         }
 
-        function submitOrder(event) {
+        function startStatusPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/transactions/${CURRENT_ORDER_ID}`);
+                    const result = await res.json();
+
+                    if (result.status && result.data) {
+                        const status = result.data.status;
+
+                        if (status === "PAID" || status === "SETTLED" || status === "SUCCESS") {
+                            clearInterval(pollingInterval);
+                            onPaymentSuccess(result.data.productLink || SELECTED_PRODUCT.link || SELECTED_PRODUCT.gambar);
+                        } else if (status === "CANCELLED" || status === "EXPIRED") {
+                            clearInterval(pollingInterval);
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'KADALUWARSA',
+                                text: 'Transaksi telah kadaluwarsa atau dibatalkan.',
+                                customClass: {
+                                    popup: 'cyber-swal',
+                                    title: 'cyber-swal-title',
+                                    htmlContainer: 'cyber-swal-text',
+                                    confirmButton: 'cyber-swal-confirm'
+                                }
+                            });
+                            closeCheckoutModal();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error polling status:", e);
+                }
+            }, 3000);
+        }
+
+        function onPaymentSuccess(productLink) {
+            document.getElementById('paymentStep2').classList.add('hidden');
+            document.getElementById('paymentStep3').classList.remove('hidden');
+
+            const linkElem = document.getElementById('productDownloadLink');
+            linkElem.href = productLink;
+            document.getElementById('productLinkText').innerText = productLink;
+
+            // SweetAlert Notifikasi Pembayaran Sukses
+            Swal.fire({
+                icon: 'success',
+                title: 'PEMBAYARAN DITERIMA!',
+                text: 'Transaksi Anda terverifikasi secara otomatis. Silakan akses produk Anda.',
+                timer: 3500,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'cyber-swal',
+                    title: 'cyber-swal-title',
+                    htmlContainer: 'cyber-swal-text'
+                }
+            });
+        }
+
+        async function cancelPayment() {
+            const confirmResult = await Swal.fire({
+                title: 'BATALKAN TRANSAKSI?',
+                text: 'Apakah Anda yakin ingin membatalkan pembayaran QRIS ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Batalkan',
+                cancelButtonText: 'Kembali',
+                customClass: {
+                    popup: 'cyber-swal',
+                    title: 'cyber-swal-title',
+                    htmlContainer: 'cyber-swal-text',
+                    confirmButton: 'cyber-swal-cancel',
+                    cancelButton: 'cyber-swal-confirm'
+                }
+            });
+
+            if (confirmResult.isConfirmed) {
+                if (pollingInterval) clearInterval(pollingInterval);
+                try {
+                    await fetch(`/transactions/${CURRENT_ORDER_ID}/cancel`, { method: 'POST' });
+                } catch (e) {}
+
+                Swal.fire({
+                    icon: 'info',
+                    title: 'DIBATALKAN',
+                    text: 'Transaksi berhasil dibatalkan.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        htmlContainer: 'cyber-swal-text'
+                    }
+                });
+
+                closeCheckoutModal();
+            }
+        }
+
+        // ==================== METODE 2: PEMBAYARAN MANUAL (WHATSAPP) ====================
+        function handleFormSubmit(event) {
             event.preventDefault();
             if (!SELECTED_PRODUCT || !CURRENT_ORDER_ID) return;
 
             const username = document.getElementById('usernameInput').value.trim();
             const note = document.getElementById('noteInput').value.trim();
-            const hargaUnit = (SELECTED_PRODUCT.harga_diskon && SELECTED_PRODUCT.harga_diskon > 0) ? SELECTED_PRODUCT.harga_diskon : SELECTED_PRODUCT.harga;
+            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const totalHarga = hargaUnit * CURRENT_QTY;
 
-            let message = `Halo Arulz, saya ingin memesan produk berikut:\n\n`;
-            message += `*--- DETAIL PESANAN BARU ---*\n`;
+            let message = `Halo Arulz, saya ingin memesan produk berikut secara manual:\n\n`;
+            message += `*--- DETAIL PESANAN MANUAL ---*\n`;
             message += `🔖 *ID TRX:* ${CURRENT_ORDER_ID}\n`;
             message += `👤 *Username:* ${username}\n`;
             message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
@@ -607,12 +839,25 @@
             if (note) {
                 message += `📝 *Catatan:* ${note}\n`;
             }
-            message += `\nMohon informasi metode pembayaran selanjutnya. Terima kasih!`;
+            message += `\nMohon petunjuk instruksi pembayaran selanjutnya. Terima kasih!`;
 
             const waLink = `https://wa.me/6285122629940?text=${encodeURIComponent(message)}`;
 
-            // Navigasi WhatsApp juga dilakukan di jendela yang sama
-            window.location.href = waLink;
+            Swal.fire({
+                icon: 'success',
+                title: 'MENGALIHKAN KE WHATSAPP',
+                text: 'Pesanan Anda telah disiapkan. Silakan lanjutkan ke WhatsApp admin.',
+                timer: 2500,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'cyber-swal',
+                    title: 'cyber-swal-title',
+                    htmlContainer: 'cyber-swal-text'
+                }
+            }).then(() => {
+                window.open(waLink, '_blank');
+                closeCheckoutModal();
+            });
         }
 
         window.addEventListener('DOMContentLoaded', fetchProduk);
