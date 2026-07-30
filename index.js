@@ -28,19 +28,235 @@ app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-// === MIDTRANS CONFIGURATION ===
-const m = "Mid-";
-const sv = "server-";
-const ffm = "f_";
-const z = "zasWxI-";
-const tm = "8oXLKFh7cnML54H";
-const MIDTRANS_SERVER_KEY = `${m}${sv}${ffm}${z}${tm}`;
-
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+
+const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
+const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
+const PAYWUZ_HEADERS = {
+    "Authorization": `Bearer ${PAYWUZ_API_KEY}`,
+    "Content-Type": "application/json"
+};
+
+const transactionSchema = new mongoose.Schema({
+    orderId: { type: String, required: true, unique: true },
+    amount: { type: Number, required: true },
+    paymentNumber: { type: String, default: null }, // QRIS String / URL
+    paymentMethod: { type: String, default: "QRIS" },
+    status: { type: String, default: "UNPAID" }, // UNPAID, PAID, SETTLED, EXPIRED, CANCELLED
+    itemDetails: {
+        nama: String,
+        harga: Number,
+        harga_diskon: Number,
+        kategori: String,
+        gambar: String,
+        link: String
+    },
+    productLink: { type: String, default: null }, // Berisi link produk saat transaksi lunas
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+
+function verifyPaywuzSignature(payload, receivedSignature, secretKey) {
+    if (!receivedSignature) return false;
+    try {
+        const computedSignature = crypto
+            .createHmac('sha256', secretKey)
+            .update(JSON.stringify(payload))
+            .digest('hex');
+        return crypto.timingSafeEqual(
+            Buffer.from(computedSignature), 
+            Buffer.from(receivedSignature)
+        );
+    } catch (err) {
+        return false;
+    }
+}
+
+app.post('/transactions', async (req, res) => {
+    try {
+        const { orderId, amount, itemDetails } = req.body;
+
+        if (!orderId || !amount) {
+            return res.status(400).json({ status: false, message: "orderId dan amount wajib diisi!" });
+        }
+
+        // Tembak API PayWuz untuk Generate QRIS
+        const paywuzRes = await axios.post(`${PAYWUZ_BASE_URL}/transactions`, {
+            orderId,
+            amount,
+            paymentMethod: "QRIS" // QRIS Only
+        }, { headers: PAYWUZ_HEADERS });
+
+        const transactionData = paywuzRes.data?.data || paywuzRes.data;
+        const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
+
+        // Cari link dari itemDetails atau fallback ke produk.json
+        let pLink = itemDetails?.link || null;
+        if (!pLink && itemDetails?.nama) {
+            const pathProduk = path.join(__dirname, 'database', 'produk.json');
+            if (fs.existsSync(pathProduk)) {
+                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                const matchedProduct = products.find(p => p.nama === itemDetails.nama);
+                if (matchedProduct) pLink = matchedProduct.link || null;
+            }
+        }
+
+        // Simpan Transaksi ke MongoDB
+        const newTransaction = new Transaction({
+            orderId,
+            amount,
+            paymentNumber: qrisNumber,
+            paymentMethod: "QRIS",
+            status: transactionData.status || "UNPAID",
+            itemDetails: itemDetails || null,
+            productLink: pLink
+        });
+
+        await newTransaction.save();
+
+        res.json({
+            status: true,
+            message: "Transaksi QRIS berhasil dibuat",
+            data: newTransaction
+        });
+    } catch (error) {
+        console.error("Error PayWuz Create TRX:", error.response?.data || error.message);
+        res.status(500).json({
+            status: false,
+            message: "Gagal membuat transaksi QRIS PayWuz",
+            error: error.response?.data || error.message
+        });
+    }
+});
+
+// 2. Cek Status Transaksi (/transactions/:orderId)
+app.get('/transactions/:orderId', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        // Cek status ke API PayWuz
+        const paywuzRes = await axios.get(`${PAYWUZ_BASE_URL}/transactions/${orderId}`, {
+            headers: PAYWUZ_HEADERS
+        });
+
+        const statusData = paywuzRes.data?.data || paywuzRes.data;
+        const currentStatus = statusData.status;
+
+        // Cari & Update transaksi di MongoDB
+        let localTrx = await Transaction.findOne({ orderId });
+
+        if (localTrx) {
+            localTrx.status = currentStatus;
+            localTrx.updatedAt = new Date();
+
+            // Ambil link dari produk.json jika status PAID/SETTLED/SUCCESS dan link belum tersimpan
+            if ((currentStatus === "PAID" || currentStatus === "SETTLED" || currentStatus === "SUCCESS") && !localTrx.productLink) {
+                const pathProduk = path.join(__dirname, 'database', 'produk.json');
+                if (fs.existsSync(pathProduk)) {
+                    const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                    const matchedProduct = products.find(p => p.nama === localTrx.itemDetails?.nama);
+                    if (matchedProduct && matchedProduct.link) {
+                        localTrx.productLink = matchedProduct.link;
+                    }
+                }
+            }
+
+            await localTrx.save();
+        }
+
+        res.json({
+            status: true,
+            data: {
+                orderId: statusData.orderId || orderId,
+                status: currentStatus,
+                amount: statusData.amount || localTrx?.amount,
+                paymentNumber: statusData.paymentNumber || localTrx?.paymentNumber,
+                productLink: (currentStatus === "PAID" || currentStatus === "SETTLED" || currentStatus === "SUCCESS") ? localTrx?.productLink : null
+            }
+        });
+    } catch (error) {
+        console.error("Error PayWuz Status TRX:", error.response?.data || error.message);
+
+        // Fallback: Jika API PayWuz error, ambil data dari MongoDB lokal
+        const localTrx = await Transaction.findOne({ orderId: req.params.orderId });
+        if (localTrx) {
+            return res.json({
+                status: true,
+                data: localTrx
+            });
+        }
+
+        res.status(500).json({
+            status: false,
+            message: "Gagal mengambil status transaksi",
+            error: error.response?.data || error.message
+        });
+    }
+});
+
+// 3. Batalkan Transaksi (/transactions/:orderId/cancel)
+app.post('/transactions/:orderId/cancel', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        const cancelRes = await axios.post(`${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`, {}, {
+            headers: PAYWUZ_HEADERS
+        });
+
+        // Update status di MongoDB menjadi CANCELLED
+        await Transaction.findOneAndUpdate(
+            { orderId },
+            { status: "CANCELLED", updatedAt: new Date() }
+        );
+
+        res.json({
+            status: true,
+            message: "Transaksi berhasil dibatalkan",
+            data: cancelRes.data?.data || cancelRes.data
+        });
+    } catch (error) {
+        console.error("Error PayWuz Cancel TRX:", error.response?.data || error.message);
+        res.status(500).json({
+            status: false,
+            message: "Gagal membatalkan transaksi",
+            error: error.response?.data || error.message
+        });
+    }
+});
+
+// 4. Webhook Callback Handler PayWuz (/webhook)
+app.post('/webhook', async (req, res) => {
+    try {
+        const signature = req.headers['x-paywuz-signature'];
+        
+        // Verifikasi Signature HMAC-SHA256
+        const isValid = verifyPaywuzSignature(req.body, signature, PAYWUZ_API_KEY);
+        if (!isValid && process.env.NODE_ENV === 'production') {
+            return res.status(401).json({ status: false, message: "Signature tidak valid!" });
+        }
+
+        const { orderId, status } = req.body;
+
+        if (orderId && status) {
+            // Update status transaksi otomatis di MongoDB
+            await Transaction.findOneAndUpdate(
+                { orderId },
+                { status: status, updatedAt: new Date() }
+            );
+        }
+
+        res.json({ status: true, message: "Webhook PayWuz berhasil diproses" });
+    } catch (err) {
+        console.error("Webhook Error:", err);
+        res.status(500).json({ status: false, message: "Error memproses webhook" });
+    }
+});
 
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
@@ -54,107 +270,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.post('/api/create-payment-link', async (req, res) => {
-    try {
-        const { produkNama, customerName, qty } = req.body;
-        
-        const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
-        
-        if (!fs.existsSync(pathProduk)) {
-            return res.status(500).json({ status: false, message: 'File produk.json tidak ditemukan' });
-        }
-
-        const rawData = fs.readFileSync(pathProduk, 'utf8');
-        const produkList = JSON.parse(rawData);
-        const item = produkList.find(p => p.nama === produkNama);
-
-        if (!item) return res.status(404).json({ status: false, message: 'Produk tidak ditemukan' });
-        if (item.stok !== undefined && item.stok <= 0) {
-            return res.status(400).json({ status: false, message: 'Stok produk habis!' });
-        }
-
-        const quantity = parseInt(qty) || 1;
-        const hargaUnit = (item.harga_diskon && item.harga_diskon > 0) ? item.harga_diskon : item.harga;
-        const totalHarga = hargaUnit * quantity;
-        const orderId = `TRX-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-        // Payload yang disesuaikan dengan Dashboard Pengaturan Payment Link Midtrans
-        const midtransPayload = {
-            transaction_details: {
-                order_id: orderId,
-                gross_amount: totalHarga
-            },
-            usage_limit: 1,
-            item_details: [{
-                id: orderId,
-                name: item.nama.substring(0, 50),
-                price: hargaUnit,
-                quantity: quantity
-            }]
-            // customer_details dihilangkan agar sesuai dengan setelan Dashboard Midtrans (Isi detail: Tidak)
-        };
-
-        // PERBAIKAN AUTH: Encode Server Key tanpa titik dua tambahan
-        const authHeader = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString('base64');
-
-        const response = await axios.post('https://api.sandbox.midtrans.com/v1/payment-links', midtransPayload, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${authHeader}`
-            }
-        });
-
-        if (!global.paymentStore) global.paymentStore = {};
-        global.paymentStore[orderId] = {
-            link: item.link,
-            nama: item.nama,
-            status: 'pending'
-        };
-
-        res.json({
-            status: true,
-            order_id: orderId,
-            payment_url: response.data.payment_url,
-            product_link: item.link
-        });
-
-    } catch (error) {
-        console.error("Gagal buat Payment Link:", error.response ? error.response.data : error.message);
-        res.status(500).json({ 
-            status: false, 
-            message: error.response?.data?.message?.[0] || 'Gagal memproses Tautan Pembayaran Midtrans.' 
-        });
-    }
-});
-
-// === ENDPOINT: WEBHOOK NOTIFIKASI OTOMATIS MIDTRANS ===
-app.post('/api/midtrans-notification', express.json(), (req, res) => {
-    const notif = req.body;
-    const orderId = notif.order_id;
-    const transactionStatus = notif.transaction_status;
-    const fraudStatus = notif.fraud_status;
-
-    if (transactionStatus == 'capture' || transactionStatus == 'settlement') {
-        if (fraudStatus == 'accept' || !fraudStatus) {
-            if (global.paymentStore && global.paymentStore[orderId]) {
-                global.paymentStore[orderId].status = 'success';
-                console.log(`✅ Pembayaran Berhasil! Order ID: ${orderId} siap mengambil produk.`);
-            }
-        }
-    }
-    res.status(200).send('OK');
-});
-
-// === ENDPOINT: CEK STATUS PEMBAYARAN PENGAMBILAN PRODUK ===
-app.get('/api/check-status/:orderId', (req, res) => {
-    const orderId = req.params.orderId;
-    if (global.paymentStore && global.paymentStore[orderId]) {
-        return res.json(global.paymentStore[orderId]);
-    }
-    res.status(404).json({ status: 'not_found' });
-});
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
