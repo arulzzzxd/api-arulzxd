@@ -433,9 +433,9 @@
                 const result = await res.json();
 
                 if (result.status && result.data) {
-                    const status = (result.data.status || "").toUpperCase();
+                    const status = (result.data.status || "").toLowerCase();
 
-                    if (status === "UNPAID") {
+                    if (status === "pending") {
                         CURRENT_ORDER_ID = result.data.orderId;
                         qrisExpireTime = new Date(result.data.expiredAt).getTime();
 
@@ -457,7 +457,7 @@
 
                         startCountdown(qrisExpireTime);
                         startStatusPolling();
-                    } else if (["PAID", "SETTLED", "SETTLEMENT", "SUCCESS"].includes(status)) {
+                    } else if (["settlement", "success", "paid", "settled"].includes(status)) {
                         CURRENT_ORDER_ID = result.data.orderId;
                         localStorage.removeItem('active_order_id');
                         onPaymentSuccess(result.data.productLink || "#");
@@ -646,7 +646,6 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
 
-            // Reset Tampilan Modal
             document.getElementById('orderForm').classList.remove('hidden');
             document.getElementById('paymentStep2').classList.add('hidden');
             document.getElementById('paymentStep3').classList.add('hidden');
@@ -873,21 +872,22 @@
                     const result = await res.json();
 
                     if (result.status && result.data) {
-                        const status = (result.data.status || "").toUpperCase();
+                        const status = (result.data.status || "").toLowerCase();
 
-                        if (["PAID", "SETTLED", "SETTLEMENT", "SUCCESS"].includes(status)) {
+                        // Langsung sukses jika status settlement, success, paid, atau settled
+                        if (["settlement", "success", "paid", "settled"].includes(status)) {
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
                             localStorage.removeItem('active_order_id');
                             onPaymentSuccess(result.data.productLink || (SELECTED_PRODUCT ? SELECTED_PRODUCT.link : null) || "#");
-                        } else if (status === "CANCELLED" || status === "EXPIRED") {
+                        } else if (status === "cancelled" || status === "failed") {
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
                             localStorage.removeItem('active_order_id');
                             Swal.fire({
                                 icon: 'info',
-                                title: 'KADALUWARSA',
-                                text: 'Transaksi telah kadaluwarsa atau dibatalkan.',
+                                title: 'TRANSAKSI BATAL / GAGAL',
+                                text: 'Transaksi telah dibatalkan atau gagal diproses.',
                                 customClass: {
                                     popup: 'cyber-swal',
                                     title: 'cyber-swal-title',
@@ -916,7 +916,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'PEMBAYARAN DITERIMA!',
-                text: 'Transaksi Anda terverifikasi secara otomatis. Silakan akses produk Anda.',
+                text: 'Dana telah terverifikasi oleh gateway. Silakan akses tautan produk Anda.',
                 timer: 3500,
                 showConfirmButton: false,
                 customClass: {
