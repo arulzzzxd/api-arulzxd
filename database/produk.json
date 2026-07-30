@@ -1,37 +1,14 @@
 [
   {
-    "nama": "Premium API Key (1 Bulan Access)",
+    "nama": "Base Api Arulzxd",
     "harga": 35000,
     "harga_diskon": 1000,
-    "kategori": "Layanan API",
+    "kategori": "Script",
     "badge": "Terlaris",
-    "terjual": 1420,
-    "stok": 50,
+    "terjual": 2,
+    "stok": 999,
     "gambar": "https://arulz-xd.my.id/files/X1F0Cn.png",
-    "deskripsi": "Akses penuh ke semua fitur API premium selama 30 hari dengan kuota harian tanpa batas dan respons server super cepat.",
-    "link": "https://arulz-xd.my.id/files/X1F0Cn.png"
-  },
-  {
-    "nama": "Source Code Bot WhatsApp Multi-Device V2",
-    "harga": 120000,
-    "harga_diskon": 75000,
-    "kategori": "Source Code",
-    "badge": "HOT",
-    "terjual": 850,
-    "stok": 15,
-    "gambar": "https://arulz-xd.my.id/files/K4Sf61.png",
-    "deskripsi": "Source code bot WhatsApp stabil berbasis Baileys multi-device. Mudah dikonfigurasi dan dilengkapi fitur otomatisasi mutakhir.",
-    "link": "https://arulz-xd.my.id/files/X1F0Cn.png"
-  },
-  {
-    "nama": "Hosting Node.js Instan",
-    "harga": 50000,
-    "harga_diskon": 0,
-    "kategori": "Layanan Hosting",
-    "badge": "",
-    "terjual": 310,
-    "stok": 0,
-    "gambar": "https://arulz-xd.my.id/files/X1F0Cn.png",
-    "deskripsi": "Hosting server Node.js siap pakai dengan uptime 99.9%, cocok untuk kebutuhan running bot/API ringan Anda."
+    "deskripsi": "Source code / Script Base REST API Express.js siap pakai lengkap dengan fitur autentikasi (Local & OAuth), sistem limit API Key, Cloud Uploader GitHub, serta Dashboard modern.",
+    "link": "https://www.mediafire.com/file/40e8t1or2nzypdx/base-api-arulzxd.zip/file"
   }
 ]
