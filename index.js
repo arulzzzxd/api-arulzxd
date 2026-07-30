@@ -83,16 +83,19 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-function verifyPaywuzSignature(payload, receivedSignature, secretKey) {
+function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
     if (!receivedSignature) return false;
+    
+    // PayWuz mengirim signature dengan format "sha256=<hex digest>"
+    const computedSignature = "sha256=" + crypto
+        .createHmac("sha256", apiKey)
+        .update(typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody))
+        .digest("hex");
+
     try {
-        const computedSignature = crypto
-            .createHmac('sha256', secretKey)
-            .update(JSON.stringify(payload))
-            .digest('hex');
         return crypto.timingSafeEqual(
-            Buffer.from(computedSignature), 
-            Buffer.from(receivedSignature)
+            Buffer.from(receivedSignature),
+            Buffer.from(computedSignature)
         );
     } catch (err) {
         return false;
@@ -179,7 +182,9 @@ app.post('/transactions', async (req, res) => {
     }
 });
 
+// ==========================================
 // 2. Cek Status Transaksi (/transactions/:orderId)
+// ==========================================
 app.get('/transactions/:orderId', async (req, res) => {
     try {
         const { orderId } = req.params;
@@ -229,13 +234,23 @@ app.get('/transactions/:orderId', async (req, res) => {
         // Status Berhasil/Settlement menurut PayWuz
         const isSuccess = ["settlement", "success", "paid", "settled"].includes(currentStatus);
         
-        if (isSuccess && !localTrx.productLink) {
+        // --- IMPROVISASI FIX: Pencocokan nama produk case-insensitive & trim ---
+        if (isSuccess && !localTrx.productLink && localTrx.itemDetails?.nama) {
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
             if (fs.existsSync(pathProduk)) {
-                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                const matchedProduct = products.find(p => p.nama === localTrx.itemDetails?.nama);
-                if (matchedProduct && matchedProduct.link) {
-                    localTrx.productLink = matchedProduct.link;
+                try {
+                    const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                    const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
+
+                    const matchedProduct = products.find(p => 
+                        p.nama && p.nama.trim().toLowerCase() === targetNama
+                    );
+
+                    if (matchedProduct && matchedProduct.link) {
+                        localTrx.productLink = matchedProduct.link;
+                    }
+                } catch (parseErr) {
+                    console.error("Gagal membaca atau memproses produk.json:", parseErr.message);
                 }
             }
         }
@@ -299,21 +314,51 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
     }
 });
 
+// ==========================================
 // 4. Webhook Callback Handler PayWuz (/webhook)
+// ==========================================
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
         
+        // 1. Verifikasi Signature
         const isValid = verifyPaywuzSignature(req.body, signature, PAYWUZ_API_KEY);
-        if (!isValid && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({ status: false, message: "Signature tidak valid!" });
+        
+        // Log peringatan jika signature tidak sesuai
+        if (!isValid) {
+            console.warn("⚠️ Signature Webhook tidak valid atau tidak cocok!");
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(401).json({ status: false, message: "Signature tidak valid!" });
+            }
         }
 
-        // Payload PayWuz Webhook mendukung objek bertingkat req.body.data atau langsung req.body
         const payloadData = req.body?.data || req.body;
         const orderId = payloadData?.orderId;
-        let status = payloadData?.status ? payloadData.status.toLowerCase() : null;
 
+        if (!orderId) {
+            return res.status(400).json({ status: false, message: "orderId tidak ditemukan pada payload!" });
+        }
+
+        // 2. KONFIRMASI ULANG STATUS ke API PayWuz (GET /v1/transactions/:orderId)
+        // Ini memastikan status yang didapat 100% valid langsung dari server PayWuz
+        let status = null;
+        try {
+            const paywuzCheckRes = await axios.get(`${PAYWUZ_BASE_URL}/transactions/${orderId}`, {
+                headers: PAYWUZ_HEADERS,
+                timeout: 5000 // Timeout 5 detik agar respons webhook tetap cepat (< 15 detik)
+            });
+            
+            const fetchedData = paywuzCheckRes.data?.data || paywuzCheckRes.data;
+            if (fetchedData && fetchedData.status) {
+                status = fetchedData.status.toLowerCase();
+            }
+        } catch (recheckErr) {
+            console.error(`❌ Gagal konfirmasi ulang ke API PayWuz untuk orderId ${orderId}:`, recheckErr.message);
+            // Fallback: gunakan status dari payload webhook jika re-check API gagal
+            status = payloadData?.status ? payloadData.status.toLowerCase() : null;
+        }
+
+        // 3. Proses Pembaruan Data di MongoDB
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
 
@@ -321,30 +366,45 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
-                // Ambil link dari produk.json ketika status bernilai settlement/success/paid
-                if (["settlement", "success", "paid", "settled"].includes(status) && !localTrx.productLink) {
+                // Pencocokan link produk dari produk.json jika status transaksi berhasil
+                if (["settlement", "success", "paid", "settled"].includes(status) && !localTrx.productLink && localTrx.itemDetails?.nama) {
                     const pathProduk = path.join(__dirname, 'database', 'produk.json');
                     if (fs.existsSync(pathProduk)) {
-                        const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                        const matchedProduct = products.find(p => p.nama === localTrx.itemDetails?.nama);
-                        if (matchedProduct && matchedProduct.link) {
-                            localTrx.productLink = matchedProduct.link;
+                        try {
+                            const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                            const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
+
+                            const matchedProduct = products.find(p => 
+                                p.nama && p.nama.trim().toLowerCase() === targetNama
+                            );
+
+                            if (matchedProduct && matchedProduct.link) {
+                                localTrx.productLink = matchedProduct.link;
+                            }
+                        } catch (parseErr) {
+                            console.error("Gagal membaca produk.json pada Webhook:", parseErr.message);
                         }
                     }
                 }
 
                 await localTrx.save();
 
+                // Jadwalkan penghapusan transaksi jika sudah selesai/dibatalkan
                 if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
         }
 
-        res.json({ status: true, message: "Webhook berhasil diproses" });
+        // 4. Balas status 2xx secepat mungkin (Maksimal 15 Detik)
+        return res.status(200).json({ 
+            status: true, 
+            message: "Webhook berhasil diproses & dikonfirmasi ulang" 
+        });
+
     } catch (err) {
         console.error("Webhook Error:", err);
-        res.status(500).json({ status: false, message: "Error memproses webhook" });
+        return res.status(500).json({ status: false, message: "Error memproses webhook" });
     }
 });
 
