@@ -296,13 +296,33 @@
 
             <!-- TAMPILAN STEP 2: QRIS OTOMATIS -->
             <div id="paymentStep2" class="hidden p-5 flex flex-col items-center justify-center space-y-4">
+                <!-- Box Total yang Harus Dibayar -->
+                <div class="w-full bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-center shadow-glowCyanSm">
+                    <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total yang Harus Dibayar</p>
+                    <h3 id="qrisTotalAmount" class="text-xl font-extrabold text-cyberCyan font-cyber mt-0.5 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Rp 0</h3>
+                    <p class="text-[10px] text-slate-500 mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-slate-300">TRX-000000</span></p>
+                </div>
+
+                <!-- Timer Batas Waktu (15 Menit) -->
+                <div class="flex items-center justify-center gap-2 bg-red-950/50 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg text-xs font-mono font-bold w-full">
+                    <i class="fa-solid fa-clock animate-pulse"></i>
+                    <span>Selesaikan Sebelum: <strong id="qrisCountdown" class="text-white text-sm">15:00</strong></span>
+                </div>
+
                 <div class="text-center">
                     <p class="text-xs text-slate-300 font-semibold">Scan QRIS Otomatis untuk Membayar</p>
                     <p class="text-[10px] text-slate-500">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
                 </div>
 
                 <!-- Container QR Code -->
-                <div class="bg-white p-3 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex items-center justify-center" id="qrcodeContainer"></div>
+                <div class="bg-white p-3 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex flex-col items-center justify-center relative">
+                    <div id="qrcodeContainer"></div>
+                </div>
+
+                <!-- Tombol Unduh QRIS -->
+                <button onclick="downloadQrisImage()" class="w-full bg-cyberCard hover:bg-cyberDark text-cyberCyan border border-cyberCyan/50 hover:border-cyberCyan font-bold py-2 px-4 rounded-xl text-xs transition duration-200 flex items-center justify-center gap-2 shadow-glowCyanSm">
+                    <i class="fa-solid fa-download"></i> Unduh Gambar QRIS
+                </button>
 
                 <!-- Status Indicator -->
                 <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse">
@@ -353,6 +373,8 @@
         let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
         let pollingInterval = null;
+        let countdownInterval = null;
+        let qrisExpireTime = null;
 
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
@@ -619,6 +641,7 @@
 
         function closeCheckoutModal() {
             if (pollingInterval) clearInterval(pollingInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
             document.getElementById('checkoutModal').classList.add('hidden');
             document.getElementById('orderForm').reset();
             SELECTED_PRODUCT = null;
@@ -682,14 +705,19 @@
                 if (!result.status) throw new Error(result.message || "Gagal menghasilkan QRIS");
 
                 const qrisString = result.data.paymentNumber;
+                qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
+
+                // Tampilkan Total yang Harus Dibayar & Order ID
+                document.getElementById('qrisTotalAmount').innerText = formatRupiah(totalHarga);
+                document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
                 // Render QRIS
                 const qrContainer = document.getElementById('qrcodeContainer');
                 qrContainer.innerHTML = '';
                 new QRCode(qrContainer, {
                     text: qrisString,
-                    width: 180,
-                    height: 180
+                    width: 200,
+                    height: 200
                 });
 
                 // Tutup SweetAlert Loading
@@ -699,7 +727,8 @@
                 document.getElementById('orderForm').classList.add('hidden');
                 document.getElementById('paymentStep2').classList.remove('hidden');
 
-                // Polling Status dari Server (MongoDB)
+                // Jalankan Countdown 15 Menit & Polling Status
+                startCountdown(qrisExpireTime);
                 startStatusPolling();
 
             } catch (err) {
@@ -714,9 +743,74 @@
                         confirmButton: 'cyber-swal-confirm'
                     }
                 });
+            } finally {
                 btnAuto.disabled = false;
                 btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis (QRIS Fast)`;
             }
+        }
+
+        function startCountdown(expireTimestamp) {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = expireTimestamp - now;
+
+                if (distance <= 0) {
+                    clearInterval(countdownInterval);
+                    if (pollingInterval) clearInterval(pollingInterval);
+                    document.getElementById('qrisCountdown').innerText = "00:00";
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'WAKTU HABIS',
+                        text: 'Batas waktu pembayaran 15 menit telah berakhir.',
+                        customClass: {
+                            popup: 'cyber-swal',
+                            title: 'cyber-swal-title',
+                            htmlContainer: 'cyber-swal-text',
+                            confirmButton: 'cyber-swal-confirm'
+                        }
+                    });
+                    closeCheckoutModal();
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('qrisCountdown').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function downloadQrisImage() {
+            const qrCanvas = document.querySelector('#qrcodeContainer canvas');
+            const qrImg = document.querySelector('#qrcodeContainer img');
+
+            let imageURI = null;
+            if (qrCanvas) {
+                imageURI = qrCanvas.toDataURL("image/png");
+            } else if (qrImg) {
+                imageURI = qrImg.src;
+            }
+
+            if (!imageURI) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'GAGAL',
+                    text: 'Gambar QRIS belum siap diunduh.',
+                    customClass: { popup: 'cyber-swal' }
+                });
+                return;
+            }
+
+            const a = document.createElement('a');
+            a.href = imageURI;
+            a.download = `QRIS_${CURRENT_ORDER_ID}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function startStatusPolling() {
@@ -732,9 +826,11 @@
 
                         if (status === "PAID" || status === "SETTLED" || status === "SUCCESS") {
                             clearInterval(pollingInterval);
+                            if (countdownInterval) clearInterval(countdownInterval);
                             onPaymentSuccess(result.data.productLink || SELECTED_PRODUCT.link || SELECTED_PRODUCT.gambar);
                         } else if (status === "CANCELLED" || status === "EXPIRED") {
                             clearInterval(pollingInterval);
+                            if (countdownInterval) clearInterval(countdownInterval);
                             Swal.fire({
                                 icon: 'info',
                                 title: 'KADALUWARSA',
@@ -797,6 +893,7 @@
 
             if (confirmResult.isConfirmed) {
                 if (pollingInterval) clearInterval(pollingInterval);
+                if (countdownInterval) clearInterval(countdownInterval);
                 try {
                     await fetch(`/transactions/${CURRENT_ORDER_ID}/cancel`, { method: 'POST' });
                 } catch (e) {}
