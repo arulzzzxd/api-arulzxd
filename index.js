@@ -66,7 +66,7 @@ const transactionSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     paymentNumber: { type: String, default: null }, // QRIS String / URL
     paymentMethod: { type: String, default: "QRIS" },
-    status: { type: String, default: "UNPAID" }, // UNPAID, PAID, SETTLED, SETTLEMENT, SUCCESS, EXPIRED, CANCELLED
+    status: { type: String, default: "pending" }, // Bawaan PayWuz: pending, settlement, success, failed, cancelled
     itemDetails: {
         nama: String,
         harga: Number,
@@ -114,35 +114,30 @@ app.post('/transactions', async (req, res) => {
             orderId,
             amount: inputAmount,
             paymentMethod: "QRIS",
-            feeByMerchant: false // Biaya ditanggung oleh pelanggan (Total = amount + fee)
+            feeByMerchant: false
         }, { headers: PAYWUZ_HEADERS });
 
         const transactionData = paywuzRes.data?.data || paywuzRes.data;
         const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
 
-        // HELPER SAFE NUMBER: Mencegah NaN jika respon dari PayWuz undefined/null
         const safeNum = (val) => {
             const num = Number(val);
             return (!isNaN(num) && num > 0) ? num : null;
         };
 
-        // 2. Kalkulasi Biaya/Fee berdasarkan rumus PayWuz
         const feeFlatIdr = Number(transactionData.feeFlatIdr) || 290;
         const feePercentBps = Number(transactionData.feePercentBps) || 70;
         const calculatedFee = feeFlatIdr + Math.ceil((inputAmount * feePercentBps) / 10000);
 
-        // 3. Ambil Total nominal secara presisi
         let finalAmount = safeNum(transactionData.grossAmount) || 
                           safeNum(transactionData.totalAmount) || 
                           safeNum(transactionData.total);
 
-        // Jika API PayWuz tidak mengembalikan total langsung, gunakan (amount + fee)
         if (!finalAmount) {
             const feeVal = safeNum(transactionData.fee) || safeNum(transactionData.feeAdmin) || calculatedFee;
             finalAmount = inputAmount + feeVal;
         }
 
-        // Cari link dari itemDetails atau fallback ke produk.json
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
@@ -153,16 +148,15 @@ app.post('/transactions', async (req, res) => {
             }
         }
 
-        // Set Batas Waktu 15 Menit dari sekarang
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // Simpan Transaksi ke MongoDB
+        // Simpan Transaksi ke MongoDB dengan status bawaan PayWuz ("pending")
         const newTransaction = new Transaction({
             orderId,
-            amount: finalAmount, // Nominal total termasuk biaya pelanggan
+            amount: finalAmount,
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
-            status: transactionData.status || "UNPAID",
+            status: (transactionData.status || "pending").toLowerCase(),
             itemDetails: itemDetails || null,
             productLink: pLink,
             expiredAt: expiredAt
@@ -195,9 +189,9 @@ app.get('/transactions/:orderId', async (req, res) => {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
         }
 
-        // Cek jika waktu sekarang melebihi expiredAt dan status masih UNPAID
-        if (localTrx.status === "UNPAID" && new Date() > new Date(localTrx.expiredAt)) {
-            localTrx.status = "EXPIRED";
+        // Cek jika batas waktu kedaluwarsa tercapai saat status masih pending
+        if (localTrx.status.toLowerCase() === "pending" && new Date() > new Date(localTrx.expiredAt)) {
+            localTrx.status = "cancelled";
             localTrx.updatedAt = new Date();
             await localTrx.save();
             scheduleTransactionDeletion(orderId);
@@ -206,7 +200,7 @@ app.get('/transactions/:orderId', async (req, res) => {
                 status: true,
                 data: {
                     orderId: localTrx.orderId,
-                    status: "EXPIRED",
+                    status: "cancelled",
                     amount: localTrx.amount,
                     paymentNumber: localTrx.paymentNumber,
                     expiredAt: localTrx.expiredAt
@@ -214,7 +208,7 @@ app.get('/transactions/:orderId', async (req, res) => {
             });
         }
 
-        let currentStatus = localTrx.status;
+        let currentStatus = localTrx.status.toLowerCase();
 
         try {
             const paywuzRes = await axios.get(`${PAYWUZ_BASE_URL}/transactions/${orderId}`, {
@@ -222,18 +216,18 @@ app.get('/transactions/:orderId', async (req, res) => {
             });
             const statusData = paywuzRes.data?.data || paywuzRes.data;
             if (statusData && statusData.status) {
-                currentStatus = statusData.status;
+                currentStatus = statusData.status.toLowerCase();
             }
         } catch (apiErr) {
-            console.error("Gagal mendapatkan status langsung dari PayWuz API, menggunakan data lokal:", apiErr.message);
+            console.error("Gagal mengambil status langsung PayWuz, memakai data lokal:", apiErr.message);
         }
 
-        const previousStatus = localTrx.status;
+        const previousStatus = localTrx.status.toLowerCase();
         localTrx.status = currentStatus;
         localTrx.updatedAt = new Date();
 
-        // Cek jika status sukses (Termasuk SETTLEMENT / PAID / SETTLED / SUCCESS)
-        const isSuccess = ["PAID", "SETTLED", "SETTLEMENT", "SUCCESS"].includes(currentStatus.toUpperCase());
+        // Status Berhasil/Settlement menurut PayWuz
+        const isSuccess = ["settlement", "success", "paid", "settled"].includes(currentStatus);
         
         if (isSuccess && !localTrx.productLink) {
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
@@ -248,7 +242,7 @@ app.get('/transactions/:orderId', async (req, res) => {
 
         await localTrx.save();
 
-        const isDone = ["PAID", "SETTLED", "SETTLEMENT", "SUCCESS", "CANCELLED", "EXPIRED"].includes(currentStatus.toUpperCase());
+        const isDone = ["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(currentStatus);
         if (isDone && previousStatus !== currentStatus) {
             scheduleTransactionDeletion(orderId);
         }
@@ -283,13 +277,11 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
             headers: PAYWUZ_HEADERS
         });
 
-        // Update status di MongoDB menjadi CANCELLED
         await Transaction.findOneAndUpdate(
             { orderId },
-            { status: "CANCELLED", updatedAt: new Date() }
+            { status: "cancelled", updatedAt: new Date() }
         );
 
-        // Hapus dari DB setelah 1 menit
         scheduleTransactionDeletion(orderId);
 
         res.json({
@@ -317,7 +309,10 @@ app.post('/webhook', async (req, res) => {
             return res.status(401).json({ status: false, message: "Signature tidak valid!" });
         }
 
-        const { orderId, status } = req.body;
+        // Payload PayWuz Webhook mendukung objek bertingkat req.body.data atau langsung req.body
+        const payloadData = req.body?.data || req.body;
+        const orderId = payloadData?.orderId;
+        let status = payloadData?.status ? payloadData.status.toLowerCase() : null;
 
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
@@ -326,8 +321,8 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
-                // Ambil link produk otomatis jika transaksi lunas
-                if (["PAID", "SETTLED", "SETTLEMENT", "SUCCESS"].includes(status.toUpperCase()) && !localTrx.productLink) {
+                // Ambil link dari produk.json ketika status bernilai settlement/success/paid
+                if (["settlement", "success", "paid", "settled"].includes(status) && !localTrx.productLink) {
                     const pathProduk = path.join(__dirname, 'database', 'produk.json');
                     if (fs.existsSync(pathProduk)) {
                         const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
@@ -340,8 +335,7 @@ app.post('/webhook', async (req, res) => {
 
                 await localTrx.save();
 
-                // Hapus dari DB setelah 1 menit jika transaksi selesai/batal/expired
-                if (["PAID", "SETTLED", "SETTLEMENT", "SUCCESS", "CANCELLED", "EXPIRED"].includes(status.toUpperCase())) {
+                if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
@@ -370,9 +364,9 @@ app.use(passport.session());
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    password: { type: String, default: null }, // Null jika terdaftar via OAuth (Google/GitHub)
-    provider: { type: String, default: 'local' }, // 'local', 'github', atau 'google'
-    providerId: { type: String, default: null },   // ID unik dari GitHub / Google
+    password: { type: String, default: null },
+    provider: { type: String, default: 'local' },
+    providerId: { type: String, default: null },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
@@ -869,7 +863,6 @@ app.get('/auth/github/callback', async (req, res) => {
     if (!code) return res.send('Authentication failed: No code provided');
 
     try {
-        // 1. Tukarkan code dengan access token
         const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
             client_id: GITHUB_CLIENT_ID,
             client_secret: GITHUB_CLIENT_SECRET,
@@ -879,7 +872,6 @@ app.get('/auth/github/callback', async (req, res) => {
         const accessToken = tokenResponse.data.access_token;
         if (!accessToken) return res.send('Authentication failed: Invalid access token');
 
-        // 2. Ambil data profile user
         const userResponse = await axios.get('https://api.github.com/user', {
             headers: { Authorization: `token ${accessToken}` }
         });
@@ -887,7 +879,6 @@ app.get('/auth/github/callback', async (req, res) => {
         const userData = userResponse.data;
         let userEmail = userData.email;
 
-        // 3. Jika email null, ambil dari endpoint /user/emails
         if (!userEmail) {
             try {
                 const emailsResponse = await axios.get('https://api.github.com/user/emails', {
@@ -905,7 +896,6 @@ app.get('/auth/github/callback', async (req, res) => {
         const finalEmail = (userEmail || `${userData.login}@github.com`).toLowerCase().trim();
         const currentUsername = (userData.login || finalEmail.split('@')[0]).toLowerCase().trim();
 
-        // 4. Cari atau Buat User Baru di MongoDB
         let dbUser = await User.findOne({ email: finalEmail });
 
         if (!dbUser) {
@@ -926,7 +916,6 @@ app.get('/auth/github/callback', async (req, res) => {
                 userApiKey = `arulz-${userData.login.toLowerCase()}-${randomHex}`;
             }
 
-            // SIMPAN USER BARU KE MONGODB TANPA PASSWORD
             dbUser = new User({
                 username: currentUsername,
                 email: finalEmail,
@@ -939,14 +928,12 @@ app.get('/auth/github/callback', async (req, res) => {
 
             await dbUser.save();
         } else {
-            // Update Avatar jika berubah
             if (userData.avatar_url && dbUser.avatar !== userData.avatar_url) {
                 dbUser.avatar = userData.avatar_url;
                 await dbUser.save();
             }
         }
 
-        // 5. Satukan payload menggunakan MongoDB Document ID
         const userPayload = {
             id: dbUser._id,
             username: dbUser.username,
@@ -1001,7 +988,6 @@ app.get('/auth/google/callback', async (req, res) => {
         const email = userData.email.toLowerCase().trim();
         const currentUsername = (userData.login || email.split('@')[0]).toLowerCase().trim();
 
-        // 1. Cari atau Buat User Baru di MongoDB
         let dbUser = await User.findOne({ email: email });
 
         if (!dbUser) {
@@ -1022,7 +1008,6 @@ app.get('/auth/google/callback', async (req, res) => {
                 userApiKey = `arulz-${currentUsername}-${randomHex}`;
             }
 
-            // SIMPAN USER BARU KE MONGODB TANPA PASSWORD
             dbUser = new User({
                 username: currentUsername,
                 email: email,
@@ -1035,14 +1020,12 @@ app.get('/auth/google/callback', async (req, res) => {
 
             await dbUser.save();
         } else {
-            // Update Avatar jika berubah
             if (userData.picture && dbUser.avatar !== userData.picture) {
                 dbUser.avatar = userData.picture;
                 await dbUser.save();
             }
         }
 
-        // 2. Buat JWT Payload menggunakan data dari MongoDB
         const userPayload = {
             id: dbUser._id,
             username: dbUser.username,
@@ -1204,7 +1187,6 @@ const validateApiKey = async (req, res, next) => {
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
 
-    // Fallback otomatis ke user yang sedang terautentikasi session web dashboard
     if (!userKey && req.user && req.user.apiKey) {
         userKey = req.user.apiKey;
     }
@@ -1320,7 +1302,6 @@ const trackAndEnforceLimit = (req, res, next) => {
         USER_LIMIT_TRACKER[userKey] = 0;
     }
 
-    // Blokir langsung jika limit sudah terlampaui / habis
     if (keyType !== 'vip' && USER_LIMIT_TRACKER[userKey] >= maxLimit) {
         return res.status(429).json({
             status: false,
@@ -1329,7 +1310,6 @@ const trackAndEnforceLimit = (req, res, next) => {
         });
     }
 
-    // Tambah counter jika limit belum habis
     if (keyType !== 'vip') {
         USER_LIMIT_TRACKER[userKey] += 1;
     }
@@ -1401,7 +1381,6 @@ app.post('/api/feedback', async (req, res) => {
             }
         });
 
-        // Mapping Tipe Laporan
         let kategoriTeks = 'Laporan Bug';
         let categoryColor = '#ef4444';
         
@@ -1423,7 +1402,6 @@ app.post('/api/feedback', async (req, res) => {
                 categoryColor = '#ef4444';
         }
 
-        // 1. EMAIL NOTIFIKASI UNTUK ADMIN
         const adminMailOptions = {
             from: `"${email}" <supportarulzxd@gmail.com>`, 
             to: 'supportarulzxd@gmail.com', 
@@ -1482,7 +1460,6 @@ app.post('/api/feedback', async (req, res) => {
             `
         };
 
-        // 2. EMAIL BALASAN OTOMATIS UNTUK PENGGUNA (USER)
         const userMailOptions = {
             from: '"Support ArulzXD" <supportarulzxd@gmail.com>', 
             to: email, 
@@ -1550,7 +1527,6 @@ app.post('/api/feedback', async (req, res) => {
             `
         };
 
-        // Kirim email ke admin & email balasan ke pengguna sekaligus
         await Promise.all([
             transporter.sendMail(adminMailOptions),
             transporter.sendMail(userMailOptions)
