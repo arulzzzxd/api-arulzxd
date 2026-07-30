@@ -126,10 +126,10 @@ app.post('/transactions', async (req, res) => {
             data: newTransaction
         });
     } catch (error) {
-        console.error("Error PayWuz Create TRX:", error.response?.data || error.message);
+        console.error("Error Create TRX:", error.response?.data || error.message);
         res.status(500).json({
             status: false,
-            message: "Gagal membuat transaksi QRIS PayWuz",
+            message: "Gagal membuat transaksi QRIS",
             error: error.response?.data || error.message
         });
     }
@@ -181,7 +181,7 @@ app.get('/transactions/:orderId', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Error PayWuz Status TRX:", error.response?.data || error.message);
+        console.error("Error Status TRX:", error.response?.data || error.message);
 
         // Fallback: Jika API PayWuz error, ambil data dari MongoDB lokal
         const localTrx = await Transaction.findOne({ orderId: req.params.orderId });
@@ -221,7 +221,7 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
             data: cancelRes.data?.data || cancelRes.data
         });
     } catch (error) {
-        console.error("Error PayWuz Cancel TRX:", error.response?.data || error.message);
+        console.error("Error Cancel TRX:", error.response?.data || error.message);
         res.status(500).json({
             status: false,
             message: "Gagal membatalkan transaksi",
@@ -251,7 +251,7 @@ app.post('/webhook', async (req, res) => {
             );
         }
 
-        res.json({ status: true, message: "Webhook PayWuz berhasil diproses" });
+        res.json({ status: true, message: "Webhook berhasil diproses" });
     } catch (err) {
         console.error("Webhook Error:", err);
         res.status(500).json({ status: false, message: "Error memproses webhook" });
