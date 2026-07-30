@@ -188,7 +188,13 @@
             vip: { rate: 500, days: 3, min: 3, btnId: 'vip-btn', displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP Plan' }
         };
 
-        const adminPhone = "6285122629940"; // <--- Ganti dengan nomor WhatsApp Anda
+        const adminPhone = "6285122629940";
+        
+        // Simpan data user secara global
+        let currentUser = {
+            username: "Belum Login",
+            email: "-"
+        };
 
         function formatRupiah(amount) {
             return "Rp " + amount.toLocaleString('id-ID');
@@ -213,6 +219,8 @@
             let plan = config[type];
             let totalCost = plan.days * plan.rate;
             let message = `Halo Admin, saya ingin membeli paket *${plan.name}* di Arulzxd API.\n\n` +
+                          `• Username: *${currentUser.username}*\n` +
+                          `• Email: *${currentUser.email}*\n` +
                           `• Durasi: ${plan.days} Hari\n` +
                           `• Total Harga: ${formatRupiah(totalCost)}\n\n` +
                           `Mohon diproses sistem pembayarannya, terima kasih!`;
@@ -221,10 +229,23 @@
             document.getElementById(plan.btnId).href = `https://wa.me/${adminPhone}?text=${encodedMessage}`;
         }
 
-        // Inisialisasi link tautan saat halaman dimuat pertama kali
+        // Inisialisasi data user saat halaman dimuat
         window.onload = function() {
-            updateWhatsAppLink('premium');
-            updateWhatsAppLink('vip');
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        currentUser.username = data.user.username || data.user.name || "User";
+                        currentUser.email = data.user.email || "-";
+                    }
+                    updateWhatsAppLink('premium');
+                    updateWhatsAppLink('vip');
+                })
+                .catch(err => {
+                    console.error("Gagal mengambil data user-status:", err);
+                    updateWhatsAppLink('premium');
+                    updateWhatsAppLink('vip');
+                });
         }
     </script>
 </body>
