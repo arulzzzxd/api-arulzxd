@@ -17,11 +17,13 @@ const os = require('os');
 
 // === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 
 const app = express();
+app.set('etag', false);
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
@@ -186,6 +188,9 @@ app.post('/transactions', async (req, res) => {
 // 2. Cek Status Transaksi (/transactions/:orderId)
 // ==========================================
 app.get('/transactions/:orderId', async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     try {
         const { orderId } = req.params;
         let localTrx = await Transaction.findOne({ orderId });
@@ -415,8 +420,14 @@ app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: MONGODB_URI,
+        collectionName: 'sessions',
+        ttl: 24 * 60 * 60 // Durasi session 1 hari (dalam detik)
+    }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
