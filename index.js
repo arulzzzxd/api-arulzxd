@@ -52,6 +52,15 @@ function scheduleTransactionDeletion(orderId) {
     }, 60 * 1000);
 }
 
+mongoose.connection.once('open', async () => {
+    try {
+        await mongoose.connection.db.collection('transactions').dropIndex('transactionId_1');
+        console.log('🧹 Berhasil menghapus index lama transactionId_1');
+    } catch (e) {
+        // Abaikan jika index sudah tidak ada
+    }
+});
+
 const transactionSchema = new mongoose.Schema({
     orderId: { type: String, required: true, unique: true },
     amount: { type: Number, required: true },
