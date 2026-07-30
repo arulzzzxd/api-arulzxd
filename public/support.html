@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arulz-XD API - Support & Donasi</title>
 
-    <meta property="og:title" content="Support & Donasi — Arulz-XD API">
-    <meta property="og:description" content="API &amp; Pastebin ini gw bikin di sela-sela waktu luang. Kalau ngerasa kebantu, support seikhlasnya bantu banget buat biaya perpanjangan hosting server + nambahin fitur &amp; snippet baru.">
+    <meta property="og:title" content="Dukung ArulzXD — Arulz-XD API">
+    <meta property="og:description" content="Semua endpoint API, snippet code, dan serverless function di platform ini dibangun di waktu luang agar bisa dipakai bebas oleh siapa saja. Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk memperpanjang alokasi resources server.">
     <meta property="og:image" content="https://arulz-xd.my.id/files/CVmlrD.jpg">
     <meta property="og:url" content="https://arulz-xd.my.id/support">
     <meta property="og:type" content="website">
 
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
 
     <style>
         :root { 
@@ -25,6 +27,10 @@
         * {
             box-sizing: border-box;
             font-family: 'JetBrains Mono', monospace;
+            /* Optimasi Rendering Font Smooth */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         body { 
@@ -57,17 +63,19 @@
         .badge-ad {
             background: var(--cyan); 
             color: #000;
-            font-weight: bold;
+            font-weight: 700;
             padding: 2px 6px;
             font-size: 0.75rem;
             border: 2px solid #000;
             box-shadow: 2px 2px 0px #000;
+            letter-spacing: 0.5px;
         }
 
         .brand-title {
-            font-weight: bold;
-            font-size: 1.1rem;
+            font-weight: 600;
+            font-size: 1.05rem;
             color: #fff;
+            letter-spacing: -0.3px;
         }
 
         .btn-kembali {
@@ -78,10 +86,11 @@
             color: #000;
             text-decoration: none;
             font-size: 0.8rem;
-            font-weight: bold;
+            font-weight: 700;
             padding: 6px 12px;
             border: 2px solid #000;
             box-shadow: 2px 2px 0px #000;
+            letter-spacing: 0.3px;
         }
 
         /* --- MAIN CONTAINER --- */
@@ -100,20 +109,23 @@
 
         h1.title {
             font-size: 1.4rem;
-            font-weight: 700;
+            font-weight: 800;
             text-align: center;
             text-transform: uppercase;
             margin-top: 0;
-            margin-bottom: 20px;
-            line-height: 1.4;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.3px;
         }
 
         .description {
-            font-size: 0.85rem;
+            font-size: 0.83rem;
+            font-weight: 400;
             color: var(--text-muted);
             text-align: center;
-            line-height: 1.6;
+            line-height: 1.65;
             margin-bottom: 30px;
+            letter-spacing: -0.1px;
         }
 
         /* --- QRIS FRAME --- */
@@ -146,9 +158,10 @@
             justify-content: center;
             gap: 6px;
             font-size: 0.75rem;
+            font-weight: 500;
             color: var(--text-muted);
             margin-bottom: 12px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .badge-container {
@@ -162,10 +175,11 @@
             background: #FFFFFF;
             color: #000000;
             font-size: 0.75rem;
-            font-weight: bold;
+            font-weight: 600;
             padding: 4px 10px;
             border-radius: 20px;
             border: 1.5px solid #000000;
+            letter-spacing: -0.2px;
         }
 
         /* --- BUTTONS STYLING --- */
@@ -176,7 +190,7 @@
             gap: 8px;
             width: 100%;
             padding: 14px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             text-transform: uppercase;
             text-align: center;
@@ -185,6 +199,7 @@
             border: 3px solid #000000;
             box-shadow: 4px 4px 0px #000000;
             transition: transform 0.1s, box-shadow 0.1s;
+            letter-spacing: 0.3px;
         }
 
         .btn-brutal:active {
@@ -216,6 +231,7 @@
             justify-content: center;
             gap: 6px;
             font-size: 0.75rem;
+            font-weight: 400;
             color: var(--text-muted);
             font-style: italic;
             text-align: center;
@@ -254,14 +270,16 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 0.85rem;
             color: var(--cyan);
             margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
 
         .alert-msg {
             font-size: 0.8rem;
+            font-weight: 400;
             color: #fff;
         }
 
@@ -291,9 +309,9 @@
 
     <div class="wrapper">
         <div class="main-card">
-            <h1 class="title">SUKA SAMA PROJECT INI?</h1>
+            <h1 class="title">DUKUNG ARULZXD</h1>
             <div class="description">
-                API &amp; Pastebin ini gw bikin di sela-sela waktu luang. Kalau ngerasa kebantu, support seikhlasnya bantu banget buat biaya perpanjangan hosting server + nambahin fitur &amp; snippet baru.
+                Semua endpoint API, snippet code, dan serverless function di platform ini dibangun di waktu luang agar bisa dipakai bebas oleh siapa saja. Namun, mengoperasikan performa server agar tetap zero-downtime, menangani trafik data yang terus melonjak, serta memperluas limit jaringan tentu membutuhkan biaya operasional. Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk memperpanjang alokasi resources server dan menjaga platform ini tetap hidup selamanya.
             </div>
 
             <div class="qris-frame">
@@ -404,8 +422,8 @@
 
         function shareLink() {
             const shareData = {
-                title: 'Support — Arulz-XD API',
-                text: 'API & Pastebin ini gw bikin di sela-sela waktu luang. Yuk support seikhlasnya! 👇\n',
+                title: 'Dukung ArulzXD — Arulz-XD API',
+                text: 'Dukung kelangsungan alokasi server & endpoint API Arulz-XD! 👇\n',
                 url: window.location.href
             };
 
