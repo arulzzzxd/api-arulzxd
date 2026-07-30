@@ -109,6 +109,12 @@
             border: 1px solid #7f1d1d !important;
             border-radius: 8px !important;
         }
+        #qrcodeContainer canvas, #qrcodeContainer img {
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+        }
     </style>
 </head>
 <body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
@@ -204,11 +210,11 @@
     </div>
 
     <!-- MODAL POPUP CHECKOUT (OTOMATIS PAYWUZ & MANUAL WA) -->
-    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-cyberCard w-full max-w-md rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200 overflow-hidden" id="modalContent">
+    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 overflow-y-auto">
+        <div class="bg-cyberCard w-full max-w-lg rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
 
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder flex-shrink-0">
                 <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
                     <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
                 </h3>
@@ -217,157 +223,159 @@
                 </button>
             </div>
 
-            <!-- TAMPILAN STEP 1: FORM UTAMA -->
-            <form id="orderForm" onsubmit="handleFormSubmit(event)" class="p-5 space-y-4">
-                <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
-                    <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
-                    <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
-                </div>
-
-                <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
-                    <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
-                    <div class="overflow-hidden flex-1">
-                        <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
-                        <div class="flex items-center justify-between mt-1">
-                            <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan"></p>
-                            <span id="modalProductSold" class="text-[10px] text-slate-400"></span>
-                        </div>
+            <div class="overflow-y-auto p-4 sm:p-5 flex-1">
+                <!-- TAMPILAN STEP 1: FORM UTAMA -->
+                <form id="orderForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
+                        <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
+                        <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
                     </div>
-                </div>
 
-                <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder flex items-center justify-between">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300">Jumlah Beli</label>
-                        <span id="modalStockInfo" class="text-[10px] text-slate-400">Tersisa: 0</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="updateQuantity(-1)" 
-                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
-                            -
-                        </button>
-                        <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" 
-                               class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
-                        <button type="button" onclick="updateQuantity(1)" 
-                                class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
-                            +
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between px-1">
-                    <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
-                    <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
-                </div>
-
-                <!-- SELECT OPTION METODE PEMBAYARAN -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1" for="paymentMethodSelect">
-                        Pilih Metode Pembayaran <span class="text-cyberCyan">*</span>
-                    </label>
-                    <select id="paymentMethodSelect" onchange="togglePaymentMethodFields()" 
-                            class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 focus:outline-none focus:border-cyberCyan transition">
-                        <option value="auto">⚡ Pembayaran Otomatis (QRIS Fast)</option>
-                        <option value="manual">💬 Order Manual via WhatsApp</option>
-                    </select>
-                </div>
-
-                <!-- FIELD KHUSUS PEMBAYARAN MANUAL (HAPUS SECARA TAMPILAN DI OTOMATIS) -->
-                <div id="manualFieldsGroup" class="hidden space-y-3 pt-1">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
-                            Username / Nama Pembeli <span class="text-cyberCyan">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
-                                <i class="fa-regular fa-user"></i>
-                            </span>
-                            <input type="text" id="usernameInput" placeholder="Masukkan username Anda"
-                                   class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                    <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
+                        <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
+                        <div class="overflow-hidden flex-1">
+                            <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
+                            <div class="flex items-center justify-between mt-1">
+                                <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan"></p>
+                                <span id="modalProductSold" class="text-[10px] text-slate-400"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
-                            Catatan Tambahan (Opsional)
-                        </label>
-                        <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                                  class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                    <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder flex items-center justify-between">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300">Jumlah Beli</label>
+                            <span id="modalStockInfo" class="text-[10px] text-slate-400">Tersisa: 0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="updateQuantity(-1)" 
+                                    class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                -
+                            </button>
+                            <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" 
+                                   class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
+                            <button type="button" onclick="updateQuantity(1)" 
+                                    class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                +
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- TOMBOL ACTION PEMBAYARAN -->
-                <div class="pt-2 border-t border-cyberBorder">
-                    <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
+                        <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                    </div>
+
+                    <!-- SELECT OPTION METODE PEMBAYARAN -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1" for="paymentMethodSelect">
+                            Pilih Metode Pembayaran <span class="text-cyberCyan">*</span>
+                        </label>
+                        <select id="paymentMethodSelect" onchange="togglePaymentMethodFields()" 
+                                class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 focus:outline-none focus:border-cyberCyan transition">
+                            <option value="auto">⚡ Pembayaran Otomatis (QRIS Fast)</option>
+                            <option value="manual">💬 Order Manual via WhatsApp</option>
+                        </select>
+                    </div>
+
+                    <!-- FIELD KHUSUS PEMBAYARAN MANUAL (HAPUS SECARA TAMPILAN DI OTOMATIS) -->
+                    <div id="manualFieldsGroup" class="hidden space-y-3 pt-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
+                                Username / Nama Pembeli <span class="text-cyberCyan">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                                    <i class="fa-regular fa-user"></i>
+                                </span>
+                                <input type="text" id="usernameInput" placeholder="Masukkan username Anda"
+                                       class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
+                                Catatan Tambahan (Opsional)
+                            </label>
+                            <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
+                                      class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL ACTION PEMBAYARAN -->
+                    <div class="pt-2 border-t border-cyberBorder">
+                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang
+                        </button>
+
+                        <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> Order Manual via WhatsApp
+                        </button>
+                    </div>
+                </form>
+
+                <!-- TAMPILAN STEP 2: QRIS OTOMATIS (QRIS DIUBAH MENJADI UKURAN 500x500 RESOLUSI TINGGI) -->
+                <div id="paymentStep2" class="hidden flex flex-col items-center justify-center space-y-4">
+                    <!-- Box Total yang Harus Dibayar -->
+                    <div class="w-full bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-center shadow-glowCyanSm">
+                        <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total yang Harus Dibayar</p>
+                        <h3 id="qrisTotalAmount" class="text-xl font-extrabold text-cyberCyan font-cyber mt-0.5 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Rp 0</h3>
+                        <p class="text-[10px] text-slate-500 mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-slate-300">TRX-000000</span></p>
+                    </div>
+
+                    <!-- Timer Batas Waktu (15 Menit) -->
+                    <div class="flex items-center justify-center gap-2 bg-red-950/50 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg text-xs font-mono font-bold w-full">
+                        <i class="fa-solid fa-clock animate-pulse"></i>
+                        <span>Selesaikan Sebelum: <strong id="qrisCountdown" class="text-white text-sm">15:00</strong></span>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-xs text-slate-300 font-semibold">Scan QRIS Otomatis untuk Membayar</p>
+                        <p class="text-[10px] text-slate-500">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
+                    </div>
+
+                    <!-- Container QR Code Ukuran Besar 500x500 Resolusi Tinggi + Border Putih Solid -->
+                    <div onclick="downloadQrisImage()" class="bg-white p-3 sm:p-4 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex flex-col items-center justify-center relative cursor-pointer group hover:scale-[1.02] transition-all w-full max-w-[340px] sm:max-w-[420px]">
+                        <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
+                    </div>
+
+                    <!-- Tombol Download QRIS Solid Non-Transparan -->
+                    <button type="button" onclick="downloadQrisImage()" class="w-full bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-glowCyanSm">
+                        <i class="fa-solid fa-download"></i> Unduh Gambar QRIS
                     </button>
 
-                    <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Order Manual via WhatsApp
+                    <!-- Status Indicator -->
+                    <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
+                    </div>
+
+                    <button onclick="cancelPayment()" class="text-xs text-red-400 hover:underline pt-1">
+                        Batalkan Transaksi
                     </button>
                 </div>
-            </form>
 
-            <!-- TAMPILAN STEP 2: QRIS OTOMATIS -->
-            <div id="paymentStep2" class="hidden p-5 flex flex-col items-center justify-center space-y-4">
-                <!-- Box Total yang Harus Dibayar -->
-                <div class="w-full bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-center shadow-glowCyanSm">
-                    <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total yang Harus Dibayar</p>
-                    <h3 id="qrisTotalAmount" class="text-xl font-extrabold text-cyberCyan font-cyber mt-0.5 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Rp 0</h3>
-                    <p class="text-[10px] text-slate-500 mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-slate-300">TRX-000000</span></p>
+                <!-- TAMPILAN STEP 3: SUKSES & LINK PRODUK -->
+                <div id="paymentStep3" class="hidden flex flex-col items-center justify-center space-y-4 text-center">
+                    <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-bold text-white font-cyber">Pembayaran Berhasil!</h4>
+                        <p class="text-xs text-slate-400 mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
+                    </div>
+
+                    <!-- Box Link Access Product -->
+                    <div class="w-full bg-cyberDark border border-cyberCyan/50 p-3 rounded-xl">
+                        <p class="text-[10px] text-slate-400 font-mono mb-1">LINK AKSES PRODUK / SCRIPT:</p>
+                        <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold break-all hover:underline flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-download"></i> <span id="productLinkText">Akses Link Produk</span>
+                        </a>
+                    </div>
+
+                    <button onclick="closeCheckoutModal()" class="w-full bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-slate-300 text-xs font-bold py-2.5 rounded-xl transition">
+                        Tutup
+                    </button>
                 </div>
-
-                <!-- Timer Batas Waktu (15 Menit) -->
-                <div class="flex items-center justify-center gap-2 bg-red-950/50 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg text-xs font-mono font-bold w-full">
-                    <i class="fa-solid fa-clock animate-pulse"></i>
-                    <span>Selesaikan Sebelum: <strong id="qrisCountdown" class="text-white text-sm">15:00</strong></span>
-                </div>
-
-                <div class="text-center">
-                    <p class="text-xs text-slate-300 font-semibold">Scan QRIS Otomatis untuk Membayar</p>
-                    <p class="text-[10px] text-slate-500">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
-                </div>
-
-                <!-- Container QR Code -->
-                <div onclick="downloadQrisImage()" class="bg-white p-3 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex flex-col items-center justify-center relative cursor-pointer group hover:scale-105 transition-all">
-                    <div id="qrcodeContainer"></div>
-                </div>
-
-                <!-- Tombol Download QRIS Persis yang Ditampilkan -->
-                <button type="button" onclick="downloadQrisImage()" class="w-full bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-cyber font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-glowCyanSm">
-                    <i class="fa-solid fa-download"></i> Unduh Gambar QRIS
-                </button>
-
-                <!-- Status Indicator -->
-                <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
-                </div>
-
-                <button onclick="cancelPayment()" class="text-xs text-red-400 hover:underline pt-1">
-                    Batalkan Transaksi
-                </button>
-            </div>
-
-            <!-- TAMPILAN STEP 3: SUKSES & LINK PRODUK -->
-            <div id="paymentStep3" class="hidden p-5 flex flex-col items-center justify-center space-y-4 text-center">
-                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <div>
-                    <h4 class="text-base font-bold text-white font-cyber">Pembayaran Berhasil!</h4>
-                    <p class="text-xs text-slate-400 mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
-                </div>
-
-                <!-- Box Link Access Product -->
-                <div class="w-full bg-cyberDark border border-cyberCyan/50 p-3 rounded-xl">
-                    <p class="text-[10px] text-slate-400 font-mono mb-1">LINK AKSES PRODUK / SCRIPT:</p>
-                    <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold break-all hover:underline flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-download"></i> <span id="productLinkText">Akses Link Produk</span>
-                    </a>
-                </div>
-
-                <button onclick="closeCheckoutModal()" class="w-full bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-slate-300 text-xs font-bold py-2.5 rounded-xl transition">
-                    Tutup
-                </button>
             </div>
 
         </div>
@@ -461,6 +469,21 @@
             }
         }
 
+        function renderQrisCode(qrisString) {
+            const qrContainer = document.getElementById('qrcodeContainer');
+            qrContainer.innerHTML = '';
+            
+            // Render QR Code 500x500 Resolusi Tinggi dengan High Error Correction (H)
+            new QRCode(qrContainer, {
+                text: qrisString,
+                width: 500,
+                height: 500,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
         async function checkActiveTransaction() {
             const savedOrderId = localStorage.getItem('active_order_id');
             const savedProduct = localStorage.getItem('active_order_product');
@@ -484,13 +507,7 @@
                         document.getElementById('qrisTotalAmount').innerText = formatRupiah(result.data.amount);
                         document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
-                        const qrContainer = document.getElementById('qrcodeContainer');
-                        qrContainer.innerHTML = '';
-                        new QRCode(qrContainer, {
-                            text: result.data.paymentNumber,
-                            width: 200,
-                            height: 200
-                        });
+                        renderQrisCode(result.data.paymentNumber);
 
                         document.getElementById('orderForm').classList.add('hidden');
                         document.getElementById('paymentStep3').classList.add('hidden');
@@ -801,13 +818,7 @@
                 document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
                 document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
-                const qrContainer = document.getElementById('qrcodeContainer');
-                qrContainer.innerHTML = '';
-                new QRCode(qrContainer, {
-                    text: qrisString,
-                    width: 200,
-                    height: 200
-                });
+                renderQrisCode(qrisString);
 
                 Swal.close();
 
@@ -872,33 +883,59 @@
             }, 1000);
         }
 
+        // FUNGSI UNDUH GAMBAR QRIS DENGAN BACKGROUND PUTIH SOLID & QUIET ZONE (MARGIN)
         function downloadQrisImage() {
             const qrCanvas = document.querySelector('#qrcodeContainer canvas');
             const qrImg = document.querySelector('#qrcodeContainer img');
 
-            let imageURI = null;
-            if (qrCanvas) {
-                imageURI = qrCanvas.toDataURL("image/png");
-            } else if (qrImg && qrImg.src) {
-                imageURI = qrImg.src;
-            }
-
-            if (!imageURI) {
+            if (!qrCanvas && (!qrImg || !qrImg.src)) {
                 Swal.fire({
                     icon: 'error',
                     title: 'GAGAL UNDUH',
-                    text: 'Gambar QRIS belum selesai dimuat, silakan coba beberapa detik lagi.',
+                    text: 'Gambar QRIS belum selesai dimuat, silakan tunggu beberapa detik.',
                     customClass: { popup: 'cyber-swal' }
                 });
                 return;
             }
 
-            const downloadLink = document.createElement('a');
-            downloadLink.href = imageURI;
-            downloadLink.download = `QRIS_${CURRENT_ORDER_ID}.png`;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+            const padding = 30; // Padding margin putih di sekitar QR Code agar mudah dibaca aplikasi bank
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            const processDownload = (sourceElement) => {
+                const srcWidth = sourceElement.width || 500;
+                const srcHeight = sourceElement.height || 500;
+
+                // Canvas baru dengan ukuran 500x500 + Padding Margin
+                tempCanvas.width = srcWidth + (padding * 2);
+                tempCanvas.height = srcHeight + (padding * 2);
+
+                // 1. Gambar latar belakang Putih Solid (#FFFFFF)
+                tempCtx.fillStyle = "#FFFFFF";
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+                // 2. Render pola QR Code tepat di tengah canvas
+                tempCtx.drawImage(sourceElement, padding, padding, srcWidth, srcHeight);
+
+                // 3. Convert ke file PNG resolusi tinggi tanpa transparansi
+                const imageURI = tempCanvas.toDataURL("image/png", 1.0);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageURI;
+                downloadLink.download = `QRIS_${CURRENT_ORDER_ID}.png`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            };
+
+            if (qrCanvas) {
+                processDownload(qrCanvas);
+            } else if (qrImg) {
+                const imgObj = new Image();
+                imgObj.crossOrigin = "Anonymous";
+                imgObj.onload = () => processDownload(imgObj);
+                imgObj.src = qrImg.src;
+            }
         }
 
         function startStatusPolling() {
