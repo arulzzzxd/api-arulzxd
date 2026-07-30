@@ -36,6 +36,18 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
+app.use(express.session({
+    secret: 'arulzxd_secret_session_key_99', 
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0',
+        dbName: 'sessions',
+        ttl: 24 * 60 * 60 // Durasi session 1 hari (dalam detik)
+    }),
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
+}));
+
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
 const PAYWUZ_HEADERS = {
@@ -415,20 +427,6 @@ app.post('/webhook', async (req, res) => {
 
 app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
-
-app.use(session({
-    secret: 'arulzxd_secret_session_key_99', 
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: MONGODB_URI,
-        collectionName: 'sessions',
-        ttl: 24 * 60 * 60 // Durasi session 1 hari (dalam detik)
-    }),
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
-}));
-
-
 app.use(passport.initialize());
 app.use(passport.session());
 
