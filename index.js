@@ -117,6 +117,14 @@ app.post('/transactions', async (req, res) => {
         const transactionData = paywuzRes.data?.data || paywuzRes.data;
         const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
 
+        // AMBIL TOTAL NOMINAL + FEE DARI PAYWUZ (Fallback ke grossAmount / totalAmount / total)
+        const finalAmountWithFee = Number(
+            transactionData.grossAmount || 
+            transactionData.totalAmount || 
+            transactionData.total || 
+            (transactionData.fee ? Number(amount) + Number(transactionData.fee) : amount)
+        );
+
         // Cari link dari itemDetails atau fallback ke produk.json
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
@@ -131,10 +139,10 @@ app.post('/transactions', async (req, res) => {
         // Set Batas Waktu 15 Menit dari sekarang
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // Simpan Transaksi ke MongoDB
+        // Simpan Transaksi ke MongoDB dengan nominal final (+fee)
         const newTransaction = new Transaction({
             orderId,
-            amount,
+            amount: finalAmountWithFee, // Simpan amount beserta fee
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
             status: transactionData.status || "UNPAID",
@@ -159,6 +167,7 @@ app.post('/transactions', async (req, res) => {
         });
     }
 });
+
 
 // 2. Cek Status Transaksi (/transactions/:orderId)
 app.get('/transactions/:orderId', async (req, res) => {
