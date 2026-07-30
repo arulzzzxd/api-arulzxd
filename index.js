@@ -110,20 +110,29 @@ app.post('/transactions', async (req, res) => {
         // Tembak API PayWuz untuk Generate QRIS
         const paywuzRes = await axios.post(`${PAYWUZ_BASE_URL}/transactions`, {
             orderId,
-            amount,
+            amount: Number(amount),
             paymentMethod: "QRIS"
         }, { headers: PAYWUZ_HEADERS });
 
         const transactionData = paywuzRes.data?.data || paywuzRes.data;
         const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
 
-        // AMBIL TOTAL NOMINAL + FEE DARI PAYWUZ (Fallback ke grossAmount / totalAmount / total)
-        const finalAmountWithFee = Number(
-            transactionData.grossAmount || 
-            transactionData.totalAmount || 
-            transactionData.total || 
-            (transactionData.fee ? Number(amount) + Number(transactionData.fee) : amount)
-        );
+        // HELPER SAFE NUMBER: Mencegah NaN jika respon dari PayWuz undefined/null
+        const safeNum = (val) => {
+            const num = Number(val);
+            return (!isNaN(num) && num > 0) ? num : null;
+        };
+
+        // AMBIL TOTAL NOMINAL + FEE SECARA AMAN
+        let finalAmount = safeNum(transactionData.grossAmount) || 
+                          safeNum(transactionData.totalAmount) || 
+                          safeNum(transactionData.total);
+
+        // Jika tidak ada di field atas, cek jika ada field fee terpisah
+        if (!finalAmount) {
+            const feeVal = safeNum(transactionData.fee) || safeNum(transactionData.feeAdmin) || 0;
+            finalAmount = Number(amount) + feeVal;
+        }
 
         // Cari link dari itemDetails atau fallback ke produk.json
         let pLink = itemDetails?.link || null;
@@ -139,10 +148,10 @@ app.post('/transactions', async (req, res) => {
         // Set Batas Waktu 15 Menit dari sekarang
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        // Simpan Transaksi ke MongoDB dengan nominal final (+fee)
+        // Simpan Transaksi ke MongoDB
         const newTransaction = new Transaction({
             orderId,
-            amount: finalAmountWithFee, // Simpan amount beserta fee
+            amount: finalAmount, // Dijamin angka valid (Number)
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
             status: transactionData.status || "UNPAID",
