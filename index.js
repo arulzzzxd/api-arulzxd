@@ -1,6 +1,11 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
+const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -14,13 +19,6 @@ const http = require('http');
 const crypto = require('crypto');
 const compression = require('compression');
 const os = require('os');
-
-// === TAMBAHAN IMPORT DEPENDENSI YANG KURANG ===
-const mongoose = require('mongoose');
-const MongoStore = require('connect-mongo');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
 
 const app = express();
 app.set('etag', false);
@@ -36,17 +34,18 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
-app.use(express.session({
+app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0',
         dbName: 'sessions',
-        ttl: 24 * 60 * 60 // Durasi session 1 hari (dalam detik)
+        ttl: 24 * 60 * 60
     }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
+
 
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
