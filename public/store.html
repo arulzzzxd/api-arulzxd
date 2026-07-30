@@ -115,6 +115,56 @@
             height: auto !important;
             display: block;
         }
+
+        /* Custom Select Card Cyberpunk Style */
+        .cyber-option-card {
+            background: rgba(10, 22, 40, 0.8);
+            border: 1px solid #162a45;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cyber-option-card:hover {
+            border-color: rgba(0, 243, 255, 0.6);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+        }
+
+        .cyber-option-card.active {
+            background: rgba(0, 243, 255, 0.08);
+            border-color: #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+        }
+
+        .cyber-radio-dot {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #162a45;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .cyber-option-card.active .cyber-radio-dot {
+            border-color: #00f3ff;
+            box-shadow: 0 0 8px #00f3ff;
+        }
+
+        .cyber-radio-inner {
+            width: 8px;
+            height: 8px;
+            background: #00f3ff;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s ease;
+        }
+
+        .cyber-option-card.active .cyber-radio-inner {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 0 6px #00f3ff;
+        }
     </style>
 </head>
 <body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
@@ -129,7 +179,7 @@
 
             <!-- Search Bar -->
             <div class="flex-1 max-w-xl relative">
-                <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan cyberpunk..." 
+                <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan..." 
                        class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyan transition">
                 <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
@@ -154,7 +204,7 @@
             <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyberCyan/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="relative z-10 max-w-2xl">
                 <span class="inline-flex items-center gap-1.5 bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3 font-cyber shadow-glowCyanSm">
-                    <i class="fa-solid fa-terminal"></i> Cyberpunk Marketplace
+                    <i class="fa-solid fa-terminal"></i> Marketplace
                 </span>
                 <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight font-cyber">
                     Arulz<span class="text-cyberCyan drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]">XD</span> Store
@@ -266,20 +316,52 @@
                         <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
                     </div>
 
-                    <!-- SELECT OPTION METODE PEMBAYARAN -->
+                    <!-- KUSTOM METODE PEMBAYARAN CYBERPUNK -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-1" for="paymentMethodSelect">
-                            Pilih Metode Pembayaran <span class="text-cyberCyan">*</span>
+                        <label class="block text-xs font-bold font-cyber text-slate-300 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-credit-card text-cyberCyan"></i> Pilih Metode Pembayaran <span class="text-cyberCyan">*</span>
                         </label>
-                        <select id="paymentMethodSelect" onchange="togglePaymentMethodFields()" 
-                                class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 focus:outline-none focus:border-cyberCyan transition">
-                            <option value="auto">⚡ Pembayaran Otomatis (QRIS Fast)</option>
-                            <option value="manual">💬 Order Manual via WhatsApp</option>
-                        </select>
+                        
+                        <!-- Hidden input untuk menyimpan nilai metode pembayaran yang dipilih -->
+                        <input type="hidden" id="paymentMethodSelect" value="auto">
+
+                        <div class="space-y-2.5" id="customPaymentOptions">
+                            <!-- Opsi 1: Otomatis QRIS Fast -->
+                            <div onclick="selectCyberPayment('auto')" id="opt-auto" class="cyber-option-card active p-3 rounded-xl cursor-pointer flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-cyberCyan/10 border border-cyberCyan/30 flex items-center justify-center text-cyberCyan">
+                                        <i class="fa-solid fa-bolt text-sm animate-pulse"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-100 font-cyber">Pembayaran Otomatis (QRIS Fast)</p>
+                                        <p class="text-[10px] text-slate-400">Proses instan 24 jam via GoPay, OVO, Dana, QRIS</p>
+                                    </div>
+                                </div>
+                                <div class="cyber-radio-dot">
+                                    <div class="cyber-radio-inner"></div>
+                                </div>
+                            </div>
+
+                            <!-- Opsi 2: Order Manual via WhatsApp -->
+                            <div onclick="selectCyberPayment('manual')" id="opt-manual" class="cyber-option-card p-3 rounded-xl cursor-pointer flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-100 font-cyber">Order Manual via WhatsApp</p>
+                                        <p class="text-[10px] text-slate-400">Hubungi Admin langsung untuk pembayaran manual</p>
+                                    </div>
+                                </div>
+                                <div class="cyber-radio-dot">
+                                    <div class="cyber-radio-inner"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- FIELD KHUSUS PEMBAYARAN MANUAL (HAPUS SECARA TAMPILAN DI OTOMATIS) -->
-                    <div id="manualFieldsGroup" class="hidden space-y-3 pt-1">
+                    <!-- FIELD KHUSUS PEMBAYARAN MANUAL -->
+                    <div id="manualFieldsGroup" class="hidden space-y-3 pt-2">
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
                                 Username / Nama Pembeli <span class="text-cyberCyan">*</span>
@@ -289,7 +371,7 @@
                                     <i class="fa-regular fa-user"></i>
                                 </span>
                                 <input type="text" id="usernameInput" placeholder="Masukkan username Anda"
-                                       class="w-full pl-9 pr-3 py-2 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                                       class="w-full pl-9 pr-3 py-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
                             </div>
                         </div>
 
@@ -298,17 +380,17 @@
                                 Catatan Tambahan (Opsional)
                             </label>
                             <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                                      class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                                      class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
                         </div>
                     </div>
 
                     <!-- TOMBOL ACTION PEMBAYARAN -->
-                    <div class="pt-2 border-t border-cyberBorder">
-                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs shadow-glowCyan transition flex items-center justify-center gap-2">
+                    <div class="pt-3 border-t border-cyberBorder">
+                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-extrabold py-3 rounded-xl text-xs shadow-glowCyan transition-all flex items-center justify-center gap-2 tracking-wider uppercase">
                             <i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang
                         </button>
 
-                        <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-600 hover:bg-emerald-500 text-white font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                        <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-500 hover:bg-emerald-400 text-cyberDark font-cyber font-extrabold py-3 rounded-xl text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2 tracking-wider uppercase">
                             <i class="fa-brands fa-whatsapp text-sm"></i> Order Manual via WhatsApp
                         </button>
                     </div>
@@ -397,6 +479,33 @@
         let countdownInterval = null;
         let qrisExpireTime = null;
 
+        function selectCyberPayment(method) {
+            document.getElementById('paymentMethodSelect').value = method;
+
+            document.querySelectorAll('.cyber-option-card').forEach(card => card.classList.remove('active'));
+            const activeCard = document.getElementById(`opt-${method}`);
+            if (activeCard) activeCard.classList.add('active');
+
+            const manualFields = document.getElementById('manualFieldsGroup');
+            const btnAuto = document.getElementById('btnPayAuto');
+            const btnManual = document.getElementById('btnPayManual');
+            const usernameInput = document.getElementById('usernameInput');
+
+            if (method === 'manual') {
+                manualFields.classList.remove('hidden');
+                btnAuto.classList.add('hidden');
+                btnManual.classList.remove('hidden');
+                usernameInput.setAttribute('required', 'true');
+            } else {
+                manualFields.classList.add('hidden');
+                btnAuto.classList.remove('hidden');
+                btnManual.classList.add('hidden');
+                usernameInput.removeAttribute('required');
+                usernameInput.value = '';
+                document.getElementById('noteInput').value = '';
+            }
+        }
+
         function formatTerjual(jumlah) {
             if (!jumlah) return '0 terjual';
             if (jumlah >= 1000) {
@@ -419,24 +528,7 @@
 
         function togglePaymentMethodFields() {
             const method = document.getElementById('paymentMethodSelect').value;
-            const manualFields = document.getElementById('manualFieldsGroup');
-            const btnAuto = document.getElementById('btnPayAuto');
-            const btnManual = document.getElementById('btnPayManual');
-            const usernameInput = document.getElementById('usernameInput');
-
-            if (method === 'manual') {
-                manualFields.classList.remove('hidden');
-                btnAuto.classList.add('hidden');
-                btnManual.classList.remove('hidden');
-                usernameInput.setAttribute('required', 'true');
-            } else {
-                manualFields.classList.add('hidden');
-                btnAuto.classList.remove('hidden');
-                btnManual.classList.add('hidden');
-                usernameInput.removeAttribute('required');
-                usernameInput.value = '';
-                document.getElementById('noteInput').value = '';
-            }
+            selectCyberPayment(method);
         }
 
         async function fetchProduk() {
@@ -716,8 +808,7 @@
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
 
-            document.getElementById('paymentMethodSelect').value = 'auto';
-            togglePaymentMethodFields();
+            selectCyberPayment('auto');
 
             document.getElementById('orderForm').classList.remove('hidden');
             document.getElementById('paymentStep2').classList.add('hidden');
