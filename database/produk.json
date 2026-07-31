@@ -2,11 +2,11 @@
   {
     "nama": "Base Api Arulzxd",
     "harga": 35000,
-    "harga_diskon": 1000,
+    "harga_diskon": 20000,
     "kategori": "Script",
     "badge": "Terlaris",
-    "terjual": 2,
-    "stok": 999,
+    "terjual": 5,
+    "stok": 995,
     "gambar": "https://arulz-xd.my.id/files/X1F0Cn.png",
     "deskripsi": "Source code / Script Base REST API Express.js siap pakai lengkap dengan fitur autentikasi (Local & OAuth), sistem limit API Key, Cloud Uploader GitHub, serta Dashboard modern.",
     "link": "https://www.mediafire.com/file/40e8t1or2nzypdx/base-api-arulzxd.zip/file"
