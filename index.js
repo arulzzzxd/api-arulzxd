@@ -178,6 +178,7 @@ app.post('/transactions', async (req, res) => {
 
         if (!orderId || !amount) {
             return res.status(400).json({ 
+                status: false,
                 error: "INVALID_PAYLOAD", 
                 message: "orderId dan amount wajib diisi!" 
             });
@@ -187,6 +188,7 @@ app.post('/transactions', async (req, res) => {
         const existingTrx = await Transaction.findOne({ orderId });
         if (existingTrx) {
             return res.json({
+                status: true,
                 data: existingTrx
             });
         }
@@ -252,14 +254,16 @@ app.post('/transactions', async (req, res) => {
 
         await newTransaction.save();
 
-        // Standard Success Response Envelope
-        res.json({
+        // FIX: Tambahkan properti 'status: true' agar terbaca sukses oleh Frontend
+        return res.json({
+            status: true,
             data: newTransaction
         });
 
     } catch (error) {
         console.error("Error Create TRX:", error.response?.data || error.message);
-        res.status(500).json({
+        return res.status(500).json({
+            status: false,
             error: "CREATE_TRANSACTION_FAILED",
             message: error.response?.data?.message || error.message || "Gagal membuat transaksi QRIS"
         });
