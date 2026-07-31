@@ -67,7 +67,7 @@ async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
             if (isRateLimited && !isLastAttempt) {
                 console.warn(`⚠️ Menerima 429 dari PayWuz. Retry ke-${i + 1} dalam ${delayMs}ms...`);
                 await new Promise(resolve => setTimeout(resolve, delayMs));
-                delayMs *= 1.5; // Backoff bertambah
+                delayMs *= 1.5;
             } else {
                 throw error;
             }
@@ -78,7 +78,7 @@ async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
 const cacheSchema = new mongoose.Schema({
     key: { type: String, required: true, unique: true },
     data: { type: mongoose.Schema.Types.Mixed, required: true },
-    createdAt: { type: Date, default: Date.now, expires: 60 } // Hapus otomatis setelah 60 detik
+    createdAt: { type: Date, default: Date.now, expires: 60 }
 });
 
 const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
@@ -97,7 +97,7 @@ async function setCache(key, data) {
         await CacheModel.findOneAndUpdate(
             { key },
             { data, createdAt: new Date() },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' } // FIX: Mengganti deprecated `new: true` menjadi `returnDocument: 'after'`
         );
     } catch (e) {
         console.error("Gagal simpan cache MongoDB:", e.message);
@@ -132,9 +132,9 @@ mongoose.connection.once('open', async () => {
 const transactionSchema = new mongoose.Schema({
     orderId: { type: String, required: true, unique: true },
     amount: { type: Number, required: true },
-    paymentNumber: { type: String, default: null }, // QRIS String / URL
+    paymentNumber: { type: String, default: null },
     paymentMethod: { type: String, default: "QRIS" },
-    status: { type: String, default: "pending" }, // pending, settlement, paid, success, failed, cancelled
+    status: { type: String, default: "pending" },
     itemDetails: {
         nama: String,
         harga: Number,
@@ -184,7 +184,6 @@ app.post('/transactions', async (req, res) => {
             });
         }
 
-        // --- IDEMPOTENSI: Jika orderId sudah ada, kembalikan data eksis ---
         const existingTrx = await Transaction.findOne({ orderId });
         if (existingTrx) {
             return res.json({
@@ -195,7 +194,6 @@ app.post('/transactions', async (req, res) => {
 
         const inputAmount = Number(amount);
 
-        // Request ke PayWuz API menggunakan helper retry dengan backoff
         const paywuzRes = await axiosPaywuzWithRetry({
             method: 'post',
             url: `${PAYWUZ_BASE_URL}/transactions`,
@@ -254,7 +252,6 @@ app.post('/transactions', async (req, res) => {
 
         await newTransaction.save();
 
-        // FIX: Tambahkan properti 'status: true' agar terbaca sukses oleh Frontend
         return res.json({
             status: true,
             data: newTransaction
@@ -281,17 +278,18 @@ app.get('/transactions/:orderId', async (req, res) => {
     try {
         const { orderId } = req.params;
 
-        // 1. Ambil dari MongoDB Cache terlebih dahulu (Cache-First Pattern)
+        // 1. Ambil dari MongoDB Cache
         const cachedData = await getCache(`trx_${orderId}`);
         if (cachedData) {
-            return res.json({ data: cachedData });
+            return res.json({ status: true, data: cachedData }); // FIX: Tambahkan status: true
         }
 
-        // 2. Jika tidak ada di Cache, baca dari MongoDB Database
+        // 2. Baca dari MongoDB Database
         let localTrx = await Transaction.findOne({ orderId });
 
         if (!localTrx) {
             return res.status(404).json({ 
+                status: false,
                 error: "TRANSACTION_NOT_FOUND", 
                 message: "Transaksi tidak ditemukan" 
             });
@@ -314,7 +312,7 @@ app.get('/transactions/:orderId', async (req, res) => {
             };
 
             await setCache(`trx_${orderId}`, resultData);
-            return res.json({ data: resultData });
+            return res.json({ status: true, data: resultData }); // FIX: Tambahkan status: true
         }
 
         const currentStatus = localTrx.status.toLowerCase();
@@ -345,11 +343,11 @@ app.get('/transactions/:orderId', async (req, res) => {
             productLink: isSuccess ? localTrx.productLink : null
         };
 
-        // Simpan hasil ke Cache MongoDB
         await setCache(`trx_${orderId}`, responseData);
 
-        // Standard Success Response Envelope
-        res.json({
+        // Standard Success Response Envelope (FIX: Tambahkan status: true)
+        return res.json({
+            status: true,
             data: responseData
         });
 
@@ -357,9 +355,10 @@ app.get('/transactions/:orderId', async (req, res) => {
         console.error("Error Status TRX:", error.message);
         const localTrx = await Transaction.findOne({ orderId: req.params.orderId });
         if (localTrx) {
-            return res.json({ data: localTrx });
+            return res.json({ status: true, data: localTrx }); // FIX: Tambahkan status: true
         }
         res.status(500).json({ 
+            status: false,
             error: "TRANSACTION_FETCH_FAILED", 
             message: "Gagal mengambil status transaksi" 
         });
@@ -381,19 +380,22 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 
         await Transaction.findOneAndUpdate(
             { orderId },
-            { status: "cancelled", updatedAt: new Date() }
+            { status: "cancelled", updatedAt: new Date() },
+            { returnDocument: 'after' } // FIX: Mengganti deprecated option
         );
 
         await deleteCache(`trx_${orderId}`);
         scheduleTransactionDeletion(orderId);
 
         res.json({
+            status: true,
             data: cancelRes.data?.data || cancelRes.data || { orderId, status: "cancelled" }
         });
 
     } catch (error) {
         console.error("Error Cancel TRX:", error.response?.data || error.message);
         res.status(500).json({
+            status: false,
             error: "CANCEL_TRANSACTION_FAILED",
             message: error.response?.data?.message || error.message || "Gagal membatalkan transaksi"
         });
@@ -406,17 +408,14 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
-
-        // Gunakan req.rawBody jika ada, atau fallback ke req.body jika kosong
         const payloadToVerify = req.rawBody || req.body;
-
-        // Verifikasi Signature
         const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
-        
+
         if (!isValid) {
             console.warn("⚠️ Signature Webhook tidak valid atau tidak cocok!");
             if (process.env.NODE_ENV === 'production') {
                 return res.status(401).json({ 
+                    status: false,
                     error: "INVALID_SIGNATURE", 
                     message: "Signature webhook tidak valid!" 
                 });
@@ -431,12 +430,12 @@ app.post('/webhook', async (req, res) => {
 
         if (!orderId) {
             return res.status(400).json({ 
+                status: false,
                 error: "MISSING_ORDER_ID", 
                 message: "orderId tidak ditemukan pada payload webhook!" 
             });
         }
 
-        // 2. Update Database & Proses Kredit Saldo / Event
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
 
@@ -445,7 +444,6 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
-                // Dengarkan khusus event transaction.paid (atau status paid/settlement)
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
 
                 if (isPaidEvent && prevStatus !== "paid" && prevStatus !== "settlement") {
@@ -469,18 +467,16 @@ app.post('/webhook', async (req, res) => {
 
                 await localTrx.save();
 
-                // Invalidate Cache
                 await deleteCache(`trx_${orderId}`);
 
-                // Jadwalkan Hapus
                 if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
         }
 
-        // Standard Success Response Envelope
         return res.status(200).json({ 
+            status: true,
             data: {
                 message: "Webhook diproses dengan sukses",
                 orderId
@@ -490,6 +486,7 @@ app.post('/webhook', async (req, res) => {
     } catch (err) {
         console.error("Webhook Error:", err);
         return res.status(500).json({ 
+            status: false,
             error: "WEBHOOK_PROCESSING_ERROR", 
             message: "Terjadi kesalahan internal saat memproses webhook" 
         });
@@ -951,7 +948,6 @@ app.get('/login', (req, res) => {
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
-
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
