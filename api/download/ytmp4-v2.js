@@ -67,7 +67,8 @@ async function scrapeYtMp4(targetUrl) {
 // ENDPOINT ROUTER
 router.get("/", async (req, res) => {
   try {
-    const { url, quality = "720" } = req.query;
+    const url = req.query.url;
+    const quality = req.query.quality;
 
     if (!url) {
       return res.status(400).json({
