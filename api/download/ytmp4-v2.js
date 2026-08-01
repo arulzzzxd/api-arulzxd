@@ -1,66 +1,100 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const cheerio = require("cheerio");
 
 /**
- * Fungsi helper untuk scraping data dari yt-mp4.net
- * @param {string} targetUrl - URL video YouTube
+ * Helper function untuk mengekstrak Video ID dari URL YouTube
  */
-async function scrapeYtMp4(targetUrl) {
-  const baseUrl = "https://yt-mp4.net";
+function getYouTubeVideoId(url) {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  return match ? match[1] : null;
+}
 
-  // 1. Mengirim permintaan POST ke layanan konversi yt-mp4.net
-  const response = await axios.post(
-    `${baseUrl}/api/ajaxSearch`,
-    new URLSearchParams({
-      q: targetUrl,
-      vt: "mp4"
-    }),
-    {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": `${baseUrl}/`,
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "X-Requested-With": "XMLHttpRequest"
-      },
-      timeout: 10000
-    }
-  );
+/**
+ * Scraping helper untuk media.ytmp3.gg
+ * @param {string} targetUrl - URL Video YouTube
+ */
+async function scrapeYtmp3Gg(targetUrl) {
+  const videoId = getYouTubeVideoId(targetUrl);
+  if (!videoId) {
+    throw new Error("URL YouTube tidak valid.");
+  }
 
-  const html = response.data?.data || response.data;
-  if (!html) throw new Error("Gagal mengambil data dari penyedia.");
+  const headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "https://media.ytmp3.gg/",
+    "Origin": "https://media.ytmp3.gg"
+  };
 
-  const $ = cheerio.load(html);
-
-  // 2. Parsing informasi umum video
-  const title = $(".caption b, .title, h3").first().text().trim() || "Tidak ada judul";
-  const duration = $(".duration, .time, p:contains('Duration')").first().text().replace(/Duration:\s*/i, "").trim() || "N/A";
-  const thumbnail = $(".img-thumbnail, img").attr("src") || "";
-
-  // 3. Parsing daftar opsi kualitas & link unduhan
-  const downloads = [];
-
-  $("table tbody tr, .download-item").each((_, el) => {
-    const quality = $(el).find("td:nth-child(1), .quality").text().trim();
-    const size = $(el).find("td:nth-child(2), .size").text().trim();
-    const downloadLink = $(el).find("a[href]").attr("href");
-
-    if (quality && downloadLink) {
-      downloads.push({
-        quality: quality.replace(/\s+/g, " "),
-        size: size || "N/A",
-        url: downloadLink.startsWith("http") ? downloadLink : `${baseUrl}${downloadLink}`
-      });
-    }
+  // 1. Inisialisasi permintaan konversi MP4
+  const initResponse = await axios.get(`https://api.ytmp3.gg/v2/convert`, {
+    params: {
+      v: videoId,
+      f: "mp4",
+      q: "360p"
+    },
+    headers,
+    timeout: 10000
   });
 
+  if (!initResponse.data || initResponse.data.error) {
+    throw new Error(initResponse.data?.message || "Gagal menginisialisasi konversi.");
+  }
+
+  const taskData = initResponse.data;
+  
+  // Jika link download langsung tersedia
+  if (taskData.url) {
+    return {
+      title: taskData.title || "YouTube Video",
+      duration: taskData.duration || "N/A",
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      quality: taskData.quality || "360p",
+      downloadUrl: taskData.url
+    };
+  }
+
+  // 2. Polling progress jika proses konversi masuk ke antrean (queue/progress)
+  const jobId = taskData.id || taskData.jobId;
+  if (!jobId) {
+    throw new Error("Tidak mendapat ID konversi dari server.");
+  }
+
+  let downloadUrl = null;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (!downloadUrl && attempts < maxAttempts) {
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Delay 1.5 detik per hit
+
+    const statusResponse = await axios.get(`https://api.ytmp3.gg/v2/status`, {
+      params: { id: jobId },
+      headers,
+      timeout: 10000
+    });
+
+    if (statusResponse.data && statusResponse.data.url) {
+      downloadUrl = statusResponse.data.url;
+      break;
+    }
+
+    if (statusResponse.data?.status === "failed") {
+      throw new Error("Proses konversi gagal di sisi server penyedia.");
+    }
+
+    attempts++;
+  }
+
+  if (!downloadUrl) {
+    throw new Error("Waktu konversi habis (Timeout). Silakan coba lagi.");
+  }
+
   return {
-    title,
-    duration,
-    thumbnail,
-    downloads
+    title: taskData.title || "YouTube Video",
+    duration: taskData.duration || "N/A",
+    thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    quality: "360p",
+    downloadUrl
   };
 }
 
@@ -78,14 +112,7 @@ router.get("/", async (req, res) => {
     }
 
     // Panggil fungsi scraper
-    const scrapedData = await scrapeYtMp4(url);
-
-    // Cari spesifik untuk 360p (dengan fallback ke item pertama jika 360p tidak ditemukan)
-    const targetQuality = "360";
-    let selectedQuality =
-      scrapedData.downloads.find((item) =>
-        item.quality && item.quality.toLowerCase().includes(targetQuality)
-      ) || scrapedData.downloads[0] || null;
+    const scrapedData = await scrapeYtmp3Gg(url);
 
     res.json({
       status: true,
@@ -94,8 +121,16 @@ router.get("/", async (req, res) => {
         title: scrapedData.title,
         duration: scrapedData.duration,
         thumbnail: scrapedData.thumbnail,
-        selected_quality: selectedQuality,
-        media: scrapedData.downloads
+        selected_quality: {
+          quality: scrapedData.quality,
+          url: scrapedData.downloadUrl
+        },
+        media: [
+          {
+            quality: scrapedData.quality,
+            url: scrapedData.downloadUrl
+          }
+        ]
       }
     });
   } catch (err) {
