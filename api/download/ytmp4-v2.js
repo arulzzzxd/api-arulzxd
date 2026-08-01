@@ -68,7 +68,6 @@ async function scrapeYtMp4(targetUrl) {
 router.get("/", async (req, res) => {
   try {
     const url = req.query.url;
-    const quality = req.query.quality;
 
     if (!url) {
       return res.status(400).json({
@@ -81,10 +80,12 @@ router.get("/", async (req, res) => {
     // Panggil fungsi scraper
     const scrapedData = await scrapeYtMp4(url);
 
-    // Filter berdasarkan parameter quality (opsional, jika opsi spesifik ditemukan)
-    let selectedQuality = scrapedData.downloads.find((item) =>
-      item.quality.toLowerCase().includes(quality.toLowerCase())
-    );
+    // Cari spesifik untuk 360p (dengan fallback ke item pertama jika 360p tidak ditemukan)
+    const targetQuality = "360";
+    let selectedQuality =
+      scrapedData.downloads.find((item) =>
+        item.quality && item.quality.toLowerCase().includes(targetQuality)
+      ) || scrapedData.downloads[0] || null;
 
     res.json({
       status: true,
@@ -93,7 +94,7 @@ router.get("/", async (req, res) => {
         title: scrapedData.title,
         duration: scrapedData.duration,
         thumbnail: scrapedData.thumbnail,
-        selected_quality: selectedQuality || null,
+        selected_quality: selectedQuality,
         media: scrapedData.downloads
       }
     });
