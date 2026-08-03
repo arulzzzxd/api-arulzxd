@@ -17,8 +17,12 @@ router.get("/", async (req, res) => {
     try {
         const mode = req.query.mode || "text-to-audio";
         const text = req.query.text;
-        const from = req.query.from || "auto";
-        const to = req.query.to || "ja";
+        
+        // Memotong string opsi (contoh: "id | Indonesian" menjadi "id")
+        const rawFrom = req.query.from || "auto";
+        const rawTo = req.query.to || "ja";
+        const from = rawFrom.split(' ')[0];
+        const to = rawTo.split(' ')[0];
 
         if (!text) {
             return res.status(400).json({
@@ -111,6 +115,7 @@ router.get("/", async (req, res) => {
 });
 
 router.paramsConfig = {
+    text: "text", // 👈 Ditambahkan agar muncul input teks di dashboard
     mode: {
         type: "select",
         options: [
