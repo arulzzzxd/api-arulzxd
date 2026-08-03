@@ -756,7 +756,7 @@ app.post('/auth/register', async (req, res) => {
 
         req.logIn(newUser, (err) => {
             if (err) return res.redirect('/login');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/doc?showProfile=true');
+            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs?showProfile=true');
         });
 
     } catch (error) {
@@ -947,7 +947,7 @@ app.post('/reset-password/:token', async (req, res) => {
 
 app.get('/login', (req, res) => {
     if (req.user) {
-        return res.redirect('/doc?showProfile=true'); 
+        return res.redirect('/docs?showProfile=true'); 
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -1093,7 +1093,7 @@ app.get('/auth/github/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        res.redirect('/doc?showProfile=true');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -1185,7 +1185,7 @@ app.get('/auth/google/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        res.redirect('/doc?showProfile=true');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -2454,13 +2454,6 @@ app.get('/docs', (req, res) => {
                 </svg>
                 Docs
             </a>
-
-            <button onclick="openProfilePopup()" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 text-left w-full focus:outline-none uppercase">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
-                Profile
-            </button>
 
             <a href="/store" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
                 <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
