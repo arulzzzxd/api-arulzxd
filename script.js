@@ -346,24 +346,11 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     // Ambil dari input form langsung
     let userApikey = formData.get('apikey'); 
 
-    // Jika kosong dan mau dikasih default key buat tester (opsional, jika tidak dihapus saja)
     if (!userApikey) {
-        userApikey = ''; // Biarkan kosong agar API menolak (karena belum login / input kosong)
+        userApikey = '';
     }
 
-    // Deteksi apakah form memiliki input file yang terisi
-    let formHasFile = false;
-    form.querySelectorAll('input[type="file"]').forEach(fileInput => {
-        if (fileInput.files.length > 0) {
-            formHasFile = true;
-        }
-    });
-
-    // Tentukan method final (Jika ada file, otomatis dipaksa ke POST sesuai executeRequest)
     let finalMethod = method.toUpperCase();
-    if (formHasFile) {
-        finalMethod = 'POST';
-    }
 
     // Ambil query parameter untuk URL jika method adalah GET atau DELETE
     if (finalMethod === 'GET' || finalMethod === 'DELETE') {
@@ -387,35 +374,16 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
         if (finalMethod === 'GET' || finalMethod === 'DELETE') {
             curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"`;
         } else {
-            // JIKA METHOD ADALAH POST / PUT / PATCH
-            if (formHasFile) {
-                // Khusus POST yang mensupport File (Multipart Form Data)
-                const bodyParams = [];
-                for (const [key, value] of formData.entries()) {
-                    if (key === 'apikey') continue;
-                    
-                    if (value instanceof File) {
-                        // Jika value berbentuk file, tampilkan nama filenya atau placeholder @file
-                        const fileName = value.name ? value.name : 'file.bin';
-                        bodyParams.push(`-F "${key}=@${fileName}"`);
-                    } else if (value) {
-                        bodyParams.push(`-F "${key}=${value}"`);
-                    }
+            // JIKA METHOD ADALAH POST / PUT / PATCH (JSON Standar)
+            const bodyParams = [];
+            for (const [key, value] of formData.entries()) {
+                if (key === 'apikey') continue;
+                if (value && typeof value === 'string') {
+                    bodyParams.push(`"${key}": "${value}"`);
                 }
-                const dataString = bodyParams.length ? ` ${bodyParams.join(' ')}` : '';
-                curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"${dataString}`;
-            } else {
-                // Jika POST biasa berupa JSON (Tidak ada file)
-                const bodyParams = [];
-                for (const [key, value] of formData.entries()) {
-                    if (key === 'apikey') continue;
-                    if (value && typeof value === 'string') {
-                        bodyParams.push(`"${key}": "${value}"`);
-                    }
-                }
-                const dataString = bodyParams.length ? ` -H "Content-Type: application/json" -d '{${bodyParams.join(', ')}}'` : '';
-                curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"${dataString}`;
             }
+            const dataString = bodyParams.length ? ` -H "Content-Type: application/json" -d '{${bodyParams.join(', ')}}'` : '';
+            curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"${dataString}`;
         }
     }
 }
@@ -475,18 +443,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
     const rawFormData = new FormData(form);
     const queryParams = new URLSearchParams();
 
-    let formHasFile = false;
-    form.querySelectorAll('input[type="file"]').forEach(fileInput => {
-        if (fileInput.files.length > 0) {
-            formHasFile = true;
-        }
-    });
-
     let finalMethod = method.toUpperCase();
-    if (formHasFile) {
-        finalMethod = 'POST';
-    }
-
     let fetchOptions = { method: finalMethod };
     let fullPath = `${BASE_URL}${path.split('?')[0]}`;
     let isMedia = false;
@@ -500,16 +457,12 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             }
             fullPath += '?' + queryParams.toString();
         } else {
-            if (formHasFile) {
-                fetchOptions.body = rawFormData;
-            } else {
-                fetchOptions.headers = { 'Content-Type': 'application/json' };
-                const jsonBody = {};
-                for (const [key, value] of rawFormData.entries()) {
-                    if (value) jsonBody[key] = value;
-                }
-                fetchOptions.body = JSON.stringify(jsonBody);
+            fetchOptions.headers = { 'Content-Type': 'application/json' };
+            const jsonBody = {};
+            for (const [key, value] of rawFormData.entries()) {
+                if (value) jsonBody[key] = value;
             }
+            fetchOptions.body = JSON.stringify(jsonBody);
         }
 
         const startTime = performance.now();
@@ -993,24 +946,20 @@ function loadApis() {
                         let inputPlaceholder = `Masukkan ${paramName}`;
 
                         // Logika API Key dengan pemisahan tipe Free, Premium, dan VIP
-if (paramName.toLowerCase() === 'apikey') {
-    // Cek apakah displayApiKey terdefinisi dan BUKAN 'Silakan Login'
-    const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
-    
-    if (epType === 'vip') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey VIP';
-    } else if (epType === 'premium') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey Premium';
-    } else {
-        // Isi otomatis HANYA untuk endpoint tipe FREE
-        inputValue = isUserLoggedIn ? displayApiKey : '';
-        inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-    }
-}
+                        if (paramName.toLowerCase() === 'apikey') {
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                            
+                            if (epType === 'vip') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
 
                         html += `
                         <div>
@@ -1021,10 +970,7 @@ if (paramName.toLowerCase() === 'apikey') {
                                 <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
                             </div>`;
 
-                        if (pType === 'file' || paramName === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 text-xs file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20" ${isRequired ? 'required' : ''}>`;
-                        } 
-                        else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+                        if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
                             html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm">`;
                             pType.options.forEach(opt => {
                                 html += `<option value="${opt}" class="bg-slate-900 text-white">${opt}</option>`;
@@ -1114,7 +1060,6 @@ function initMultiMusicPlayer() {
         currentTrackIdx = index;
         const track = playlist[index];
         
-        // Memastikan elemen ada sebelum memanipulasi DOM
         if (audio) audio.src = track.url || '';
         if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
         if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
@@ -1139,7 +1084,6 @@ function initMultiMusicPlayer() {
                 ]
             });
 
-            // Reset posisi bar Android menjadi 0 saat lagu berpindah
             if ('setPositionState' in navigator.mediaSession) {
                 navigator.mediaSession.setPositionState({
                     duration: 0,
@@ -1148,7 +1092,6 @@ function initMultiMusicPlayer() {
                 });
             }
 
-            // Hubungkan tombol notifikasi sistem Android ke aksi player web
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 if (prevBtn) prevBtn.click();
             });
@@ -1162,7 +1105,6 @@ function initMultiMusicPlayer() {
                 if (audio) audio.pause();
             });
             
-            // Fitur agar garis durasi di Android bisa digeser maju-mundur
             navigator.mediaSession.setActionHandler('seekto', (details) => {
                 if (audio && details.seekTime) {
                     audio.currentTime = details.seekTime;
@@ -1170,7 +1112,6 @@ function initMultiMusicPlayer() {
                 }
             });
         }
-        // -------------------------------------------------------------
         
         renderPlaylistItems();
     }
@@ -1204,7 +1145,6 @@ function initMultiMusicPlayer() {
         });
     }
 
-    // Event Listeners dengan pengecekan elemen gratis (anti error)
     if (playBtn && audio) {
         playBtn.addEventListener('click', () => { 
             audio.paused ? audio.play().catch(e => console.log(e)) : audio.pause(); 
@@ -1236,14 +1176,12 @@ function initMultiMusicPlayer() {
                 progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
                 currentTimeEl.textContent = formatTime(audio.currentTime);
             }
-            // Kirim data waktu berjalan secara berkala ke sistem Android
             updateMediaSessionPosition();
         });
 
         audio.addEventListener('loadedmetadata', () => { 
             if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration); 
             
-            // Memberikan sedikit jeda agar objek audio.duration siap terbaca penuh oleh browser
             setTimeout(() => {
                 updateMediaSessionPosition();
             }, 250);
@@ -1285,7 +1223,6 @@ function initMultiMusicPlayer() {
         });
     }
 
-    // Muat lagu pertama saat inisialisasi awal
     loadTrack(0);
 }
 
@@ -1339,7 +1276,6 @@ async function fetchAndUpdateUserLimit() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Prioritas pencarian API Key: URL Param -> Global Variable -> LocalStorage -> Form Input
         let apiKey = urlParams.get('apikey') 
             || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
 
@@ -1350,7 +1286,6 @@ async function fetchAndUpdateUserLimit() {
             }
         }
 
-        // Panggil endpoint user-limit (cookie auth_session akan otomatis terkirim via credentials)
         const response = await fetch(`/api/user-limit?apikey=${encodeURIComponent(apiKey)}`, {
             headers: { 'Cache-Control': 'no-cache' }
         });
@@ -1364,7 +1299,6 @@ async function fetchAndUpdateUserLimit() {
         const limitBadgeEl = document.getElementById('userLimitBadge');
 
         if (limitUsedEl && limitMaxEl) {
-            // Update UI jika data dari server valid
             if (data.limitUsed !== undefined && data.limitUsed !== null) {
                 limitUsedEl.textContent = data.limitUsed;
             }
@@ -1375,7 +1309,6 @@ async function fetchAndUpdateUserLimit() {
             if (limitBadgeEl && data.type) {
                 limitBadgeEl.textContent = data.type.toUpperCase();
                 
-                // Ubah styling badge secara konsisten
                 if (data.type === 'vip') {
                     limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
                 } else if (data.type === 'premium') {
@@ -1404,41 +1337,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const notifBtn = document.getElementById('notifMenuBtn');
-const notifPopup = document.getElementById('notifPopup');
-const closeNotifBtn = document.getElementById('closeNotifBtn');
-const notifOverlay = document.getElementById('notifOverlay');
-const notifBadge = document.getElementById('notifBadge');
+    const notifPopup = document.getElementById('notifPopup');
+    const closeNotifBtn = document.getElementById('closeNotifBtn');
+    const notifOverlay = document.getElementById('notifOverlay');
+    const notifBadge = document.getElementById('notifBadge');
 
-if (notifBtn && notifPopup) {
-    // Buka Notifikasi
-    notifBtn.addEventListener('click', () => {
-        notifPopup.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+    if (notifBtn && notifPopup) {
+        notifBtn.addEventListener('click', () => {
+            notifPopup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
 
-        // Sembunyikan angka 1 saat ditekan / dibaca
-        if (notifBadge) {
-            notifBadge.classList.add('hidden');
+            if (notifBadge) {
+                notifBadge.classList.add('hidden');
+            }
+        });
+
+        if (closeNotifBtn) {
+            closeNotifBtn.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
         }
-    });
 
-    // Tutup Notifikasi via Tombol X
-    if (closeNotifBtn) {
-        closeNotifBtn.addEventListener('click', () => {
-            notifPopup.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        });
+        if (notifOverlay) {
+            notifOverlay.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+        }
     }
 
-    // Tutup Notifikasi via Klik Area Gelap Luar
-    if (notifOverlay) {
-        notifOverlay.addEventListener('click', () => {
-            notifPopup.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        });
-    }
-}
-
-if (urlParams.get('showProfile') === 'true') {
+    if (urlParams.get('showProfile') === 'true') {
         if (typeof openProfilePopup === "function") {
             openProfilePopup();
         }
@@ -1474,7 +1403,6 @@ if (urlParams.get('showProfile') === 'true') {
             apiData = data;
             loadApis();
             fetchAndUpdateUserLimit();
-            
         })
         .catch(err => {
             const apiListEl = document.getElementById('apiList');
