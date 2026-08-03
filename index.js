@@ -1214,7 +1214,7 @@ app.get('/auth/logout', (req, res, next) => {
     res.clearCookie('auth_session');
     req.logout((err) => {
         if (err) return next(err);
-        res.redirect('/');
+        res.redirect('/docs');
     });
 });
 
@@ -2567,21 +2567,20 @@ app.get('/docs', (req, res) => {
 
             <!-- Host URL & Request Feature -->
             <div class="glass-panel max-w-4xl mx-auto mt-4 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/10">
-                <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                    <span class="underline break-all font-semibold">https://arulz-xd.my.id/</span>
-                </div>
-                <a href="https://wa.me/6285122629940?text=Halo%20Arulz,%20saya%20ingin%20request%20fitur%20baru%20di%20REST%20API%20:" 
-                   target="_blank" 
-                   class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Request Feature
-                </a>
-            </div>
+    <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        </svg>
+        <span class="underline break-all font-semibold">https://arulz-xd.my.id</span>
+    </div>
+    <a href="/feedback" 
+       class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Request Feature
+    </a>
+</div>
 
             <!-- Social Links -->
             <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
