@@ -1934,26 +1934,35 @@ function getEndpointsFromRouter(category, file) {
   subRouter.stack.forEach(layer => {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
-      let params = {}; 
+      
+      // Default: Selalu sediakan apikey sebagai parameter pertama
+      let params = { apikey: "" }; 
 
-      // 1. Prioritaskan konfigurasi paramsConfig yang ada di file router
+      // 1. Jika router menyediakan konfigurasi khusus paramsConfig
       if (route.paramsConfig) {
-        params = route.paramsConfig;
+        params = { apikey: "", ...route.paramsConfig };
       } 
-      // 2. Jika tidak ada paramsConfig, fallback ke pencarian regex req.query & req.body
+      // 2. Jika tidak ada paramsConfig, gunakan regex matcher
       else if (layer.route.stack && layer.route.stack.length) {
         layer.route.stack.forEach(mw => {
           if (!mw.handle) return;
           const fnString = mw.handle.toString();
 
+          // Ekstraksi req.query
           [...fnString.matchAll(/req\.query\.([a-zA-Z0-9_]+)/g)].forEach(match => {
-             params[match[1]] = "";
+            params[match[1]] = "";
           });
 
+          // Ekstraksi req.body
           [...fnString.matchAll(/req\.body\.([a-zA-Z0-9_]+)/g)].forEach(match => {
             params[match[1]] = "";
           });
         });
+      }
+
+      // Auto-fallback jika method POST/PUT/PATCH tidak mendeteksi parameter lain
+      if (methods.some(m => ["POST", "PUT", "PATCH"].includes(m)) && Object.keys(params).length <= 1) {
+        params.fileToUpload = "file";
       }
 
       endpoints.push({
