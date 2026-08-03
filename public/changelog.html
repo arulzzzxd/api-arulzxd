@@ -3,93 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Changelog - System Updates</title>
+    <title>Changelog - ArulzXD API</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
     <style>
         body {
-            background-color: #fdfde8;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #0d0d0d;
+            background-color: #020617;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #f8fafc;
         }
         .font-mono-custom {
-            font-family: 'Space Mono', monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
-        /* Neo-Brutalism Shadow & Borders */
-        .brutal-card {
-            background-color: #ffffff;
-            border: 2px solid #000000;
-            box-shadow: 4px 4px 0px #000000;
-            border-radius: 12px;
+        .glass-panel {
+            background: #0b1329;
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(6, 182, 212, 0.05);
+            border-radius: 16px;
         }
-        .brutal-btn {
-            border: 2px solid #000000;
-            box-shadow: 3px 3px 0px #000000;
-            border-radius: 8px;
-            transition: all 0.1s ease;
+        .glass-btn {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
         }
-        .brutal-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #000000;
-        }
-        .brutal-badge {
-            border: 1.5px solid #000000;
-            box-shadow: 2px 2px 0px #000000;
-        }
-        .timeline-line {
-            position: absolute;
-            top: 24px;
-            bottom: 0;
-            left: 15px;
-            width: 2px;
-            background-color: #000000;
-            z-index: 0;
+        .glass-btn:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            background: rgba(6, 182, 212, 0.1);
         }
     </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen pb-16 antialiased">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-[#80eeaa] border-b-2 border-black px-4 py-3 sticky top-0 z-50">
-        <div class="max-w-2xl mx-auto flex justify-between items-center">
-            <a href="/" class="brutal-btn bg-white p-2 flex items-center justify-center">
-                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+    <!-- Sticky Navigation Header -->
+    <header class="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-cyan-500/10 px-4 py-3">
+        <div class="max-w-3xl mx-auto flex justify-between items-center gap-3">
+            <a href="/" class="glass-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 hover:text-cyan-400 flex items-center gap-2 transition-all shadow-md">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/>
                 </svg>
+                <span>Dashboard</span>
             </a>
-            <div class="flex items-center gap-2">
-                <button class="brutal-btn bg-white p-2">
-                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                    </svg>
-                </button>
-                <div class="brutal-btn bg-[#a78bfa] p-1.5 w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-black">
-                    🤖
-                </div>
-            </div>
+
+            <a href="/docs" class="glass-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 hover:text-cyan-400 flex items-center gap-2 transition-all shadow-md">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span>Documentation</span>
+            </a>
         </div>
     </header>
 
-    <!-- Content Container -->
-    <main class="max-w-2xl mx-auto px-4 mt-6">
+    <!-- Main Content Area -->
+    <main class="max-w-3xl mx-auto px-4 mt-8">
         
-        <!-- Header Badge & Title -->
-        <div class="mb-6">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#facc15] text-black font-extrabold text-[10px] tracking-wider uppercase brutal-badge rounded-full mb-3">
-                <span class="w-2 h-2 rounded-full bg-black"></span> SYSTEM UPDATES
+        <!-- Header Section -->
+        <div class="mb-8 text-left">
+            <span class="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold text-[10px] tracking-widest uppercase rounded-full mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span> SYSTEM UPDATES
             </span>
-            <h1 class="text-3xl font-extrabold tracking-tight text-black mb-2">Changelog</h1>
-            <p class="text-xs text-gray-700 leading-relaxed font-medium">
-                Automatic notes on protocol updates, fixes, and feature releases. Showing the 20 most recent entries from the infrastructure cluster.
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Changelog</h1>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                Catatan otomatis mengenai pembaruan protokol, perbaikan bug, dan rilis fitur REST API dari cluster infrastruktur.
             </p>
         </div>
 
-        <!-- Timeline Items Container -->
+        <!-- Dynamic Changelog Timeline Container -->
         <div class="relative space-y-8" id="changelog-container">
-            <div class="timeline-line"></div>
-            
-            <!-- Dynamic Content Will Be Loaded Here -->
-            <div id="loading" class="text-center py-8 font-mono-custom text-xs font-bold">
+            <div id="loading" class="text-center py-12 font-mono-custom text-xs text-cyan-400 font-bold">
                 [ LOADING PROTOCOL DATA... ]
             </div>
         </div>
@@ -103,48 +85,53 @@
                 const data = await res.json();
                 
                 const container = document.getElementById('changelog-container');
-                container.innerHTML = '<div class="timeline-line"></div>'; // Keep vertical line
+                container.innerHTML = '';
 
-                data.forEach((item) => {
+                data.forEach((item, index) => {
+                    const isLast = index === data.length - 1;
                     const isFeature = item.type.toLowerCase() === 'feature';
                     
-                    // Colors based on type
-                    const dotColor = isFeature ? 'bg-[#80eeaa]' : 'bg-[#f87171]';
-                    const tagTextColor = isFeature ? 'text-[#10b981]' : 'text-[#f87171]';
+                    const dotBg = isFeature ? 'bg-emerald-400' : 'bg-rose-500';
+                    const badgeClass = isFeature 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/30';
                     const typeLabel = isFeature ? 'FEATURE' : 'BUG FIX';
 
                     const cardHTML = `
-                        <div class="relative pl-10">
-                            <!-- Timeline Dot Circle -->
-                            <div class="absolute left-0 top-1 w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center z-10">
-                                <div class="w-3.5 h-3.5 rounded-full ${dotColor} border border-black"></div>
+                        <div class="relative pl-9 sm:pl-10">
+                            <!-- Timeline Line (Hapus garis pada item terakhir) -->
+                            ${!isLast ? '<div class="absolute left-[15px] sm:left-[17px] top-8 bottom-[-32px] w-[2px] bg-gradient-to-b from-cyan-500/40 via-cyan-500/10 to-transparent"></div>' : ''}
+
+                            <!-- Dot Icon Marker -->
+                            <div class="absolute left-0 top-1 w-8 h-8 rounded-full border border-cyan-500/30 bg-[#020617] flex items-center justify-center z-10 shadow-lg">
+                                <div class="w-2.5 h-2.5 rounded-full ${dotBg} shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
                             </div>
 
-                            <!-- Header Info -->
+                            <!-- Header Version Tag & Date -->
                             <div class="flex items-center gap-2 mb-2 font-mono-custom text-xs">
-                                <span class="px-2 py-0.5 border border-black rounded text-[11px] font-bold bg-white">${item.version}</span>
-                                <span class="text-gray-600 font-bold text-[11px]">${item.date}</span>
-                                <span class="text-gray-400">•</span>
-                                <span class="font-extrabold ${tagTextColor} tracking-wider text-[10px] uppercase">${typeLabel}</span>
+                                <span class="px-2 py-0.5 border border-cyan-500/30 rounded-md text-[11px] font-bold text-cyan-400 bg-cyan-950/30">${item.version}</span>
+                                <span class="text-slate-400 font-medium text-[11px]">${item.date}</span>
+                                <span class="text-slate-600">•</span>
+                                <span class="px-2 py-0.5 border rounded-md text-[9px] font-extrabold tracking-wider uppercase ${badgeClass}">${typeLabel}</span>
                             </div>
 
-                            <!-- Card Box -->
-                            <div class="brutal-card p-5">
-                                <h2 class="text-base font-extrabold text-black mb-2">${item.title}</h2>
-                                <p class="text-xs text-gray-700 leading-relaxed font-medium mb-4">
+                            <!-- Content Card -->
+                            <div class="glass-panel p-5 sm:p-6 transition-all duration-300 hover:border-cyan-500/30">
+                                <h2 class="text-base sm:text-lg font-bold text-white mb-2 tracking-wide">${item.title}</h2>
+                                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4">
                                     ${item.description}
                                 </p>
                                 
-                                <hr class="border-black border-t-1 mb-3 opacity-20">
+                                <hr class="border-white/5 mb-3">
 
-                                <div class="flex justify-between items-center text-[10px] font-mono-custom font-bold text-gray-600">
-                                    <div class="flex items-center gap-1">
-                                        <svg class="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono-custom text-slate-400">
+                                    <div class="flex items-center gap-1.5 text-cyan-400 font-semibold">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                         </svg>
                                         <span>PROTOCOL VERIFIED</span>
                                     </div>
-                                    ${item.node ? `<span>NODE: ${item.node}</span>` : ''}
+                                    ${item.node ? `<span class="opacity-80">NODE: ${item.node}</span>` : ''}
                                 </div>
                             </div>
                         </div>
