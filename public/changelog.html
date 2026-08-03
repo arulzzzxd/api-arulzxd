@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - System Updates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fdfde8;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #0d0d0d;
+        }
+        .font-mono-custom {
+            font-family: 'Space Mono', monospace;
+        }
+        /* Neo-Brutalism Shadow & Borders */
+        .brutal-card {
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000;
+            border-radius: 12px;
+        }
+        .brutal-btn {
+            border: 2px solid #000000;
+            box-shadow: 3px 3px 0px #000000;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+        }
+        .brutal-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000000;
+        }
+        .brutal-badge {
+            border: 1.5px solid #000000;
+            box-shadow: 2px 2px 0px #000000;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 24px;
+            bottom: 0;
+            left: 15px;
+            width: 2px;
+            background-color: #000000;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-[#80eeaa] border-b-2 border-black px-4 py-3 sticky top-0 z-50">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <a href="/" class="brutal-btn bg-white p-2 flex items-center justify-center">
+                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                </svg>
+            </a>
+            <div class="flex items-center gap-2">
+                <button class="brutal-btn bg-white p-2">
+                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                    </svg>
+                </button>
+                <div class="brutal-btn bg-[#a78bfa] p-1.5 w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-black">
+                    🤖
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Container -->
+    <main class="max-w-2xl mx-auto px-4 mt-6">
+        
+        <!-- Header Badge & Title -->
+        <div class="mb-6">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#facc15] text-black font-extrabold text-[10px] tracking-wider uppercase brutal-badge rounded-full mb-3">
+                <span class="w-2 h-2 rounded-full bg-black"></span> SYSTEM UPDATES
+            </span>
+            <h1 class="text-3xl font-extrabold tracking-tight text-black mb-2">Changelog</h1>
+            <p class="text-xs text-gray-700 leading-relaxed font-medium">
+                Automatic notes on protocol updates, fixes, and feature releases. Showing the 20 most recent entries from the infrastructure cluster.
+            </p>
+        </div>
+
+        <!-- Timeline Items Container -->
+        <div class="relative space-y-8" id="changelog-container">
+            <div class="timeline-line"></div>
+            
+            <!-- Dynamic Content Will Be Loaded Here -->
+            <div id="loading" class="text-center py-8 font-mono-custom text-xs font-bold">
+                [ LOADING PROTOCOL DATA... ]
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        async function loadChangelog() {
+            try {
+                const res = await fetch('/database/changelog');
+                const data = await res.json();
+                
+                const container = document.getElementById('changelog-container');
+                container.innerHTML = '<div class="timeline-line"></div>'; // Keep vertical line
+
+                data.forEach((item) => {
+                    const isFeature = item.type.toLowerCase() === 'feature';
+                    
+                    // Colors based on type
+                    const dotColor = isFeature ? 'bg-[#80eeaa]' : 'bg-[#f87171]';
+                    const tagTextColor = isFeature ? 'text-[#10b981]' : 'text-[#f87171]';
+                    const typeLabel = isFeature ? 'FEATURE' : 'BUG FIX';
+
+                    const cardHTML = `
+                        <div class="relative pl-10">
+                            <!-- Timeline Dot Circle -->
+                            <div class="absolute left-0 top-1 w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center z-10">
+                                <div class="w-3.5 h-3.5 rounded-full ${dotColor} border border-black"></div>
+                            </div>
+
+                            <!-- Header Info -->
+                            <div class="flex items-center gap-2 mb-2 font-mono-custom text-xs">
+                                <span class="px-2 py-0.5 border border-black rounded text-[11px] font-bold bg-white">${item.version}</span>
+                                <span class="text-gray-600 font-bold text-[11px]">${item.date}</span>
+                                <span class="text-gray-400">•</span>
+                                <span class="font-extrabold ${tagTextColor} tracking-wider text-[10px] uppercase">${typeLabel}</span>
+                            </div>
+
+                            <!-- Card Box -->
+                            <div class="brutal-card p-5">
+                                <h2 class="text-base font-extrabold text-black mb-2">${item.title}</h2>
+                                <p class="text-xs text-gray-700 leading-relaxed font-medium mb-4">
+                                    ${item.description}
+                                </p>
+                                
+                                <hr class="border-black border-t-1 mb-3 opacity-20">
+
+                                <div class="flex justify-between items-center text-[10px] font-mono-custom font-bold text-gray-600">
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span>PROTOCOL VERIFIED</span>
+                                    </div>
+                                    ${item.node ? `<span>NODE: ${item.node}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+            } catch (err) {
+                console.error('Error fetching changelog:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadChangelog);
+    </script>
+</body>
+</html>
