@@ -1,0 +1,26 @@
+[
+  {
+    "version": "v1.0.0",
+    "date": "4 AUG 2026",
+    "type": "feature",
+    "title": "Protocol Synchronized: DafontStyle Font Search",
+    "description": "Protokol baru `searcg/dafont/` telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
+    "node": "DE-FRA-01"
+  },
+  {
+    "version": "v1.0.0",
+    "date": "4 AUG 2026",
+    "type": "bugfix",
+    "title": "Endpoint Decommissioned: DafontStyle Font Search",
+    "description": "Protokol `searcg/dafont/` telah dihapus dari registry aktif untuk menjaga integritas sistem.",
+    "node": "US-NYC-02"
+  },
+  {
+    "version": "v1.0.0",
+    "date": "4 AUG 2026",
+    "type": "feature",
+    "title": "Protocol Synchronized: YouTube Post Downloader",
+    "description": "Protokol baru `download/youtubepost` telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
+    "node": "SG-SIN-01"
+  }
+]
