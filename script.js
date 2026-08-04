@@ -1579,7 +1579,6 @@ document.getElementById('searchInput').addEventListener('input', function() {
       <div class="loader-footer-credit">©Arulzxd</div>
     </div>`;
 
-    // Sisipkan loader ke posisi paling depan di dalam tag <body>
     if (document.body) {
         document.body.insertAdjacentHTML('afterbegin', loaderHTML);
     } else {
@@ -1588,38 +1587,49 @@ document.getElementById('searchInput').addEventListener('input', function() {
         });
     }
 
-    // Jalankan kalkulasi progress bar
+    let currentProgress = 0;
     const interval = setInterval(() => {
         const loaderOverlay = document.getElementById('app-global-loader');
         const percentText = document.getElementById('loader-percentage-text');
         const barFill = document.getElementById('loader-bar-fill');
 
-        if (!loaderOverlay || !percentText || !barFill) return;
-
-        let currentProgress = parseInt(percentText.textContent) || 0;
-
-        if (currentProgress >= 100) {
+        if (!loaderOverlay || !percentText || !barFill) {
             clearInterval(interval);
-            finishLoading(loaderOverlay);
-        } else {
-            const jump = Math.floor(Math.random() * 12) + 4;
-            currentProgress = Math.min(currentProgress + jump, 100);
-            percentText.textContent = `${currentProgress}%`;
-            barFill.style.width = `${currentProgress}%`;
-
-            if (currentProgress === 100) {
-                clearInterval(interval);
-                finishLoading(loaderOverlay);
-            }
+            return;
         }
+
+        const jump = Math.floor(Math.random() * 12) + 8;
+        currentProgress = Math.min(currentProgress + jump, 90); // Tahan di 90% sampai halaman benar-benar siap
+        percentText.textContent = `${currentProgress}%`;
+        barFill.style.width = `${currentProgress}%`;
     }, 40);
 
-    function finishLoading(loaderOverlay) {
+    // Fungsi menutup loader
+    function finishLoading() {
+        const loaderOverlay = document.getElementById('app-global-loader');
+        const percentText = document.getElementById('loader-percentage-text');
+        const barFill = document.getElementById('loader-bar-fill');
+
+        if (percentText && barFill) {
+            percentText.textContent = `100%`;
+            barFill.style.width = `100%`;
+        }
+
+        clearInterval(interval);
         setTimeout(() => {
-            loaderOverlay.style.display = 'none';
-            if (loaderOverlay.parentNode) {
-                loaderOverlay.parentNode.removeChild(loaderOverlay);
+            if (loaderOverlay) {
+                loaderOverlay.style.display = 'none';
+                if (loaderOverlay.parentNode) {
+                    loaderOverlay.parentNode.removeChild(loaderOverlay);
+                }
             }
-        }, 100);
+        }, 200);
+    }
+
+    // Paksa hilangkan loader saat DOM / seluruh aset halaman selesai dimuat
+    if (document.readyState === 'complete') {
+        finishLoading();
+    } else {
+        window.addEventListener('load', finishLoading);
     }
 })();
