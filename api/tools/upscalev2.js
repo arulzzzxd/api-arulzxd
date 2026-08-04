@@ -1,26 +1,22 @@
 const express = require("express");
 const axios = require("axios");
 const FormData = require("form-data");
+const multer = require("multer");
 
 const router = express.Router();
 
-async function upscaleImg(imageUrl) {
-    // Download gambar
-    const { data } = await axios.get(imageUrl, {
-        responseType: "arraybuffer",
-        headers: {
-            "User-Agent": "Mozilla/5.0"
-        }
-    });
+// Middleware Multer untuk menangani pengunggahan berkas
+const upload = multer();
 
+async function upscaleImg(fileBuffer, originalName, mimeType) {
     const form = new FormData();
 
-    form.append("upfile", Buffer.from(data), {
-        filename: "image.jpg",
-        contentType: "image/jpeg"
+    form.append("upfile", fileBuffer, {
+        filename: originalName || "image.jpg",
+        contentType: mimeType || "image/jpeg"
     });
 
-    // Upscale
+    // Upscale via photiu.ai
     const result = await axios.post(
         "https://www.photiu.ai/api/tools/img_improve",
         form,
@@ -43,34 +39,20 @@ async function upscaleImg(imageUrl) {
     return result;
 }
 
-router.get("/", async (req, res) => {
+// Endpoint POST dengan pengunggah file
+router.post("/", upload.single("fileupload"), async (req, res) => {
     try {
-        const apikey = req.query.apikey;
-        const url = req.query.url;
+        const file = req.file;
 
-        if (!apikey) {
-            return res.status(403).json({
-                status: false,
-                message: "Parameter apikey diperlukan."
-            });
-        }
-
-        if (apikey !== "arulzxd-keys") {
-            return res.status(403).json({
-                status: false,
-                message: "Apikey tidak valid."
-            });
-        }
-
-        if (!url) {
+        if (!file) {
             return res.status(400).json({
                 status: false,
-                message: "Parameter url diperlukan.",
-                example: "/api/tools/upscale?apikey=arulzxd-keys&url=https://example.com/image.jpg"
+                creator: "Arulzxd",
+                message: "Berkas 'fileupload' wajib diunggah!"
             });
         }
 
-        const image = await upscaleImg(url);
+        const image = await upscaleImg(file.buffer, file.originalname, file.mimetype);
 
         res.setHeader(
             "Content-Type",
@@ -89,6 +71,14 @@ router.get("/", async (req, res) => {
         });
     }
 });
+
+// Konfigurasi Parameter UI Dashboard
+router.paramsConfig = {
+    fileupload: {
+        type: "file",
+        desc: "Berkas gambar yang akan di-upscale"
+    }
+};
 
 router.status = "ready";
 router.type = "free";
