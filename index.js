@@ -2274,7 +2274,8 @@ app.get('/docs', (req, res) => {
         background: linear-gradient(135deg, #6b21a8 0%, #c084fc 30%, #ffffff 50%, #a855f7 70%, #4c1d95 100%);
         box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
     }
-    /* Custom Cyberpunk Select Styling */
+    
+/* Custom Cyberpunk Floating Select Wrapper */
 .cyber-select-wrapper {
     position: relative;
     width: 100%;
@@ -2293,8 +2294,9 @@ app.get('/docs', (req, res) => {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
+    will-change: transform;
 }
 
 .cyber-select-trigger:hover, .cyber-select-trigger.active {
@@ -2302,33 +2304,42 @@ app.get('/docs', (req, res) => {
     box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
 }
 
-.cyber-select-trigger.active svg {
+.cyber-select-trigger.active svg.chevron-icon {
     transform: rotate(180deg);
 }
 
+/* Floating Popup Menu */
 .cyber-select-options {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
-    z-index: 50;
+    z-index: 99;
     background: rgba(3, 7, 18, 0.95);
     border: 1px solid #00f0ff;
-    border-radius: 0.5rem;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
-    max-height: 200px;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.3);
+    max-height: 220px;
     overflow-y: auto;
-    display: none;
+    
+    /* Efek Popup Mengembang (Scale + Fade) */
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.92) translateY(-10px);
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease, visibility 0.18s;
+    will-change: transform, opacity;
 }
 
 .cyber-select-options.show {
-    display: block;
-    animation: fadeInCyber 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
 }
 
+/* Opsi Item */
 .cyber-option {
-    padding: 0.6rem 0.8rem;
+    padding: 0.65rem 0.85rem;
     color: #e2e8f0;
     font-family: monospace;
     font-size: 0.85rem;
@@ -2336,13 +2347,12 @@ app.get('/docs', (req, res) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .cyber-option:hover {
-    background: rgba(0, 240, 255, 0.15);
+    background: rgba(0, 240, 255, 0.12);
     color: #00f0ff;
-    padding-left: 1rem;
 }
 
 .cyber-option.selected {
@@ -2351,22 +2361,34 @@ app.get('/docs', (req, res) => {
     font-weight: bold;
 }
 
-/* Mengatur visibilitas SVG Checkmark */
-.cyber-option .cyber-check-icon {
+/* SVG Bintang Animasi */
+.cyber-star-icon {
     display: none;
-    width: 1rem;
-    height: 1rem;
+    width: 1.1rem;
+    height: 1.1rem;
     color: #00f0ff;
-    filter: drop-shadow(0 0 4px #00f0ff);
+    filter: drop-shadow(0 0 6px #00f0ff);
 }
 
-.cyber-option.selected .cyber-check-icon {
+.cyber-option.selected .cyber-star-icon {
     display: block;
+    animation: starPulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-@keyframes fadeInCyber {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Keyframes Animasi Bintang */
+@keyframes starPulse {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.3) rotate(15deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
 }
 
     </style>

@@ -860,7 +860,23 @@ function toggleCyberSelect(event, triggerEl) {
     triggerEl.classList.toggle('active');
 }
 
-// Memilih Opsi Dropdown Custom
+// Toggle Popup Select dengan Animasi Spring/Bounce
+function toggleCyberSelect(event, triggerEl) {
+    event.stopPropagation();
+    const wrapper = triggerEl.closest('.cyber-select-wrapper');
+    const optionsEl = wrapper.querySelector('.cyber-select-options');
+    const isOpen = optionsEl.classList.contains('show');
+    
+    // Tutup popup lain yang terbuka
+    closeAllCyberSelects();
+
+    if (!isOpen) {
+        optionsEl.classList.add('show');
+        triggerEl.classList.add('active');
+    }
+}
+
+// Handler Pemilihan Opsi + Animasi Bintang
 function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
     const wrapper = optionEl.closest('.cyber-select-wrapper');
     const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
@@ -869,33 +885,32 @@ function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epT
     const optionsContainer = wrapper.querySelector('.cyber-select-options');
     const val = optionEl.getAttribute('data-value');
 
-    // Set nilai pada hidden input agar terbaca oleh FormData
+    // Update Nilai
     if (hiddenInput) hiddenInput.value = val;
     if (triggerText) triggerText.textContent = val;
 
-    // Toggle kelas selected
+    // Reset dan aktifkan kelas 'selected' (Memicu animasi bintang)
     optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
     optionEl.classList.add('selected');
 
-    // Tutup menu dropdown
+    // Tutup Popup
     optionsContainer.classList.remove('show');
     if (triggerEl) triggerEl.classList.remove('active');
 
-    // Jalankan kalkulasi Live Preview URL / cURL
+    // Pembaruan URL Live Preview
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
 }
 
-// Tutup otomatis saat area luar diklik
-document.addEventListener('click', () => {
-    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
-        el.classList.remove('show');
-    });
-    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => {
-        el.classList.remove('active');
-    });
-});
+// Tutup Semua Popup
+function closeAllCyberSelects() {
+    document.querySelectorAll('.cyber-select-options.show').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => el.classList.remove('active'));
+}
+
+// Listener Klik di Luar Menu
+document.addEventListener('click', closeAllCyberSelects);
 
 function loadApis() {
     const apiList = document.getElementById('apiList');
@@ -1063,9 +1078,9 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
     const defaultVal = pType.options[0] || '';
     
-    // Constant SVG Icon Checkmark Cyberpunk
-    const SVG_CHECK = `<svg class="cyber-check-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
-    const SVG_CHEVRON = `<svg class="w-4 h-4 transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
+    // SVG Bintang Beranimasi & Chevron Transisi Halus
+    const SVG_STAR = `<svg class="cyber-star-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
 
     html += `
     <div class="cyber-select-wrapper">
@@ -1081,7 +1096,7 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
         html += `
             <div class="cyber-option ${isSel}" onclick="selectCyberOption(this, '${catIdx}', '${epIdx}', '${paramName}', '${method}', '${path}', '${epType}')" data-value="${opt}">
                 <span>${opt}</span>
-                ${SVG_CHECK}
+                ${SVG_STAR}
             </div>`;
     });
     
