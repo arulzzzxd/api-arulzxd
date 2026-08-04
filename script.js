@@ -1006,7 +1006,7 @@ if (paramName.toLowerCase() === 'apikey') {
 if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
     html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-    html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-cyan-400 focus:outline-none focus:border-cyan-500 code-font text-sm">`;
+    html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-cyan-400 focus:outline-none focus:border-cyan-500 code-font text-sm appearance-none select-cyan">`;
     pType.options.forEach(opt => {
         html += `<option value="${opt}" class="bg-slate-900 text-white">${opt}</option>`;
     });
