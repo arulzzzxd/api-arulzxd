@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Arulz-XD API - HOME</title>
     <link rel="icon" type="image/png" href="https://files.catbox.moe/1rr9zi.png" />
+    <link rel="stylesheet" href="/styles.css">
     <!-- Tailwind CSS & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -41,198 +42,9 @@
         .glow-effect {
             animation: pulse-glow 8s infinite ease-in-out;
         }
-        
-        .loader-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: #0b0906; /* Background gelap khas ryna */
-  color: #f4f4f5;
-  user-select: none;
-}
-
-/* Penyesuaian jika tema situs diset Light Mode */
-body.light-mode .loader-overlay,
-html.light-mode .loader-overlay {
-  background-color: #ffffff !important;
-  color: #09090b !important;
-}
-
-/* Grid Background Effect */
-.loader-bg-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.08;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-}
-
-body.light-mode .loader-bg-grid,
-html.light-mode .loader-bg-grid {
-  opacity: 0.2;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px);
-}
-
-/* Loader Content Card */
-.loader-card {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 16rem;
-}
-
-.loader-logo-wrapper {
-  margin-bottom: 2.5rem;
-  width: 6rem;
-  height: 6rem;
-  padding: 0.75rem;
-  border-radius: 1.5rem;
-  background-color: #18181b;
-  border: 1px solid #27272a;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-}
-
-body.light-mode .loader-logo-wrapper,
-html.light-mode .loader-logo-wrapper {
-  background-color: #ffffff;
-  border-color: #f4f4f5;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.loader-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.75rem;
-}
-
-.loader-progress-container {
-  width: 100%;
-}
-
-.loader-status-text {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.loader-title {
-  font-size: 9px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-  color: #f4f4f5;
-}
-
-body.light-mode .loader-title,
-html.light-mode .loader-title {
-  color: #09090b;
-}
-
-.loader-percent {
-  font-size: 12px;
-  font-weight: 900;
-  color: #f4f4f5;
-  font-family: monospace;
-}
-
-body.light-mode .loader-percent,
-html.light-mode .loader-percent {
-  color: #09090b;
-}
-
-.loader-bar-bg {
-  height: 0.375rem;
-  width: 100%;
-  background-color: #27272a;
-  border: 1px solid #3f3f46;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-body.light-mode .loader-bar-bg,
-html.light-mode .loader-bar-bg {
-  background-color: #fafafa;
-  border-color: #f4f4f5;
-}
-
-.loader-bar-fill {
-  height: 100%;
-  width: 0%;
-  background-color: #f4f4f5;
-  border-radius: 9999px;
-  transition: width 0.05s linear;
-}
-
-body.light-mode .loader-bar-fill,
-html.light-mode .loader-bar-fill {
-  background-color: #09090b;
-}
-
-.loader-footer-credit {
-  position: absolute;
-  bottom: 2.5rem;
-  font-size: 8px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.6em;
-  color: #3f3f46;
-}
-
-body.light-mode .loader-footer-credit,
-html.light-mode .loader-footer-credit {
-  color: #d4d4d8;
-}
-
     </style>
 </head>
 <body class="bg-[#030712] text-slate-100 min-h-screen relative bg-dots flex flex-col justify-between antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
-    
-    <div id="app-global-loader" class="loader-overlay">
-  <div class="loader-bg-grid"></div>
-
-  <div class="loader-card">
-    <!-- Icon Logo / Image Box -->
-    <div class="loader-logo-wrapper">
-      <img
-        src="https://cdn.zass.in/MoqV0lNVa3.jpg"
-        alt="Logo"
-        class="loader-logo-img"
-        width="96"
-        height="96"
-        decoding="async"
-      />
-    </div>
-
-    <!-- Progress Bar Section -->
-    <div class="loader-progress-container">
-      <div class="loader-status-text">
-        <span class="loader-title">Loading...</span>
-        <span id="loader-percentage-text" class="loader-percent">0%</span>
-      </div>
-      <div class="loader-bar-bg">
-        <div id="loader-bar-fill" class="loader-bar-fill"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Footer Credit Text -->
-  <div class="loader-footer-credit">
-    ©Arulzxd
-  </div>
-</div>
 
     <!-- Efek Latar Belakang Digital Glow -->
     <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vh] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none glow-effect"></div>
@@ -578,44 +390,7 @@ html.light-mode .loader-footer-credit {
             })
             .catch(err => console.error("Gagal memuat status user:", err));
     });
-    (function initGlobalPageLoader() {
-    const loaderOverlay = document.getElementById('app-global-loader');
-    const percentText = document.getElementById('loader-percentage-text');
-    const barFill = document.getElementById('loader-bar-fill');
-
-    if (!loaderOverlay || !percentText || !barFill) return;
-
-    let progress = 0;
-
-    const interval = setInterval(() => {
-      if (progress >= 100) {
-        clearInterval(interval);
-        finishLoading();
-      } else {
-        const jump = Math.floor(Math.random() * 12) + 4; // Penambahan persen
-        progress = Math.min(progress + jump, 100);
-        
-        percentText.textContent = `${progress}%`;
-        barFill.style.width = `${progress}%`;
-
-        if (progress === 100) {
-          clearInterval(interval);
-          finishLoading();
-        }
-      }
-    }, 40);
-
-    // Ketika menyentuh 100%, loader langsung dihilangkan seketika
-    function finishLoading() {
-      setTimeout(() => {
-        // Langsung sembunyikan dan hapus elemen dari DOM
-        loaderOverlay.style.display = 'none';
-        if (loaderOverlay.parentNode) {
-          loaderOverlay.parentNode.removeChild(loaderOverlay);
-        }
-      }, 100); // Jeda sangat singkat (0.1s) agar angka 100% sempat terlihat sekejap
-    }
-  })();
 </script>
+<script src="/script.js"></script>
 </body>
 </html>
