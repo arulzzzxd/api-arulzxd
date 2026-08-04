@@ -2275,17 +2275,23 @@ app.get('/docs', (req, res) => {
         box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
     }
     
-/* Custom Cyberpunk Floating Select Wrapper */
+/* Kontainer Select Wrapper */
 .cyber-select-wrapper {
     position: relative;
     width: 100%;
 }
 
+/* Memastikan Kontainer Induk Tidak Memotong Menu Melayang */
+.glass-panel, .api-item, [id^="ep-"] {
+    overflow: visible !important;
+}
+
+/* Tombol Trigger Select */
 .cyber-select-trigger {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem 0.85rem;
     border-radius: 0.5rem;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(5, 11, 20, 0.85);
     border: 1px solid rgba(0, 240, 255, 0.3);
     color: #00f0ff;
     font-family: monospace;
@@ -2294,74 +2300,81 @@ app.get('/docs', (req, res) => {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
-    will-change: transform;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.1);
 }
 
 .cyber-select-trigger:hover, .cyber-select-trigger.active {
     border-color: #00f0ff;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
 }
 
 .cyber-select-trigger.active svg.chevron-icon {
     transform: rotate(180deg);
 }
 
-/* Floating Popup Menu */
+/* POPUP MENU MELAYANG / FLOATING OVERLAY */
 .cyber-select-options {
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
     right: 0;
-    z-index: 99;
-    background: rgba(3, 7, 18, 0.95);
-    border: 1px solid #00f0ff;
+    z-index: 9999 !important; /* Melayang tinggi di atas elemen lain */
+    background: #050b14; /* Latar belakang pekat agar tidak tembus pandang */
+    border: 1.5px solid #00f0ff;
     border-radius: 0.75rem;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.3);
-    max-height: 220px;
-    overflow-y: auto;
+    backdrop-filter: blur(16px);
     
-    /* Efek Popup Mengembang (Scale + Fade) */
+    /* Efek Bayangan Melayang (Floating Glow Shadow) */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.35);
+    
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.35rem;
+
+    /* Animasi Pop-up Melayang */
     opacity: 0;
     visibility: hidden;
-    transform: scale(0.92) translateY(-10px);
-    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease, visibility 0.18s;
-    will-change: transform, opacity;
+    transform: translateY(-8px) scale(0.96);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease, visibility 0.2s;
+    pointer-events: none;
 }
 
+/* Mode Popup Aktif */
 .cyber-select-options.show {
     opacity: 1;
     visibility: visible;
-    transform: scale(1) translateY(0);
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
 }
 
-/* Opsi Item */
+/* Item Opsi Pilihan */
 .cyber-option {
     padding: 0.65rem 0.85rem;
-    color: #e2e8f0;
+    color: #cbd5e1;
     font-family: monospace;
     font-size: 0.85rem;
+    border-radius: 0.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
 }
 
 .cyber-option:hover {
-    background: rgba(0, 240, 255, 0.12);
+    background: rgba(0, 240, 255, 0.15);
     color: #00f0ff;
 }
 
 .cyber-option.selected {
-    background: rgba(0, 240, 255, 0.2);
+    background: rgba(0, 240, 255, 0.25);
     color: #00f0ff;
     font-weight: bold;
 }
 
-/* SVG Bintang Animasi */
+/* SVG Bintang Beranimasi */
 .cyber-star-icon {
     display: none;
     width: 1.1rem;
@@ -2372,26 +2385,15 @@ app.get('/docs', (req, res) => {
 
 .cyber-option.selected .cyber-star-icon {
     display: block;
-    animation: starPulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: starPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-/* Keyframes Animasi Bintang */
-@keyframes starPulse {
-    0% {
-        transform: scale(0) rotate(-45deg);
-        opacity: 0;
-    }
-    70% {
-        transform: scale(1.3) rotate(15deg);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
+@keyframes starPop {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    70% { transform: scale(1.3) rotate(15deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
-
-    </style>
+</style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
 <div id="themeBg" class="fixed inset-0 -z-10"></div>

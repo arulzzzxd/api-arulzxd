@@ -847,27 +847,8 @@ function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
     const optionsEl = wrapper.querySelector('.cyber-select-options');
-    
-    // Tutup dropdown lain yang mungkin terbuka
-    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
-        if (el !== optionsEl) el.classList.remove('show');
-    });
-    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => {
-        if (el !== triggerEl) el.classList.remove('active');
-    });
-
-    optionsEl.classList.toggle('show');
-    triggerEl.classList.toggle('active');
-}
-
-// Toggle Popup Select dengan Animasi Spring/Bounce
-function toggleCyberSelect(event, triggerEl) {
-    event.stopPropagation();
-    const wrapper = triggerEl.closest('.cyber-select-wrapper');
-    const optionsEl = wrapper.querySelector('.cyber-select-options');
     const isOpen = optionsEl.classList.contains('show');
     
-    // Tutup popup lain yang terbuka
     closeAllCyberSelects();
 
     if (!isOpen) {
@@ -876,40 +857,31 @@ function toggleCyberSelect(event, triggerEl) {
     }
 }
 
-// Handler Pemilihan Opsi + Animasi Bintang
 function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
     const wrapper = optionEl.closest('.cyber-select-wrapper');
     const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
     const triggerText = wrapper.querySelector('.selected-text');
-    const triggerEl = wrapper.querySelector('.cyber-select-trigger');
     const optionsContainer = wrapper.querySelector('.cyber-select-options');
     const val = optionEl.getAttribute('data-value');
 
-    // Update Nilai
     if (hiddenInput) hiddenInput.value = val;
     if (triggerText) triggerText.textContent = val;
 
-    // Reset dan aktifkan kelas 'selected' (Memicu animasi bintang)
     optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
     optionEl.classList.add('selected');
 
-    // Tutup Popup
-    optionsContainer.classList.remove('show');
-    if (triggerEl) triggerEl.classList.remove('active');
+    closeAllCyberSelects();
 
-    // Pembaruan URL Live Preview
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
 }
 
-// Tutup Semua Popup
 function closeAllCyberSelects() {
     document.querySelectorAll('.cyber-select-options.show').forEach(el => el.classList.remove('show'));
     document.querySelectorAll('.cyber-select-trigger.active').forEach(el => el.classList.remove('active'));
 }
 
-// Listener Klik di Luar Menu
 document.addEventListener('click', closeAllCyberSelects);
 
 function loadApis() {
@@ -1078,7 +1050,6 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
     const defaultVal = pType.options[0] || '';
     
-    // SVG Bintang Beranimasi & Chevron Transisi Halus
     const SVG_STAR = `<svg class="cyber-star-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
     const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
 
