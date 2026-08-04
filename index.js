@@ -2044,7 +2044,7 @@ app.get('/script.js', (req, res) => {
 });
 
 app.get('/styles.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'styles.css'));
+  res.sendFile(path.join(__dirname, 'styles.css'));
 });
 
 app.get('/', (req, res) => {
@@ -2149,7 +2149,7 @@ app.get('/docs', (req, res) => {
     <link id="faviconLink" rel="icon" type="image/x-icon" href="${favicon}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/styles.css" />
     
     <style>
     html {

@@ -1549,3 +1549,77 @@ document.getElementById('searchInput').addEventListener('input', function() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(performSearch, 150);
 });
+
+// loading //
+(function injectGlobalLoader() {
+    const loaderHTML = `
+    <div id="app-global-loader" class="loader-overlay">
+      <div class="loader-bg-grid"></div>
+      <div class="loader-card">
+        <div class="loader-logo-wrapper">
+          <img
+            src="https://cdn.zass.in/MoqV0lNVa3.jpg"
+            alt="Logo"
+            class="loader-logo-img"
+            width="96"
+            height="96"
+            decoding="async"
+          />
+        </div>
+        <div class="loader-progress-container">
+          <div class="loader-status-text">
+            <span class="loader-title">Loading...</span>
+            <span id="loader-percentage-text" class="loader-percent">0%</span>
+          </div>
+          <div class="loader-bar-bg">
+            <div id="loader-bar-fill" class="loader-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+      <div class="loader-footer-credit">©Arulzxd</div>
+    </div>`;
+
+    // Sisipkan loader ke posisi paling depan di dalam tag <body>
+    if (document.body) {
+        document.body.insertAdjacentHTML('afterbegin', loaderHTML);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.insertAdjacentHTML('afterbegin', loaderHTML);
+        });
+    }
+
+    // Jalankan kalkulasi progress bar
+    const interval = setInterval(() => {
+        const loaderOverlay = document.getElementById('app-global-loader');
+        const percentText = document.getElementById('loader-percentage-text');
+        const barFill = document.getElementById('loader-bar-fill');
+
+        if (!loaderOverlay || !percentText || !barFill) return;
+
+        let currentProgress = parseInt(percentText.textContent) || 0;
+
+        if (currentProgress >= 100) {
+            clearInterval(interval);
+            finishLoading(loaderOverlay);
+        } else {
+            const jump = Math.floor(Math.random() * 12) + 4;
+            currentProgress = Math.min(currentProgress + jump, 100);
+            percentText.textContent = `${currentProgress}%`;
+            barFill.style.width = `${currentProgress}%`;
+
+            if (currentProgress === 100) {
+                clearInterval(interval);
+                finishLoading(loaderOverlay);
+            }
+        }
+    }, 40);
+
+    function finishLoading(loaderOverlay) {
+        setTimeout(() => {
+            loaderOverlay.style.display = 'none';
+            if (loaderOverlay.parentNode) {
+                loaderOverlay.parentNode.removeChild(loaderOverlay);
+            }
+        }, 100);
+    }
+})();
