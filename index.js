@@ -2274,6 +2274,101 @@ app.get('/docs', (req, res) => {
         background: linear-gradient(135deg, #6b21a8 0%, #c084fc 30%, #ffffff 50%, #a855f7 70%, #4c1d95 100%);
         box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
     }
+    /* Custom Cyberpunk Select Styling */
+.cyber-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.cyber-select-trigger {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    color: #00f0ff;
+    font-family: monospace;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
+}
+
+.cyber-select-trigger:hover, .cyber-select-trigger.active {
+    border-color: #00f0ff;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+.cyber-select-trigger.active svg {
+    transform: rotate(180deg);
+}
+
+.cyber-select-options {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(3, 7, 18, 0.95);
+    border: 1px solid #00f0ff;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.cyber-select-options.show {
+    display: block;
+    animation: fadeInCyber 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-option {
+    padding: 0.6rem 0.8rem;
+    color: #e2e8f0;
+    font-family: monospace;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.15s ease;
+}
+
+.cyber-option:hover {
+    background: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    padding-left: 1rem;
+}
+
+.cyber-option.selected {
+    background: rgba(0, 240, 255, 0.2);
+    color: #00f0ff;
+    font-weight: bold;
+}
+
+/* Mengatur visibilitas SVG Checkmark */
+.cyber-option .cyber-check-icon {
+    display: none;
+    width: 1rem;
+    height: 1rem;
+    color: #00f0ff;
+    filter: drop-shadow(0 0 4px #00f0ff);
+}
+
+.cyber-option.selected .cyber-check-icon {
+    display: block;
+}
+
+@keyframes fadeInCyber {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
     </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">

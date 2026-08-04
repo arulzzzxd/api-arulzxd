@@ -842,6 +842,61 @@ function performSearch() {
     });
 }
 
+// Membuka / Menutup Custom Cyber Select
+function toggleCyberSelect(event, triggerEl) {
+    event.stopPropagation();
+    const wrapper = triggerEl.closest('.cyber-select-wrapper');
+    const optionsEl = wrapper.querySelector('.cyber-select-options');
+    
+    // Tutup dropdown lain yang mungkin terbuka
+    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
+        if (el !== optionsEl) el.classList.remove('show');
+    });
+    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => {
+        if (el !== triggerEl) el.classList.remove('active');
+    });
+
+    optionsEl.classList.toggle('show');
+    triggerEl.classList.toggle('active');
+}
+
+// Memilih Opsi Dropdown Custom
+function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
+    const wrapper = optionEl.closest('.cyber-select-wrapper');
+    const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
+    const triggerText = wrapper.querySelector('.selected-text');
+    const triggerEl = wrapper.querySelector('.cyber-select-trigger');
+    const optionsContainer = wrapper.querySelector('.cyber-select-options');
+    const val = optionEl.getAttribute('data-value');
+
+    // Set nilai pada hidden input agar terbaca oleh FormData
+    if (hiddenInput) hiddenInput.value = val;
+    if (triggerText) triggerText.textContent = val;
+
+    // Toggle kelas selected
+    optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
+    optionEl.classList.add('selected');
+
+    // Tutup menu dropdown
+    optionsContainer.classList.remove('show');
+    if (triggerEl) triggerEl.classList.remove('active');
+
+    // Jalankan kalkulasi Live Preview URL / cURL
+    if (typeof updateLivePreview === 'function') {
+        updateLivePreview(catIdx, epIdx, method, path, epType);
+    }
+}
+
+// Tutup otomatis saat area luar diklik
+document.addEventListener('click', () => {
+    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
+        el.classList.remove('show');
+    });
+    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => {
+        el.classList.remove('active');
+    });
+});
+
 function loadApis() {
     const apiList = document.getElementById('apiList');
     if (!apiData || !apiData.categories) {
@@ -1006,11 +1061,33 @@ if (paramName.toLowerCase() === 'apikey') {
 if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
     html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-    html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-cyan-400 focus:outline-none focus:border-cyan-500 code-font text-sm appearance-none select-cyan">`;
-    pType.options.forEach(opt => {
-        html += `<option value="${opt}" class="bg-slate-900 text-white">${opt}</option>`;
+    const defaultVal = pType.options[0] || '';
+    
+    // Constant SVG Icon Checkmark Cyberpunk
+    const SVG_CHECK = `<svg class="cyber-check-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`;
+    const SVG_CHEVRON = `<svg class="w-4 h-4 transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
+
+    html += `
+    <div class="cyber-select-wrapper">
+        <input type="hidden" name="${paramName}" value="${defaultVal}" id="select-input-${catIdx}-${epIdx}-${paramName}">
+        <div class="cyber-select-trigger" onclick="toggleCyberSelect(event, this)">
+            <span class="selected-text">${defaultVal}</span>
+            ${SVG_CHEVRON}
+        </div>
+        <div class="cyber-select-options scrollbar-thin">`;
+        
+    pType.options.forEach((opt, oIdx) => {
+        const isSel = oIdx === 0 ? 'selected' : '';
+        html += `
+            <div class="cyber-option ${isSel}" onclick="selectCyberOption(this, '${catIdx}', '${epIdx}', '${paramName}', '${method}', '${path}', '${epType}')" data-value="${opt}">
+                <span>${opt}</span>
+                ${SVG_CHECK}
+            </div>`;
     });
-    html += `</select>`;
+    
+    html += `
+        </div>
+    </div>`;
 } else {
     html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
 }
