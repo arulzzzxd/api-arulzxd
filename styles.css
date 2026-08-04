@@ -423,7 +423,7 @@
     }
 }
 
-/* Kontainer Select Trigger */
+/* Kontainer Wrapper Select */
 .cyber-select-wrapper {
     position: relative;
     width: 100%;
@@ -431,49 +431,49 @@
 
 .cyber-select-trigger {
     width: 100%;
-    padding: 0.6rem 0.85rem;
-    border-radius: 0.5rem;
-    background-color: rgba(5, 11, 20, 0.85);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    color: #00f0ff;
-    font-family: monospace;
-    font-size: 0.875rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.6rem;
+    background-color: rgba(11, 19, 41, 0.85);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    color: #22d3ee;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.825rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 0 8px rgba(0, 240, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .cyber-select-trigger:hover, .cyber-select-trigger.active {
-    border-color: #00f0ff;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    border-color: #22d3ee;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
 }
 
 .cyber-select-trigger.active svg.chevron-icon {
     transform: rotate(180deg);
 }
 
-/* FIX: FLOATING OVERLAY DIATAS LAYAR (FIXED POSITION) */
+/* POPUP OVERLAY MELAYANG DENGAN EFEK GLASSMARPHISM */
 .cyber-select-options {
-    position: fixed !important; /* Melayang bebas lepas dari kontainer induk */
-    z-index: 999999 !important; /* Hirarki tertinggi di atas semua card/glass panel */
-    background: #030712 !important; /* Latar pekat anti-tembus */
-    border: 1.5px solid #00f0ff;
-    border-radius: 0.75rem;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.4);
+    position: fixed !important;
+    z-index: 999999 !important;
+    background: rgba(11, 19, 39, 0.95) !important;
+    border: 1px solid rgba(34, 211, 238, 0.4) !important;
+    border-radius: 0.85rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(6, 182, 212, 0.2);
     
-    max-height: 200px;
+    max-height: 220px;
     overflow-y: auto;
-    padding: 0.35rem;
+    padding: 0.4rem;
 
-    /* Animasi Pop-up Bounce */
+    /* Animasi Pop-up Scale & Fade */
     opacity: 0;
     visibility: hidden;
-    transform: scale(0.92) translateY(-10px);
+    transform: scale(0.92) translateY(-8px);
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease, visibility 0.2s;
     pointer-events: none;
 }
@@ -485,12 +485,12 @@
     transform: scale(1) translateY(0);
 }
 
-/* Option Item & Bintang Beranimasi */
+/* Opsi Item Inside Dropdown */
 .cyber-option {
-    padding: 0.65rem 0.85rem;
-    color: #cbd5e1;
-    font-family: monospace;
-    font-size: 0.85rem;
+    padding: 0.6rem 0.85rem;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
     border-radius: 0.5rem;
     cursor: pointer;
     display: flex;
@@ -501,32 +501,30 @@
 }
 
 .cyber-option:hover {
-    background: rgba(0, 240, 255, 0.15);
-    color: #00f0ff;
+    background: rgba(6, 182, 212, 0.15);
+    color: #22d3ee;
 }
 
 .cyber-option.selected {
-    background: rgba(0, 240, 255, 0.25);
-    color: #00f0ff;
+    background: rgba(6, 182, 212, 0.25);
+    color: #22d3ee;
     font-weight: bold;
 }
 
 .cyber-star-icon {
     display: none;
-    width: 1.1rem;
-    height: 1.1rem;
-    color: #00f0ff;
-    filter: drop-shadow(0 0 6px #00f0ff);
+    width: 1rem;
+    height: 1rem;
+    color: #22d3ee;
+    filter: drop-shadow(0 0 4px #22d3ee);
 }
 
 .cyber-option.selected .cyber-star-icon {
     display: block;
-    animation: starPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: starPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes starPop {
     0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-    70% { transform: scale(1.3) rotate(15deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
-

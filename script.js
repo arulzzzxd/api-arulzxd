@@ -842,33 +842,45 @@ function performSearch() {
     });
 }
 
-// Membuka / Menutup Custom Cyber Select dengan Sistem Floating Coordinates
+// Membuka / Menutup Custom Cyber Select
 function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
-    const optionsEl = wrapper.querySelector('.cyber-select-options');
-    const isOpen = optionsEl.classList.contains('show');
-    
-    // Tutup semua dropdown terbuka lainnya
+    if (!wrapper) return;
+
+    let optionsEl = wrapper.querySelector('.cyber-select-options');
+    let wrapperId = wrapper.dataset.wrapperId;
+
+    // Buat wrapper ID jika belum ada
+    if (!wrapperId) {
+        wrapperId = `select-wrap-${Math.random().toString(36).substr(2, 9)}`;
+        wrapper.dataset.wrapperId = wrapperId;
+    }
+
+    // Jika options sudah dipindah ke body, cari berdasarkan ID wrapper
+    if (!optionsEl) {
+        optionsEl = document.querySelector(`.cyber-select-options[data-owner-id="${wrapperId}"]`);
+    }
+
+    const isOpen = optionsEl && optionsEl.classList.contains('show');
+
+    // Tutup semua select terbuka
     closeAllCyberSelects();
 
-    if (!isOpen) {
-        // Pindahkan menu ke body jika belum (mencegah clipping dari glass-panel)
+    if (!isOpen && optionsEl) {
+        // Pindahkan ke body agar melayang bebas di atas kontainer glass-panel
         if (optionsEl.parentElement !== document.body) {
+            optionsEl.dataset.ownerId = wrapperId;
             document.body.appendChild(optionsEl);
-            optionsEl.dataset.wrapperId = `select-wrap-${Math.random().toString(36).substr(2, 9)}`;
-            wrapper.dataset.wrapperId = optionsEl.dataset.wrapperId;
         }
 
-        // Hitung Posisi Tepat di Bawah Trigger Button
         positionFloatingSelect(triggerEl, optionsEl);
-
         optionsEl.classList.add('show');
         triggerEl.classList.add('active');
     }
 }
 
-// Menghitung Posisi Layar (Fixed Coordinates)
+// Menghitung Posisi Layar (Fixed Overlay Coordinates)
 function positionFloatingSelect(triggerEl, optionsEl) {
     const rect = triggerEl.getBoundingClientRect();
     optionsEl.style.width = `${rect.width}px`;
@@ -876,27 +888,29 @@ function positionFloatingSelect(triggerEl, optionsEl) {
     optionsEl.style.top = `${rect.bottom + 6}px`;
 }
 
-// Memilih Opsi Dropdown Custom
+// Memilih Opsi Dropdown Custom (FIX BUG: tidak bisa pilih ulang)
 function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
     const optionsContainer = optionEl.closest('.cyber-select-options');
-    const wrapperId = optionsContainer.dataset.wrapperId;
-    const wrapper = document.querySelector(`[data-wrapper-id="${wrapperId}"]`);
+    if (!optionsContainer) return;
+
+    const ownerId = optionsContainer.dataset.ownerId;
+    const wrapper = document.querySelector(`.cyber-select-wrapper[data-wrapper-id="${ownerId}"]`);
     
     if (!wrapper) return;
 
-    const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
+    const hiddenInput = wrapper.querySelector(`input[name="${paramName}"]`);
     const triggerText = wrapper.querySelector('.selected-text');
     const val = optionEl.getAttribute('data-value');
 
-    // Set nilai pada hidden input
+    // Set nilai pada hidden input & ubah label trigger
     if (hiddenInput) hiddenInput.value = val;
     if (triggerText) triggerText.textContent = val;
 
-    // Aktifkan item pilihan + Animasi Bintang
+    // Update kelas terpilih
     optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
     optionEl.classList.add('selected');
 
-    // Tutup Dropdown
+    // Tutup Menu Dropdown
     closeAllCyberSelects();
 
     // Update Live Preview URL & cURL
@@ -905,7 +919,7 @@ function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epT
     }
 }
 
-// Tutup Semua Floating Popup
+// Tutup Semua Floating Select Popup
 function closeAllCyberSelects() {
     document.querySelectorAll('.cyber-select-options.show').forEach(el => {
         el.classList.remove('show');
@@ -915,7 +929,7 @@ function closeAllCyberSelects() {
     });
 }
 
-// Event Handler Klik di Luar & Scroll
+// Event Listener Klik Luar & Reposisi saat Scroll/Resize
 document.addEventListener('click', closeAllCyberSelects);
 window.addEventListener('scroll', closeAllCyberSelects, true);
 window.addEventListener('resize', closeAllCyberSelects);
