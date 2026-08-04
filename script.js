@@ -842,47 +842,83 @@ function performSearch() {
     });
 }
 
-// Membuka / Menutup Custom Cyber Select
+// Membuka / Menutup Custom Cyber Select dengan Sistem Floating Coordinates
 function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
     const optionsEl = wrapper.querySelector('.cyber-select-options');
     const isOpen = optionsEl.classList.contains('show');
     
+    // Tutup semua dropdown terbuka lainnya
     closeAllCyberSelects();
 
     if (!isOpen) {
+        // Pindahkan menu ke body jika belum (mencegah clipping dari glass-panel)
+        if (optionsEl.parentElement !== document.body) {
+            document.body.appendChild(optionsEl);
+            optionsEl.dataset.wrapperId = `select-wrap-${Math.random().toString(36).substr(2, 9)}`;
+            wrapper.dataset.wrapperId = optionsEl.dataset.wrapperId;
+        }
+
+        // Hitung Posisi Tepat di Bawah Trigger Button
+        positionFloatingSelect(triggerEl, optionsEl);
+
         optionsEl.classList.add('show');
         triggerEl.classList.add('active');
     }
 }
 
+// Menghitung Posisi Layar (Fixed Coordinates)
+function positionFloatingSelect(triggerEl, optionsEl) {
+    const rect = triggerEl.getBoundingClientRect();
+    optionsEl.style.width = `${rect.width}px`;
+    optionsEl.style.left = `${rect.left}px`;
+    optionsEl.style.top = `${rect.bottom + 6}px`;
+}
+
+// Memilih Opsi Dropdown Custom
 function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
-    const wrapper = optionEl.closest('.cyber-select-wrapper');
+    const optionsContainer = optionEl.closest('.cyber-select-options');
+    const wrapperId = optionsContainer.dataset.wrapperId;
+    const wrapper = document.querySelector(`[data-wrapper-id="${wrapperId}"]`);
+    
+    if (!wrapper) return;
+
     const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
     const triggerText = wrapper.querySelector('.selected-text');
-    const optionsContainer = wrapper.querySelector('.cyber-select-options');
     const val = optionEl.getAttribute('data-value');
 
+    // Set nilai pada hidden input
     if (hiddenInput) hiddenInput.value = val;
     if (triggerText) triggerText.textContent = val;
 
+    // Aktifkan item pilihan + Animasi Bintang
     optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
     optionEl.classList.add('selected');
 
+    // Tutup Dropdown
     closeAllCyberSelects();
 
+    // Update Live Preview URL & cURL
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
 }
 
+// Tutup Semua Floating Popup
 function closeAllCyberSelects() {
-    document.querySelectorAll('.cyber-select-options.show').forEach(el => el.classList.remove('show'));
-    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
+        el.classList.remove('show');
+    });
+    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => {
+        el.classList.remove('active');
+    });
 }
 
+// Event Handler Klik di Luar & Scroll
 document.addEventListener('click', closeAllCyberSelects);
+window.addEventListener('scroll', closeAllCyberSelects, true);
+window.addEventListener('resize', closeAllCyberSelects);
 
 function loadApis() {
     const apiList = document.getElementById('apiList');

@@ -423,18 +423,12 @@
     }
 }
 
-/* Kontainer Select Wrapper */
+/* Kontainer Select Trigger */
 .cyber-select-wrapper {
     position: relative;
     width: 100%;
 }
 
-/* Memastikan Kontainer Induk Tidak Memotong Menu Melayang */
-.glass-panel, .api-item, [id^="ep-"] {
-    overflow: visible !important;
-}
-
-/* Tombol Trigger Select */
 .cyber-select-trigger {
     width: 100%;
     padding: 0.6rem 0.85rem;
@@ -461,42 +455,37 @@
     transform: rotate(180deg);
 }
 
-/* POPUP MENU MELAYANG / FLOATING OVERLAY */
+/* FIX: FLOATING OVERLAY DIATAS LAYAR (FIXED POSITION) */
 .cyber-select-options {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    right: 0;
-    z-index: 9999 !important; /* Melayang tinggi di atas elemen lain */
-    background: #050b14; /* Latar belakang pekat agar tidak tembus pandang */
+    position: fixed !important; /* Melayang bebas lepas dari kontainer induk */
+    z-index: 999999 !important; /* Hirarki tertinggi di atas semua card/glass panel */
+    background: #030712 !important; /* Latar pekat anti-tembus */
     border: 1.5px solid #00f0ff;
     border-radius: 0.75rem;
-    backdrop-filter: blur(16px);
-    
-    /* Efek Bayangan Melayang (Floating Glow Shadow) */
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.35);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.95), 0 0 25px rgba(0, 240, 255, 0.4);
     
     max-height: 200px;
     overflow-y: auto;
     padding: 0.35rem;
 
-    /* Animasi Pop-up Melayang */
+    /* Animasi Pop-up Bounce */
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-8px) scale(0.96);
+    transform: scale(0.92) translateY(-10px);
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease, visibility 0.2s;
     pointer-events: none;
 }
 
-/* Mode Popup Aktif */
 .cyber-select-options.show {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transform: translateY(0) scale(1);
+    transform: scale(1) translateY(0);
 }
 
-/* Item Opsi Pilihan */
+/* Option Item & Bintang Beranimasi */
 .cyber-option {
     padding: 0.65rem 0.85rem;
     color: #cbd5e1;
@@ -522,7 +511,6 @@
     font-weight: bold;
 }
 
-/* SVG Bintang Beranimasi */
 .cyber-star-icon {
     display: none;
     width: 1.1rem;
@@ -541,3 +529,4 @@
     70% { transform: scale(1.3) rotate(15deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
+
