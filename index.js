@@ -2113,7 +2113,6 @@ app.get('/docs', (req, res) => {
         authButtonHtml = `
 <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
     <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
-        
         <div class="relative flex-shrink-0 z-10">
             <img src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
             <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
@@ -2152,6 +2151,22 @@ app.get('/docs', (req, res) => {
     <link rel="stylesheet" href="styles.css" />
     
     <style>
+    :root {
+        --neon-cyan: #00f3ff;
+        --neon-glow: rgba(0, 243, 255, 0.4);
+        --bg-dark: #030712;
+        --bg-card: rgba(15, 23, 42, 0.75);
+        --border-color: rgba(0, 243, 255, 0.2);
+    }
+
+    html.light {
+        --neon-cyan: #008b9b;
+        --neon-glow: rgba(0, 139, 155, 0.25);
+        --bg-dark: #f0fdfa;
+        --bg-card: rgba(255, 255, 255, 0.85);
+        --border-color: rgba(0, 139, 155, 0.3);
+    }
+
     html {
         scroll-behavior: smooth;
     }
@@ -2262,6 +2277,7 @@ app.get('/docs', (req, res) => {
     }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
     .border-3d-free {
         background: linear-gradient(135deg, #059669 0%, #34d399 50%, #065f46 100%);
         box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 4px 12px rgba(0,0,0,0.5);
@@ -2273,22 +2289,6 @@ app.get('/docs', (req, res) => {
     .border-3d-vip {
         background: linear-gradient(135deg, #6b21a8 0%, #c084fc 30%, #ffffff 50%, #a855f7 70%, #4c1d95 100%);
         box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
-    }
-     :root {
-        --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.4);
-        --bg-dark: #030712;
-        --bg-card: rgba(15, 23, 42, 0.75);
-        --border-color: rgba(0, 243, 255, 0.2);
-    }
-
-    /* Support Light Theme Mode */
-    html.light {
-        --neon-cyan: #008b9b;
-        --neon-glow: rgba(0, 139, 155, 0.25);
-        --bg-dark: #f0fdfa;
-        --bg-card: rgba(255, 255, 255, 0.85);
-        --border-color: rgba(0, 139, 155, 0.3);
     }
 
     #cyber-loader-overlay {
@@ -2310,7 +2310,6 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Laser Scanner Beam */
     .scanner-beam {
         position: absolute;
         top: 0;
@@ -2325,7 +2324,6 @@ app.get('/docs', (req, res) => {
         100% { transform: translateY(100%); }
     }
 
-    /* Concentric Hologram HUD Rotating Rings */
     .hud-ring {
         position: relative;
         width: 130px;
@@ -2378,7 +2376,6 @@ app.get('/docs', (req, res) => {
     @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
     @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
 
-    /* Animated Dot Pulse */
     .animated-dots::after {
         content: '';
         display: inline-block;
@@ -2560,7 +2557,6 @@ app.get('/docs', (req, res) => {
 
     <!-- Header Actions -->
     <div class="fixed top-6 right-6 z-40 flex items-center gap-3">
-        
         <button id="bioMenuBtn" class="flex items-center justify-center w-10 h-10 rounded-xl glass-panel text-slate-300 hover:text-white shadow-lg transition-all active:scale-95 focus:outline-none light-mode:text-slate-700 light-mode:hover:text-slate-900 border border-white/5">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -2596,9 +2592,8 @@ app.get('/docs', (req, res) => {
 
         ${authButtonHtml}
 
-                <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 light-mode:text-slate-700 flex-1 py-1 overflow-y-auto scrollbar-hide">
+        <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 light-mode:text-slate-700 flex-1 py-1 overflow-y-auto scrollbar-hide">
             
-            <!-- SECTION PAGES -->
             <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
             <a href="/" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
@@ -2630,12 +2625,12 @@ app.get('/docs', (req, res) => {
                 Changelog
             </a>
 
-            <button id="uploaderMenuBtn" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 text-left w-full focus:outline-none uppercase">
+            <a href="/uploader" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
                 <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                 </svg>
                 Uploader
-            </button>
+            </a>
 
             <a href="/pastecode" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
                 <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -2658,7 +2653,6 @@ app.get('/docs', (req, res) => {
                 Stats / Status
             </a>
 
-            <!-- SECTION LEGAL -->
             <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
 
             <a href="/privacy" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
@@ -2727,20 +2721,20 @@ app.get('/docs', (req, res) => {
 
             <!-- Host URL & Request Feature -->
             <div class="glass-panel max-w-4xl mx-auto mt-4 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/10">
-    <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-        </svg>
-        <span class="underline break-all font-semibold">https://arulz-xd.my.id</span>
-    </div>
-    <a href="/feedback" 
-       class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        Request Feature
-    </a>
-</div>
+                <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    <span class="underline break-all font-semibold">https://arulz-xd.my.id</span>
+                </div>
+                <a href="/feedback" 
+                   class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Request Feature
+                </a>
+            </div>
 
             <!-- Social Links -->
             <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
@@ -2859,7 +2853,15 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-function openProfilePopup() {
+        function copyText(text, label) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert((label || 'Teks') + ' berhasil disalin!');
+                });
+            }
+        }
+
+        function openProfilePopup() {
             document.getElementById('profilePopup').classList.remove('hidden');
             fetchUserProfile();
         }
@@ -2873,7 +2875,7 @@ function openProfilePopup() {
             const avatar3DBorder = document.getElementById('avatar3DBorder');
             const avatarBadge = document.getElementById('avatarBadge');
             const usernameTag = document.getElementById('userEmail');
-            const normalizedRole = roleName.toLowerCase();
+            const normalizedRole = (roleName || '').toLowerCase();
 
             const iconFree = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>\`;
             const iconPremium = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>\`;
@@ -2934,96 +2936,100 @@ function openProfilePopup() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.loggedIn) {
-                        document.getElementById('userAvatar').src = data.user.avatar;
-                        document.getElementById('userName').innerText = data.user.name;
-                        document.getElementById('userEmail').innerText = data.user.email;
-                        document.getElementById('userApiKey').innerText = data.user.apiKey;
-                        setRoleTheme(data.user.role);
+                        document.getElementById('userAvatar').src = data.user.avatar || 'https://via.placeholder.com/150';
+                        document.getElementById('userName').innerText = data.user.name || 'User';
+                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                        document.getElementById('userApiKey').innerText = data.user.apiKey || 'No Key';
+                        setRoleTheme(data.user.role || 'free');
                     }
                 })
                 .catch(() => {
                     setRoleTheme("free"); 
                 });
         }
-document.addEventListener('DOMContentLoaded', () => {
-    const popup = document.getElementById('welcomePopup');
-    const closeBtn = document.getElementById('closePopupBtn');
-    
-    popup.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
-    
-    closeBtn.addEventListener('click', () => {
-        popup.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    });
-});
-function getPageDisplayName() {
-        const path = window.location.pathname;
-        let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
 
-        if (!fileName || fileName === '' || fileName === 'index') return 'Home';
+        document.addEventListener('DOMContentLoaded', () => {
+            const popup = document.getElementById('welcomePopup');
+            const closeBtn = document.getElementById('closePopupBtn');
+            
+            if (popup) {
+                popup.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    popup.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                });
+            }
+        });
 
-        const pageMap = {
-            'home': 'Home',
-            'docs': 'Dokumentasi',
-            'doc': 'Dokumentasi',
-            'status': 'Status Server',
-            'store': 'Store API',
-            'changelog': 'Changelog',
-            'uploader': 'Uploader File',
-            'pastecode': 'Pastecode',
-            'feedback': 'Feedback',
-            'privacy': 'Kebijakan Privasi',
-            'support': 'Dukungan Support',
-            'login': 'Halaman Login'
-        };
+        function getPageDisplayName() {
+            const path = window.location.pathname;
+            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
 
-        if (pageMap[fileName]) return pageMap[fileName];
-        return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-    }
+            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
 
-    const pageName = getPageDisplayName();
-    const loaderTitleEl = document.getElementById('loader-title-text');
-    if (loaderTitleEl) {
-        loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
-    }
+            const pageMap = {
+                'home': 'Home',
+                'docs': 'Dokumentasi',
+                'doc': 'Dokumentasi',
+                'status': 'Status Server',
+                'store': 'Store API',
+                'changelog': 'Changelog',
+                'uploader': 'Uploader File',
+                'pastecode': 'Pastecode',
+                'feedback': 'Feedback',
+                'privacy': 'Kebijakan Privasi',
+                'support': 'Dukungan Support',
+                'login': 'Halaman Login'
+            };
 
-    // Progress Loader 0% - 100%
-    let currentProgress = 0;
-    const progressFill = document.getElementById('loader-progress-fill');
-    const percentageText = document.getElementById('loader-percentage');
-    const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-    function updateProgress(targetVal) {
-        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-        if (progressFill) progressFill.style.width = currentProgress + '%';
-        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-    }
-
-    const progressInterval = setInterval(() => {
-        if (currentProgress < 85) {
-            const increment = Math.random() * 12 + 5;
-            updateProgress(currentProgress + increment);
+            if (pageMap[fileName]) return pageMap[fileName];
+            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
         }
-    }, 120);
 
-    window.addEventListener('load', () => {
-        clearInterval(progressInterval);
-        updateProgress(100);
+        const pageName = getPageDisplayName();
+        const loaderTitleEl = document.getElementById('loader-title-text');
+        if (loaderTitleEl) {
+            loaderTitleEl.innerHTML = \`Memuat \${pageName}<span class="animated-dots"></span>\`;
+        }
+
+        let currentProgress = 0;
+        const progressFill = document.getElementById('loader-progress-fill');
+        const percentageText = document.getElementById('loader-percentage');
+        const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+        function updateProgress(targetVal) {
+            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+            if (progressFill) progressFill.style.width = currentProgress + '%';
+            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+        }
+
+        const progressInterval = setInterval(() => {
+            if (currentProgress < 85) {
+                const increment = Math.random() * 12 + 5;
+                updateProgress(currentProgress + increment);
+            }
+        }, 120);
+
+        window.addEventListener('load', () => {
+            clearInterval(progressInterval);
+            updateProgress(100);
+
+            setTimeout(() => {
+                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+            }, 400);
+        });
 
         setTimeout(() => {
-            if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-        }, 400);
-    });
-
-    // Fallback Safety (Maksimal 4 detik)
-    setTimeout(() => {
-        clearInterval(progressInterval);
-        updateProgress(100);
-        if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
-            loaderOverlay.classList.add('fade-out');
-        }
-    }, 4000);
+            clearInterval(progressInterval);
+            updateProgress(100);
+            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+                loaderOverlay.classList.add('fade-out');
+            }
+        }, 4000);
 </script>
 
 </body>
