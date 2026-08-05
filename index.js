@@ -83,9 +83,6 @@ const cacheSchema = new mongoose.Schema({
 
 const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
 
-// =========================================================
-// 1. SKEMA & MODEL VOUCHER (MONGOOSE)
-// =========================================================
 const voucherSchema = new mongoose.Schema({
     code: { type: String, required: true, unique: true, uppercase: true },
     discount: { type: Number, required: true },
@@ -93,14 +90,24 @@ const voucherSchema = new mongoose.Schema({
     expiredAt: { type: Date, required: true },
     usageLimit: { type: Number, default: 20 },
     usedCount: { type: Number, default: 0 },
+    usedBy: [{ type: String }], // Array penyimpan identifier (username/email/userId) agar 1 user hanya bisa 1x klaim
     createdAt: { type: Date, default: Date.now }
 });
 
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
-// =========================================================
-// 2. ENDPOINT CLAIM VOUCHER (HANYA DARI MONGODB VOUCHER)
-// =========================================================
+// Helper function untuk mengambil identifier user unik
+function getUserIdentifier(req) {
+    if (req.user) {
+        return (req.user.email || req.user.username || req.user._id || "").toString().toLowerCase().trim();
+    }
+    const bodyIdentifier = req.body?.username || req.body?.email || req.body?.userIdentifier;
+    if (bodyIdentifier) {
+        return bodyIdentifier.toString().toLowerCase().trim();
+    }
+    return req.ip; // Fallback ke IP address jika guest/tanpa login
+}
+
 app.post('/api/vouchers/claim', async (req, res) => {
     try {
         const code = req.body.code;
@@ -109,12 +116,22 @@ app.post('/api/vouchers/claim', async (req, res) => {
         }
 
         const cleanCode = code.trim().toUpperCase();
+        const userIdentifier = getUserIdentifier(req);
 
         // Mengambil HANYA dari koleksi Voucher Mongoose
         const voucher = await Voucher.findOne({ code: cleanCode });
         
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
+        }
+
+        // Cek apakah User sudah pernah menggunakan voucher ini
+        if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
+            return res.status(400).json({
+                status: false,
+                reason: 'already_used',
+                message: 'Anda sudah pernah menggunakan voucher ini sebelumnya!'
+            });
         }
 
         // Cek Kuota Penggunaan
@@ -134,6 +151,16 @@ app.post('/api/vouchers/claim', async (req, res) => {
                 message: 'Voucher telah kedaluwarsa!' 
             });
         }
+
+        // Otomatis ubah usageLimit dan usedCount serta catat user pada database Mongoose
+        voucher.usedCount += 1;
+        if (voucher.usageLimit > 0) {
+            voucher.usageLimit -= 1;
+        }
+        if (!voucher.usedBy) voucher.usedBy = [];
+        voucher.usedBy.push(userIdentifier);
+
+        await voucher.save();
 
         // Response konsisten dengan properti 'voucher' & 'data'
         return res.json({
@@ -159,14 +186,23 @@ app.post('/api/vouchers/claim', async (req, res) => {
 // Endpoint GET untuk mendukung pencarian langsung berdasarkan URL parameter
 app.get('/api/vouchers/:code', async (req, res) => {
     try {
-        const code = req.query.code;
+        const code = req.query.code || req.params.code;
         if (!code) {
             return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
         }
 
+        const userIdentifier = getUserIdentifier(req);
         const voucher = await Voucher.findOne({ code: code.trim().toUpperCase() });
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
+        }
+
+        if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
+            return res.status(400).json({
+                status: false,
+                reason: 'already_used',
+                message: 'Anda sudah pernah menggunakan voucher ini sebelumnya!'
+            });
         }
 
         if (voucher.usageLimit > 0 && voucher.usedCount >= voucher.usageLimit) {
