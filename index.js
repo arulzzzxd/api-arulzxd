@@ -83,7 +83,9 @@ const cacheSchema = new mongoose.Schema({
 
 const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
 
-// 1. Definisikan Schema & Model Voucher
+// =========================================================
+// 1. SKEMA & MODEL VOUCHER (MONGOOSE)
+// =========================================================
 const voucherSchema = new mongoose.Schema({
     code: { type: String, required: true, unique: true, uppercase: true },
     discount: { type: Number, required: true },
@@ -96,19 +98,26 @@ const voucherSchema = new mongoose.Schema({
 
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
-// 2. Endpoint Verifikasi / Claim Voucher (Method POST & GET)
+// =========================================================
+// 2. ENDPOINT CLAIM VOUCHER (HANYA DARI MONGODB VOUCHER)
+// =========================================================
 app.post('/api/vouchers/claim', async (req, res) => {
     try {
-        const { code } = req.body;
+        const code = req.body.code;
         if (!code) {
             return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
         }
 
-        const voucher = await Voucher.findOne({ code: code.trim().toUpperCase() });
+        const cleanCode = code.trim().toUpperCase();
+
+        // Mengambil HANYA dari koleksi Voucher Mongoose
+        const voucher = await Voucher.findOne({ code: cleanCode });
+        
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
 
+        // Cek Kuota Penggunaan
         if (voucher.usageLimit > 0 && voucher.usedCount >= voucher.usageLimit) {
             return res.status(400).json({ 
                 status: false, 
@@ -117,6 +126,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
+        // Cek Kedaluwarsa
         if (new Date() > new Date(voucher.expiredAt)) {
             return res.status(400).json({ 
                 status: false, 
@@ -125,9 +135,15 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
+        // Response konsisten dengan properti 'voucher' & 'data'
         return res.json({
             status: true,
             message: 'Voucher berhasil diklaim!',
+            voucher: {
+                code: voucher.code,
+                discount: voucher.discount,
+                type: voucher.type
+            },
             data: {
                 code: voucher.code,
                 discount: voucher.discount,
@@ -135,6 +151,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
             }
         });
     } catch (err) {
+        console.error("Error Claim Voucher:", err);
         return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server.' });
     }
 });
@@ -142,7 +159,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
 // Endpoint GET untuk mendukung pencarian langsung berdasarkan URL parameter
 app.get('/api/vouchers/:code', async (req, res) => {
     try {
-        const code = req.params.code;
+        const code = req.query.code;
         if (!code) {
             return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
         }
