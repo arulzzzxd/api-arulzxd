@@ -132,7 +132,7 @@
         </div>
     </div>
 
-    <!-- NAVBAR -->
+    <!-- TOP NAVBAR -->
     <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder shadow-glowCyanSm">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <a href="/" class="flex-shrink-0 text-2xl font-black font-cyber tracking-wider text-cyberCyan drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
@@ -187,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- GRID PRODUK -->
+            <!-- PRODUK GRID -->
             <div class="md:col-span-3">
                 <div class="flex items-center justify-between mb-4 bg-cyberCard p-3 rounded-xl border border-cyberBorder shadow-md">
                     <p class="text-xs text-slate-400 font-medium tracking-wide">
@@ -282,7 +282,7 @@
                         </div>
                     </div>
 
-                    <!-- RINCIAN HARGA & TOTAL -->
+                    <!-- RINGKASAN SUBTOTAL & DISKON HARGA -->
                     <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder space-y-1.5">
                         <div class="flex items-center justify-between text-xs text-slate-400">
                             <span>Subtotal Harga:</span>
@@ -335,7 +335,9 @@
 
                     <div id="manualFieldsGroup" class="hidden space-y-3 pt-2">
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">Username / Nama Pembeli <span class="text-cyberCyan">*</span></label>
+                            <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
+                                Username / Nama Pembeli <span class="text-cyberCyan">*</span>
+                            </label>
                             <input type="text" id="usernameInput" placeholder="Masukkan username Anda" class="w-full px-3 py-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-xl text-slate-200 focus:outline-none focus:border-cyberCyan transition">
                         </div>
                         <div>
@@ -728,7 +730,7 @@
             document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
 
-            // Reset Form Voucher
+            // Reset Voucher Input Form
             const vInput = document.getElementById('voucherInput');
             if (vInput) {
                 vInput.value = '';
@@ -778,7 +780,7 @@
         }
 
         // =========================================================
-        // FUNGSI CLAIM VOUCHER (PERBAIKAN DARI MODEL MONGODB VOUCHER)
+        // FUNGSI KLAIM VOUCHER & VALIDAISI 1X PAKAI
         // =========================================================
         async function claimVoucher() {
             const vInput = document.getElementById('voucherInput');
@@ -786,8 +788,9 @@
             const btnClaim = document.getElementById('btnClaimVoucher');
             const btnText = document.getElementById('btnClaimText');
             const statusLabel = document.getElementById('voucherStatusLabel');
+            const username = document.getElementById('usernameInput')?.value || '';
 
-            // Lepas voucher jika sudah aktif
+            // Pelepasan Voucher
             if (ACTIVE_VOUCHER) {
                 ACTIVE_VOUCHER = null;
                 vInput.value = '';
@@ -804,12 +807,7 @@
                     icon: 'info',
                     title: 'VOUCHER KOSONG',
                     text: 'Jika tidak memiliki kode voucher, Anda dapat membiarkannya kosong dan langsung melanjutkan transaksi.',
-                    customClass: {
-                        popup: 'cyber-swal',
-                        title: 'cyber-swal-title',
-                        htmlContainer: 'cyber-swal-text',
-                        confirmButton: 'cyber-swal-confirm'
-                    }
+                    customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text', confirmButton: 'cyber-swal-confirm' }
                 });
                 return;
             }
@@ -821,23 +819,22 @@
                 const res = await fetch('/api/vouchers/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: voucherCode })
+                    body: JSON.stringify({ code: voucherCode, username: username })
                 });
 
                 const result = await res.json();
-
-                // Dapatkan objek voucher dari result.voucher atau result.data
                 const voucherData = result.voucher || result.data;
 
                 if (!res.ok || !result.status || !voucherData) {
-                    if (result.reason === 'expired' || result.reason === 'limit_reached') {
+                    if (result.reason === 'already_used') {
+                        throw { type: 'already_used', message: result.message || 'Anda sudah pernah menggunakan voucher ini!' };
+                    } else if (result.reason === 'expired' || result.reason === 'limit_reached') {
                         throw { type: 'expired', message: result.message || 'Voucher telah kedaluwarsa atau kuota habis!' };
                     } else {
                         throw { type: 'not_found', message: result.message || 'Kode voucher tidak ditemukan.' };
                     }
                 }
 
-                // Set ACTIVE_VOUCHER dari data yang valid
                 ACTIVE_VOUCHER = voucherData;
                 vInput.disabled = true;
                 btnClaim.disabled = false;
@@ -855,50 +852,43 @@
                     text: discountDetailText,
                     timer: 2500,
                     showConfirmButton: false,
-                    customClass: {
-                        popup: 'cyber-swal',
-                        title: 'cyber-swal-title',
-                        htmlContainer: 'cyber-swal-text'
-                    }
+                    customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text' }
                 });
 
-                // PERBAHARUI TOTAL HARGA SETELAH VOUCHER BERHASIL DI-CLAIM
+                // Terapkan Potongan Harga Otomatis
                 updateTotalPrice();
 
             } catch (err) {
                 btnClaim.disabled = false;
                 btnClaim.innerHTML = `<i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>`;
 
-                if (err.type === 'expired') {
+                if (err.type === 'already_used') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'VOUCHER TERPAKAI',
+                        text: err.message,
+                        customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text', confirmButton: 'cyber-swal-confirm' }
+                    });
+                } else if (err.type === 'expired') {
                     Swal.fire({
                         icon: 'error',
                         title: 'VOUCHER TELAH HANGUS',
                         text: err.message,
-                        customClass: {
-                            popup: 'cyber-swal',
-                            title: 'cyber-swal-title',
-                            htmlContainer: 'cyber-swal-text',
-                            confirmButton: 'cyber-swal-confirm'
-                        }
+                        customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text', confirmButton: 'cyber-swal-confirm' }
                     });
                 } else {
                     Swal.fire({
                         icon: 'warning',
                         title: 'VOUCHER TIDAK TERSEDIA',
                         text: err.message || 'Kode voucher diskon tidak ditemukan di sistem.',
-                        customClass: {
-                            popup: 'cyber-swal',
-                            title: 'cyber-swal-title',
-                            htmlContainer: 'cyber-swal-text',
-                            confirmButton: 'cyber-swal-confirm'
-                        }
+                        customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text', confirmButton: 'cyber-swal-confirm' }
                     });
                 }
             }
         }
 
         // =========================================================
-        // PERHITUNGAN HARGA DENGAN DISKON VOUCHER
+        // PERHITUNGAN DISKON & TOTAL HARGA
         // =========================================================
         function calculateFinalTotal() {
             if (!SELECTED_PRODUCT) return { subtotal: 0, discount: 0, total: 0 };
@@ -978,7 +968,8 @@
                         orderId: CURRENT_ORDER_ID,
                         amount: calc.total,
                         itemDetails: SELECTED_PRODUCT,
-                        voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
+                        voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null,
+                        username: document.getElementById('usernameInput')?.value || ''
                     })
                 });
 
@@ -1191,7 +1182,7 @@
         }
 
         // ==================== PEMBAYARAN MANUAL ====================
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
             if (!SELECTED_PRODUCT || !CURRENT_ORDER_ID) return;
 
@@ -1199,6 +1190,21 @@
             const note = document.getElementById('noteInput').value.trim();
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const calc = calculateFinalTotal();
+
+            // Laporkan pemakaian voucher manual ke server agar kuota terpotong & dikunci
+            if (ACTIVE_VOUCHER) {
+                try {
+                    await fetch('/api/orders/manual', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId: CURRENT_ORDER_ID,
+                            username: username,
+                            voucherCode: ACTIVE_VOUCHER.code
+                        })
+                    });
+                } catch (e) {}
+            }
 
             let message = `Halo Arulz, saya ingin memesan produk berikut secara manual:\n\n`;
             message += `*--- DETAIL PESANAN MANUAL ---*\n`;
@@ -1236,7 +1242,7 @@
             await checkActiveTransaction();
         });
 
-        // LOADER PROGRESS
+        // LOADER OVERLAY LOGIC
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
