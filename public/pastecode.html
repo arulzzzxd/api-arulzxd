@@ -7,11 +7,11 @@
     <!-- Google Fonts: Cantarell & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    
     <style>
         :root { 
             --bg-main: #090d16; 
@@ -21,6 +21,10 @@
             --cyan-hover: #0082cc;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --neon-cyan: #00f3ff;
+            --neon-glow: rgba(0, 243, 255, 0.4);
+            --bg-dark: #030712;
+            --border-color: rgba(0, 243, 255, 0.2);
         }
 
         body { 
@@ -36,7 +40,7 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Styling Khusus Mode Gist RAW (Dark Theme) */
+        /* Mode Gist RAW */
         body.gist-raw-mode {
             background: #0d1117 !important;
             color: #e6edf3 !important;
@@ -54,7 +58,7 @@
             background: #0d1117;
         }
 
-        /* Kontainer Tombol Utama di Pojok Kiri Atas */
+        /* Navigasi Kiri Atas */
         .top-left-nav {
             position: fixed;
             top: 16px;
@@ -186,9 +190,162 @@
         .footer { background: #0b0c10; color: var(--text-muted); padding: 30px 20px; text-align: center; border-top: 2px solid var(--border-dark); font-size: 13px; margin-top: 60px; }
 
         .heavy-code-warning { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; font-size: 12px; color: #f87171; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+
+        /* Light Theme Mode */
+        html.light {
+            --neon-cyan: #008b9b;
+            --neon-glow: rgba(0, 139, 155, 0.25);
+            --bg-dark: #f0fdfa;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 139, 155, 0.3);
+        }
+
+        #cyber-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+        }
+
+        #cyber-loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Laser Scanner Beam */
+        .scanner-beam {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
+            animation: scanAnimation 4s infinite linear;
+        }
+        @keyframes scanAnimation {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* Concentric Hologram HUD Rotating Rings */
+        .hud-ring {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .ring-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px dashed var(--neon-cyan);
+            opacity: 0.6;
+            animation: spinClockwise 10s linear infinite;
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
+
+        .ring-middle {
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .ring-inner {
+            position: absolute;
+            inset: 20px;
+            border-radius: 50%;
+            border: 1px dotted var(--neon-cyan);
+            opacity: 0.8;
+            animation: spinClockwise 6s linear infinite;
+        }
+
+        .hud-avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            z-index: 10;
+        }
+
+        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
+        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+
+        /* Animated Dot Pulse */
+        .animated-dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.5em;
+            text-align: left;
+            animation: dotsAnimation 1.5s steps(4, end) infinite;
+        }
+        @keyframes dotsAnimation {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .neon-progress-bar {
+            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
+            box-shadow: 0 0 12px var(--neon-cyan);
+            transition: width 0.15s ease-out;
+        }
     </style>
 </head>
 <body>
+
+<!-- Loader Overlay Utama -->
+<div id="cyber-loader-overlay">
+    <div class="scanner-beam"></div>
+
+    <div class="hud-ring">
+        <div class="ring-outer"></div>
+        <div class="ring-middle"></div>
+        <div class="ring-inner"></div>
+        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
+    </div>
+
+    <div style="text-align: center; padding: 0 16px;">
+        <div id="loader-title-text" style="font-size: 14px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-cyan); margin-bottom: 4px;">
+            Memuat Halaman<span class="animated-dots"></span>
+        </div>
+        <div style="font-size: 10px; color: #94a3b8; font-family: monospace; letter-spacing: 1px; opacity: 0.8; text-transform: uppercase;">
+            SYSTEM INITIALIZING // CORE GATEWAY
+        </div>
+    </div>
+
+    <div style="width: 280px; margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 8px;">
+            <span style="color: #94a3b8; font-size: 10px;">SYSTEM STATUS</span>
+            <span id="loader-percentage" style="color: var(--neon-cyan); font-size: 14px;">0%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: rgba(15, 23, 42, 0.9); border-radius: 9999px; border: 1px solid rgba(0, 243, 255, 0.3); overflow: hidden; padding: 2px;">
+            <div id="loader-progress-fill" class="neon-progress-bar" style="height: 100%; border-radius: 9999px; width: 0%;"></div>
+        </div>
+    </div>
+
+    <div style="position: absolute; bottom: 24px; font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; letter-spacing: 2px;">
+        BACKEND DEV - ARULZ-XD API v2.0
+    </div>
+</div>
 
 <div class="top-left-nav">
     <a href="/docs" class="btn-nav-top">
@@ -262,7 +419,7 @@
             btnPrev: "← Sebelumnya", btnNext: "Berikutnya →"
         },
         en: {
-            heroTitle: "<span>Snippet</span> & Code", heroDesc: "Collection of codes, scripts, and snippets from the over-XD team. Free, ready to use.",
+            heroTitle: "<span>Snippet</span> & Code", heroDesc: "Collection of codes, scripts, and snippets from the Arulz-XD team. Free, ready to use.",
             stat1: "Total Pastes", stat2: "Languages", stat4: "Total Lines",
             searchPlaceholder: "Search paste by title, language, or description...", filterAll: "All", sepText: "All Pastes", noData: "Data not found.",
             lblFooterText: "Created for Indonesian Developers", alertSuccessCopy: "Code successfully copied!", 
@@ -282,7 +439,7 @@
     let currentFilter = 'ALL';
 
     function getLanguageStyle(lang) {
-        const l = String(lang).toLowerCase().trim();
+        const l = String(lang || '').toLowerCase().trim();
         switch(l) {
             case 'javascript': case 'js':
                 return 'background: rgba(247, 223, 30, 0.1); color: #f7df1e; border: 1px solid #f7df1e;';
@@ -349,11 +506,12 @@
     }
 
     function openRawModal() {
+        if(!viewId) return;
         const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
         if(idx !== -1) {
             const current = pastes[idx];
             document.getElementById('raw-modal-title-text').innerText = `RAW - ${current.title.toUpperCase()}`;
-            document.getElementById('raw-textarea-display').value = current.content;
+            document.getElementById('raw-textarea-display').value = current.content || '';
             document.getElementById('rawModal').style.display = 'flex';
         }
     }
@@ -371,13 +529,14 @@
     }
 
     function downloadCode() {
+        if(!viewId) return;
         const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
         if(idx !== -1) {
             const current = pastes[idx];
             const element = document.createElement("a");
-            const file = new Blob([current.content], {type: 'text/plain'});
+            const file = new Blob([current.content || ''], {type: 'text/plain'});
             element.href = URL.createObjectURL(file);
-            element.download = `${current.title.replace(/\s+/g, '_').toLowerCase()}.js`;
+            element.download = `${(current.title || 'snippet').replace(/\s+/g, '_').toLowerCase()}.js`;
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
@@ -389,7 +548,6 @@
         if (!target) return;
         const t = translations[currentLang];
 
-        // LOGIKA MODE RAW (BG HITAM, TEKS PUTIH)
         if (viewId && isRawMode) {
             const current = pastes.find(p => p.id.toString() === viewId.toString());
             if (!current) { 
@@ -411,14 +569,9 @@
             return;
         }
 
-        // LOGIKA PENYEMBUNYIAN TOMBOL NAVIGASI ATAS
         const topLeftNav = document.querySelector('.top-left-nav');
         if (topLeftNav) {
-            if (viewId) {
-                topLeftNav.style.display = 'none'; 
-            } else {
-                topLeftNav.style.display = 'flex'; 
-            }
+            topLeftNav.style.display = viewId ? 'none' : 'flex';
         }
 
         if (pastes.length === 0 && !viewId) {
@@ -445,16 +598,16 @@
                 <div class="detail-header">
                     <div class="detail-header-top">
                         <div style="flex-grow: 1; padding-right: 20px;">
-                            <h2 style="margin:0 0 10px 0; font-size:24px; color:var(--text-main); font-weight:700;">${current.title}</h2>
-                            <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-muted); font-weight:normal;">${current.desc || 'Tidak ada deskripsi.'}</p>
+                            <h2 style="margin:0 0 10px 0; font-size:24px; color:var(--text-main); font-weight:700;">${escapeHTML(current.title || '')}</h2>
+                            <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-muted); font-weight:normal;">${escapeHTML(current.desc || 'Tidak ada deskripsi.')}</p>
                         </div>
                         <div>
-                            <div class="detail-lang-badge" style="${getLanguageStyle(current.language)}">${current.language}</div>
+                            <div class="detail-lang-badge" style="${getLanguageStyle(current.language)}">${escapeHTML(current.language || 'txt')}</div>
                         </div>
                     </div>
                     <div style="font-size:12px; color:var(--text-muted); margin-top: 10px; display:flex; align-items:center; gap:10px;">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                        ${current.date} · 
+                        ${current.date || 'N/A'} · 
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                         ${lineCount.toLocaleString()} ${t.lblLines}
                     </div>
@@ -492,9 +645,9 @@
                 <div class="code-window">
                     <div class="window-top">
                         <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
-                        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--cyan);">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
+                        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--cyan);">&lt;/&gt; ${(current.language || 'TEXT').toUpperCase()} MODE</div>
                     </div>
-                    <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : current.language}"><code id="code-block"></code></pre>
+                    <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : (current.language || 'plaintext')}"><code id="code-block"></code></pre>
                 </div>
             `;
             document.getElementById('code-block').textContent = current.content || '';
@@ -505,7 +658,7 @@
             let langs = {};
             pastes.forEach(p => {
                 if(p.content) totalLines += p.content.split('\n').length;
-                langs[p.language] = true;
+                if(p.language) langs[p.language] = true;
             });
             let totalLanguagesCount = Object.keys(langs).length;
             if (totalLanguagesCount < 2) totalLanguagesCount = 2;
@@ -572,16 +725,16 @@
                 <div class="paste-card" onclick="window.location.href='/pastecode?id=${p.id}'">
                     <div class="card-top">
                         <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
-                        <div class="lang-badge" style="${getLanguageStyle(p.language)}">${p.language}</div>
+                        <div class="lang-badge" style="${getLanguageStyle(p.language)}">${escapeHTML(p.language || 'txt')}</div>
                     </div>
                     <div class="card-body">
-                        <h3 class="card-title" style="margin:0 0 15px 0;">${p.title}</h3>
+                        <h3 class="card-title" style="margin:0 0 15px 0;">${escapeHTML(p.title || '')}</h3>
                         <div class="preview-box">${escapeHTML(contentPreview)}</div>
                     </div>
                     <div class="card-footer">
                         <div class="card-footer-info" style="display:flex; align-items:center; gap:5px;">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                            <span>${p.date}</span>
+                            <span>${escapeHTML(p.date || 'N/A')}</span>
                         </div>
                         <a href="/pastecode?id=${p.id}&raw=true" target="_blank" class="btn-raw" onclick="event.stopPropagation();">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px; height:12px; stroke:#000;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
@@ -651,6 +804,7 @@
     }
 
     function copyRawUrl() {
+        if(!viewId) return;
         const rawUrl = window.location.origin + "/pastecode?id=" + viewId + "&raw=true";
         navigator.clipboard.writeText(rawUrl).then(() => customAlert(translations[currentLang].alertShare));
     }
@@ -694,13 +848,15 @@
     }
 
     function escapeHTML(text) { 
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+        if(!text) return '';
+        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
     }
 
     function copyText() {
+        if(!viewId) return;
         const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
         if(idx !== -1) {
-            navigator.clipboard.writeText(pastes[idx].content).then(() => customAlert(translations[currentLang].alertSuccessCopy));
+            navigator.clipboard.writeText(pastes[idx].content || '').then(() => customAlert(translations[currentLang].alertSuccessCopy));
         }
     }
 
@@ -710,12 +866,78 @@
         applyStaticTranslations();
         loadPastesFromServer(); 
     };
+
+    function getPageDisplayName() {
+        const path = window.location.pathname;
+        let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
+
+        if (!fileName || fileName === '' || fileName === 'index') return 'Home';
+
+        const pageMap = {
+            'home': 'Home',
+            'docs': 'Dokumentasi',
+            'doc': 'Dokumentasi',
+            'status': 'Status Server',
+            'store': 'Store API',
+            'changelog': 'Changelog',
+            'uploader': 'Uploader File',
+            'pastecode': 'Pastecode',
+            'feedback': 'Feedback',
+            'privacy': 'Kebijakan Privasi',
+            'support': 'Dukungan Support',
+            'login': 'Halaman Login'
+        };
+
+        if (pageMap[fileName]) return pageMap[fileName];
+        return fileName.charAt(0).toUpperCase() + fileName.slice(1);
+    }
+
+    const pageName = getPageDisplayName();
+    const loaderTitleEl = document.getElementById('loader-title-text');
+    if (loaderTitleEl) {
+        loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
+    }
+
+    // Loader Control
+    let currentProgress = 0;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 120);
+
+    window.addEventListener('load', () => {
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+        }, 400);
+    });
+
+    setTimeout(() => {
+        clearInterval(progressInterval);
+        updateProgress(100);
+        if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+            loaderOverlay.classList.add('fade-out');
+        }
+    }, 4000);
 </script>
 
+<!-- Prism JS Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
-<script src="script.js"></script>
 </body>
 </html>
