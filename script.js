@@ -402,6 +402,40 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     }
 }
 
+// Helper untuk beralih mode tampilan tab (PREVIEW vs JSON)
+function switchResponseView(catIdx, epIdx, viewMode) {
+    const previewContainer = document.getElementById(`view-preview-${catIdx}-${epIdx}`);
+    const jsonContainer = document.getElementById(`view-json-${catIdx}-${epIdx}`);
+    const tabPreview = document.getElementById(`tab-preview-${catIdx}-${epIdx}`);
+    const tabJson = document.getElementById(`tab-json-${catIdx}-${epIdx}`);
+
+    if (!previewContainer || !jsonContainer) return;
+
+    if (viewMode === 'preview') {
+        previewContainer.classList.remove('hidden');
+        jsonContainer.classList.add('hidden');
+        if (tabPreview) {
+            tabPreview.classList.add('bg-cyan-500', 'text-slate-950', 'font-black');
+            tabPreview.classList.remove('bg-white/5', 'text-slate-400');
+        }
+        if (tabJson) {
+            tabJson.classList.remove('bg-cyan-500', 'text-slate-950', 'font-black');
+            tabJson.classList.add('bg-white/5', 'text-slate-400');
+        }
+    } else {
+        previewContainer.classList.add('hidden');
+        jsonContainer.classList.remove('hidden');
+        if (tabJson) {
+            tabJson.classList.add('bg-cyan-500', 'text-slate-950', 'font-black');
+            tabJson.classList.remove('bg-white/5', 'text-slate-400');
+        }
+        if (tabPreview) {
+            tabPreview.classList.remove('bg-cyan-500', 'text-slate-950', 'font-black');
+            tabPreview.classList.add('bg-white/5', 'text-slate-400');
+        }
+    }
+}
+
 async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
     e.preventDefault();
     if (isRequestInProgress) {
@@ -430,7 +464,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
     responseDiv.classList.remove('hidden');
 
-    // LOADING STATE: Menggunakan skeleton loader & pulse modern
+    // LOADING STATE
     responseContent.innerHTML = `
         <div class="flex flex-col items-center justify-center p-12 text-sm font-mono tracking-wider text-cyan-400 gap-3">
             <div class="relative flex h-4 w-4">
@@ -500,7 +534,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
         const endTime = performance.now();
         const duration = Math.round(endTime - startTime);
 
-        // Handler Error Status (403 / 429 / 503)
         if (response.status === 403 || response.status === 429 || response.status === 503) {
             const data = await response.json().catch(() => ({ message: "Akses Ditolak" }));
             const rawErrText = JSON.stringify(data, null, 2);
@@ -555,9 +588,11 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
             let detectedMediaUrl = null;
             if (data.url && typeof data.url === 'string' && data.url.startsWith('http')) detectedMediaUrl = data.url;
+            else if (data.image && typeof data.image === 'string') detectedMediaUrl = data.image;
+            else if (data.dataUrl && typeof data.dataUrl === 'string') detectedMediaUrl = data.dataUrl;
             else if (data.result && data.result.url && typeof data.result.url === 'string') detectedMediaUrl = data.result.url;
 
-            if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
+            if (detectedMediaUrl && (detectedMediaUrl.startsWith('data:image') || detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
                  hintText = getMediaHint(detectedMediaUrl);
                  
                  let mediaMarkup = '';
@@ -570,13 +605,28 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                  }
 
                  finalInnerContent = `
-                    <div class="p-4 border-b-2 border-white/20 dark:border-white/20 light-mode:border-slate-300 bg-black/20 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+                    <div class="px-4 py-2 bg-black/40 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="tab-preview-${catIdx}-${epIdx}" onclick="switchResponseView('${catIdx}', '${epIdx}', 'preview')" class="px-3 py-1 rounded text-[10px] font-black uppercase tracking-wider bg-cyan-500 text-slate-950 transition-all">
+                                PREVIEW
+                            </button>
+                            <button type="button" id="tab-json-${catIdx}-${epIdx}" onclick="switchResponseView('${catIdx}', '${epIdx}', 'json')" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white/5 text-slate-400 hover:text-white transition-all">
+                                JSON
+                            </button>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-400 uppercase">Interactive View</span>
+                    </div>
+
+                    <div id="view-preview-${catIdx}-${epIdx}" class="p-4 border-b-2 border-white/20 dark:border-white/20 light-mode:border-slate-300 bg-black/20 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
                         <div class="w-full flex justify-center [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_video]:max-w-full">
                             ${mediaMarkup}
                         </div>
                     </div>
-                    <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-                    <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+
+                    <div id="view-json-${catIdx}-${epIdx}" class="hidden">
+                        <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+                        <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+                    </div>
                  `;
                  isMedia = true;
             } else {
