@@ -465,9 +465,37 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between px-1">
-                        <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
-                        <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                    <!-- KODE VOUCHER DISKON (OPSIONAL) -->
+                    <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold text-slate-300 flex items-center gap-1.5" for="voucherInput">
+                                <i class="fa-solid fa-ticket text-cyberCyan"></i> Kode Voucher <span class="text-[10px] font-normal text-slate-400">(Opsional)</span>
+                            </label>
+                            <span id="voucherStatusLabel" class="text-[10px] font-mono text-slate-500">Bisa diisi / dikosongkan</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="voucherInput" placeholder="Masukkan kode jika ada..." 
+                                   class="flex-1 bg-cyberDark border border-cyberBorder rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-100 uppercase placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition">
+                            <button type="button" id="btnClaimVoucher" onclick="claimVoucher()" 
+                                    class="bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-cyber font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow-glowCyanSm">
+                                <i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder space-y-1.5">
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span>Subtotal Harga:</span>
+                            <span id="modalSubtotalPrice" class="font-mono text-slate-200">Rp 0</span>
+                        </div>
+                        <div id="voucherDiscountRow" class="hidden flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                            <span>Diskon Voucher:</span>
+                            <span id="modalDiscountAmount" class="font-mono">- Rp 0</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1.5 border-t border-cyberBorder/60">
+                            <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
+                            <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                        </div>
                     </div>
 
                     <div>
@@ -574,13 +602,13 @@
                         <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
                     </div>
 
-                    <!-- TOMBOL BATALKAN TRANSAKSI (DIPERJELAS) -->
+                    <!-- TOMBOL BATALKAN TRANSAKSI -->
                     <button type="button" onclick="cancelPayment()" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/50 text-red-400 hover:text-red-300 font-cyber font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.2)]">
                         <i class="fa-solid fa-xmark text-sm"></i> BATALKAN TRANSAKSI
                     </button>
                 </div>
 
-                <!-- STEP 3: SUKSES & LINK PRODUK (Selesai Settlement) -->
+                <!-- STEP 3: SUKSES & LINK PRODUK -->
                 <div id="paymentStep3" class="hidden flex flex-col items-center justify-center space-y-4 text-center">
                     <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(16,185,129,0.4)]">
                         <i class="fa-solid fa-check"></i>
@@ -619,6 +647,7 @@
         let SELECTED_PRODUCT = null;
         let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
+        let ACTIVE_VOUCHER = null; // Menyimpan objek voucher jika berhasil diklaim
         let pollingInterval = null;
         let countdownInterval = null;
         let qrisExpireTime = null;
@@ -934,6 +963,7 @@
 
             CURRENT_ORDER_ID = generateUniqueOrderId();
             CURRENT_QTY = 1;
+            ACTIVE_VOUCHER = null; // Reset status voucher setiap kali checkout baru
 
             const hargaFinal = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
 
@@ -943,6 +973,18 @@
             document.getElementById('modalProductSold').innerText = formatTerjual(SELECTED_PRODUCT.terjual);
             document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
+
+            // Reset Form Voucher
+            const vInput = document.getElementById('voucherInput');
+            if (vInput) {
+                vInput.value = '';
+                vInput.disabled = false;
+            }
+            document.getElementById('voucherStatusLabel').innerText = 'Bisa diisi / dikosongkan';
+            document.getElementById('voucherStatusLabel').className = 'text-[10px] font-mono text-slate-500';
+            
+            const btnClaimText = document.getElementById('btnClaimText');
+            if (btnClaimText) btnClaimText.innerText = 'Claim';
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
@@ -981,11 +1023,162 @@
             updateTotalPrice();
         }
 
+        // FUNGSI CLAIM VOUCHER (DENGAN ANIMASI LOADING & POPUP ERROR HANGUS/TIDAK TERSEDIA)
+        async function claimVoucher() {
+            const vInput = document.getElementById('voucherInput');
+            const voucherCode = vInput ? vInput.value.trim().toUpperCase() : '';
+            const btnClaim = document.getElementById('btnClaimVoucher');
+            const btnText = document.getElementById('btnClaimText');
+            const statusLabel = document.getElementById('voucherStatusLabel');
+
+            // Jika sudah aktif lalu diklik lagi, berarti mau melepaskan (cancel) voucher
+            if (ACTIVE_VOUCHER) {
+                ACTIVE_VOUCHER = null;
+                vInput.value = '';
+                vInput.disabled = false;
+                btnText.innerText = 'Claim';
+                statusLabel.innerText = 'Bisa diisi / dikosongkan';
+                statusLabel.className = 'text-[10px] font-mono text-slate-500';
+                updateTotalPrice();
+                return;
+            }
+
+            // Jika input kosong namun tombol ditekan
+            if (!voucherCode) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'VOUCHER KOSONG',
+                    text: 'Jika tidak memiliki kode voucher, Anda dapat membiarkannya kosong dan langsung melanjutkan transaksi.',
+                    customClass: {
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        htmlContainer: 'cyber-swal-text',
+                        confirmButton: 'cyber-swal-confirm'
+                    }
+                });
+                return;
+            }
+
+            // Animasi Loading Tombol
+            btnClaim.disabled = true;
+            btnClaim.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Mengecek...</span>`;
+
+            try {
+                // Request Verifikasi Voucher ke API / Database Backend
+                const res = await fetch(`/api/vouchers/${encodeURIComponent(voucherCode)}`);
+                const result = await res.json();
+
+                if (!res.ok || !result.status || !result.data) {
+                    // Penanganan jika voucher expired / kuota habis vs voucher tidak ditemukan
+                    if (result.reason === 'expired' || result.reason === 'limit_reached') {
+                        throw { type: 'expired', message: 'Maaf, voucher diskon telah hangus atau kuota penggunaannya sudah habis!' };
+                    } else {
+                        throw { type: 'not_found', message: 'Kode voucher tidak tersedia atau salah diketik.' };
+                    }
+                }
+
+                // Berhasil Verifikasi
+                ACTIVE_VOUCHER = result.data;
+                vInput.disabled = true;
+                btnClaim.disabled = false;
+                btnClaim.innerHTML = `<i class="fa-solid fa-xmark"></i> <span>Lepas</span>`;
+                statusLabel.innerText = `● Voucher Valid (${ACTIVE_VOUCHER.code})`;
+                statusLabel.className = 'text-[10px] font-mono text-emerald-400 font-bold';
+
+                let discountDetailText = '';
+                if (ACTIVE_VOUCHER.type === 'percentage') {
+                    discountDetailText = `Diskon ${ACTIVE_VOUCHER.discount}% berhasil dipasang pada transaksi Anda!`;
+                } else {
+                    discountDetailText = `Potongan ${formatRupiah(ACTIVE_VOUCHER.discount)} berhasil dipasang!`;
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'VOUCHER BERHASIL!',
+                    text: discountDetailText,
+                    timer: 2500,
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        htmlContainer: 'cyber-swal-text'
+                    }
+                });
+
+                updateTotalPrice();
+
+            } catch (err) {
+                btnClaim.disabled = false;
+                btnClaim.innerHTML = `<i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>`;
+
+                if (err.type === 'expired') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'VOUCHER TELAH HANGUS',
+                        text: err.message,
+                        customClass: {
+                            popup: 'cyber-swal',
+                            title: 'cyber-swal-title',
+                            htmlContainer: 'cyber-swal-text',
+                            confirmButton: 'cyber-swal-confirm'
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'VOUCHER TIDAK TERSEDIA',
+                        text: err.message || 'Kode voucher diskon tidak ditemukan di sistem.',
+                        customClass: {
+                            popup: 'cyber-swal',
+                            title: 'cyber-swal-title',
+                            htmlContainer: 'cyber-swal-text',
+                            confirmButton: 'cyber-swal-confirm'
+                        }
+                    });
+                }
+            }
+        }
+
+        function calculateFinalTotal() {
+            if (!SELECTED_PRODUCT) return { subtotal: 0, discount: 0, total: 0 };
+            
+            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
+            const subtotal = hargaUnit * CURRENT_QTY;
+            let discountAmount = 0;
+
+            if (ACTIVE_VOUCHER) {
+                if (ACTIVE_VOUCHER.type === 'percentage') {
+                    discountAmount = (subtotal * ACTIVE_VOUCHER.discount) / 100;
+                } else if (ACTIVE_VOUCHER.type === 'fixed') {
+                    discountAmount = ACTIVE_VOUCHER.discount;
+                }
+            }
+
+            if (discountAmount > subtotal) discountAmount = subtotal; // Diskon tidak boleh melebihi subtotal
+            const finalTotal = subtotal - discountAmount;
+
+            return {
+                subtotal,
+                discount: discountAmount,
+                total: finalTotal
+            };
+        }
+
         function updateTotalPrice() {
             if (!SELECTED_PRODUCT) return;
-            const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
-            const total = hargaUnit * CURRENT_QTY;
-            document.getElementById('modalTotalPrice').innerText = formatRupiah(total);
+            const calc = calculateFinalTotal();
+
+            document.getElementById('modalSubtotalPrice').innerText = formatRupiah(calc.subtotal);
+
+            const discountRow = document.getElementById('voucherDiscountRow');
+            if (calc.discount > 0) {
+                discountRow.classList.remove('hidden');
+                document.getElementById('modalDiscountAmount').innerText = `- ${formatRupiah(calc.discount)}`;
+            } else {
+                discountRow.classList.add('hidden');
+            }
+
+            document.getElementById('modalTotalPrice').innerText = formatRupiah(calc.total);
         }
 
         function closeCheckoutModal() {
@@ -1021,16 +1214,16 @@
             });
 
             try {
-                const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
-                const totalHarga = hargaUnit * CURRENT_QTY;
+                const calc = calculateFinalTotal();
 
                 const res = await fetch('/transactions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderId: CURRENT_ORDER_ID,
-                        amount: totalHarga,
-                        itemDetails: SELECTED_PRODUCT
+                        amount: calc.total,
+                        itemDetails: SELECTED_PRODUCT,
+                        voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
                     })
                 });
 
@@ -1043,7 +1236,7 @@
                 const qrisString = result.data.paymentNumber;
                 qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
 
-                const finalAmount = (result.data && result.data.amount) ? result.data.amount : totalHarga;
+                const finalAmount = (result.data && result.data.amount) ? result.data.amount : calc.total;
 
                 document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
                 document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
@@ -1280,7 +1473,7 @@
             const username = document.getElementById('usernameInput').value.trim();
             const note = document.getElementById('noteInput').value.trim();
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
-            const totalHarga = hargaUnit * CURRENT_QTY;
+            const calc = calculateFinalTotal();
 
             let message = `Halo Arulz, saya ingin memesan produk berikut secara manual:\n\n`;
             message += `*--- DETAIL PESANAN MANUAL ---*\n`;
@@ -1289,7 +1482,10 @@
             message += `📦 *Produk:* ${SELECTED_PRODUCT.nama}\n`;
             message += `🔢 *Jumlah Beli:* ${CURRENT_QTY}\n`;
             message += `💰 *Harga Satuan:* ${formatRupiah(hargaUnit)}\n`;
-            message += `💳 *Total Tagihan:* ${formatRupiah(totalHarga)}\n`;
+            if (ACTIVE_VOUCHER && calc.discount > 0) {
+                message += `🎟️ *Voucher:* ${ACTIVE_VOUCHER.code} (-${formatRupiah(calc.discount)})\n`;
+            }
+            message += `💳 *Total Tagihan:* ${formatRupiah(calc.total)}\n`;
             if (note) {
                 message += `📝 *Catatan:* ${note}\n`;
             }
