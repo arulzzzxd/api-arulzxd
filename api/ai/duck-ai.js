@@ -133,6 +133,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.status = "ready";
+router.status = "error";
 router.type = "free";
 module.exports = router;
