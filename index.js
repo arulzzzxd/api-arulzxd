@@ -2149,7 +2149,7 @@ app.get('/docs', (req, res) => {
     <link id="faviconLink" rel="icon" type="image/x-icon" href="${favicon}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="styles.css" />
     
     <style>
     html {
@@ -2274,9 +2274,169 @@ app.get('/docs', (req, res) => {
         background: linear-gradient(135deg, #6b21a8 0%, #c084fc 30%, #ffffff 50%, #a855f7 70%, #4c1d95 100%);
         box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
     }
+     :root {
+        --neon-cyan: #00f3ff;
+        --neon-glow: rgba(0, 243, 255, 0.4);
+        --bg-dark: #030712;
+        --bg-card: rgba(15, 23, 42, 0.75);
+        --border-color: rgba(0, 243, 255, 0.2);
+    }
+
+    /* Support Light Theme Mode */
+    html.light {
+        --neon-cyan: #008b9b;
+        --neon-glow: rgba(0, 139, 155, 0.25);
+        --bg-dark: #f0fdfa;
+        --bg-card: rgba(255, 255, 255, 0.85);
+        --border-color: rgba(0, 139, 155, 0.3);
+    }
+
+    #cyber-loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background-color: var(--bg-dark);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+    }
+
+    #cyber-loader-overlay.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    /* Laser Scanner Beam */
+    .scanner-beam {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 300%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
+        animation: scanAnimation 4s infinite linear;
+    }
+    @keyframes scanAnimation {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+
+    /* Concentric Hologram HUD Rotating Rings */
+    .hud-ring {
+        position: relative;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ring-outer {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px dashed var(--neon-cyan);
+        opacity: 0.6;
+        animation: spinClockwise 10s linear infinite;
+        box-shadow: 0 0 15px var(--neon-glow);
+    }
+
+    .ring-middle {
+        position: absolute;
+        inset: 10px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: var(--neon-cyan);
+        border-bottom-color: var(--neon-cyan);
+        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    }
+
+    .ring-inner {
+        position: absolute;
+        inset: 20px;
+        border-radius: 50%;
+        border: 1px dotted var(--neon-cyan);
+        opacity: 0.8;
+        animation: spinClockwise 6s linear infinite;
+    }
+
+    .hud-avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--neon-cyan);
+        box-shadow: 0 0 20px var(--neon-cyan);
+        z-index: 10;
+    }
+
+    @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
+    @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+
+    /* Animated Dot Pulse */
+    .animated-dots::after {
+        content: '';
+        display: inline-block;
+        width: 1.5em;
+        text-align: left;
+        animation: dotsAnimation 1.5s steps(4, end) infinite;
+    }
+    @keyframes dotsAnimation {
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+    }
+
+    .neon-progress-bar {
+        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
+        box-shadow: 0 0 12px var(--neon-cyan);
+        transition: width 0.15s ease-out;
+    }
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
+<div id="cyber-loader-overlay">
+    <div class="scanner-beam"></div>
+
+    <!-- Central Holographic HUD Ring Spinner -->
+    <div class="hud-ring mb-6">
+        <div class="ring-outer"></div>
+        <div class="ring-middle"></div>
+        <div class="ring-inner"></div>
+        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
+    </div>
+
+    <!-- Dynamic Page Name & Animated Dot Text -->
+    <div class="text-center px-4">
+        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
+            Memuat Halaman<span class="animated-dots"></span>
+        </div>
+        <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
+            SYSTEM INITIALIZING // CORE GATEWAY
+        </div>
+    </div>
+
+    <!-- Progress Bar (0% - 100%) -->
+    <div class="w-64 sm:w-80 mt-6">
+        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
+            <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
+            <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
+            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+        </div>
+    </div>
+
+    <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        BACKEND DEV - ARULZ-XD API v2.0
+    </div>
+</div>
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
     <!-- Welcome Popup -->
@@ -2797,6 +2957,73 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('overflow-hidden');
     });
 });
+function getPageDisplayName() {
+        const path = window.location.pathname;
+        let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
+
+        if (!fileName || fileName === '' || fileName === 'index') return 'Home';
+
+        const pageMap = {
+            'home': 'Home',
+            'docs': 'Dokumentasi',
+            'doc': 'Dokumentasi',
+            'status': 'Status Server',
+            'store': 'Store API',
+            'changelog': 'Changelog',
+            'uploader': 'Uploader File',
+            'pastecode': 'Pastecode',
+            'feedback': 'Feedback',
+            'privacy': 'Kebijakan Privasi',
+            'support': 'Dukungan Support',
+            'login': 'Halaman Login'
+        };
+
+        if (pageMap[fileName]) return pageMap[fileName];
+        return fileName.charAt(0).toUpperCase() + fileName.slice(1);
+    }
+
+    const pageName = getPageDisplayName();
+    const loaderTitleEl = document.getElementById('loader-title-text');
+    if (loaderTitleEl) {
+        loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
+    }
+
+    // Progress Loader 0% - 100%
+    let currentProgress = 0;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 120);
+
+    window.addEventListener('load', () => {
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+        }, 400);
+    });
+
+    // Fallback Safety (Maksimal 4 detik)
+    setTimeout(() => {
+        clearInterval(progressInterval);
+        updateProgress(100);
+        if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+            loaderOverlay.classList.add('fade-out');
+        }
+    }, 4000);
 </script>
 
 </body>
