@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArulzXD Store - Marketplace</title>
+    <link rel="icon" type="image/png" href="https://arulz-xd.my.id/files/UBkDZZ.png" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Plus Jakarta Sans & Orbitron -->
@@ -431,7 +432,7 @@
                 <!-- STEP 1: FORM UTAMA -->
                 <form id="orderForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                     <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
-                        <span class="text-[11px] font-semibold text-slate-400">ID TRX (Unik):</span>
+                        <span class="text-[11px] font-semibold text-slate-400">ID TRX:</span>
                         <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
                     </div>
 
@@ -1030,7 +1031,6 @@
             const btnClaim = document.getElementById('btnClaimVoucher');
             const btnText = document.getElementById('btnClaimText');
             const statusLabel = document.getElementById('voucherStatusLabel');
-            const usernameInput = document.getElementById('usernameInput');
 
             if (ACTIVE_VOUCHER) {
                 ACTIVE_VOUCHER = null;
@@ -1062,22 +1062,16 @@
             btnClaim.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Mengecek...</span>`;
 
             try {
-                const userIdentifier = usernameInput ? usernameInput.value.trim() : '';
                 const res = await fetch('/api/vouchers/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        code: voucherCode,
-                        username: userIdentifier
-                    })
+                    body: JSON.stringify({ code: voucherCode })
                 });
 
                 const result = await res.json();
 
                 if (!res.ok || !result.status || !result.voucher) {
-                    if (result.reason === 'already_used') {
-                        throw { type: 'already_used', message: result.message || 'Anda telah menggunakan voucher ini 1 kali.' };
-                    } else if (result.reason === 'expired' || result.reason === 'limit_reached') {
+                    if (result.reason === 'expired' || result.reason === 'limit_reached') {
                         throw { type: 'expired', message: result.message || 'Voucher telah kedaluwarsa atau kuota habis!' };
                     } else {
                         throw { type: 'not_found', message: result.message || 'Kode voucher tidak ditemukan.' };
@@ -1114,19 +1108,7 @@
                 btnClaim.disabled = false;
                 btnClaim.innerHTML = `<i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>`;
 
-                if (err.type === 'already_used') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'BATAS KLAIM TERCAPAI',
-                        text: err.message,
-                        customClass: {
-                            popup: 'cyber-swal',
-                            title: 'cyber-swal-title',
-                            htmlContainer: 'cyber-swal-text',
-                            confirmButton: 'cyber-swal-confirm'
-                        }
-                    });
-                } else if (err.type === 'expired') {
+                if (err.type === 'expired') {
                     Swal.fire({
                         icon: 'error',
                         title: 'VOUCHER TELAH HANGUS',
