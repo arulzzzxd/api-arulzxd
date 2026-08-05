@@ -2,7 +2,8 @@
 <html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tag viewport dengan proteksi disable zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
     <title>Privacy Policy - Arulz-XD API</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -20,6 +21,15 @@
         }
     </script>
     <style>
+        /* CSS Disable Zoom & Touch Gesture */
+        html, body {
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         body {
             background-color: #0b0c10;
         }
@@ -227,6 +237,29 @@
     </div>
 
     <script>
+        // --- JAVASCRIPT PROTEKSI ZOOM ---
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', function (e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('wheel', function (e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
+                e.preventDefault();
+            }
+        });
+
         const docTranslations = {
             id: {
                 btnBack: "Kembali ke Beranda",
