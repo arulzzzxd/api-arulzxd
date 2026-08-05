@@ -1372,7 +1372,7 @@ const localFileUploader = fileUpload({
 });
 
 const title = "API-ARULZXD - REST";
-const favicon = "https://arulz-xd.my.id/files/X1F0Cn.png";
+const favicon = "https://arulz-xd.my.id/files/UBkDZZ.png";
 const logo = "https://arulz-xd.my.id/files/33s7XJ.png";
 const headertitle = `<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" />`;
 const headerdescription = "Browse, inspect & fire requests against live endpoints._";
