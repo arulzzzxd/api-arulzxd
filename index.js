@@ -2104,40 +2104,6 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
-    let authButtonHtml = '';
-    let displayApiKey = 'Silakan Login';
-
-    if (req.user) {
-        displayApiKey = req.user.apiKey;
-
-        authButtonHtml = `
-<div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
-    <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
-        <div class="relative flex-shrink-0 z-10">
-            <img src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
-            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
-        </div>
-        
-        <div class="flex flex-col text-left min-w-0 z-10">
-            <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">AUTHORIZED USER</span>
-            <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
-        </div>
-
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-        </svg>
-    </button>
-</div>
-`;
-    } else {
-        authButtonHtml = `
-        <div class="mb-3 flex flex-col gap-2">
-            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200">
-                <span>Masuk ke Akun</span>
-            </a>
-        </div>`;
-    }
-
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
@@ -2398,10 +2364,10 @@ app.get('/docs', (req, res) => {
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
+
 <div id="cyber-loader-overlay">
     <div class="scanner-beam"></div>
 
-    <!-- Central Holographic HUD Ring Spinner -->
     <div class="hud-ring mb-6">
         <div class="ring-outer"></div>
         <div class="ring-middle"></div>
@@ -2409,7 +2375,6 @@ app.get('/docs', (req, res) => {
         <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
     </div>
 
-    <!-- Dynamic Page Name & Animated Dot Text -->
     <div class="text-center px-4">
         <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
             Memuat Halaman<span class="animated-dots"></span>
@@ -2419,7 +2384,6 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Progress Bar (0% - 100%) -->
     <div class="w-64 sm:w-80 mt-6">
         <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
             <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
@@ -2434,6 +2398,7 @@ app.get('/docs', (req, res) => {
         BACKEND DEV - ARULZ-XD API v2.0
     </div>
 </div>
+
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
     <!-- Welcome Popup -->
@@ -2465,7 +2430,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${displayApiKey}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? req.user.apiKey : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -2590,10 +2555,33 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-        ${authButtonHtml}
+        ${req.user ? `
+        <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
+            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
+                <div class="relative flex-shrink-0 z-10">
+                    <img src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
+                </div>
+                
+                <div class="flex flex-col text-left min-w-0 z-10">
+                    <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">AUTHORIZED USER</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
+                </div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+            </button>
+        </div>
+        ` : `
+        <div class="mb-3 flex flex-col gap-2">
+            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200">
+                <span>Masuk ke Akun</span>
+            </a>
+        </div>
+        `}
 
         <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 light-mode:text-slate-700 flex-1 py-1 overflow-y-auto scrollbar-hide">
-            
             <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
             <a href="/" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
@@ -2673,7 +2661,6 @@ app.get('/docs', (req, res) => {
 
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden z-30 transition-opacity duration-300"></div>
 
-    <!-- Main Container -->
     <div class="max-w-5xl mx-auto px-4 py-8 relative z-10">
         <header id="api" class="mb-10 text-center">
             <div class="flex items-center justify-center gap-3 mb-3">
@@ -2685,7 +2672,6 @@ app.get('/docs', (req, res) => {
             <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">${headertitle}</div>
             <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">${headerdescription}</p>
             
-            <!-- Statistics Grid -->
             <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
                     <div class="text-center font-['Space_Grotesk']">
@@ -2719,7 +2705,6 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <!-- Host URL & Request Feature -->
             <div class="glass-panel max-w-4xl mx-auto mt-4 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/10">
                 <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -2736,7 +2721,6 @@ app.get('/docs', (req, res) => {
                 </a>
             </div>
 
-            <!-- Social Links -->
             <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
                 <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" 
                    target="_blank" 
@@ -2756,7 +2740,6 @@ app.get('/docs', (req, res) => {
                 </a>
             </div>
 
-            <!-- Music Player -->
             <div class="music-player-card glass-panel mt-6 max-w-2xl mx-auto rounded-2xl p-4 shadow-xl relative overflow-hidden border border-white/5">
                 <audio id="audioElement"></audio>
                 <div class="flex items-center justify-between gap-4">
@@ -2796,7 +2779,6 @@ app.get('/docs', (req, res) => {
             
         </header>
 
-        <!-- Search Bar and Filter Section -->
         <div class="mb-8">
             <div class="relative max-w-4xl mx-auto">
                 <input 
@@ -2812,7 +2794,6 @@ app.get('/docs', (req, res) => {
             <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide max-w-4xl mx-auto"></div>
         </div>
 
-        <!-- No Results -->
         <div id="noResults" class="text-center py-12 hidden">
             <div class="flex justify-center mb-3">
                 <svg class="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -2823,16 +2804,13 @@ app.get('/docs', (req, res) => {
             <p id="no-results-desc" class="text-xs text-slate-400 light-mode:text-slate-500">Coba gunakan kata kunci lain</p>
         </div>
 
-        <!-- API List -->
         <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
 
-        <!-- Footer -->
         <footer id="siteFooter" class="mt-16 pt-6 border-t border-white/5 text-center text-[11px] text-slate-500">
             ${footer}
         </footer>
     </div>
 
-    <!-- Image Lightbox -->
     <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-xs cursor-zoom-out">
         <div class="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
             <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain scale-95 transition-transform duration-300" />
@@ -2848,7 +2826,7 @@ app.get('/docs', (req, res) => {
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${displayApiKey}";
+    const displayApiKey = "${req.user ? req.user.apiKey : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 
@@ -2868,6 +2846,21 @@ app.get('/docs', (req, res) => {
 
         function closeProfilePopup() {
             document.getElementById('profilePopup').classList.add('hidden');
+        }
+
+        function showWelcomePopup() {
+            const popup = document.getElementById('welcomePopup');
+            const closeBtn = document.getElementById('closePopupBtn');
+            if (popup) {
+                popup.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    popup.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                };
+            }
         }
 
         function setRoleTheme(roleName) {
@@ -2948,23 +2941,6 @@ app.get('/docs', (req, res) => {
                 });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const popup = document.getElementById('welcomePopup');
-            const closeBtn = document.getElementById('closePopupBtn');
-            
-            if (popup) {
-                popup.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-            
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    popup.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                });
-            }
-        });
-
         function getPageDisplayName() {
             const path = window.location.pathname;
             let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
@@ -2997,6 +2973,7 @@ app.get('/docs', (req, res) => {
         }
 
         let currentProgress = 0;
+        let hasFinishedLoading = false;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
         const loaderOverlay = document.getElementById('cyber-loader-overlay');
@@ -3007,6 +2984,22 @@ app.get('/docs', (req, res) => {
             if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
         }
 
+        function finishLoader() {
+            if (hasFinishedLoading) return;
+            hasFinishedLoading = true;
+            clearInterval(progressInterval);
+            updateProgress(100);
+
+            setTimeout(() => {
+                if (loaderOverlay) {
+                    loaderOverlay.classList.add('fade-out');
+                    setTimeout(() => {
+                        showWelcomePopup();
+                    }, 200);
+                }
+            }, 400);
+        }
+
         const progressInterval = setInterval(() => {
             if (currentProgress < 85) {
                 const increment = Math.random() * 12 + 5;
@@ -3014,22 +3007,9 @@ app.get('/docs', (req, res) => {
             }
         }, 120);
 
-        window.addEventListener('load', () => {
-            clearInterval(progressInterval);
-            updateProgress(100);
+        window.addEventListener('load', finishLoader);
 
-            setTimeout(() => {
-                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-            }, 400);
-        });
-
-        setTimeout(() => {
-            clearInterval(progressInterval);
-            updateProgress(100);
-            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
-                loaderOverlay.classList.add('fade-out');
-            }
-        }, 4000);
+        setTimeout(finishLoader, 4000);
 </script>
 
 </body>
