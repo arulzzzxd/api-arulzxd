@@ -211,7 +211,23 @@ router.get('/', async (req, res) => {
     // Generate output gambar berupa PNG buffer
     const imageBufferOutput = await canvas.encode("png");
 
-    // Kirim response data stream gambar langsung ke client
+    // Jika parameter format=json dikirim atau request meminta JSON
+    if (req.query.format === 'json') {
+      const base64Image = `data:image/png;base64,${imageBufferOutput.toString('base64')}`;
+      return res.json({
+        status: true,
+        author: "Arulz-XD",
+        image: base64Image,
+        dataUrl: base64Image,
+        mimeType: "image/png",
+        meta: {
+          endpoint: "/api/sticker/brat-vermail",
+          text: inputText
+        }
+      });
+    }
+
+    // Response default: Stream buffer gambar langsung
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Length', imageBufferOutput.length);
     return res.end(imageBufferOutput);
