@@ -83,6 +83,54 @@ const cacheSchema = new mongoose.Schema({
 
 const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
 
+// 1. Definisikan Schema & Model Voucher
+const voucherSchema = new mongoose.Schema({
+    code: { type: String, required: true, unique: true, uppercase: true },
+    discount: { type: Number, required: true },
+    type: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
+    expiredAt: { type: Date, required: true, expires: 0 },
+    usageLimit: { type: Number, default: 20 },
+    usedCount: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
+
+// 2. Endpoint Verifikasi / Claim Voucher
+app.post('/api/vouchers/claim', async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code) {
+            return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
+        }
+
+        const voucher = await Voucher.findOne({ code: code.trim().toUpperCase() });
+        if (!voucher) {
+            return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
+        }
+
+        if (voucher.usageLimit > 0 && voucher.usedCount >= voucher.usageLimit) {
+            return res.status(400).json({ status: false, message: 'Kuota penggunaan voucher ini sudah habis!' });
+        }
+
+        if (new Date() > new Date(voucher.expiredAt)) {
+            return res.status(400).json({ status: false, message: 'Voucher telah kedaluwarsa!' });
+        }
+
+        return res.json({
+            status: true,
+            message: 'Voucher berhasil diklaim!',
+            voucher: {
+                code: voucher.code,
+                discount: voucher.discount,
+                type: voucher.type
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server.' });
+    }
+});
+
 async function getCache(key) {
     try {
         const doc = await CacheModel.findOne({ key });
