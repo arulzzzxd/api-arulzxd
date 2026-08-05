@@ -49,6 +49,23 @@ app.use(session({
     }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
+
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    password: { type: String, default: null },
+    provider: { type: String, default: 'local' },
+    providerId: { type: String, default: null },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    apikey: { type: String, required: true, unique: true },
+    role: { type: String, default: 'Free User' },
+    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
+    createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
 const PAYWUZ_HEADERS = {
@@ -125,7 +142,16 @@ app.post('/api/vouchers/claim', async (req, res) => {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
 
-        // Cek apakah User sudah pernah menggunakan voucher ini
+        // 1. Cek Kuota Penggunaan (Jika usageLimit <= 0 maka kuota habis & tidak bisa digunakan lagi)
+        if (voucher.usageLimit <= 0) {
+            return res.status(400).json({ 
+                status: false, 
+                reason: 'limit_reached',
+                message: 'Kuota penggunaan voucher ini sudah habis!' 
+            });
+        }
+
+        // 2. Cek apakah User sudah pernah menggunakan voucher ini
         if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
             return res.status(400).json({
                 status: false,
@@ -134,16 +160,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
-        // Cek Kuota Penggunaan
-        if (voucher.usageLimit > 0 && voucher.usedCount >= voucher.usageLimit) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'limit_reached',
-                message: 'Kuota penggunaan voucher ini sudah habis!' 
-            });
-        }
-
-        // Cek Kedaluwarsa
+        // 3. Cek Kedaluwarsa
         if (new Date() > new Date(voucher.expiredAt)) {
             return res.status(400).json({ 
                 status: false, 
@@ -152,11 +169,10 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
-        // Otomatis ubah usageLimit dan usedCount serta catat user pada database Mongoose
+        // Update kuota & batasi limit
         voucher.usedCount += 1;
-        if (voucher.usageLimit > 0) {
-            voucher.usageLimit -= 1;
-        }
+        voucher.usageLimit = Math.max(0, voucher.usageLimit - 1); // Pengurangan batas limit hingga mencapai minimal 0
+
         if (!voucher.usedBy) voucher.usedBy = [];
         voucher.usedBy.push(userIdentifier);
 
@@ -197,19 +213,20 @@ app.get('/api/vouchers/:code', async (req, res) => {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
 
+        // Cek Kuota Penggunaan
+        if (voucher.usageLimit <= 0) {
+            return res.status(400).json({ 
+                status: false, 
+                reason: 'limit_reached',
+                message: 'Kuota penggunaan voucher ini sudah habis!' 
+            });
+        }
+
         if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
             return res.status(400).json({
                 status: false,
                 reason: 'already_used',
                 message: 'Anda sudah pernah menggunakan voucher ini sebelumnya!'
-            });
-        }
-
-        if (voucher.usageLimit > 0 && voucher.usedCount >= voucher.usageLimit) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'limit_reached',
-                message: 'Kuota penggunaan voucher ini sudah habis!' 
             });
         }
 
@@ -643,22 +660,6 @@ app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    password: { type: String, default: null },
-    provider: { type: String, default: 'local' },
-    providerId: { type: String, default: null },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    apikey: { type: String, required: true, unique: true },
-    role: { type: String, default: 'Free User' },
-    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
-    createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
