@@ -647,7 +647,7 @@
         let SELECTED_PRODUCT = null;
         let CURRENT_ORDER_ID = '';
         let CURRENT_QTY = 1;
-        let ACTIVE_VOUCHER = null; // Menyimpan objek voucher jika berhasil diklaim
+        let ACTIVE_VOUCHER = null;
         let pollingInterval = null;
         let countdownInterval = null;
         let qrisExpireTime = null;
@@ -963,7 +963,7 @@
 
             CURRENT_ORDER_ID = generateUniqueOrderId();
             CURRENT_QTY = 1;
-            ACTIVE_VOUCHER = null; // Reset status voucher setiap kali checkout baru
+            ACTIVE_VOUCHER = null;
 
             const hargaFinal = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
 
@@ -1023,7 +1023,7 @@
             updateTotalPrice();
         }
 
-        // FUNGSI CLAIM VOUCHER (DENGAN ANIMASI LOADING & POPUP ERROR HANGUS/TIDAK TERSEDIA)
+        // FUNGSI CLAIM VOUCHER
         async function claimVoucher() {
             const vInput = document.getElementById('voucherInput');
             const voucherCode = vInput ? vInput.value.trim().toUpperCase() : '';
@@ -1031,19 +1031,17 @@
             const btnText = document.getElementById('btnClaimText');
             const statusLabel = document.getElementById('voucherStatusLabel');
 
-            // Jika sudah aktif lalu diklik lagi, berarti mau melepaskan (cancel) voucher
             if (ACTIVE_VOUCHER) {
                 ACTIVE_VOUCHER = null;
                 vInput.value = '';
                 vInput.disabled = false;
-                btnText.innerText = 'Claim';
+                if (btnText) btnText.innerText = 'Claim';
                 statusLabel.innerText = 'Bisa diisi / dikosongkan';
                 statusLabel.className = 'text-[10px] font-mono text-slate-500';
                 updateTotalPrice();
                 return;
             }
 
-            // Jika input kosong namun tombol ditekan
             if (!voucherCode) {
                 Swal.fire({
                     icon: 'info',
@@ -1059,38 +1057,36 @@
                 return;
             }
 
-            // Animasi Loading Tombol
             btnClaim.disabled = true;
             btnClaim.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> <span>Mengecek...</span>`;
 
             try {
-                // Request Verifikasi Voucher ke API / Database Backend
-                const res = await fetch(`/api/vouchers/${encodeURIComponent(voucherCode)}`);
+                const res = await fetch('/api/vouchers/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: voucherCode })
+                });
+
                 const result = await res.json();
 
-                if (!res.ok || !result.status || !result.data) {
-                    // Penanganan jika voucher expired / kuota habis vs voucher tidak ditemukan
+                if (!res.ok || !result.status || !result.voucher) {
                     if (result.reason === 'expired' || result.reason === 'limit_reached') {
-                        throw { type: 'expired', message: 'Maaf, voucher diskon telah hangus atau kuota penggunaannya sudah habis!' };
+                        throw { type: 'expired', message: result.message || 'Voucher telah kedaluwarsa atau kuota habis!' };
                     } else {
-                        throw { type: 'not_found', message: 'Kode voucher tidak tersedia atau salah diketik.' };
+                        throw { type: 'not_found', message: result.message || 'Kode voucher tidak ditemukan.' };
                     }
                 }
 
-                // Berhasil Verifikasi
-                ACTIVE_VOUCHER = result.data;
+                ACTIVE_VOUCHER = result.voucher;
                 vInput.disabled = true;
                 btnClaim.disabled = false;
                 btnClaim.innerHTML = `<i class="fa-solid fa-xmark"></i> <span>Lepas</span>`;
                 statusLabel.innerText = `● Voucher Valid (${ACTIVE_VOUCHER.code})`;
                 statusLabel.className = 'text-[10px] font-mono text-emerald-400 font-bold';
 
-                let discountDetailText = '';
-                if (ACTIVE_VOUCHER.type === 'percentage') {
-                    discountDetailText = `Diskon ${ACTIVE_VOUCHER.discount}% berhasil dipasang pada transaksi Anda!`;
-                } else {
-                    discountDetailText = `Potongan ${formatRupiah(ACTIVE_VOUCHER.discount)} berhasil dipasang!`;
-                }
+                let discountDetailText = ACTIVE_VOUCHER.type === 'percentage'
+                    ? `Diskon ${ACTIVE_VOUCHER.discount}% berhasil dipasang!`
+                    : `Potongan ${formatRupiah(ACTIVE_VOUCHER.discount)} berhasil dipasang!`;
 
                 Swal.fire({
                     icon: 'success',
@@ -1154,7 +1150,7 @@
                 }
             }
 
-            if (discountAmount > subtotal) discountAmount = subtotal; // Diskon tidak boleh melebihi subtotal
+            if (discountAmount > subtotal) discountAmount = subtotal;
             const finalTotal = subtotal - discountAmount;
 
             return {
