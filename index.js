@@ -2819,18 +2819,18 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-                ${data.user ? `
+                ${req.user ? `
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
                     <!-- TAMBAHKAN ID id="sidebarUserAvatar" DI SINI -->
-                    <img id="sidebarUserAvatar" src="${data.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
                 
                 <div class="flex flex-col text-left min-w-0 z-10">
                     <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${data.user.username}</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
                 </div>
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
@@ -3239,93 +3239,111 @@ app.get('/docs', (req, res) => {
             }
         }
         
-       async function uploadAvatarFile(input) {
-       if (!input.files || !input.files[0]) return;
+        async function uploadAvatarFile(input) {
+            if (!input.files || !input.files[0]) return;
 
-       const file = input.files[0];
-       const formData = new FormData();
-       formData.append('avatar', file);
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('avatar', file);
 
-       const userAvatarImg = document.getElementById('userAvatar');
-       const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
-       const oldSrc = userAvatarImg ? userAvatarImg.src : '';
+            const userAvatarImg = document.getElementById('userAvatar');
+            const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
+            const oldSrc = userAvatarImg ? userAvatarImg.src : '';
 
-       if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
-       if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
+            if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
+            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
 
-       // Helper untuk menampilkan SweetAlert2 bergaya Cyan Neon Cyberpunk
-       const showCyberAlert = (icon, title, text) => {
-           Swal.fire({
-               icon: icon,
-               title: title,
-               text: text,
-               background: '#0b1329',
-               color: '#f8fafc',
-               border: '1px solid rgba(6, 182, 212, 0.3)',
-               confirmButtonText: 'OKE',
-               customClass: {
-                  popup: 'rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.25)] border border-cyan-500/30',
-                  title: 'text-cyan-400 font-extrabold tracking-wide font-["Space_Grotesk"]',
-                  htmlContainer: 'text-slate-300 text-xs font-["Space_Grotesk"]',
-                  confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl uppercase tracking-wider text-xs border-0 shadow-lg shadow-cyan-500/20'
-              }
-           });
-         };
+            // Helper untuk menampilkan SweetAlert2 bergaya Cyan Neon Cyberpunk
+            const showCyberAlert = (icon, title, text) => {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: text,
+                    background: '#0b1329',
+                    color: '#f8fafc',
+                    border: '1px solid rgba(6, 182, 212, 0.3)',
+                    confirmButtonText: 'OKE',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.25)] border border-cyan-500/30',
+                        title: 'text-cyan-400 font-extrabold tracking-wide font-["Space_Grotesk"]',
+                        htmlContainer: 'text-slate-300 text-xs font-["Space_Grotesk"]',
+                        confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl uppercase tracking-wider text-xs border-0 shadow-lg shadow-cyan-500/20'
+                    }
+                });
+            };
 
-         try {
-           const response = await fetch('/api/user/update-avatar', {
-              method: 'POST',
-              body: formData
-           });
+            try {
+                const response = await fetch('/api/user/update-avatar', {
+                    method: 'POST',
+                    body: formData
+                });
 
-           const result = await response.json();
+                const result = await response.json();
 
-           if (result.status) {
-               // Update gambar profil modal popup
-               if (userAvatarImg) userAvatarImg.src = result.avatar;
+                if (result.status) {
+                    const newAvatarUrl = result.avatar;
 
-               // Update gambar profil di sidebar AUTHORIZED USER secara real-time
-               if (sidebarAvatarImg) sidebarAvatarImg.src = result.avatar;
+                    // 1. Update avatar di Modal Profile Popup
+                    if (userAvatarImg) userAvatarImg.src = newAvatarUrl;
 
-               showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+                    // 2. Update avatar di Sidebar Menu AUTHORIZED USER
+                    if (sidebarAvatarImg) sidebarAvatarImg.src = newAvatarUrl;
 
-               // Re-fetch data user agar state tetap aman
-               if (typeof fetchUserProfile === 'function') {
-                  fetchUserProfile();
+                    showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+
+                    // 3. Re-fetch data user agar state aplikasi dan cache ter-synchronize
+                    if (typeof fetchUserProfile === 'function') {
+                        fetchUserProfile();
+                    }
+                } else {
+                    showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
+                    if (userAvatarImg) userAvatarImg.src = oldSrc;
+                    if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
+                }
+            } catch (error) {
+                console.error("Error uploading avatar:", error);
+                showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
+                if (userAvatarImg) userAvatarImg.src = oldSrc;
+                if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
+            } finally {
+                if (userAvatarImg) userAvatarImg.style.opacity = '1';
+                if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
+                input.value = '';
             }
-         } else {
-              showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
-              if (userAvatarImg) userAvatarImg.src = oldSrc;
-              if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-           }
-         } catch (error) {
-            console.error("Error uploading avatar:", error);
-            showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
-            if (userAvatarImg) userAvatarImg.src = oldSrc;
-            if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-         } finally {
-            if (userAvatarImg) userAvatarImg.style.opacity = '1';
-            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
-            input.value = '';
-          }
         }
 
+        // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
             fetch('/api/user-status')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.loggedIn) {
-                        document.getElementById('userAvatar').src = data.user.avatar || 'https://via.placeholder.com/150';
+                    if (data.loggedIn && data.user) {
+                        const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+
+                        // Sync Avatar di Modal
+                        const modalAvatar = document.getElementById('userAvatar');
+                        if (modalAvatar) modalAvatar.src = latestAvatar;
+
+                        // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
+                        const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+                        if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
+
                         document.getElementById('userName').innerText = data.user.name || 'User';
                         document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
                         document.getElementById('userApiKey').innerText = data.user.apiKey || 'No Key';
+                        
                         setRoleTheme(data.user.role || 'free');
                     }
                 })
-                .catch(() => {
+                .catch((err) => {
+                    console.error("Gagal sinkronisasi profile:", err);
                     setRoleTheme("free"); 
                 });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUserProfile();
+        });
 
         function getPageDisplayName() {
             const path = window.location.pathname;
