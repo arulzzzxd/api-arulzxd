@@ -13,6 +13,8 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const mime = require('mime-types');
+const multer = require("multer");
+const { fileTypeFromBuffer } = require("file-type");
 const nodemailer = require('nodemailer');
 const https = require('https');
 const http = require('http');
@@ -65,6 +67,89 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+const checkAuthSession = (req, res, next) => {
+    const token = req.cookies.auth_session;
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; 
+        next();
+    } catch (err) {
+        res.clearCookie('auth_session');
+        req.user = null;
+        next();
+    }
+};
+
+const uploadavatar = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
+
+// Endpoint Upload / Ganti Avatar
+app.post('/api/user/update-avatar', checkAuthSession, uploadavatar.single('avatar'), async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ status: false, message: 'Anda belum login!' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
+        }
+
+        // Cek MIME type dengan file-type (fromBuffer)
+        const mimeInfo = await fileTypeFromBuffer(req.file.buffer);
+        
+        if (!mimeInfo || !mimeInfo.mime.startsWith('image/')) {
+            return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
+        }
+
+        // Ubah buffer ke Base64 Data URI
+        const base64 = req.file.buffer.toString("base64");
+        const avatarDataUrl = `data:${mimeInfo.mime};base64,${base64}`;
+
+        // Simpan ke database Mongoose User
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id || req.user._id,
+            { avatar: avatarDataUrl },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
+        }
+
+        // Perbarui cookie session jika menggunakan JWT
+        const userPayload = {
+            id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            name: updatedUser.username,
+            avatar: updatedUser.avatar,
+            role: updatedUser.role,
+            apiKey: updatedUser.apikey
+        };
+
+        const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('auth_session', token, {
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax'
+        });
+
+        return res.json({
+            status: true,
+            message: 'Avatar berhasil diperbarui!',
+            avatar: updatedUser.avatar
+        });
+
+    } catch (err) {
+        console.error("Gagal update avatar:", err);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
+    }
+});
 
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
@@ -1112,23 +1197,6 @@ const id = "googleusercontent.com";
 const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
 const GOOGLE_CLIENT_SECRET = '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';
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
-
-const checkAuthSession = (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
-};
 
 app.use(checkAuthSession);
 
@@ -2587,80 +2655,93 @@ app.get('/docs', (req, res) => {
     </div>
     
     <!-- User Profile Pop-up Modal -->
-    <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-      <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
-            
-            <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
+        
+        <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div class="flex flex-col items-center text-center mt-2 relative z-10">
-                <div class="relative w-32 h-32 flex items-center justify-center mb-3">
-                    <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
-                    
-                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
-                        <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner">
-                            <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover">
-                        </div>
-                    </div>
-                </div>
+        <div class="flex flex-col items-center text-center mt-2 relative z-10">
+            <!-- Input File Tersembunyi -->
+            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
 
-                <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
-                <p id="userEmail" class="text-slate-400 font-mono text-xs mb-5">loading-email@mail.com</p>
+            <div class="relative w-32 h-32 flex items-center justify-center mb-3">
+                <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
                 
-                <div class="w-full space-y-4 text-left mb-5">
-                    <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1">
-                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
-                        <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
-                            <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-2">
-                        <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
-                            Jangan bagikan API Key ini kepada siapapun!
-                        </div>
+                <!-- Avatar Klik untuk Ganti Gambar -->
+                <div id="avatar3DBorder" onclick="document.getElementById('avatarInput').click()" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300 cursor-pointer group relative" title="Klik untuk ganti avatar">
+                    <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
+                        <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
                         
-                        <div class="flex items-center justify-between mt-1">
-                            <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
-                            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
-                            <span id="userApiKey">loading-key-xxxx</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="w-full flex flex-col gap-3">
-                    <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>
-                        Upgrade
-                    </a>
-                    
-                    <div class="flex gap-3 w-full">
-                        <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
-                            Tutup
-                        </button>
-                        <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        <!-- Overlay Hover Kamera -->
+                        <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <svg class="w-6 h-6 text-cyan-400 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M68 9a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-2.172a2 2 0 01-1.414-.586l-.828-.828A2 2 0 0011.172 6H8.828a2 2 0 00-1.414.586l-.828.828A2 2 0 015.172 9H3z" />
+                                <circle cx="12" cy="13" r="3" />
                             </svg>
-                            Log Out
-                        </a>
+                            <span class="text-[9px] font-bold text-white uppercase tracking-wider">Ganti</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
+            <p id="userEmail" class="text-slate-400 font-mono text-xs mb-5">loading-email@mail.com</p>
+            
+            <div class="w-full space-y-4 text-left mb-5">
+                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1">
+                    <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
+                    <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
+                        <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
                     </div>
                 </div>
 
+                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-2">
+                    <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
+                        Jangan bagikan API Key ini kepada siapapun!
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
+                        <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
+                        <span id="userApiKey">loading-key-xxxx</span>
+                    </div>
+                </div>
             </div>
+
+            <div class="w-full flex flex-col gap-3">
+                <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    Upgrade
+                </a>
+                
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
+                        Tutup
+                    </button>
+                    <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Log Out
+                    </a>
+                </div>
+            </div>
+
         </div>
-      </div>
     </div>
+  </div>
+</div>
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
@@ -3204,6 +3285,42 @@ app.get('/docs', (req, res) => {
         window.addEventListener('load', finishLoader);
 
         setTimeout(finishLoader, 4000);
+        async function uploadAvatarFile(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const userAvatarImg = document.getElementById('userAvatar');
+    const oldSrc = userAvatarImg.src;
+    userAvatarImg.style.opacity = '0.5';
+
+    try {
+        const response = await fetch('/api/user/update-avatar', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            userAvatarImg.src = result.avatar;
+            alert('Avatar berhasil diperbarui!');
+            window.location.reload(); 
+        } else {
+            alert(result.message || 'Gagal mengunggah avatar.');
+            userAvatarImg.src = oldSrc;
+        }
+    } catch (error) {
+        console.error("Error uploading avatar:", error);
+        alert('Terjadi kesalahan koneksi saat mengunggah gambar.');
+        userAvatarImg.src = oldSrc;
+    } finally {
+        userAvatarImg.style.opacity = '1';
+        input.value = ''; 
+    }
+}
 </script>
 
 </body>
