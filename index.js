@@ -1418,21 +1418,39 @@ app.get('/auth/google/callback', async (req, res) => {
     }
 });
 
-app.get('/api/user-status', (req, res) => {
+app.get('/api/user-status', async (req, res) => {
     if (req.user) {
-        res.json({
-            loggedIn: true,
-            user: {
-                name: req.user.name,
-                username: req.user.username,
-                email: req.user.email,
-                avatar: req.user.avatar,
-                apiKey: req.user.apiKey,
-                role: req.user.role
-            }
-        });
+        try {
+            // Ambil data user paling fresh langsung dari MongoDB Database
+            const freshUser = await User.findById(req.user.id || req.user._id);
+            const userObj = freshUser || req.user;
+
+            return res.json({
+                loggedIn: true,
+                user: {
+                    name: userObj.username,
+                    username: userObj.username,
+                    email: userObj.email,
+                    avatar: userObj.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    apiKey: userObj.apikey || userObj.apiKey,
+                    role: userObj.role || 'Free User'
+                }
+            });
+        } catch (err) {
+            return res.json({
+                loggedIn: true,
+                user: {
+                    name: req.user.username,
+                    username: req.user.username,
+                    email: req.user.email,
+                    avatar: req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    apiKey: req.user.apiKey,
+                    role: req.user.role
+                }
+            });
+        }
     } else {
-        res.json({ loggedIn: false });
+        return res.json({ loggedIn: false });
     }
 });
 
@@ -2668,7 +2686,7 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-    <!-- User Profile Pop-up Modal -->
+<!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -2683,18 +2701,20 @@ app.get('/docs', (req, res) => {
             <div class="relative w-32 h-32 flex items-center justify-center mb-3">
                 <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
                 
-                <!-- Container Avatar dengan Tombol Kamera di Samping Bawah -->
-                <div id="avatar3DBorder" onclick="document.getElementById('avatarInput').click()" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300 cursor-pointer group relative" title="Klik untuk ganti avatar">
-                    <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
-                        <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
-                        
-                        <!-- Overlay Hover -->
-                        <div class="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">Ubah</span>
+                <!-- Avatar Container -->
+                <div class="relative group cursor-pointer" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ganti avatar">
+                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
+                        <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
+                            <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
+                            
+                            <!-- Overlay Hover -->
+                            <div class="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">Ubah</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- SVG Logo Kamera Samping Bawah -->
+                    <!-- Tombol SVG Kamera Samping Bawah -->
                     <div class="absolute bottom-0 right-0 z-30 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-900 shadow-lg transition-transform duration-200 group-hover:scale-110 flex items-center justify-center">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
@@ -3216,6 +3236,55 @@ app.get('/docs', (req, res) => {
                 avatarBadge.innerHTML = ""; 
             }
         }
+        
+        async function uploadAvatarFile(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const userAvatarImg = document.getElementById('userAvatar');
+    const oldSrc = userAvatarImg.src;
+    userAvatarImg.style.opacity = '0.4';
+
+    try {
+        const response = await fetch('/api/user/update-avatar', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            // Update gambar profil langsung di DOM
+            userAvatarImg.src = result.avatar;
+            
+            // Jika ada foto profil di header sidebar, ikut perbarui
+            const sidebarAvatar = document.querySelector('#bioDropdown img');
+            if (sidebarAvatar) {
+                sidebarAvatar.src = result.avatar;
+            }
+
+            alert('Avatar berhasil diperbarui!');
+            
+            // Panggil ulang status user agar data lokal ter-refresh
+            if (typeof fetchUserProfile === 'function') {
+                fetchUserProfile();
+            }
+        } else {
+            alert(result.message || 'Gagal mengunggah avatar.');
+            userAvatarImg.src = oldSrc;
+        }
+    } catch (error) {
+        console.error("Error uploading avatar:", error);
+        alert('Terjadi kesalahan koneksi saat mengunggah gambar.');
+        userAvatarImg.src = oldSrc;
+    } finally {
+        userAvatarImg.style.opacity = '1';
+        input.value = ''; 
+    }
+}
 
         function fetchUserProfile() {
             fetch('/api/user-status')
@@ -3303,42 +3372,6 @@ app.get('/docs', (req, res) => {
         window.addEventListener('load', finishLoader);
 
         setTimeout(finishLoader, 4000);
-        async function uploadAvatarFile(input) {
-    if (!input.files || !input.files[0]) return;
-
-    const file = input.files[0];
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    const userAvatarImg = document.getElementById('userAvatar');
-    const oldSrc = userAvatarImg.src;
-    userAvatarImg.style.opacity = '0.5';
-
-    try {
-        const response = await fetch('/api/user/update-avatar', {
-            method: 'POST',
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (result.status) {
-            userAvatarImg.src = result.avatar;
-            alert('Avatar berhasil diperbarui!');
-            window.location.reload(); 
-        } else {
-            alert(result.message || 'Gagal mengunggah avatar.');
-            userAvatarImg.src = oldSrc;
-        }
-    } catch (error) {
-        console.error("Error uploading avatar:", error);
-        alert('Terjadi kesalahan koneksi saat mengunggah gambar.');
-        userAvatarImg.src = oldSrc;
-    } finally {
-        userAvatarImg.style.opacity = '1';
-        input.value = ''; 
-    }
-}
 </script>
 
 </body>
