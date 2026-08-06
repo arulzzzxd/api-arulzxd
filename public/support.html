@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arulz-XD API - Support & Donasi</title>
-    <link rel="icon" type="image/png" href="https://arulz-xd.my.id/files/UBkDZZ.png" />
 
     <meta property="og:title" content="Dukung ArulzXD — Arulz-XD API">
     <meta property="og:description" content="Semua endpoint API, snippet code, dan serverless function di platform ini dibangun di waktu luang agar bisa dipakai bebas oleh siapa saja. Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk memperpanjang alokasi resources server.">
@@ -23,19 +22,6 @@
             --text-primary: #FFFFFF;
             --text-muted: #9CA3AF;
             --cyan: #00D4FF;
-            --neon-cyan: #00f3ff;
-            --neon-glow: rgba(0, 243, 255, 0.4);
-            --bg-dark: #030712;
-            --border-color: rgba(0, 243, 255, 0.2);
-        }
-
-        /* Support Light Theme Mode */
-        html.light {
-            --neon-cyan: #008b9b;
-            --neon-glow: rgba(0, 139, 155, 0.25);
-            --bg-dark: #f0fdfa;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(0, 139, 155, 0.3);
         }
 
         * {
@@ -307,6 +293,24 @@
             100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
         }
 
+        /* --- CYBER LOADER VARS & STYLES --- */
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-glow: rgba(0, 243, 255, 0.4);
+            --bg-dark: #030712;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --border-color: rgba(0, 243, 255, 0.2);
+        }
+
+        /* Support Light Theme Mode */
+        html.light {
+            --neon-cyan: #008b9b;
+            --neon-glow: rgba(0, 139, 155, 0.25);
+            --bg-dark: #f0fdfa;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 139, 155, 0.3);
+        }
+
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
@@ -414,10 +418,46 @@
             box-shadow: 0 0 12px var(--neon-cyan);
             transition: width 0.15s ease-out;
         }
+
+        /* Custom Fallback Utility Classes for Cyber Loader */
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .p-0\.5 { padding: 0.125rem; }
+        .text-center { text-align: center; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .w-64 { width: 16rem; }
+        @media (min-width: 640px) { .sm\:w-80 { width: 20rem; } }
+        .w-full { width: 100%; }
+        .h-2 { height: 0.5rem; }
+        .h-full { height: 100%; }
+        .w-0 { width: 0px; }
+        .rounded-full { border-radius: 9999px; }
+        .overflow-hidden { overflow: hidden; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-\[10px\] { font-size: 10px; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: monospace; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .uppercase { text-transform: uppercase; }
+        .text-cyan-400 { color: #22d3ee; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .opacity-80 { opacity: 0.8; }
+        .bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9); }
+        .border-cyan-500\/30 { border: 1px solid rgba(6, 182, 212, 0.3); }
+        .absolute { position: absolute; }
+        .bottom-6 { bottom: 1.5rem; }
     </style>
 </head>
 <body>
-
     <div id="cyber-loader-overlay">
         <div class="scanner-beam"></div>
 
@@ -460,7 +500,7 @@
             <span class="badge-ad">AD</span>
             <span class="brand-title">Arulz-XD API</span>
         </div>
-        <a href="/docs" class="btn-kembali">
+        <a href="/" class="btn-kembali">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             KEMBALI
         </a>
