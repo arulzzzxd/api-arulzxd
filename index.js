@@ -85,70 +85,84 @@ const checkAuthSession = (req, res, next) => {
     }
 };
 
-const uploadavatar = multer({ limits: { fileSize: 4 * 1024 * 1024 } });
+const uploadavatar = multer({ 
+    limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('File harus berupa gambar!'));
+        }
+    }
+});
 
 // Endpoint Upload / Ganti Avatar
-app.post('/api/user/update-avatar', checkAuthSession, uploadavatar.single('avatar'), async (req, res) => {
-    try {
-        if (!req.user) {
-            return res.status(401).json({ status: false, message: 'Anda belum login!' });
+app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
+    uploadavatar.single('avatar')(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar.' });
         }
 
-        if (!req.file) {
-            return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
+        try {
+            if (!req.user) {
+                return res.status(401).json({ status: false, message: 'Anda belum login!' });
+            }
+
+            if (!req.file) {
+                return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
+            }
+
+            // Validasi Mime-Type melalui Multer Buffer & mime-types
+            const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
+            if (!mimeType.startsWith('image/')) {
+                return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
+            }
+
+            // Ubah buffer ke Base64 Data URI
+            const base64 = req.file.buffer.toString("base64");
+            const avatarDataUrl = `data:${mimeType};base64,${base64}`;
+
+            // Simpan ke database Mongoose User
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user.id || req.user._id,
+                { avatar: avatarDataUrl },
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
+            }
+
+            // Perbarui cookie session jika menggunakan JWT
+            const userPayload = {
+                id: updatedUser._id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                name: updatedUser.username,
+                avatar: updatedUser.avatar,
+                role: updatedUser.role,
+                apiKey: updatedUser.apikey
+            };
+
+            const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
+            res.cookie('auth_session', token, {
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+                sameSite: 'lax'
+            });
+
+            return res.json({
+                status: true,
+                message: 'Avatar berhasil diperbarui!',
+                avatar: updatedUser.avatar
+            });
+
+        } catch (error) {
+            console.error("Gagal update avatar:", error);
+            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
         }
-
-        // Cek MIME type dengan file-type (fromBuffer)
-        const mimeInfo = await fileTypeFromBuffer(req.file.buffer);
-        
-        if (!mimeInfo || !mimeInfo.mime.startsWith('image/')) {
-            return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
-        }
-
-        // Ubah buffer ke Base64 Data URI
-        const base64 = req.file.buffer.toString("base64");
-        const avatarDataUrl = `data:${mimeInfo.mime};base64,${base64}`;
-
-        // Simpan ke database Mongoose User
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user.id || req.user._id,
-            { avatar: avatarDataUrl },
-            { new: true }
-        );
-
-        if (!updatedUser) {
-            return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
-        }
-
-        // Perbarui cookie session jika menggunakan JWT
-        const userPayload = {
-            id: updatedUser._id,
-            username: updatedUser.username,
-            email: updatedUser.email,
-            name: updatedUser.username,
-            avatar: updatedUser.avatar,
-            role: updatedUser.role,
-            apiKey: updatedUser.apikey
-        };
-
-        const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('auth_session', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax'
-        });
-
-        return res.json({
-            status: true,
-            message: 'Avatar berhasil diperbarui!',
-            avatar: updatedUser.avatar
-        });
-
-    } catch (err) {
-        console.error("Gagal update avatar:", err);
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
-    }
+    });
 });
 
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
@@ -2669,19 +2683,23 @@ app.get('/docs', (req, res) => {
             <div class="relative w-32 h-32 flex items-center justify-center mb-3">
                 <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
                 
-                <!-- Avatar Klik untuk Ganti Gambar -->
+                <!-- Container Avatar dengan Tombol Kamera di Samping Bawah -->
                 <div id="avatar3DBorder" onclick="document.getElementById('avatarInput').click()" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300 cursor-pointer group relative" title="Klik untuk ganti avatar">
                     <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
                         <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
                         
-                        <!-- Overlay Hover Kamera -->
-                        <div class="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <svg class="w-6 h-6 text-cyan-400 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M68 9a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-2.172a2 2 0 01-1.414-.586l-.828-.828A2 2 0 0011.172 6H8.828a2 2 0 00-1.414.586l-.828.828A2 2 0 015.172 9H3z" />
-                                <circle cx="12" cy="13" r="3" />
-                            </svg>
-                            <span class="text-[9px] font-bold text-white uppercase tracking-wider">Ganti</span>
+                        <!-- Overlay Hover -->
+                        <div class="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">Ubah</span>
                         </div>
+                    </div>
+
+                    <!-- SVG Logo Kamera Samping Bawah -->
+                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-900 shadow-lg transition-transform duration-200 group-hover:scale-110 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                        </svg>
                     </div>
                 </div>
             </div>
