@@ -2819,12 +2819,12 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-                ${req.user ? `
+                ${data.user ? `
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
                     <!-- TAMBAHKAN ID id="sidebarUserAvatar" DI SINI -->
-                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <img id="sidebarUserAvatar" src="${data.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
                 
