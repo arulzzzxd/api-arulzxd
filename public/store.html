@@ -77,7 +77,6 @@
             margin: 0;
         }
 
-        /* Styling Custom SweetAlert2 Tema Cyberpunk */
         .swal2-popup.cyber-swal {
             background: #0a1628 !important;
             border: 1px solid #162a45 !important;
@@ -173,7 +172,6 @@
             --border-color: rgba(0, 243, 255, 0.2);
         }
 
-        /* Support Light Theme Mode */
         html.light {
             --neon-cyan: #008b9b;
             --neon-glow: rgba(0, 139, 155, 0.25);
@@ -201,7 +199,6 @@
             pointer-events: none;
         }
 
-        /* Laser Scanner Beam */
         .scanner-beam {
             position: absolute;
             top: 0;
@@ -216,7 +213,6 @@
             100% { transform: translateY(100%); }
         }
 
-        /* Concentric Hologram HUD Rotating Rings */
         .hud-ring {
             position: relative;
             width: 130px;
@@ -269,7 +265,6 @@
         @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
         @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
 
-        /* Animated Dot Pulse */
         .animated-dots::after {
             content: '';
             display: inline-block;
@@ -296,7 +291,6 @@
     <div id="cyber-loader-overlay">
         <div class="scanner-beam"></div>
 
-        <!-- Central Holographic HUD Ring Spinner -->
         <div class="hud-ring mb-6">
             <div class="ring-outer"></div>
             <div class="ring-middle"></div>
@@ -304,7 +298,6 @@
             <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
         </div>
 
-        <!-- Dynamic Page Name & Animated Dot Text -->
         <div class="text-center px-4">
             <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
                 Memuat Halaman<span class="animated-dots"></span>
@@ -314,7 +307,6 @@
             </div>
         </div>
 
-        <!-- Progress Bar (0% - 100%) -->
         <div class="w-64 sm:w-80 mt-6">
             <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
                 <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
@@ -603,7 +595,6 @@
                         <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
                     </div>
 
-                    <!-- TOMBOL BATALKAN TRANSAKSI -->
                     <button type="button" onclick="cancelPayment()" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/50 text-red-400 hover:text-red-300 font-cyber font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.2)]">
                         <i class="fa-solid fa-xmark text-sm"></i> BATALKAN TRANSAKSI
                     </button>
@@ -619,7 +610,6 @@
                         <p class="text-xs text-slate-400 mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
                     </div>
 
-                    <!-- Box Link Akses Produk -->
                     <div class="w-full bg-cyberDark border border-cyberCyan/50 p-4 rounded-xl shadow-glowCyanSm space-y-2">
                         <p class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">LINK AKSES PRODUK / SCRIPT:</p>
                         <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold break-all hover:underline flex items-center justify-center gap-2 bg-cyberCyan/10 py-2.5 px-3 rounded-lg border border-cyberCyan/30">
@@ -724,7 +714,7 @@
 
                 document.getElementById('productGrid').innerHTML = `
                     <div class="col-span-full text-center py-10 bg-red-950/30 text-red-400 text-xs font-semibold rounded-xl border border-red-800/40">
-                        <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i> Gagal mengambil data dari server (/database/produk).
+                        <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i> Gagal mengambil data dari MongoDB (/database/produk).
                     </div>
                 `;
             }
@@ -975,7 +965,6 @@
             document.getElementById('modalProductImage').src = SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
 
-            // Reset Form Voucher
             const vInput = document.getElementById('voucherInput');
             if (vInput) {
                 vInput.value = '';
@@ -1024,7 +1013,6 @@
             updateTotalPrice();
         }
 
-        // FUNGSI CLAIM VOUCHER
         async function claimVoucher() {
             const vInput = document.getElementById('voucherInput');
             const voucherCode = vInput ? vInput.value.trim().toUpperCase() : '';
@@ -1219,6 +1207,7 @@
                     body: JSON.stringify({
                         orderId: CURRENT_ORDER_ID,
                         amount: calc.total,
+                        qty: CURRENT_QTY,
                         itemDetails: SELECTED_PRODUCT,
                         voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
                     })
@@ -1371,6 +1360,9 @@
 
                             const finalLink = result.data.productLink || (SELECTED_PRODUCT ? SELECTED_PRODUCT.link : null) || "#";
                             onPaymentSuccess(finalLink);
+                            
+                            // Ambil ulang produk dari database MongoDB untuk memperbarui tampilan stok/terjual secara otomatis
+                            fetchProduk();
                         } else if (status === "cancelled" || status === "failed") {
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
@@ -1462,8 +1454,8 @@
             }
         }
 
-        // ==================== PEMBAYARAN MANUAL ====================
-        function handleFormSubmit(event) {
+        // ==================== PEMBAYARAN MANUAL (WHATSAPP) ====================
+        async function handleFormSubmit(event) {
             event.preventDefault();
             if (!SELECTED_PRODUCT || !CURRENT_ORDER_ID) return;
 
@@ -1471,6 +1463,23 @@
             const note = document.getElementById('noteInput').value.trim();
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const calc = calculateFinalTotal();
+
+            // Potong stok dan tambah jumlah terjual secara otomatis di MongoDB backend untuk transaksi WhatsApp
+            try {
+                await fetch('/api/store/manual-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productName: SELECTED_PRODUCT.nama,
+                        qty: CURRENT_QTY
+                    })
+                });
+                
+                // Ambil ulang produk dari MongoDB agar UI diperbarui secara real-time
+                fetchProduk();
+            } catch (err) {
+                console.error("Gagal mengupdate stok manual order:", err);
+            }
 
             let message = `Halo Arulz, saya ingin memesan produk berikut secara manual:\n\n`;
             message += `*--- DETAIL PESANAN MANUAL ---*\n`;
@@ -1493,7 +1502,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'MENGALIHKAN KE WHATSAPP',
-                text: 'Pesanan Anda telah disiapkan. Silakan lanjutkan ke WhatsApp admin.',
+                text: 'Pesanan Anda telah disiapkan dan stok otomatis diperbarui. Silakan lanjutkan ke WhatsApp admin.',
                 timer: 2500,
                 showConfirmButton: false,
                 customClass: {
@@ -1543,7 +1552,6 @@
             loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
         }
 
-        // Progress Loader 0% - 100%
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
@@ -1571,7 +1579,6 @@
             }, 400);
         });
 
-        // Fallback Safety (Maksimal 4 detik)
         setTimeout(() => {
             clearInterval(progressInterval);
             updateProgress(100);
