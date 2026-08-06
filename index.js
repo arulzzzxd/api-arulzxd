@@ -114,6 +114,7 @@ const voucherSchema = new mongoose.Schema({
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
 const productSchema = new mongoose.Schema({
+    Id: { type: String, required: true, unique: true, trim: true }, // Menggunakan custom Id tanpa default
     nama: { type: String, required: true, trim: true },
     harga: { type: Number, required: true },
     harga_diskon: { type: Number, default: null },
@@ -2272,6 +2273,50 @@ app.get('/database/produk', async (req, res) => {
 
 app.get('/store', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'store.html'));
+});
+
+// Route untuk halaman detail produk / shareable link
+app.get('/store/:productId', async (req, res) => {
+    try {
+        // Ambil productId dari URL params (:productId)
+        const productId = req.params.productId;
+        
+        // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
+        const product = await Product.findOne({ Id: productId });
+
+        // Baca file store.html
+        const storePath = path.join(__dirname, 'public', 'store.html');
+        let htmlContent = fs.readFileSync(storePath, 'utf8');
+
+        if (product) {
+            // Format harga untuk Open Graph Description
+            const hargaFormatted = product.harga_diskon 
+                ? `Rp ${product.harga_diskon.toLocaleString('id-ID')}` 
+                : `Rp ${product.harga.toLocaleString('id-ID')}`;
+
+            // Safe slice untuk deskripsi agar tidak error jika deskripsi kosong
+            const deskripsiClean = product.deskripsi ? product.deskripsi.slice(0, 150) : '';
+
+            // Inject Open Graph Meta Tags dinamis untuk WhatsApp / Medsos Preview
+            const metaTags = `
+    <!-- Open Graph / Meta Tags Dinamis -->
+    <meta property="og:title" content="${product.nama} - ArulzXD Store" />
+    <meta property="og:description" content="${deskripsiClean}... | Harga: ${hargaFormatted}" />
+    <meta property="og:image" content="${product.gambar}" />
+    <meta property="og:url" content="https://arulz-xd.my.id/store/${product.Id}" />
+    <meta property="og:type" content="product" />
+    <meta name="twitter:card" content="summary_large_image" />
+            `;
+
+            // Sisipkan meta tags di bawah tag <head>
+            htmlContent = htmlContent.replace('<head>', `<head>${metaTags}`);
+        }
+
+        res.send(htmlContent);
+    } catch (error) {
+        console.error('Error serving product page:', error);
+        res.sendFile(path.join(__dirname, 'public', 'store.html'));
+    }
 });
 
 // Endpoint untuk menyajikan halaman HTML Changelog
