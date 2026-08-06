@@ -541,7 +541,7 @@
                 if (data.loggedIn && data.user) {
                     const container = document.getElementById('authNavContainer');
                     container.innerHTML = `
-                        <a href="/doc?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
+                        <a href="/docs?showProfile=true" class="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-cyan-500/40 px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-md">
                             <img src="${data.user.avatar}" class="w-6 h-6 rounded-full object-cover border border-cyan-400/60" alt="Avatar">
                             <span class="text-xs font-bold text-cyan-400 tracking-wide">${data.user.username}</span>
                         </a>
