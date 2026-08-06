@@ -113,6 +113,22 @@ const voucherSchema = new mongoose.Schema({
 
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
+const productSchema = new mongoose.Schema({
+    nama: { type: String, required: true, trim: true },
+    harga: { type: Number, required: true },
+    harga_diskon: { type: Number, default: null },
+    kategori: { type: String, required: true },
+    badge: { type: String, default: "" },
+    terjual: { type: Number, default: 0 },
+    stok: { type: Number, default: 0 },
+    gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
+    deskripsi: { type: String, default: "" },
+    link: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
+
 // Helper function untuk mengambil identifier user unik
 function getUserIdentifier(req) {
     if (req.user) {
@@ -252,6 +268,33 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
+async function updateProductStockAndSold(productName, qtyPurchased = 1) {
+    try {
+        if (!productName) return null;
+        
+        // Cari berdasarkan nama produk (case insensitive)
+        const product = await Product.findOne({ 
+            nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
+        });
+
+        if (product) {
+            // Pengurangan stok tidak boleh di bawah 0
+            const newStock = Math.max(0, (product.stok || 0) - qtyPurchased);
+            const newSold = (product.terjual || 0) + qtyPurchased;
+
+            product.stok = newStock;
+            product.terjual = newSold;
+            await product.save();
+
+            console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${newStock}), Terjual (${newSold})`);
+            return product;
+        }
+    } catch (err) {
+        console.error("❌ Gagal meng-update stok produk:", err.message);
+    }
+    return null;
+}
+
 async function setCache(key, data) {
     try {
         await CacheModel.findOneAndUpdate(
@@ -334,7 +377,8 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
 // ==========================================
 app.post('/transactions', async (req, res) => {
     try {
-        const { orderId, amount, itemDetails } = req.body;
+        const { orderId, amount, itemDetails, qty } = req.body;
+        const buyQty = Number(qty) || 1;
 
         if (!orderId || !amount) {
             return res.status(400).json({ 
@@ -344,18 +388,13 @@ app.post('/transactions', async (req, res) => {
             });
         }
 
-        // --- IDEMPOTENSI: Jika orderId sudah ada, kembalikan data eksis ---
         const existingTrx = await Transaction.findOne({ orderId });
         if (existingTrx) {
-            return res.json({
-                status: true,
-                data: existingTrx
-            });
+            return res.json({ status: true, data: existingTrx });
         }
 
         const inputAmount = Number(amount);
 
-        // Request ke PayWuz API menggunakan helper retry dengan backoff
         const paywuzRes = await axiosPaywuzWithRetry({
             method: 'post',
             url: `${PAYWUZ_BASE_URL}/transactions`,
@@ -389,14 +428,13 @@ app.post('/transactions', async (req, res) => {
             finalAmount = inputAmount + feeVal;
         }
 
+        // Ambil link produk dari Mongo DB
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
-            const pathProduk = path.join(__dirname, 'database', 'produk.json');
-            if (fs.existsSync(pathProduk)) {
-                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                const matchedProduct = products.find(p => p.nama === itemDetails.nama);
-                if (matchedProduct) pLink = matchedProduct.link || null;
-            }
+            const dbProduct = await Product.findOne({ 
+                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
+            });
+            if (dbProduct) pLink = dbProduct.link;
         }
 
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
@@ -407,14 +445,16 @@ app.post('/transactions', async (req, res) => {
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
             status: (transactionData.status || "pending").toLowerCase(),
-            itemDetails: itemDetails || null,
+            itemDetails: {
+                ...itemDetails,
+                qty: buyQty
+            },
             productLink: pLink,
             expiredAt: expiredAt
         });
 
         await newTransaction.save();
 
-        // FIX: Tambahkan properti 'status: true' agar terbaca sukses oleh Frontend
         return res.json({
             status: true,
             data: newTransaction
@@ -566,21 +606,15 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
-
-        // Gunakan req.rawBody jika ada, atau fallback ke req.body jika kosong
         const payloadToVerify = req.rawBody || req.body;
 
-        // Verifikasi Signature
         const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
 
-        if (!isValid) {
-            console.warn("⚠️ Signature Webhook tidak valid atau tidak cocok!");
-            if (process.env.NODE_ENV === 'production') {
-                return res.status(401).json({ 
-                    error: "INVALID_SIGNATURE", 
-                    message: "Signature webhook tidak valid!" 
-                });
-            }
+        if (!isValid && process.env.NODE_ENV === 'production') {
+            return res.status(401).json({ 
+                error: "INVALID_SIGNATURE", 
+                message: "Signature webhook tidak valid!" 
+            });
         }
 
         const payload = req.body;
@@ -596,7 +630,6 @@ app.post('/webhook', async (req, res) => {
             });
         }
 
-        // 2. Update Database & Proses Kredit Saldo / Event
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
 
@@ -605,41 +638,37 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
-                // Dengarkan khusus event transaction.paid (atau status paid/settlement)
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
 
-                if (isPaidEvent && prevStatus !== "paid" && prevStatus !== "settlement") {
-                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} lunas. Memproses kredit saldo merchant...`);
+                if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
+                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
+                    // 1. Kurangi stok dan tambah terjual di MongoDB secara otomatis
+                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
+                        const qtyPurchased = localTrx.itemDetails.qty || 1;
+                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased);
+                    }
+
+                    // 2. Ambil Link Produk jika belum ada
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
-                        const pathProduk = path.join(__dirname, 'database', 'produk.json');
-                        if (fs.existsSync(pathProduk)) {
-                            try {
-                                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                                const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
-                                const matchedProduct = products.find(p => p.nama && p.nama.trim().toLowerCase() === targetNama);
-
-                                if (matchedProduct && matchedProduct.link) {
-                                    localTrx.productLink = matchedProduct.link;
-                                }
-                            } catch (parseErr) {}
+                        const dbProduct = await Product.findOne({ 
+                            nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
+                        });
+                        if (dbProduct) {
+                            localTrx.productLink = dbProduct.link;
                         }
                     }
                 }
 
                 await localTrx.save();
-
-                // Invalidate Cache
                 await deleteCache(`trx_${orderId}`);
 
-                // Jadwalkan Hapus
                 if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
         }
 
-        // Standard Success Response Envelope
         return res.status(200).json({ 
             data: {
                 message: "Webhook diproses dengan sukses",
@@ -653,6 +682,34 @@ app.post('/webhook', async (req, res) => {
             error: "WEBHOOK_PROCESSING_ERROR", 
             message: "Terjadi kesalahan internal saat memproses webhook" 
         });
+    }
+});
+
+app.post('/api/store/manual-order', async (req, res) => {
+    try {
+        const productName = req.body.productName;
+        const qty = req.body.qty;
+        const buyQty = Number(qty) || 1;
+
+        if (!productName) {
+            return res.status(400).json({ status: false, message: "Nama produk wajib diisi!" });
+        }
+
+        // Potong stok & tambah jumlah terjual secara otomatis untuk order manual WhatsApp
+        const updatedProduct = await updateProductStockAndSold(productName, buyQty);
+
+        if (!updatedProduct) {
+            return res.status(404).json({ status: false, message: "Produk tidak ditemukan di database." });
+        }
+
+        return res.json({
+            status: true,
+            message: "Stok dan jumlah terjual berhasil diperbarui secara otomatis!",
+            data: updatedProduct
+        });
+    } catch (err) {
+        console.error("Manual Order Error:", err);
+        return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
 
@@ -2203,21 +2260,14 @@ app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
 });
 
-app.get('/database/produk', (req, res) => {
-    const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
-
-    fs.readFile(pathProduk, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Gagal membaca database produk:", err);
-            return res.status(500).json({ error: "Gagal memuat data produk" });
-        }
-        try {
-            const produk = JSON.parse(data);
-            res.json(produk);
-        } catch (parseError) {
-            res.status(500).json({ error: "Format database produk rusak" });
-        }
-    });
+app.get('/database/produk', async (req, res) => {
+    try {
+        const produk = await Product.find({}).sort({ createdAt: -1 });
+        res.json(produk);
+    } catch (err) {
+        console.error("Gagal mengambil data produk dari MongoDB:", err);
+        res.status(500).json({ error: "Gagal memuat data produk" });
+    }
 });
 
 app.get('/store', (req, res) => {
