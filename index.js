@@ -113,23 +113,6 @@ const voucherSchema = new mongoose.Schema({
 
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
-const productSchema = new mongoose.Schema({
-    Id: { type: String, required: true, unique: true, trim: true }, // Menggunakan custom Id tanpa default
-    nama: { type: String, required: true, trim: true },
-    harga: { type: Number, required: true },
-    harga_diskon: { type: Number, default: null },
-    kategori: { type: String, required: true },
-    badge: { type: String, default: "" },
-    terjual: { type: Number, default: 0 },
-    stok: { type: Number, default: 0 },
-    gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
-    deskripsi: { type: String, default: "" },
-    link: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
-});
-
-const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
-
 // Helper function untuk mengambil identifier user unik
 function getUserIdentifier(req) {
     if (req.user) {
@@ -269,33 +252,6 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
-async function updateProductStockAndSold(productName, qtyPurchased = 1) {
-    try {
-        if (!productName) return null;
-        
-        // Cari berdasarkan nama produk (case insensitive)
-        const product = await Product.findOne({ 
-            nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
-        });
-
-        if (product) {
-            // Pengurangan stok tidak boleh di bawah 0
-            const newStock = Math.max(0, (product.stok || 0) - qtyPurchased);
-            const newSold = (product.terjual || 0) + qtyPurchased;
-
-            product.stok = newStock;
-            product.terjual = newSold;
-            await product.save();
-
-            console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${newStock}), Terjual (${newSold})`);
-            return product;
-        }
-    } catch (err) {
-        console.error("❌ Gagal meng-update stok produk:", err.message);
-    }
-    return null;
-}
-
 async function setCache(key, data) {
     try {
         await CacheModel.findOneAndUpdate(
@@ -378,8 +334,7 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
 // ==========================================
 app.post('/transactions', async (req, res) => {
     try {
-        const { orderId, amount, itemDetails, qty } = req.body;
-        const buyQty = Number(qty) || 1;
+        const { orderId, amount, itemDetails } = req.body;
 
         if (!orderId || !amount) {
             return res.status(400).json({ 
@@ -389,13 +344,18 @@ app.post('/transactions', async (req, res) => {
             });
         }
 
+        // --- IDEMPOTENSI: Jika orderId sudah ada, kembalikan data eksis ---
         const existingTrx = await Transaction.findOne({ orderId });
         if (existingTrx) {
-            return res.json({ status: true, data: existingTrx });
+            return res.json({
+                status: true,
+                data: existingTrx
+            });
         }
 
         const inputAmount = Number(amount);
 
+        // Request ke PayWuz API menggunakan helper retry dengan backoff
         const paywuzRes = await axiosPaywuzWithRetry({
             method: 'post',
             url: `${PAYWUZ_BASE_URL}/transactions`,
@@ -429,13 +389,14 @@ app.post('/transactions', async (req, res) => {
             finalAmount = inputAmount + feeVal;
         }
 
-        // Ambil link produk dari Mongo DB
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
-            const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
-            });
-            if (dbProduct) pLink = dbProduct.link;
+            const pathProduk = path.join(__dirname, 'database', 'produk.json');
+            if (fs.existsSync(pathProduk)) {
+                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                const matchedProduct = products.find(p => p.nama === itemDetails.nama);
+                if (matchedProduct) pLink = matchedProduct.link || null;
+            }
         }
 
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
@@ -446,16 +407,14 @@ app.post('/transactions', async (req, res) => {
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
             status: (transactionData.status || "pending").toLowerCase(),
-            itemDetails: {
-                ...itemDetails,
-                qty: buyQty
-            },
+            itemDetails: itemDetails || null,
             productLink: pLink,
             expiredAt: expiredAt
         });
 
         await newTransaction.save();
 
+        // FIX: Tambahkan properti 'status: true' agar terbaca sukses oleh Frontend
         return res.json({
             status: true,
             data: newTransaction
@@ -607,15 +566,21 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
+
+        // Gunakan req.rawBody jika ada, atau fallback ke req.body jika kosong
         const payloadToVerify = req.rawBody || req.body;
 
+        // Verifikasi Signature
         const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
 
-        if (!isValid && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({ 
-                error: "INVALID_SIGNATURE", 
-                message: "Signature webhook tidak valid!" 
-            });
+        if (!isValid) {
+            console.warn("⚠️ Signature Webhook tidak valid atau tidak cocok!");
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(401).json({ 
+                    error: "INVALID_SIGNATURE", 
+                    message: "Signature webhook tidak valid!" 
+                });
+            }
         }
 
         const payload = req.body;
@@ -631,6 +596,7 @@ app.post('/webhook', async (req, res) => {
             });
         }
 
+        // 2. Update Database & Proses Kredit Saldo / Event
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
 
@@ -639,37 +605,41 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
+                // Dengarkan khusus event transaction.paid (atau status paid/settlement)
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
 
-                if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
-                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
+                if (isPaidEvent && prevStatus !== "paid" && prevStatus !== "settlement") {
+                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} lunas. Memproses kredit saldo merchant...`);
 
-                    // 1. Kurangi stok dan tambah terjual di MongoDB secara otomatis
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased);
-                    }
-
-                    // 2. Ambil Link Produk jika belum ada
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
-                        const dbProduct = await Product.findOne({ 
-                            nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
-                        });
-                        if (dbProduct) {
-                            localTrx.productLink = dbProduct.link;
+                        const pathProduk = path.join(__dirname, 'database', 'produk.json');
+                        if (fs.existsSync(pathProduk)) {
+                            try {
+                                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
+                                const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
+                                const matchedProduct = products.find(p => p.nama && p.nama.trim().toLowerCase() === targetNama);
+
+                                if (matchedProduct && matchedProduct.link) {
+                                    localTrx.productLink = matchedProduct.link;
+                                }
+                            } catch (parseErr) {}
                         }
                     }
                 }
 
                 await localTrx.save();
+
+                // Invalidate Cache
                 await deleteCache(`trx_${orderId}`);
 
+                // Jadwalkan Hapus
                 if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
         }
 
+        // Standard Success Response Envelope
         return res.status(200).json({ 
             data: {
                 message: "Webhook diproses dengan sukses",
@@ -683,34 +653,6 @@ app.post('/webhook', async (req, res) => {
             error: "WEBHOOK_PROCESSING_ERROR", 
             message: "Terjadi kesalahan internal saat memproses webhook" 
         });
-    }
-});
-
-app.post('/api/store/manual-order', async (req, res) => {
-    try {
-        const productName = req.body.productName;
-        const qty = req.body.qty;
-        const buyQty = Number(qty) || 1;
-
-        if (!productName) {
-            return res.status(400).json({ status: false, message: "Nama produk wajib diisi!" });
-        }
-
-        // Potong stok & tambah jumlah terjual secara otomatis untuk order manual WhatsApp
-        const updatedProduct = await updateProductStockAndSold(productName, buyQty);
-
-        if (!updatedProduct) {
-            return res.status(404).json({ status: false, message: "Produk tidak ditemukan di database." });
-        }
-
-        return res.json({
-            status: true,
-            message: "Stok dan jumlah terjual berhasil diperbarui secara otomatis!",
-            data: updatedProduct
-        });
-    } catch (err) {
-        console.error("Manual Order Error:", err);
-        return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
 
@@ -2261,62 +2203,25 @@ app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
 });
 
-app.get('/database/produk', async (req, res) => {
-    try {
-        const produk = await Product.find({}).sort({ createdAt: -1 });
-        res.json(produk);
-    } catch (err) {
-        console.error("Gagal mengambil data produk dari MongoDB:", err);
-        res.status(500).json({ error: "Gagal memuat data produk" });
-    }
+app.get('/database/produk', (req, res) => {
+    const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
+
+    fs.readFile(pathProduk, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Gagal membaca database produk:", err);
+            return res.status(500).json({ error: "Gagal memuat data produk" });
+        }
+        try {
+            const produk = JSON.parse(data);
+            res.json(produk);
+        } catch (parseError) {
+            res.status(500).json({ error: "Format database produk rusak" });
+        }
+    });
 });
 
 app.get('/store', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'store.html'));
-});
-
-// Route untuk halaman detail produk / shareable link
-app.get('/store/:productId', async (req, res) => {
-    try {
-        // Ambil productId dari URL params (:productId)
-        const productId = req.params.productId;
-        
-        // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
-        const product = await Product.findOne({ Id: productId });
-
-        // Baca file store.html
-        const storePath = path.join(__dirname, 'public', 'store.html');
-        let htmlContent = fs.readFileSync(storePath, 'utf8');
-
-        if (product) {
-            // Format harga untuk Open Graph Description
-            const hargaFormatted = product.harga_diskon 
-                ? `Rp ${product.harga_diskon.toLocaleString('id-ID')}` 
-                : `Rp ${product.harga.toLocaleString('id-ID')}`;
-
-            // Safe slice untuk deskripsi agar tidak error jika deskripsi kosong
-            const deskripsiClean = product.deskripsi ? product.deskripsi.slice(0, 150) : '';
-
-            // Inject Open Graph Meta Tags dinamis untuk WhatsApp / Medsos Preview
-            const metaTags = `
-    <!-- Open Graph / Meta Tags Dinamis -->
-    <meta property="og:title" content="${product.nama} - ArulzXD Store" />
-    <meta property="og:description" content="${deskripsiClean}... | Harga: ${hargaFormatted}" />
-    <meta property="og:image" content="${product.gambar}" />
-    <meta property="og:url" content="https://arulz-xd.my.id/store/${product.Id}" />
-    <meta property="og:type" content="product" />
-    <meta name="twitter:card" content="summary_large_image" />
-            `;
-
-            // Sisipkan meta tags di bawah tag <head>
-            htmlContent = htmlContent.replace('<head>', `<head>${metaTags}`);
-        }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('Error serving product page:', error);
-        res.sendFile(path.join(__dirname, 'public', 'store.html'));
-    }
 });
 
 // Endpoint untuk menyajikan halaman HTML Changelog
@@ -2823,41 +2728,103 @@ app.get('/docs', (req, res) => {
         <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 light-mode:text-slate-700 flex-1 py-1 overflow-y-auto scrollbar-hide">
             <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
-            <a href="/" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                Dashboard
-            </a>
+            <a href="/" class="menu-link group flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-cyan-950/20 transition-all duration-300">
+    <div class="w-6 h-6 flex items-center justify-center">
+        <!-- SVG Ikon Rumah Sirkuit 'HM' (Cyan Neon) -->
+        <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 transform scale-100 group-hover:scale-105 transition-transform duration-300" style="filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.8));">
+            <defs>
+                <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#22d3ee" /> <!-- cyan-400 -->
+                    <stop offset="100%" stop-color="#22d3ee" /> <!-- cyan-400 -->
+                </linearGradient>
+            </defs>
+            
+            <!-- Struktur Rumah dengan Chimney dan Pintu -->
+            <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" />
 
-            <a href="/docs" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Docs
-            </a>
+            <!-- Huruf 'H' Tersembunyi (Kiri) - Stroke-width lebih tipis -->
+            <path d="M7 13v6M9 13v6M7 16h2" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <!-- Huruf 'M' Tersembunyi (Kanan) - Stroke-width lebih tipis -->
+            <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Detail Jejak Sirkuit/Microchip Tambahan -->
+            <path d="M12 5v3M10 8h4" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round" />
+            <circle cx="12" cy="5.5" r="0.5" fill="#22d3ee" />
+            <circle cx="9" cy="9" r="0.4" fill="#22d3ee" />
+            <circle cx="15" cy="9" r="0.4" fill="#22d3ee" />
+            <path d="M8 12.5a0.5.5 0 100-1 .5.5 0 000 1zM16 12.5a0.5.5 0 100-1 .5.5 0 000 1z" fill="#22d3ee"/>
+            
+        </svg>
+    </div>
+    
+    <!-- Teks Dashboard, transisi warna pada hover grup -->
+    <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">
+        Dashboard
+    </span>
+</a>
+
+            <a href="/docs" class="menu-link group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+    <div class="relative flex items-center justify-center">
+        <!-- SVG Ikon Docs Neon Cyber -->
+        <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 transform group-hover:scale-105 transition-transform duration-300" style="filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.8));">
+            <!-- Bingkai Luar Buku & Efek Dual-Border -->
+            <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#22d3ee" stroke-width="1.2" stroke-linejoin="round"/>
+            
+            <!-- Tulang Buku Tengah -->
+            <path d="M12 4v14.5" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round"/>
+
+            <!-- Sisi Kiri: Ikon Dokumen Berisi Garis -->
+            <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#22d3ee" stroke-width="0.9" fill="none"/>
+            <path d="M7 7.5h2l1 1v1" stroke="#22d3ee" stroke-width="0.7"/>
+            <line x1="6.5" y1="10" x2="9" y2="10" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="6.5" y1="13" x2="8" y2="13" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+
+            <!-- Sisi Kanan: Teks DOCS & Jalur Sirkuit -->
+            <text x="16.8" y="11" fill="#22d3ee" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="0.2">DOCS</text>
+            
+            <!-- Detail Jalur Sirkuit & Kode (Kanan & Kiri) -->
+            <path d="M14 13h2.5v1.5H18" stroke="#22d3ee" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.5 7.5h3.5M14.5 8.5h2" stroke="#22d3ee" stroke-width="0.6" stroke-linecap="round"/>
+            <circle cx="18" cy="14.5" r="0.4" fill="#22d3ee"/>
+            <circle cx="5" cy="16.5" r="0.4" fill="#22d3ee"/>
+            <path d="M4.5 15.5h1.5v1" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <!-- Teks Navigasi -->
+    <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">
+        Docs
+    </span>
+</a>
 
             <a href="/store" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
-                </svg>
-                Store
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <!-- Troli Belanja -->
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+              <!-- Bintang di Dalam Keranjang -->
+              <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
+               </svg>
+              Store
             </a>
 
             <a href="/changelog" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                Changelog
-            </a>
+    <!-- SVG Baru -->
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    Changelog
+</a>
 
             <a href="/uploader" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                </svg>
-                Uploader
-            </a>
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+    </svg>
+    Uploader
+</a>
 
             <a href="/pastecode" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
                 <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -2867,34 +2834,74 @@ app.get('/docs', (req, res) => {
             </a>
 
             <a href="/feedback" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m-9 3h9m11.25-3c0 5.937-4.326 10.864-10 11.25a11.954 11.954 0 0 1-5.185-.929L2.25 21.75l1.62-4.86a11.95 11.95 0 0 1-1.12-4.89c0-6.213 5.037-11.25 11.25-11.25s11.25 5.037 11.25 11.25Z" />
-                </svg>
-                Feedback
-            </a>
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <!-- Back Chat Bubble -->
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
+        <!-- Front Chat Bubble -->
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
+        <!-- Pulse Wave Line -->
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
+        <!-- Network Nodes & Connectors -->
+        <circle cx="13.5" cy="9.5" r="1" fill="currentColor" />
+        <path stroke-linecap="round" d="M13.5 9.5l-1-1.5m1 1.5v-2m1 2l1-1.5m-1 1.5h1.8m-1.8 0l1 1.5m-1-1.5v2" />
+        <circle cx="12.5" cy="8" r="0.6" fill="currentColor" />
+        <circle cx="13.5" cy="7.5" r="0.6" fill="currentColor" />
+        <circle cx="14.5" cy="8" r="0.6" fill="currentColor" />
+        <circle cx="15.3" cy="9.5" r="0.6" fill="currentColor" />
+        <circle cx="14.5" cy="11" r="0.6" fill="currentColor" />
+        <circle cx="13.5" cy="11.5" r="0.6" fill="currentColor" />
+    </svg>
+    Feedback
+</a>
 
             <a href="/status" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                </svg>
-                Stats / Status
-            </a>
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <!-- Top Server Rack -->
+        <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="6" r="0.6" fill="currentColor"/>
+        <circle cx="8" cy="6" r="0.6" fill="currentColor"/>
+        <circle cx="10" cy="6" r="0.6" fill="currentColor"/>
+        <circle cx="16" cy="6" r="0.8" fill="currentColor"/>
+        <circle cx="18.5" cy="6" r="0.8" fill="currentColor"/>
+
+        <!-- Bottom Server Rack -->
+        <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="13.5" r="0.6" fill="currentColor"/>
+        <circle cx="8" cy="13.5" r="0.6" fill="currentColor"/>
+        <circle cx="10" cy="13.5" r="0.6" fill="currentColor"/>
+        <circle cx="17.25" cy="13.5" r="0.8" fill="currentColor"/>
+
+        <!-- Network Connection Line & Node -->
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
+        <circle cx="12" cy="20.5" r="1.5"/>
+    </svg>
+    Stats / Status
+</a>
 
             <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
 
             <a href="/privacy" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0 1 12 2.714Z"/>
-                </svg>
-                Privacy Policy
-            </a>
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <!-- Outer Shield -->
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
+        <!-- Inner Shield Contour (Dotted/Tech effect) -->
+        <path stroke-linecap="round" stroke-dasharray="0.8 1.5" stroke-width="1.2" d="M12 4.5c-2.8 0-5.3 1.1-7.1 2.9.4 4.2 2.9 9 7.1 11.9 4.2-2.9 6.7-7.7 7.1-11.9A10.1 10.1 0 0 0 12 4.5Z" />
+        <!-- Letter P -->
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
+        <!-- Tech Accent Lines inside shield -->
+        <path stroke-linecap="round" stroke-width="1" d="M6 9.5h1.5M5.8 11.5h2M6.2 13.5h1.2M16.5 12h1.8M16 14h2.2M16.8 15.8h1.2" />
+    </svg>
+    Privacy Policy
+</a>
 
             <a href="/support" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-                Support
-            </a>
+    <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12.5 13a1 1 0 0 1 1-1 1 1 0 0 1 1 1m0 3a1 1 0 0 0-1-1 1 1 0 0 0-1 1" stroke-linecap="round"/>
+    </svg>
+    Support
+</a>
         </nav>
     </div>
 
