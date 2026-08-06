@@ -241,68 +241,85 @@
 
     <script>
         async function loadChangelog() {
-            try {
-                const res = await fetch('/database/changelog');
-                const data = await res.json();
-                
-                const container = document.getElementById('changelog-container');
-                container.innerHTML = '';
+    try {
+        const res = await fetch('/database/changelog');
+        const data = await res.json();
+        
+        const container = document.getElementById('changelog-container');
+        container.innerHTML = '';
 
-                data.forEach((item, index) => {
-                    const isLast = index === data.length - 1;
-                    const isFeature = item.type.toLowerCase() === 'feature';
-                    
-                    const dotBg = isFeature ? 'bg-emerald-400' : 'bg-rose-500';
-                    const badgeClass = isFeature 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                        : 'bg-rose-500/10 text-rose-400 border-rose-500/30';
-                    const typeLabel = isFeature ? 'FEATURE' : 'BUG FIX';
+        data.forEach((item, index) => {
+            const isLast = index === data.length - 1;
+            const type = item.type ? item.type.toLowerCase() : '';
 
-                    const cardHTML = `
-                        <div class="relative pl-9 sm:pl-10">
-                            <!-- Timeline Line (Hapus garis pada item terakhir) -->
-                            ${!isLast ? '<div class="absolute left-[15px] sm:left-[17px] top-8 bottom-[-32px] w-[2px] bg-gradient-to-b from-cyan-500/40 via-cyan-500/10 to-transparent"></div>' : ''}
+            // Pengondisian Warna & Label Tipe Pembaruan
+            let dotBg = 'bg-cyan-400';
+            let badgeClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30';
+            let typeLabel = item.type ? item.type.toUpperCase() : 'UPDATE';
 
-                            <!-- Dot Icon Marker -->
-                            <div class="absolute left-0 top-1 w-8 h-8 rounded-full border border-cyan-500/30 bg-[#020617] flex items-center justify-center z-10 shadow-lg">
-                                <div class="w-2.5 h-2.5 rounded-full ${dotBg} shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
-                            </div>
-
-                            <!-- Header Version Tag & Date -->
-                            <div class="flex items-center gap-2 mb-2 font-mono-custom text-xs">
-                                <span class="px-2 py-0.5 border border-cyan-500/30 rounded-md text-[11px] font-bold text-cyan-400 bg-cyan-950/30">${item.version}</span>
-                                <span class="text-slate-400 font-medium text-[11px]">${item.date}</span>
-                                <span class="text-slate-600">•</span>
-                                <span class="px-2 py-0.5 border rounded-md text-[9px] font-extrabold tracking-wider uppercase ${badgeClass}">${typeLabel}</span>
-                            </div>
-
-                            <!-- Content Card -->
-                            <div class="glass-panel p-5 sm:p-6 transition-all duration-300 hover:border-cyan-500/30">
-                                <h2 class="text-base sm:text-lg font-bold text-white mb-2 tracking-wide">${item.title}</h2>
-                                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4">
-                                    ${item.description}
-                                </p>
-                                
-                                <hr class="border-white/5 mb-3">
-
-                                <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono-custom text-slate-400">
-                                    <div class="flex items-center gap-1.5 text-cyan-400 font-semibold">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                        </svg>
-                                        <span>PROTOCOL VERIFIED</span>
-                                    </div>
-                                    ${item.node ? `<span class="opacity-80">NODE: ${item.node}</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += cardHTML;
-                });
-            } catch (err) {
-                console.error('Error fetching changelog:', err);
+            if (type === 'add' || type === 'added') {
+                dotBg = 'bg-emerald-400';
+                badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                typeLabel = 'ADD';
+            } else if (type === 'delete' || type === 'deleted' || type === 'remove') {
+                dotBg = 'bg-rose-500';
+                badgeClass = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+                typeLabel = 'DELETE';
+            } else if (type === 'bug fix' || type === 'fix' || type === 'bugfix') {
+                dotBg = 'bg-amber-400';
+                badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+                typeLabel = 'BUG FIX';
+            } else if (type === 'feature') {
+                dotBg = 'bg-indigo-400';
+                badgeClass = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+                typeLabel = 'FEATURE';
             }
-        }
+
+            const cardHTML = `
+                <div class="relative pl-9 sm:pl-10">
+                    <!-- Timeline Line -->
+                    ${!isLast ? '<div class="absolute left-[15px] sm:left-[17px] top-8 bottom-[-32px] w-[2px] bg-gradient-to-b from-cyan-500/40 via-cyan-500/10 to-transparent"></div>' : ''}
+
+                    <!-- Dot Icon Marker -->
+                    <div class="absolute left-0 top-1 w-8 h-8 rounded-full border border-cyan-500/30 bg-[#020617] flex items-center justify-center z-10 shadow-lg">
+                        <div class="w-2.5 h-2.5 rounded-full ${dotBg} shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
+                    </div>
+
+                    <!-- Header Version Tag & Date -->
+                    <div class="flex items-center gap-2 mb-2 font-mono-custom text-xs">
+                        <span class="px-2 py-0.5 border border-cyan-500/30 rounded-md text-[11px] font-bold text-cyan-400 bg-cyan-950/30">${item.version}</span>
+                        <span class="text-slate-400 font-medium text-[11px]">${item.date}</span>
+                        <span class="text-slate-600">•</span>
+                        <span class="px-2 py-0.5 border rounded-md text-[9px] font-extrabold tracking-wider uppercase ${badgeClass}">${typeLabel}</span>
+                    </div>
+
+                    <!-- Content Card -->
+                    <div class="glass-panel p-5 sm:p-6 transition-all duration-300 hover:border-cyan-500/30">
+                        <h2 class="text-base sm:text-lg font-bold text-white mb-2 tracking-wide">${item.title}</h2>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4">
+                            ${item.description}
+                        </p>
+                        
+                        <hr class="border-white/5 mb-3">
+
+                        <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono-custom text-slate-400">
+                            <div class="flex items-center gap-1.5 text-cyan-400 font-semibold">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>PROTOCOL VERIFIED</span>
+                            </div>
+                            ${item.node ? `<span class="opacity-80">NODE: ${item.node}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += cardHTML;
+        });
+    } catch (err) {
+        console.error('Error fetching changelog:', err);
+    }
+}
 
         document.addEventListener('DOMContentLoaded', loadChangelog);
         function getPageDisplayName() {
