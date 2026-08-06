@@ -915,6 +915,11 @@
                                     class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed' : 'bg-cyberCyan/10 hover:bg-cyberCyan border-cyberCyan/40 text-cyberCyan hover:text-cyberDark shadow-glowCyanSm'} border font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
                                 <i class="fa-solid fa-cart-shopping"></i> ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
+
+                            <button onclick="shareProduk(${originalIndex})" 
+                                    class="w-full text-center bg-slate-800/80 hover:bg-slate-700/80 border border-cyberBorder text-slate-300 hover:text-cyberCyan font-bold py-1.5 rounded-lg text-[11px] font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-1.5">
+                                <i class="fa-solid fa-share-nodes text-cyberCyan"></i> Bagikan
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1454,6 +1459,44 @@
             }
         }
 
+        function shareProduk(index) {
+            const produk = DATA_PRODUK[index];
+            if (!produk) return;
+
+            const productId = produk.Id || produk._id;
+            const shareUrl = `${window.location.origin}/store/${productId}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: produk.nama,
+                    text: `Beli ${produk.nama} di ArulzXD Store!`,
+                    url: shareUrl
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'LINK BERHASIL DISALIN!',
+                        text: 'Tautan produk telah disalin ke papan klip.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'cyber-swal',
+                            title: 'cyber-swal-title',
+                            htmlContainer: 'cyber-swal-text'
+                        }
+                    });
+                }).catch(() => {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'TAUTAN PRODUK',
+                        text: shareUrl,
+                        customClass: { popup: 'cyber-swal' }
+                    });
+                });
+            }
+        }
+
         // ==================== PEMBAYARAN MANUAL (WHATSAPP) ====================
         async function handleFormSubmit(event) {
             event.preventDefault();
@@ -1516,9 +1559,21 @@
             });
         }
 
+        async function checkUrlProductShare() {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            if (pathSegments.length >= 2 && pathSegments[0] === 'store') {
+                const targetId = pathSegments[1];
+                const matchedIdx = DATA_PRODUK.findIndex(p => p.Id === targetId || p._id === targetId);
+                if (matchedIdx !== -1) {
+                    openCheckoutModal(matchedIdx);
+                }
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchProduk();
             await checkActiveTransaction();
+            await checkUrlProductShare();
         });
 
         function getPageDisplayName() {
