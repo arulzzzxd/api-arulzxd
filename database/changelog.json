@@ -1,26 +1,90 @@
 [
   {
-    "version": "v1.0.0",
-    "date": "4 AUG 2026",
+    "version": "v2.0.0",
+    "date": "7 AUG 2026",
+    "type": "add",
+    "title": "Major Release: Dynamic Endpoint & Authentication Core System v2.0",
+    "description": "Pembaruan besar-besaran mencakup migrasi MongoDB, sistem autentikasi JWT/OAuth (Google, GitHub), integrasi payment gateway, serta peningkatan rate limiting berbasis role (Free, Premium, VIP).",
+    "node": "ID-JKT-01"
+  },
+  {
+    "version": "v1.9.0",
+    "date": "6 AUG 2026",
+    "type": "add",
+    "title": "Payment Gateway & Webhook Integration",
+    "description": "Menambahkan endpoint transaksi QRIS otomatis.",
+    "node": "SG-SIN-01"
+  },
+  {
+    "version": "v1.8.0",
+    "date": "5 AUG 2026",
+    "type": "add",
+    "title": "Voucher & Claim System Deployed",
+    "description": "Implementasi sistem klaim voucher diskon dengan proteksi kuota penggunaan dan batasan klaim per pengguna.",
+    "node": "US-NYC-01"
+  },
+  {
+    "version": "v1.4.9",
+    "date": "5 AUG 2026",
     "type": "feature",
-    "title": "Protocol Synchronized: DafontStyle Font Search",
-    "description": "Protokol baru `searcg/dafont/` telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
+    "title": "User Avatar & Profile Management",
+    "description": "Menambahkan endpoint upload dan pembaruan foto profil avatar pengguna menggunakan Multer dan pembacaan Base64 Data URI[span_4](start_span)[span_4](end_span).",
     "node": "DE-FRA-01"
   },
   {
-    "version": "v1.0.0",
+    "version": "v1.4.0",
+    "date": "4 AUG 2026",
+    "type": "add",
+    "title": "Email Feedback & Interactive Support",
+    "description": "Pengintegrasian layanan pengiriman email otomatis untuk fitur feedback pengguna dan permintaan reset kata sandi.",
+    "node": "DE-FRA-01"
+  },
+  {
+    "version": "v1.3.0",
+    "date": "4 AUG 2026",
+    "type": "feature",
+    "title": "Rate Limiter & Tier Protection Deployed",
+    "description": "Penerapan sistem kuota harian berdasarkan tier akun: Free (100 req/hari), Premium (1.000 req/hari), dan VIP (Unlimited).",
+    "node": "SG-SIN-01"
+  },
+  {
+    "version": "v1.2.0",
+    "date": "4 AUG 2026",
+    "type": "add",
+    "title": "OAuth 2.0 Integration: Google & GitHub",
+    "description": "Sinkronisasi modul autentikasi pihak ketiga menggunakan protokol OAuth 2.0 untuk pendaftaran dan login instan.",
+    "node": "US-NYC-01"
+  },
+  {
+    "version": "v1.1.1",
     "date": "4 AUG 2026",
     "type": "bugfix",
+    "title": "Hotfix: Dynamic Route Auto Loader",
+    "description": "Perbaikan bug pada sistem pembaca otomatis sub-router/kategori endpoint di direktori `/api` untuk mencegah kebocoran parameter.",
+    "node": "DE-FRA-02"
+  },
+  {
+    "version": "v1.1.0",
+    "date": "4 AUG 2026",
+    "type": "feature",
+    "title": "Protocol Synchronized: Upscale Tools Post",
+    "description": "Protokol baru tools/upscale post telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
+    "node": "SG-SIN-01"
+  },
+  {
+    "version": "v1.0.1",
+    "date": "4 AUG 2026",
+    "type": "delete",
     "title": "Endpoint Decommissioned: DafontStyle Font Search",
-    "description": "Protokol `searcg/dafont/` telah dihapus dari registry aktif untuk menjaga integritas sistem.",
+    "description": "Protokol searcg/dafont/ telah dihapus dari registry aktif untuk menjaga integritas sistem.",
     "node": "US-NYC-02"
   },
   {
     "version": "v1.0.0",
     "date": "4 AUG 2026",
-    "type": "feature",
-    "title": "Protocol Synchronized: YouTube Post Downloader",
-    "description": "Protokol baru `download/youtubepost` telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
-    "node": "SG-SIN-01"
+    "type": "add",
+    "title": "Protocol Synchronized: DafontStyle Font Search",
+    "description": "Protokol baru searcg/dafont/ telah berhasil dideploy dan disinkronisasi ke semua node cluster aktif.",
+    "node": "DE-FRA-01"
   }
 ]
