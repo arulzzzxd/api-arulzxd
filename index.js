@@ -2725,184 +2725,132 @@ app.get('/docs', (req, res) => {
         </div>
         `}
 
-        <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 light-mode:text-slate-700 flex-1 py-1 overflow-y-auto scrollbar-hide">
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
+        <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
+    <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
-            <a href="/" class="menu-link group flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-cyan-950/20 transition-all duration-300">
-    <div class="w-6 h-6 flex items-center justify-center">
-        <!-- SVG Ikon Rumah Sirkuit 'HM' (Cyan Neon) -->
-        <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 transform scale-100 group-hover:scale-105 transition-transform duration-300" style="filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.8));">
-            <defs>
-                <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#22d3ee" /> <!-- cyan-400 -->
-                    <stop offset="100%" stop-color="#22d3ee" /> <!-- cyan-400 -->
-                </linearGradient>
-            </defs>
-            
-            <!-- Struktur Rumah dengan Chimney dan Pintu -->
-            <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
-            <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" />
+    <!-- Dashboard -->
+    <a href="/" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
+                <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
+                <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M7 13v6M9 13v6M7 16h2" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 5v3M10 8h4" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round" />
+                <circle cx="12" cy="5.5" r="0.5" fill="#22d3ee" />
+                <circle cx="9" cy="9" r="0.4" fill="#22d3ee" />
+                <circle cx="15" cy="9" r="0.4" fill="#22d3ee" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Dashboard</span>
+    </a>
 
-            <!-- Huruf 'H' Tersembunyi (Kiri) - Stroke-width lebih tipis -->
-            <path d="M7 13v6M9 13v6M7 16h2" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-            
-            <!-- Huruf 'M' Tersembunyi (Kanan) - Stroke-width lebih tipis -->
-            <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Docs -->
+    <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
+                <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#22d3ee" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M12 4v14.5" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round"/>
+                <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#22d3ee" stroke-width="0.9" fill="none"/>
+                <line x1="6.5" y1="10" x2="9" y2="10" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+                <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+                <text x="16.8" y="11" fill="#22d3ee" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle">DOCS</text>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Docs</span>
+    </a>
 
-            <!-- Detail Jejak Sirkuit/Microchip Tambahan -->
-            <path d="M12 5v3M10 8h4" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round" />
-            <circle cx="12" cy="5.5" r="0.5" fill="#22d3ee" />
-            <circle cx="9" cy="9" r="0.4" fill="#22d3ee" />
-            <circle cx="15" cy="9" r="0.4" fill="#22d3ee" />
-            <path d="M8 12.5a0.5.5 0 100-1 .5.5 0 000 1zM16 12.5a0.5.5 0 100-1 .5.5 0 000 1z" fill="#22d3ee"/>
-            
-        </svg>
-    </div>
-    
-    <!-- Teks Dashboard, transisi warna pada hover grup -->
-    <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">
-        Dashboard
-    </span>
-</a>
+    <!-- Store -->
+    <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Store</span>
+    </a>
 
-            <a href="/docs" class="menu-link group flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-    <div class="relative flex items-center justify-center">
-        <!-- SVG Ikon Docs Neon Cyber -->
-        <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6 transform group-hover:scale-105 transition-transform duration-300" style="filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.8));">
-            <!-- Bingkai Luar Buku & Efek Dual-Border -->
-            <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#22d3ee" stroke-width="1.2" stroke-linejoin="round"/>
-            
-            <!-- Tulang Buku Tengah -->
-            <path d="M12 4v14.5" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Changelog -->
+    <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Changelog</span>
+    </a>
 
-            <!-- Sisi Kiri: Ikon Dokumen Berisi Garis -->
-            <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#22d3ee" stroke-width="0.9" fill="none"/>
-            <path d="M7 7.5h2l1 1v1" stroke="#22d3ee" stroke-width="0.7"/>
-            <line x1="6.5" y1="10" x2="9" y2="10" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-            <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-            <line x1="6.5" y1="13" x2="8" y2="13" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
+    <!-- Uploader -->
+    <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Uploader</span>
+    </a>
 
-            <!-- Sisi Kanan: Teks DOCS & Jalur Sirkuit -->
-            <text x="16.8" y="11" fill="#22d3ee" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="0.2">DOCS</text>
-            
-            <!-- Detail Jalur Sirkuit & Kode (Kanan & Kiri) -->
-            <path d="M14 13h2.5v1.5H18" stroke="#22d3ee" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M14.5 7.5h3.5M14.5 8.5h2" stroke="#22d3ee" stroke-width="0.6" stroke-linecap="round"/>
-            <circle cx="18" cy="14.5" r="0.4" fill="#22d3ee"/>
-            <circle cx="5" cy="16.5" r="0.4" fill="#22d3ee"/>
-            <path d="M4.5 15.5h1.5v1" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round"/>
-        </svg>
-    </div>
+    <!-- Pastecode -->
+    <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Pastecode</span>
+    </a>
 
-    <!-- Teks Navigasi -->
-    <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">
-        Docs
-    </span>
-</a>
+    <!-- Feedback -->
+    <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Feedback</span>
+    </a>
 
-            <a href="/store" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <!-- Troli Belanja -->
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-              <!-- Bintang di Dalam Keranjang -->
-              <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
-               </svg>
-              Store
-            </a>
+    <!-- Stats / Status -->
+    <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
+                <circle cx="12" cy="20.5" r="1.5"/>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Stats / Status</span>
+    </a>
 
-            <a href="/changelog" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <!-- SVG Baru -->
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-    Changelog
-</a>
+    <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
 
-            <a href="/uploader" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-    </svg>
-    Uploader
-</a>
+    <!-- Privacy Policy -->
+    <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Privacy Policy</span>
+    </a>
 
-            <a href="/pastecode" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-                </svg>
-                Pastecode
-            </a>
-
-            <a href="/feedback" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <!-- Back Chat Bubble -->
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
-        <!-- Front Chat Bubble -->
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
-        <!-- Pulse Wave Line -->
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
-        <!-- Network Nodes & Connectors -->
-        <circle cx="13.5" cy="9.5" r="1" fill="currentColor" />
-        <path stroke-linecap="round" d="M13.5 9.5l-1-1.5m1 1.5v-2m1 2l1-1.5m-1 1.5h1.8m-1.8 0l1 1.5m-1-1.5v2" />
-        <circle cx="12.5" cy="8" r="0.6" fill="currentColor" />
-        <circle cx="13.5" cy="7.5" r="0.6" fill="currentColor" />
-        <circle cx="14.5" cy="8" r="0.6" fill="currentColor" />
-        <circle cx="15.3" cy="9.5" r="0.6" fill="currentColor" />
-        <circle cx="14.5" cy="11" r="0.6" fill="currentColor" />
-        <circle cx="13.5" cy="11.5" r="0.6" fill="currentColor" />
-    </svg>
-    Feedback
-</a>
-
-            <a href="/status" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-        <!-- Top Server Rack -->
-        <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="6" cy="6" r="0.6" fill="currentColor"/>
-        <circle cx="8" cy="6" r="0.6" fill="currentColor"/>
-        <circle cx="10" cy="6" r="0.6" fill="currentColor"/>
-        <circle cx="16" cy="6" r="0.8" fill="currentColor"/>
-        <circle cx="18.5" cy="6" r="0.8" fill="currentColor"/>
-
-        <!-- Bottom Server Rack -->
-        <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="6" cy="13.5" r="0.6" fill="currentColor"/>
-        <circle cx="8" cy="13.5" r="0.6" fill="currentColor"/>
-        <circle cx="10" cy="13.5" r="0.6" fill="currentColor"/>
-        <circle cx="17.25" cy="13.5" r="0.8" fill="currentColor"/>
-
-        <!-- Network Connection Line & Node -->
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
-        <circle cx="12" cy="20.5" r="1.5"/>
-    </svg>
-    Stats / Status
-</a>
-
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
-
-            <a href="/privacy" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <!-- Outer Shield -->
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
-        <!-- Inner Shield Contour (Dotted/Tech effect) -->
-        <path stroke-linecap="round" stroke-dasharray="0.8 1.5" stroke-width="1.2" d="M12 4.5c-2.8 0-5.3 1.1-7.1 2.9.4 4.2 2.9 9 7.1 11.9 4.2-2.9 6.7-7.7 7.1-11.9A10.1 10.1 0 0 0 12 4.5Z" />
-        <!-- Letter P -->
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
-        <!-- Tech Accent Lines inside shield -->
-        <path stroke-linecap="round" stroke-width="1" d="M6 9.5h1.5M5.8 11.5h2M6.2 13.5h1.2M16.5 12h1.8M16 14h2.2M16.8 15.8h1.2" />
-    </svg>
-    Privacy Policy
-</a>
-
-            <a href="/support" class="menu-link hover:text-cyan-400 transition-colors flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5">
-    <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12.5 13a1 1 0 0 1 1-1 1 1 0 0 1 1 1m0 3a1 1 0 0 0-1-1 1 1 0 0 0-1 1" stroke-linecap="round"/>
-    </svg>
-    Support
-</a>
-        </nav>
+    <!-- Support -->
+    <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Support</span>
+      </a>
+     </nav>
     </div>
 
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden z-30 transition-opacity duration-300"></div>
