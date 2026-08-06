@@ -2830,7 +2830,7 @@ app.get('/docs', (req, res) => {
                 
                 <div class="flex flex-col text-left min-w-0 z-10">
                     <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${data.user.username}</span>
                 </div>
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
