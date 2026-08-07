@@ -2,7 +2,8 @@
 <html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- FIX 1: META VIEWPORT ANTI-ZOOMING -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ArulzXD Store - Marketplace</title>
     <link rel="icon" type="image/png" href="https://arulz-xd.my.id/files/UBkDZZ.png" />
     <!-- Tailwind CSS -->
@@ -41,9 +42,13 @@
         }
     </script>
     <style>
-        body {
+        /* FIX 1: CSS DISABLE TOUCH ZOOM & ACTION */
+        html, body {
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
             background-color: #050b14;
             color: #e2e8f0;
+            overflow-x: hidden;
         }
         .bg-cyber-grid {
             background-image: linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
@@ -444,8 +449,9 @@
                 </div>
             </div>
 
-            <!-- FORM BERI PENILAIAN (STYLE HOTBAR GEMINI) -->
-            <div class="sticky bottom-0 z-20 p-3 bg-cyberDark/95 backdrop-blur-md border-t border-cyberCyan/30 shadow-[0_-8px_20px_rgba(0,0,0,0.6)] space-y-2">
+            <!-- FORM BERI PENILAIAN (HOTBAR GEMINI WITH BUYER RESTRICTION) -->
+            <div id="reviewHotbarContainer" class="sticky bottom-0 z-20 p-3 bg-cyberDark/95 backdrop-blur-md border-t border-cyberCyan/30 shadow-[0_-8px_20px_rgba(0,0,0,0.6)] space-y-2">
+                <!-- FORM HANYA TAMPIL JIKA USER SUDAH PERNAH BELI PRODUK INI -->
                 <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-2">
                     <input type="hidden" id="reviewProductId">
                     <input type="hidden" id="selectedRatingValue" required>
@@ -494,8 +500,25 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- NOTIFIKASI PEMBERITAHUAN JIKA USER BELUM BELI -->
+                <div id="reviewNotPurchasedNotice" class="hidden bg-cyberCard/80 border border-amber-500/30 rounded-xl p-2.5 text-center flex items-center justify-center gap-2 text-amber-400 text-xs">
+                    <i class="fa-solid fa-lock text-sm"></i>
+                    <span>Hanya pembeli yang telah bertransaksi yang dapat memberikan ulasan produk ini.</span>
+                </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- FIX 2: MODAL LIGHTBOX PREVIEW MEDIA (FOTO / VIDEO AUTOPLAY) -->
+    <div id="mediaLightboxModal" class="fixed inset-0 bg-black/90 backdrop-blur-lg z-50 hidden flex items-center justify-center p-4" onclick="closeMediaLightbox()">
+        <button onclick="closeMediaLightbox()" class="absolute top-4 right-4 text-white hover:text-cyberCyan text-2xl transition z-10">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-4xl max-h-[85vh] w-full flex items-center justify-center p-2" onclick="event.stopPropagation()">
+            <img id="lightboxImage" src="" class="hidden max-w-full max-h-[85vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan">
+            <video id="lightboxVideo" controls autoplay loop class="hidden max-w-full max-h-[85vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan"></video>
         </div>
     </div>
 
@@ -725,6 +748,14 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // FIX 1: JAVASCRIPT ANTI-ZOOM EVENT LISTENERS
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+        document.addEventListener('dblclick', function (e) {
+            e.preventDefault();
+        }, { passive: false });
+
         let DATA_PRODUK = [];
         let KATEGORI_AKTIF = 'all';
         let SELECTED_PRODUCT = null;
@@ -735,8 +766,21 @@
         let countdownInterval = null;
         let qrisExpireTime = null;
 
-        // Variabel Penilaian
         let currentSelectedRating = 0;
+
+        // FIX 3: STRUKTUR PENYIMPANAN PEMBELIAN USER DI LOCALSTORAGE
+        function recordPurchasedProduct(productId) {
+            let purchased = JSON.parse(localStorage.getItem('purchased_products') || '[]');
+            if (!purchased.includes(productId)) {
+                purchased.push(productId);
+                localStorage.setItem('purchased_products', JSON.stringify(purchased));
+            }
+        }
+
+        function isProductPurchased(productId) {
+            let purchased = JSON.parse(localStorage.getItem('purchased_products') || '[]');
+            return purchased.includes(productId);
+        }
 
         function renderStarRating(rating) {
             const fullStars = Math.floor(rating);
@@ -787,7 +831,8 @@
             const product = DATA_PRODUK.find(p => (p.Id || p._id) === productId);
             if (!product) return;
 
-            document.getElementById('reviewProductId').value = productId;
+            const pIdStr = product.Id || product._id;
+            document.getElementById('reviewProductId').value = pIdStr;
             document.getElementById('detailImg').src = product.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('detailTitle').innerText = product.nama;
             document.getElementById('detailPrice').innerText = formatRupiah(product.harga_diskon || product.harga);
@@ -801,13 +846,54 @@
 
             setRating(0);
 
-            await loadProductReviews(productId);
+            // FIX 3: CEK APAKAH USER SUDAH Beli PRODUK INI
+            const hasPurchased = isProductPurchased(pIdStr);
+            const reviewForm = document.getElementById('reviewForm');
+            const noticeBox = document.getElementById('reviewNotPurchasedNotice');
+
+            if (hasPurchased) {
+                reviewForm.classList.remove('hidden');
+                noticeBox.classList.add('hidden');
+            } else {
+                reviewForm.classList.add('hidden');
+                noticeBox.classList.remove('hidden');
+            }
+
+            await loadProductReviews(pIdStr);
 
             document.getElementById('productDetailModal').classList.remove('hidden');
         }
 
         function closeProductDetailModal() {
             document.getElementById('productDetailModal').classList.add('hidden');
+        }
+
+        // FIX 2: LIGHTBOX FUNGSIONALITAS (OPEN & AUTOPLAY)
+        function openMediaLightbox(url, type) {
+            const lightbox = document.getElementById('mediaLightboxModal');
+            const img = document.getElementById('lightboxImage');
+            const video = document.getElementById('lightboxVideo');
+
+            if (type === 'video') {
+                img.classList.add('hidden');
+                video.src = url;
+                video.classList.remove('hidden');
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+                video.classList.add('hidden');
+                img.src = url;
+                img.classList.remove('hidden');
+            }
+
+            lightbox.classList.remove('hidden');
+        }
+
+        function closeMediaLightbox() {
+            const lightbox = document.getElementById('mediaLightboxModal');
+            const video = document.getElementById('lightboxVideo');
+            if (video) video.pause();
+            lightbox.classList.add('hidden');
         }
 
         async function loadProductReviews(productId) {
@@ -833,9 +919,18 @@
                     if (rev.media && rev.media.length > 0) {
                         mediaHtml = `<div class="flex gap-2 mt-2 overflow-x-auto">` + rev.media.map(m => {
                             if (m.type === 'video') {
-                                return `<video src="${m.url}" controls class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder"></video>`;
+                                return `
+                                    <div class="relative w-20 h-20 rounded-lg overflow-hidden bg-black border border-cyberBorder cursor-pointer flex-shrink-0 group" onclick="openMediaLightbox('${m.url}', 'video')">
+                                        <video src="${m.url}" class="w-full h-full object-cover pointer-events-none"></video>
+                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/10 transition">
+                                            <i class="fa-solid fa-play text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                `;
                             }
-                            return `<img src="${m.url}" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder">`;
+                            return `
+                                <img src="${m.url}" onclick="openMediaLightbox('${m.url}', 'image')" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder cursor-pointer hover:opacity-80 transition flex-shrink-0">
+                            `;
                         }).join('') + `</div>`;
                     }
 
@@ -866,6 +961,12 @@
             const rating = document.getElementById('selectedRatingValue').value;
             const comment = document.getElementById('reviewComment').value.trim();
             const fileInput = document.getElementById('reviewMediaFiles');
+
+            // Cek Pembelian Lagi
+            if (!isProductPurchased(productId)) {
+                Swal.fire({ icon: 'warning', title: 'AKSES DITOLAK', text: 'Hanya pembeli yang terverifikasi yang dapat mengulas!', customClass: { popup: 'cyber-swal' } });
+                return;
+            }
 
             if (!rating) {
                 Swal.fire({ icon: 'warning', title: 'RATING WAJIB', text: 'Silakan beri bintang rating!', customClass: { popup: 'cyber-swal' } });
@@ -1047,6 +1148,11 @@
                         startStatusPolling();
                     } else if (["settlement", "success", "paid", "settled"].includes(status)) {
                         CURRENT_ORDER_ID = result.data.orderId;
+                        
+                        if (SELECTED_PRODUCT) {
+                            recordPurchasedProduct(SELECTED_PRODUCT.Id || SELECTED_PRODUCT._id);
+                        }
+
                         localStorage.removeItem('active_order_id');
                         localStorage.removeItem('active_order_product');
                         
@@ -1660,6 +1766,12 @@
                         if (["settlement", "success", "paid", "settled"].includes(status)) {
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
+                            
+                            // RECORD PRODUK SEBAGAI SUDAH DIBELI
+                            if (SELECTED_PRODUCT) {
+                                recordPurchasedProduct(SELECTED_PRODUCT.Id || SELECTED_PRODUCT._id);
+                            }
+
                             localStorage.removeItem('active_order_id');
                             localStorage.removeItem('active_order_product');
 
@@ -1805,6 +1917,9 @@
             const note = document.getElementById('noteInput').value.trim();
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const calc = calculateFinalTotal();
+
+            // RECORD PRODUK SEBAGAI SUDAH DIBELI (MANUAL ORDER)
+            recordPurchasedProduct(SELECTED_PRODUCT.Id || SELECTED_PRODUCT._id);
 
             try {
                 await fetch('/api/store/manual-order', {
