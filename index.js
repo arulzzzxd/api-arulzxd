@@ -1491,7 +1491,7 @@ app.get('/auth/github', (req, res) => {
 
 app.get('/auth/github/callback', async (req, res) => {
     const { code } = req.query;
-    if (!code) return res.status(400).send('Authentication failed: No code provided');
+    if (!code) return res.send('Authentication failed: No code provided');
 
     try {
         const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
@@ -1500,8 +1500,8 @@ app.get('/auth/github/callback', async (req, res) => {
             code: code
         }, { headers: { accept: 'application/json' } });
 
-        const accessToken = tokenResponse.data?.access_token;
-        if (!accessToken) return res.status(401).send('Authentication failed: Invalid access token');
+        const accessToken = tokenResponse.data.access_token;
+        if (!accessToken) return res.send('Authentication failed: Invalid access token');
 
         const userResponse = await axios.get('https://api.github.com/user', {
             headers: { Authorization: `token ${accessToken}` }
@@ -1520,24 +1520,21 @@ app.get('/auth/github/callback', async (req, res) => {
                     userEmail = primaryEmailObj.email;
                 }
             } catch (emailErr) {
-                console.error('Gagal mengambil private email GitHub:', emailErr.message);
+                console.error('Gagal mengambil private email:', emailErr.message);
             }
         }
 
         const finalEmail = (userEmail || `${userData.login}@github.com`).toLowerCase().trim();
         const currentUsername = (userData.login || finalEmail.split('@')[0]).toLowerCase().trim();
 
-        // Cari user berdasarkan email atau providerId
-        let dbUser = await User.findOne({ 
-            $or: [{ email: finalEmail }, { providerId: String(userData.id) }] 
-        });
+        let dbUser = await User.findOne({ email: finalEmail });
 
         if (!dbUser) {
             let userRole = 'Free User';
             let userApiKey = generateRandomApiKey(); 
 
-            const premiumListLower = (PREMIUM_USERS || []).map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS || {}).map(k => k.toLowerCase().trim());
+            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
+            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
 
             if (vipKeysLower.includes(finalEmail) || vipKeysLower.includes(currentUsername)) {
                 userRole = 'VIP User';
@@ -1547,7 +1544,7 @@ app.get('/auth/github/callback', async (req, res) => {
             else if (premiumListLower.includes(finalEmail) || premiumListLower.includes(currentUsername)) {
                 userRole = 'Premium User';
                 const randomHex = crypto.randomBytes(2).toString('hex'); 
-                userApiKey = `arulz-${currentUsername}-${randomHex}`;
+                userApiKey = `arulz-${userData.login.toLowerCase()}-${randomHex}`;
             }
 
             dbUser = new User({
@@ -1557,7 +1554,7 @@ app.get('/auth/github/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.avatar_url
+                avatar: userData.avatar_url || 'https://arulz-xd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -1583,14 +1580,14 @@ app.get('/auth/github/callback', async (req, res) => {
         res.cookie('auth_session', token, {
             maxAge: 7 * 24 * 60 * 60 * 1000, 
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', 
+            secure: true, 
             sameSite: 'lax'
         });
 
-        return res.redirect('/docs');
+        res.redirect('/docs');
     } catch (error) {
-        console.error("GitHub Auth Error:", error.message);
-        return res.status(500).send('Login Error GitHub: ' + error.message);
+        console.error(error);
+        res.send('Login Error: ' + error.message);
     }
 });
 
@@ -1602,7 +1599,7 @@ app.get('/auth/google', (req, res) => {
 
 app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
-    if (!code) return res.status(400).send('Authentication failed: No code provided');
+    if (!code) return res.send('Authentication failed: No code provided');
 
     try {
         const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
@@ -1613,33 +1610,23 @@ app.get('/auth/google/callback', async (req, res) => {
             redirect_uri: GOOGLE_CALLBACK_URL
         });
 
-        const accessToken = tokenResponse.data?.access_token;
-        if (!accessToken) return res.status(401).send('Authentication failed: No access token from Google');
-
+        const accessToken = tokenResponse.data.access_token;
         const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
         const userData = userResponse.data;
-        if (!userData || !userData.email) {
-            return res.status(400).send('Authentication failed: Unable to fetch user email');
-        }
-
         const email = userData.email.toLowerCase().trim();
-        // Google UserInfo tidak menyediakan `userData.login`, gunakan name atau split email
-        const rawUsername = userData.name ? userData.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0];
-        const currentUsername = rawUsername.toLowerCase().trim();
+        const currentUsername = (userData.login || email.split('@')[0]).toLowerCase().trim();
 
-        let dbUser = await User.findOne({ 
-            $or: [{ email: email }, { providerId: String(userData.id) }] 
-        });
+        let dbUser = await User.findOne({ email: email });
 
         if (!dbUser) {
             let userRole = 'Free User';
             let userApiKey = generateRandomApiKey(); 
 
-            const premiumListLower = (PREMIUM_USERS || []).map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS || {}).map(k => k.toLowerCase().trim());
+            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
+            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
 
             if (vipKeysLower.includes(email) || vipKeysLower.includes(currentUsername)) {
                 userRole = 'VIP User';
@@ -1659,7 +1646,7 @@ app.get('/auth/google/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.picture
+                avatar: userData.picture || 'https://arulz-xd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -1685,14 +1672,14 @@ app.get('/auth/google/callback', async (req, res) => {
         res.cookie('auth_session', token, {
             maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'lax'
         });
 
-        return res.redirect('/docs');
+        res.redirect('/docs');
     } catch (error) {
-        console.error("Google Auth Error:", error.message);
-        return res.status(500).send('Login Error Google: ' + error.message);
+        console.error(error);
+        res.send('Login Error: ' + error.message);
     }
 });
 
