@@ -19,7 +19,7 @@ const sswebBuffer = (url, device = 'desktop') => {
             url: url,
             device: selectedDevice,
             cacheLimit: 0,
-            fullMainPage: 'on' // Otomatis full-page
+            dimension : '1366xfull'
         };
 
         axios({
