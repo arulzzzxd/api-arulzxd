@@ -409,10 +409,10 @@
 
     <!-- MODAL DETAIL PRODUK & PENILAIAN SHOPEE STYLE -->
     <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-cyberCard w-full max-w-2xl rounded-2xl shadow-glowCyan border border-cyberCyan/40 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+        <div class="bg-cyberCard w-full max-w-2xl rounded-2xl shadow-glowCyan border border-cyberCyan/40 overflow-hidden my-auto max-h-[90vh] flex flex-col relative">
             
             <!-- Header Modal -->
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder flex-shrink-0">
                 <h3 class="font-bold text-sm font-cyber text-cyberCyan flex items-center gap-2">
                     <i class="fa-solid fa-star text-amber-400"></i> Detail & Penilaian Produk
                 </h3>
@@ -433,50 +433,8 @@
                     </div>
                 </div>
 
-                <!-- FORM BERI PENILAIAN -->
-                <div class="bg-cyberDark/80 p-4 rounded-xl border border-cyberBorder space-y-3">
-                    <h4 class="text-xs font-bold font-cyber text-cyberCyan uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square"></i> Beri Penilaian Produk
-                    </h4>
-                    
-                    <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-3">
-                        <input type="hidden" id="reviewProductId">
-                        
-                        <!-- Select Star Rating -->
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Beri Bintang Rating <span class="text-red-500">*</span></label>
-                            <div class="flex items-center gap-1.5 text-xl text-slate-600" id="starInputGroup">
-                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(1)"></i>
-                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(2)"></i>
-                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(3)"></i>
-                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(4)"></i>
-                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(5)"></i>
-                            </div>
-                            <input type="hidden" id="selectedRatingValue" required>
-                        </div>
-
-                        <!-- Teks Penilaian (Wajib) -->
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1" for="reviewComment">Tuliskan Penilaian / Ulasan Anda <span class="text-red-500">*</span></label>
-                            <textarea id="reviewComment" rows="3" required placeholder="Tulis penilaian lengkap mengenai kualitas produk ini..."
-                                class="w-full p-2.5 text-xs bg-cyberCard border border-cyberBorder rounded-xl text-slate-200 focus:outline-none focus:border-cyberCyan transition resize-none"></textarea>
-                        </div>
-
-                        <!-- Upload Media Foto / Video (Multer Base64) -->
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1" for="reviewMediaFiles">Upload Foto & Video (Opsional, Maks 5 berkas)</label>
-                            <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" 
-                                class="w-full text-xs text-slate-400 bg-cyberCard border border-cyberBorder rounded-xl p-2 focus:outline-none focus:border-cyberCyan">
-                        </div>
-
-                        <button type="submit" id="btnSubmitReview" class="w-full bg-cyberCyan text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs hover:bg-cyan-300 transition shadow-glowCyanSm uppercase tracking-wider">
-                            <i class="fa-solid fa-paper-plane"></i> Kirim Penilaian
-                        </button>
-                    </form>
-                </div>
-
                 <!-- LIST REVIU / PENILAIAN DARI USER -->
-                <div class="space-y-3">
+                <div class="space-y-3 pb-24">
                     <h4 class="text-xs font-bold font-cyber text-slate-200 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-comments text-cyberCyan"></i> Penilaian Pembeli
                     </h4>
@@ -484,6 +442,58 @@
                         <!-- Render Ulasan via JS -->
                     </div>
                 </div>
+            </div>
+
+            <!-- FORM BERI PENILAIAN (STYLE HOTBAR GEMINI) -->
+            <div class="sticky bottom-0 z-20 p-3 bg-cyberDark/95 backdrop-blur-md border-t border-cyberCyan/30 shadow-[0_-8px_20px_rgba(0,0,0,0.6)] space-y-2">
+                <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-2">
+                    <input type="hidden" id="reviewProductId">
+                    <input type="hidden" id="selectedRatingValue" required>
+
+                    <!-- Container Input Utama ala Gemini -->
+                    <div class="bg-cyberCard/90 border border-cyberBorder focus-within:border-cyberCyan focus-within:shadow-glowCyanSm rounded-2xl p-2.5 transition-all duration-200 space-y-2">
+                        
+                        <!-- Baris Atas: Bintang Rating & Pilihan Media -->
+                        <div class="flex items-center justify-between px-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] text-slate-400 font-cyber font-semibold">Rating:</span>
+                                <div class="flex items-center gap-1 text-sm text-slate-600" id="starInputGroup">
+                                    <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(1)"></i>
+                                    <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(2)"></i>
+                                    <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(3)"></i>
+                                    <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(4)"></i>
+                                    <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(5)"></i>
+                                </div>
+                            </div>
+
+                            <!-- Indicator Jumlah File Ditambahkan -->
+                            <span id="mediaCountBadge" class="text-[10px] font-mono text-cyberCyan hidden bg-cyberCyan/10 px-2 py-0.5 rounded-full border border-cyberCyan/30">
+                                0 file dipilih
+                            </span>
+                        </div>
+
+                        <!-- Baris Tengah: Textarea Input ala Gemini & Tombol Kirim -->
+                        <div class="flex items-end gap-2">
+                            <textarea id="reviewComment" rows="1" required placeholder="Tuliskan ulasan produk..."
+                                oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 90) + 'px'"
+                                class="flex-1 bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none resize-none max-h-24 py-1.5 px-1 scrollbar-hide leading-relaxed"></textarea>
+                            
+                            <!-- Group Action Icons (Attach & Submit Send Button Gemini) -->
+                            <div class="flex items-center gap-1.5 flex-shrink-0 pb-0.5">
+                                <!-- Tombol Clip Attachment Media -->
+                                <label for="reviewMediaFiles" title="Lampirkan Gambar/Video" class="w-8 h-8 rounded-xl bg-cyberDark border border-cyberBorder hover:border-cyberCyan hover:text-cyberCyan text-slate-400 flex items-center justify-center cursor-pointer transition active:scale-95">
+                                    <i class="fa-solid fa-paperclip text-xs"></i>
+                                </label>
+                                <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" class="hidden" onchange="updateMediaBadge(this)">
+
+                                <!-- Tombol Kirim ala Gemini Hotbar -->
+                                <button type="submit" id="btnSubmitReview" title="Kirim Ulasan" class="w-8 h-8 rounded-xl bg-cyberCyan text-cyberDark hover:bg-cyan-300 font-bold flex items-center justify-center transition shadow-glowCyanSm active:scale-95">
+                                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
 
         </div>
@@ -761,6 +771,18 @@
             });
         }
 
+        function updateMediaBadge(input) {
+            const badge = document.getElementById('mediaCountBadge');
+            if (!badge) return;
+
+            if (input.files && input.files.length > 0) {
+                badge.innerText = `${input.files.length} media dipilih`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
         async function openProductDetailModal(productId) {
             const product = DATA_PRODUK.find(p => (p.Id || p._id) === productId);
             if (!product) return;
@@ -772,6 +794,11 @@
             document.getElementById('detailDesc').innerText = product.deskripsi || 'Tidak ada deskripsi.';
 
             document.getElementById('reviewForm').reset();
+            const commentInput = document.getElementById('reviewComment');
+            if (commentInput) commentInput.style.height = 'auto';
+            const badge = document.getElementById('mediaCountBadge');
+            if (badge) badge.classList.add('hidden');
+
             setRating(0);
 
             await loadProductReviews(productId);
@@ -863,7 +890,7 @@
 
             const btn = document.getElementById('btnSubmitReview');
             btn.disabled = true;
-            btn.innerText = 'Mengirim...';
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i>`;
 
             try {
                 const res = await fetch('/api/reviews', {
@@ -876,6 +903,11 @@
                 if (result.status) {
                     Swal.fire({ icon: 'success', title: 'BERHASIL!', text: 'Penilaian Anda telah diterbitkan.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
                     document.getElementById('reviewForm').reset();
+                    const commentInput = document.getElementById('reviewComment');
+                    if (commentInput) commentInput.style.height = 'auto';
+                    const badge = document.getElementById('mediaCountBadge');
+                    if (badge) badge.classList.add('hidden');
+
                     setRating(0);
                     await loadProductReviews(productId);
                     await renderProduk();
@@ -886,7 +918,7 @@
                 Swal.fire({ icon: 'error', title: 'GAGAL', text: err.message || 'Gagal mengirim ulasan', customClass: { popup: 'cyber-swal' } });
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Penilaian`;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane text-xs"></i>`;
             }
         }
 
