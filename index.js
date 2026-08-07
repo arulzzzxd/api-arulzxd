@@ -39,6 +39,8 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
+const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
+
 app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
     resave: false,
@@ -430,7 +432,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
 
         // Mengambil HANYA dari koleksi Voucher Mongoose
         const voucher = await Voucher.findOne({ code: cleanCode });
-        
+
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
@@ -560,7 +562,7 @@ async function recordProductBuyer(productName, userIdentifier) {
 async function updateProductStockAndSold(productName, qtyChange = 1, isRollback = false) {
     try {
         if (!productName) return null;
-        
+
         const product = await Product.findOne({ 
             nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
         });
@@ -956,7 +958,7 @@ app.post('/webhook', async (req, res) => {
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
                         await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
-                        
+
                         // Simpan user pembeli di productSchema jika user terautentikasi / terdeteksi
                         const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
                         await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
@@ -1463,8 +1465,6 @@ app.get('/login', (req, res) => {
 });
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
-
 const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
 const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
 const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://arulz-xd.my.id/auth/github/callback";
@@ -1491,7 +1491,7 @@ app.get('/auth/github', (req, res) => {
 
 app.get('/auth/github/callback', async (req, res) => {
     const { code } = req.query;
-    if (!code) return res.send('Authentication failed: No code provided');
+    if (!code) return res.status(400).send('Authentication failed: No code provided');
 
     try {
         const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
@@ -1500,8 +1500,8 @@ app.get('/auth/github/callback', async (req, res) => {
             code: code
         }, { headers: { accept: 'application/json' } });
 
-        const accessToken = tokenResponse.data.access_token;
-        if (!accessToken) return res.send('Authentication failed: Invalid access token');
+        const accessToken = tokenResponse.data?.access_token;
+        if (!accessToken) return res.status(401).send('Authentication failed: Invalid access token');
 
         const userResponse = await axios.get('https://api.github.com/user', {
             headers: { Authorization: `token ${accessToken}` }
@@ -1520,21 +1520,24 @@ app.get('/auth/github/callback', async (req, res) => {
                     userEmail = primaryEmailObj.email;
                 }
             } catch (emailErr) {
-                console.error('Gagal mengambil private email:', emailErr.message);
+                console.error('Gagal mengambil private email GitHub:', emailErr.message);
             }
         }
 
         const finalEmail = (userEmail || `${userData.login}@github.com`).toLowerCase().trim();
         const currentUsername = (userData.login || finalEmail.split('@')[0]).toLowerCase().trim();
 
-        let dbUser = await User.findOne({ email: finalEmail });
+        // Cari user berdasarkan email atau providerId
+        let dbUser = await User.findOne({ 
+            $or: [{ email: finalEmail }, { providerId: String(userData.id) }] 
+        });
 
         if (!dbUser) {
             let userRole = 'Free User';
             let userApiKey = generateRandomApiKey(); 
 
-            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
+            const premiumListLower = (PREMIUM_USERS || []).map(u => u.toLowerCase().trim());
+            const vipKeysLower = Object.keys(VIP_USERS || {}).map(k => k.toLowerCase().trim());
 
             if (vipKeysLower.includes(finalEmail) || vipKeysLower.includes(currentUsername)) {
                 userRole = 'VIP User';
@@ -1544,7 +1547,7 @@ app.get('/auth/github/callback', async (req, res) => {
             else if (premiumListLower.includes(finalEmail) || premiumListLower.includes(currentUsername)) {
                 userRole = 'Premium User';
                 const randomHex = crypto.randomBytes(2).toString('hex'); 
-                userApiKey = `arulz-${userData.login.toLowerCase()}-${randomHex}`;
+                userApiKey = `arulz-${currentUsername}-${randomHex}`;
             }
 
             dbUser = new User({
@@ -1554,7 +1557,7 @@ app.get('/auth/github/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.avatar_url || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+                avatar: userData.avatar_url
             });
 
             await dbUser.save();
@@ -1580,14 +1583,14 @@ app.get('/auth/github/callback', async (req, res) => {
         res.cookie('auth_session', token, {
             maxAge: 7 * 24 * 60 * 60 * 1000, 
             httpOnly: true,
-            secure: true, 
+            secure: process.env.NODE_ENV === 'production', 
             sameSite: 'lax'
         });
 
-        res.redirect('/docs?showProfile=true');
+        return res.redirect('/docs?showProfile=true');
     } catch (error) {
-        console.error(error);
-        res.send('Login Error: ' + error.message);
+        console.error("GitHub Auth Error:", error.message);
+        return res.status(500).send('Login Error GitHub: ' + error.message);
     }
 });
 
@@ -1599,7 +1602,7 @@ app.get('/auth/google', (req, res) => {
 
 app.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
-    if (!code) return res.send('Authentication failed: No code provided');
+    if (!code) return res.status(400).send('Authentication failed: No code provided');
 
     try {
         const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
@@ -1610,23 +1613,33 @@ app.get('/auth/google/callback', async (req, res) => {
             redirect_uri: GOOGLE_CALLBACK_URL
         });
 
-        const accessToken = tokenResponse.data.access_token;
+        const accessToken = tokenResponse.data?.access_token;
+        if (!accessToken) return res.status(401).send('Authentication failed: No access token from Google');
+
         const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
 
         const userData = userResponse.data;
-        const email = userData.email.toLowerCase().trim();
-        const currentUsername = (userData.login || email.split('@')[0]).toLowerCase().trim();
+        if (!userData || !userData.email) {
+            return res.status(400).send('Authentication failed: Unable to fetch user email');
+        }
 
-        let dbUser = await User.findOne({ email: email });
+        const email = userData.email.toLowerCase().trim();
+        // Google UserInfo tidak menyediakan `userData.login`, gunakan name atau split email
+        const rawUsername = userData.name ? userData.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0];
+        const currentUsername = rawUsername.toLowerCase().trim();
+
+        let dbUser = await User.findOne({ 
+            $or: [{ email: email }, { providerId: String(userData.id) }] 
+        });
 
         if (!dbUser) {
             let userRole = 'Free User';
             let userApiKey = generateRandomApiKey(); 
 
-            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
+            const premiumListLower = (PREMIUM_USERS || []).map(u => u.toLowerCase().trim());
+            const vipKeysLower = Object.keys(VIP_USERS || {}).map(k => k.toLowerCase().trim());
 
             if (vipKeysLower.includes(email) || vipKeysLower.includes(currentUsername)) {
                 userRole = 'VIP User';
@@ -1646,7 +1659,7 @@ app.get('/auth/google/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: userApiKey,
                 role: userRole,
-                avatar: userData.picture || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+                avatar: userData.picture
             });
 
             await dbUser.save();
@@ -1672,14 +1685,14 @@ app.get('/auth/google/callback', async (req, res) => {
         res.cookie('auth_session', token, {
             maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax'
         });
 
-        res.redirect('/docs?showProfile=true');
+        return res.redirect('/docs?showProfile=true');
     } catch (error) {
-        console.error(error);
-        res.send('Login Error: ' + error.message);
+        console.error("Google Auth Error:", error.message);
+        return res.status(500).send('Login Error Google: ' + error.message);
     }
 });
 
@@ -2444,7 +2457,7 @@ function getEndpointsFromRouter(category, file) {
   subRouter.stack.forEach(layer => {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
-      
+
       // Default: Selalu sediakan apikey sebagai parameter pertama
       let params = { apikey: "" }; 
 
@@ -2589,7 +2602,7 @@ app.get('/store/:productId', async (req, res) => {
     try {
         // Ambil productId dari URL params (:productId)
         const productId = req.params.productId;
-        
+
         // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
         const product = await Product.findOne({ Id: productId });
 
