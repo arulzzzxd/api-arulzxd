@@ -25,10 +25,7 @@ const app = express();
 app.use(compression());
 app.set('etag', false);
 const PORT = process.env.PORT || 3000;
-app.use(express.static(path.join(__dirname), {
-    maxAge: '1d', // Caching file statis selama 1 hari
-    etag: true
-}));
+app.use(express.static(path.join(__dirname)));
 app.use(express.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString('utf8');
@@ -1719,28 +1716,10 @@ app.get('/api/user-status', async (req, res) => {
 });
 
 app.get('/auth/logout', (req, res, next) => {
-    // 1. Hapus cookie JWT auth_session
     res.clearCookie('auth_session');
-    
-    // 2. Logout dari Passport
     req.logout((err) => {
         if (err) return next(err);
-        
-        // 3. Hancurkan session dari Express-Session & MongoDB Store
-        if (req.session) {
-            req.session.destroy((sessionErr) => {
-                if (sessionErr) return next(sessionErr);
-                
-                // 4. Hapus cookie session default Passport/Express
-                res.clearCookie('connect.sid'); 
-                
-                // 5. Redirect ke halaman docs/login
-                return res.redirect('/docs');
-            });
-        } else {
-            res.clearCookie('connect.sid');
-            return res.redirect('/docs');
-        }
+        res.redirect('/docs');
     });
 });
 
@@ -1752,13 +1731,6 @@ const localFileUploader = fileUpload({
     createParentPath: true,
     limits: { fileSize: 100 * 1024 * 1024 }, 
 });
-
-const title = "API-ARULZXD - REST";
-const favicon = "https://arulz-xd.my.id/files/UBkDZZ.png";
-const logo = "https://arulz-xd.my.id/files/33s7XJ.png";
-const headertitle = `<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" />`;
-const headerdescription = "Browse, inspect & fire requests against live endpoints._";
-const footer = "© Arulz-XD";
 
 const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
 const a = 'g';
@@ -2667,7 +2639,6 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
-res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
