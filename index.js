@@ -1564,6 +1564,11 @@ app.get('/auth/github/callback', async (req, res) => {
             });
 
             await dbUser.save();
+        } else {
+            if (userData.avatar_url && dbUser.avatar !== userData.avatar_url) {
+                dbUser.avatar = userData.avatar_url;
+                await dbUser.save();
+            }
         }
 
         const userPayload = {
@@ -1585,7 +1590,7 @@ app.get('/auth/github/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        res.redirect('/docs');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -1651,6 +1656,11 @@ app.get('/auth/google/callback', async (req, res) => {
             });
 
             await dbUser.save();
+        } else {
+            if (userData.picture && dbUser.avatar !== userData.picture) {
+                dbUser.avatar = userData.picture;
+                await dbUser.save();
+            }
         }
 
         const userPayload = {
@@ -1672,7 +1682,7 @@ app.get('/auth/google/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        res.redirect('/docs');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
