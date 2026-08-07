@@ -3287,8 +3287,10 @@ res.setHeader('Cache-Control', 'public, max-age=3600');
             </div>
             
             <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white"><img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" /></div>
-            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">Browse, inspect & fire requests against live endpoints._</p>/p>
-            
+            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">
+  Jelajahi, uji, dan jalankan request secara langsung ke endpoint aktif.
+</p>
+
             <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
                     <div class="text-center font-['Space_Grotesk']">
@@ -3712,7 +3714,7 @@ res.setHeader('Cache-Control', 'public, max-age=3600');
 
         window.addEventListener('load', finishLoader);
 
-        setTimeout(finishLoader, 4000);
+        setTimeout(finishLoader, 1500);
 </script>
 
 </body>
