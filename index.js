@@ -168,18 +168,22 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
 // 1. MONGOOSE SCHEMA & MODEL UNTUK REVIU / PENILAIAN
 // ----------------------------------------------------
 const reviewSchema = new mongoose.Schema({
-    productId: { type: String, required: true, index: true }, // Mengacu ke Id / _id produk
-    userId: { type: String, default: null },
+    productId: { type: String, required: true, index: true },
+    userId: { type: String, default: null, index: true },
     username: { type: String, required: true },
     userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true, trim: true },
     media: [{
         type: { type: String, enum: ['image', 'video'] },
-        url: String // Formatted Data URI (Base64)
+        url: String
     }],
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 });
+
+// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
+reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
 
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
@@ -221,18 +225,35 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
             }
 
-            // Profil pengguna (login vs anonim)
+            // Identitas User
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
-            let userId = null;
+            let userId = getUserIdentifier(req);
 
             if (req.user) {
                 username = req.user.username || req.user.name;
                 userAvatar = req.user.avatar || userAvatar;
-                userId = req.user.id || req.user._id;
+                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
             }
 
-            // Proses upload media ke Base64 Data URI
+            // Cek apakah user pernah membeli produk ini
+            const product = await Product.findOne({
+                $or: [{ Id: productId }, { _id: mongoose.Types.ObjectId.isValid(productId) ? productId : null }]
+            });
+
+            if (product && product.purchasedBy) {
+                const userClean = userId.toLowerCase().trim();
+                const isBuyer = product.purchasedBy.some(p => p.toLowerCase().trim() === userClean);
+
+                if (!isBuyer && process.env.NODE_ENV === 'production') {
+                    return res.status(403).json({
+                        status: false,
+                        message: 'Anda belum pernah membeli produk ini, tidak dapat memberikan penilaian!'
+                    });
+                }
+            }
+
+            // Upload Media jika ada
             const mediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
@@ -248,27 +269,48 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 }
             }
 
-            const newReview = new Review({
-                productId,
-                userId,
-                username,
-                userAvatar,
-                rating: Number(rating),
-                comment: comment.trim(),
-                media: mediaList
-            });
+            // CEK EDIT OR CREATE: Cari review sebelumnya oleh User ini di Produk ini
+            let existingReview = await Review.findOne({ productId, userId });
 
-            await newReview.save();
+            if (existingReview) {
+                // EDIT / UPDATE RATING LAMA
+                existingReview.rating = Number(rating);
+                existingReview.comment = comment.trim();
+                if (mediaList.length > 0) {
+                    existingReview.media = mediaList; // Perbarui media jika melampirkan baru
+                }
+                existingReview.updatedAt = new Date();
+                await existingReview.save();
 
-            return res.json({
-                status: true,
-                message: 'Penilaian produk berhasil dikirim!',
-                data: newReview
-            });
+                return res.json({
+                    status: true,
+                    message: 'Penilaian produk Anda berhasil diperbarui!',
+                    data: existingReview
+                });
+            } else {
+                // BUAT RATING BARU (PERTAMA KALI)
+                const newReview = new Review({
+                    productId,
+                    userId,
+                    username,
+                    userAvatar,
+                    rating: Number(rating),
+                    comment: comment.trim(),
+                    media: mediaList
+                });
+
+                await newReview.save();
+
+                return res.json({
+                    status: true,
+                    message: 'Penilaian produk berhasil dikirim!',
+                    data: newReview
+                });
+            }
 
         } catch (error) {
             console.error("Error submit review:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat mengirim ulasan.' });
+            return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menyimpan ulasan.' });
         }
     });
 });
@@ -347,7 +389,7 @@ const voucherSchema = new mongoose.Schema({
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
 const productSchema = new mongoose.Schema({
-    Id: { type: String, required: true, unique: true, trim: true }, // Menggunakan custom Id tanpa default
+    Id: { type: String, required: true, unique: true, trim: true },
     nama: { type: String, required: true, trim: true },
     harga: { type: Number, required: true },
     harga_diskon: { type: Number, default: null },
@@ -358,6 +400,7 @@ const productSchema = new mongoose.Schema({
     gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
     deskripsi: { type: String, default: "" },
     link: { type: String, required: true },
+    purchasedBy: [{ type: String }], // Array ID/Username/Email pembeli yang pernah sukses membeli
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -502,25 +545,40 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
-async function updateProductStockAndSold(productName, qtyPurchased = 1) {
+async function recordProductBuyer(productName, userIdentifier) {
+    if (!productName || !userIdentifier) return;
+    try {
+        await Product.findOneAndUpdate(
+            { nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } },
+            { $addToSet: { purchasedBy: userIdentifier.toString().toLowerCase().trim() } }
+        );
+    } catch (err) {
+        console.error("❌ Gagal mencatat pembeli produk:", err.message);
+    }
+}
+
+async function updateProductStockAndSold(productName, qtyChange = 1, isRollback = false) {
     try {
         if (!productName) return null;
         
-        // Cari berdasarkan nama produk (case insensitive)
         const product = await Product.findOne({ 
             nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
         });
 
         if (product) {
-            // Pengurangan stok tidak boleh di bawah 0
-            const newStock = Math.max(0, (product.stok || 0) - qtyPurchased);
-            const newSold = (product.terjual || 0) + qtyPurchased;
+            if (isRollback) {
+                // Pemulihan stok ketika dibatalkan
+                product.stok = (product.stok || 0) + qtyChange;
+                product.terjual = Math.max(0, (product.terjual || 0) - qtyChange);
+                console.log(`🔄 [STOK RESTORED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
+            } else {
+                // Pengurangan stok saat sukses
+                product.stok = Math.max(0, (product.stok || 0) - qtyChange);
+                product.terjual = (product.terjual || 0) + qtyChange;
+                console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
+            }
 
-            product.stok = newStock;
-            product.terjual = newSold;
             await product.save();
-
-            console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${newStock}), Terjual (${newSold})`);
             return product;
         }
     } catch (err) {
@@ -806,30 +864,50 @@ app.get('/transactions/:orderId', async (req, res) => {
 app.post('/transactions/:orderId/cancel', async (req, res) => {
     try {
         const { orderId } = req.params;
+        const localTrx = await Transaction.findOne({ orderId });
 
-        const cancelRes = await axiosPaywuzWithRetry({
-            method: 'post',
-            url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
-            headers: PAYWUZ_HEADERS
-        });
+        if (!localTrx) {
+            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
+        }
 
-        await Transaction.findOneAndUpdate(
-            { orderId },
-            { status: "cancelled", updatedAt: new Date() }
-        );
+        const prevStatus = localTrx.status.toLowerCase();
+
+        // Panggil PayWuz Cancel API
+        try {
+            await axiosPaywuzWithRetry({
+                method: 'post',
+                url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
+                headers: PAYWUZ_HEADERS
+            });
+        } catch (err) {
+            console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
+        }
+
+        // Jika sebelumnya berstatus Lunas/Success dan dibatalkan, kembalikan stok & terjual
+        if (["paid", "settlement", "success"].includes(prevStatus)) {
+            if (localTrx.itemDetails && localTrx.itemDetails.nama) {
+                const qtyPurchased = localTrx.itemDetails.qty || 1;
+                await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
+            }
+        }
+
+        localTrx.status = "cancelled";
+        localTrx.updatedAt = new Date();
+        await localTrx.save();
 
         await deleteCache(`trx_${orderId}`);
         scheduleTransactionDeletion(orderId);
 
-        res.json({
-            data: cancelRes.data?.data || cancelRes.data || { orderId, status: "cancelled" }
+        return res.json({
+            status: true,
+            data: { orderId, status: "cancelled" }
         });
 
     } catch (error) {
-        console.error("Error Cancel TRX:", error.response?.data || error.message);
+        console.error("Error Cancel TRX:", error.message);
         res.status(500).json({
             error: "CANCEL_TRANSACTION_FAILED",
-            message: error.response?.data?.message || error.message || "Gagal membatalkan transaksi"
+            message: error.message || "Gagal membatalkan transaksi"
         });
     }
 });
@@ -858,10 +936,7 @@ app.post('/webhook', async (req, res) => {
         const status = payloadData?.status ? payloadData.status.toLowerCase() : null;
 
         if (!orderId) {
-            return res.status(400).json({ 
-                error: "MISSING_ORDER_ID", 
-                message: "orderId tidak ditemukan pada payload webhook!" 
-            });
+            return res.status(400).json({ error: "MISSING_ORDER_ID", message: "orderId tidak ada!" });
         }
 
         if (orderId && status) {
@@ -873,24 +948,32 @@ app.post('/webhook', async (req, res) => {
                 localTrx.updatedAt = new Date();
 
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
+                const isCancelEvent = ["cancelled", "failed", "expire"].includes(status);
 
                 if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
                     console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
-                    // 1. Kurangi stok dan tambah terjual di MongoDB secara otomatis
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased);
+                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
+                        
+                        // Simpan user pembeli di productSchema jika user terautentikasi / terdeteksi
+                        const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
+                        await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
                     }
 
-                    // 2. Ambil Link Produk jika belum ada
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
                         });
-                        if (dbProduct) {
-                            localTrx.productLink = dbProduct.link;
-                        }
+                        if (dbProduct) localTrx.productLink = dbProduct.link;
+                    }
+                } 
+                // KONDISI BATAL/FAILED: Kembalikan Stok & Terjual
+                else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
+                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
+                        const qtyPurchased = localTrx.itemDetails.qty || 1;
+                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
                     }
                 }
 
@@ -903,19 +986,11 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
-        return res.status(200).json({ 
-            data: {
-                message: "Webhook diproses dengan sukses",
-                orderId
-            }
-        });
+        return res.status(200).json({ data: { message: "Webhook diproses dengan sukses", orderId } });
 
     } catch (err) {
         console.error("Webhook Error:", err);
-        return res.status(500).json({ 
-            error: "WEBHOOK_PROCESSING_ERROR", 
-            message: "Terjadi kesalahan internal saat memproses webhook" 
-        });
+        return res.status(500).json({ error: "WEBHOOK_PROCESSING_ERROR", message: "Error internal webhook" });
     }
 });
 
