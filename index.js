@@ -61,7 +61,11 @@ const checkAuthSession = (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
+        req.user = {
+            ...decoded,
+            apiKey: decoded.apiKey || decoded.apikey, // <--- Perbaikan di sini
+            apikey: decoded.apikey || decoded.apiKey
+        }; 
         next();
     } catch (err) {
         res.clearCookie('auth_session');
@@ -69,7 +73,9 @@ const checkAuthSession = (req, res, next) => {
         next();
     }
 };
+
 app.use(checkAuthSession);
+
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -1688,11 +1694,11 @@ app.get('/api/user-status', (req, res) => {
         res.json({
             loggedIn: true,
             user: {
-                name: req.user.name,
+                name: req.user.name || req.user.username,
                 username: req.user.username,
                 email: req.user.email,
                 avatar: req.user.avatar,
-                apiKey: req.user.apiKey,
+                apiKey: req.user.apiKey || req.user.apikey, // <--- Perbaikan di sini
                 role: req.user.role
             }
         });
@@ -3598,32 +3604,35 @@ app.get('/docs', (req, res) => {
 
         // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+    fetch('/api/user-status')
+        .then(res => res.json())
+        .then(data => {
+            if (data.loggedIn && data.user) {
+                const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
 
-                        // Sync Avatar di Modal
-                        const modalAvatar = document.getElementById('userAvatar');
-                        if (modalAvatar) modalAvatar.src = latestAvatar;
+                // Sync Avatar di Modal
+                const modalAvatar = document.getElementById('userAvatar');
+                if (modalAvatar) modalAvatar.src = latestAvatar;
 
-                        // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
-                        const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-                        if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
+                // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
+                const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+                if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
 
-                        document.getElementById('userName').innerText = data.user.username || 'User';
-                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        document.getElementById('userApiKey').innerText = data.user.apiKey;
-                        
-                        setRoleTheme(data.user.role || 'free');
-                    }
-                })
-                .catch((err) => {
-                    console.error("Gagal sinkronisasi profile:", err);
-                    setRoleTheme("free"); 
-                });
-        }
+                document.getElementById('userName').innerText = data.user.username || 'User';
+                document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                
+                // Perbaikan pembacaan apiKey / apikey
+                const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
+                document.getElementById('userApiKey').innerText = userKey;
+                
+                setRoleTheme(data.user.role || 'free');
+            }
+        })
+        .catch((err) => {
+            console.error("Gagal sinkronisasi profile:", err);
+            setRoleTheme("free"); 
+        });
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
