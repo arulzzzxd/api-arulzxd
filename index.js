@@ -13,6 +13,7 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const mime = require('mime-types');
+const multer = require("multer");
 const nodemailer = require('nodemailer');
 const https = require('https');
 const http = require('http');
@@ -65,6 +66,86 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+const uploadavatar = multer({ 
+    limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('File harus berupa gambar!'));
+        }
+    }
+});
+
+// Endpoint Upload / Ganti Avatar
+app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
+    uploadavatar.single('avatar')(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar.' });
+        }
+
+        try {
+            if (!req.user) {
+                return res.status(401).json({ status: false, message: 'Anda belum login!' });
+            }
+
+            if (!req.file) {
+                return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
+            }
+
+            // Validasi Mime-Type melalui Multer Buffer & mime-types
+            const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
+            if (!mimeType.startsWith('image/')) {
+                return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
+            }
+
+            // Ubah buffer ke Base64 Data URI
+            const base64 = req.file.buffer.toString("base64");
+            const avatarDataUrl = `data:${mimeType};base64,${base64}`;
+
+            // Simpan ke database Mongoose User
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user.id || req.user._id,
+                { avatar: avatarDataUrl },
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
+            }
+
+            // Perbarui cookie session jika menggunakan JWT
+            const userPayload = {
+                id: updatedUser._id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                name: updatedUser.username,
+                avatar: updatedUser.avatar,
+                role: updatedUser.role,
+                apiKey: updatedUser.apikey
+            };
+
+            const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
+            res.cookie('auth_session', token, {
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+                sameSite: 'lax'
+            });
+
+            return res.json({
+                status: true,
+                message: 'Avatar berhasil diperbarui!',
+                avatar: updatedUser.avatar
+            });
+
+        } catch (error) {
+            console.error("Gagal update avatar:", error);
+            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
+        }
+    });
+});
 
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
