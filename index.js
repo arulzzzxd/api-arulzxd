@@ -129,13 +129,13 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
             const base64 = req.file.buffer.toString("base64");
             const avatarDataUrl = `data:${mimeType};base64,${base64}`;
 
-            // Simpan ke database Mongoose User
+            const userIdToUpdate = req.user.id || req.user._id;
             const updatedUser = await User.findByIdAndUpdate(
-                req.user.id || req.user._id,
-                { avatar: avatarDataUrl },
-                { new: true }
+                userIdToUpdate,
+                { $set: { avatar: avatarDataUrl } },
+                { new: true, runValidators: true }
             );
-
+            
             if (!updatedUser) {
                 return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
             }
@@ -1679,19 +1679,37 @@ app.get('/auth/google/callback', async (req, res) => {
     }
 });
 
-app.get('/api/user-status', (req, res) => {
+app.get('/api/user-status', async (req, res) => {
     if (req.user) {
-        res.json({
-            loggedIn: true,
-            user: {
-                name: req.user.name || req.user.username,
-                username: req.user.username,
-                email: req.user.email,
-                avatar: req.user.avatar,
-                apiKey: req.user.apiKey || req.user.apikey, // <--- Perbaikan di sini
-                role: req.user.role
-            }
-        });
+        try {
+            // Ambil data user paling baru dari MongoDB agar avatar terbaru selalu terbaca
+            const freshUser = await User.findById(req.user.id || req.user._id);
+            const activeUser = freshUser || req.user;
+
+            res.json({
+                loggedIn: true,
+                user: {
+                    name: activeUser.username,
+                    username: activeUser.username,
+                    email: activeUser.email,
+                    avatar: activeUser.avatar,
+                    apiKey: activeUser.apikey || activeUser.apiKey,
+                    role: activeUser.role
+                }
+            });
+        } catch (err) {
+            res.json({
+                loggedIn: true,
+                user: {
+                    name: req.user.name || req.user.username,
+                    username: req.user.username,
+                    email: req.user.email,
+                    avatar: req.user.avatar,
+                    apiKey: req.user.apiKey || req.user.apikey,
+                    role: req.user.role
+                }
+            });
+        }
     } else {
         res.json({ loggedIn: false });
     }
@@ -3563,18 +3581,12 @@ app.get('/docs', (req, res) => {
                 if (result.status) {
                     const newAvatarUrl = result.avatar;
 
-                    // 1. Update avatar di Modal Profile Popup
-                    if (userAvatarImg) userAvatarImg.src = newAvatarUrl;
-
-                    // 2. Update avatar di Sidebar Menu AUTHORIZED USER
-                    if (sidebarAvatarImg) sidebarAvatarImg.src = newAvatarUrl;
+                    // Force update DOM langsung menggunakan URL Data Base64 baru
+                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                        img.src = newAvatarUrl;
+                    });
 
                     showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
-
-                    // 3. Re-fetch data user agar state aplikasi dan cache ter-synchronize
-                    if (typeof fetchUserProfile === 'function') {
-                        fetchUserProfile();
-                    }
                 } else {
                     showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
                     if (userAvatarImg) userAvatarImg.src = oldSrc;
