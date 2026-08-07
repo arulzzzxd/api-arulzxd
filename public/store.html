@@ -407,6 +407,88 @@
         </div>
     </div>
 
+    <!-- MODAL DETAIL PRODUK & PENILAIAN SHOPEE STYLE -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-cyberCard w-full max-w-2xl rounded-2xl shadow-glowCyan border border-cyberCyan/40 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder">
+                <h3 class="font-bold text-sm font-cyber text-cyberCyan flex items-center gap-2">
+                    <i class="fa-solid fa-star text-amber-400"></i> Detail & Penilaian Produk
+                </h3>
+                <button onclick="closeProductDetailModal()" class="text-slate-400 hover:text-white text-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto p-4 sm:p-5 space-y-5 flex-1">
+                <!-- Ringkasan Produk -->
+                <div class="flex gap-4 items-start bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder">
+                    <img id="detailImg" src="" class="w-20 h-20 rounded-lg object-cover bg-slate-900 border border-cyberBorder flex-shrink-0">
+                    <div class="space-y-1 overflow-hidden">
+                        <h2 id="detailTitle" class="text-sm font-bold text-white font-cyber truncate"></h2>
+                        <p id="detailPrice" class="text-xs font-bold text-cyberCyan"></p>
+                        <div id="detailRatingSummary" class="flex items-center gap-2 text-xs text-slate-300 pt-1"></div>
+                        <p id="detailDesc" class="text-[11px] text-slate-400 line-clamp-2 pt-1"></p>
+                    </div>
+                </div>
+
+                <!-- FORM BERI PENILAIAN -->
+                <div class="bg-cyberDark/80 p-4 rounded-xl border border-cyberBorder space-y-3">
+                    <h4 class="text-xs font-bold font-cyber text-cyberCyan uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> Beri Penilaian Produk
+                    </h4>
+                    
+                    <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-3">
+                        <input type="hidden" id="reviewProductId">
+                        
+                        <!-- Select Star Rating -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Beri Bintang Rating <span class="text-red-500">*</span></label>
+                            <div class="flex items-center gap-1.5 text-xl text-slate-600" id="starInputGroup">
+                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(1)"></i>
+                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(2)"></i>
+                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(3)"></i>
+                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(4)"></i>
+                                <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(5)"></i>
+                            </div>
+                            <input type="hidden" id="selectedRatingValue" required>
+                        </div>
+
+                        <!-- Teks Penilaian (Wajib) -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1" for="reviewComment">Tuliskan Penilaian / Ulasan Anda <span class="text-red-500">*</span></label>
+                            <textarea id="reviewComment" rows="3" required placeholder="Tulis penilaian lengkap mengenai kualitas produk ini..."
+                                class="w-full p-2.5 text-xs bg-cyberCard border border-cyberBorder rounded-xl text-slate-200 focus:outline-none focus:border-cyberCyan transition resize-none"></textarea>
+                        </div>
+
+                        <!-- Upload Media Foto / Video (Multer Base64) -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1" for="reviewMediaFiles">Upload Foto & Video (Opsional, Maks 5 berkas)</label>
+                            <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" 
+                                class="w-full text-xs text-slate-400 bg-cyberCard border border-cyberBorder rounded-xl p-2 focus:outline-none focus:border-cyberCyan">
+                        </div>
+
+                        <button type="submit" id="btnSubmitReview" class="w-full bg-cyberCyan text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs hover:bg-cyan-300 transition shadow-glowCyanSm uppercase tracking-wider">
+                            <i class="fa-solid fa-paper-plane"></i> Kirim Penilaian
+                        </button>
+                    </form>
+                </div>
+
+                <!-- LIST REVIU / PENILAIAN DARI USER -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold font-cyber text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-cyberCyan"></i> Penilaian Pembeli
+                    </h4>
+                    <div id="reviewsListContainer" class="space-y-3">
+                        <!-- Render Ulasan via JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <!-- MODAL POPUP CHECKOUT -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 overflow-y-auto">
         <div class="bg-cyberCard w-full max-w-lg rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
@@ -643,6 +725,171 @@
         let countdownInterval = null;
         let qrisExpireTime = null;
 
+        // Variabel Penilaian
+        let currentSelectedRating = 0;
+
+        function renderStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            let starsHtml = '';
+
+            for (let i = 1; i <= 5; i++) {
+                if (i <= fullStars) {
+                    starsHtml += `<i class="fa-solid fa-star text-amber-400"></i>`;
+                } else if (i === fullStars + 1 && hasHalfStar) {
+                    starsHtml += `<i class="fa-solid fa-star-half-stroke text-amber-400"></i>`;
+                } else {
+                    starsHtml += `<i class="fa-regular fa-star text-slate-600"></i>`;
+                }
+            }
+            return `<div class="flex items-center gap-0.5 text-xs">${starsHtml} <span class="text-amber-400 font-bold ml-1">${rating > 0 ? rating : '0.0'}</span></div>`;
+        }
+
+        function setRating(val) {
+            currentSelectedRating = val;
+            document.getElementById('selectedRatingValue').value = val;
+
+            const stars = document.querySelectorAll('#starInputGroup i');
+            stars.forEach((star, idx) => {
+                if (idx < val) {
+                    star.classList.remove('text-slate-600');
+                    star.classList.add('text-amber-400');
+                } else {
+                    star.classList.remove('text-amber-400');
+                    star.classList.add('text-slate-600');
+                }
+            });
+        }
+
+        async function openProductDetailModal(productId) {
+            const product = DATA_PRODUK.find(p => (p.Id || p._id) === productId);
+            if (!product) return;
+
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('detailImg').src = product.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            document.getElementById('detailTitle').innerText = product.nama;
+            document.getElementById('detailPrice').innerText = formatRupiah(product.harga_diskon || product.harga);
+            document.getElementById('detailDesc').innerText = product.deskripsi || 'Tidak ada deskripsi.';
+
+            document.getElementById('reviewForm').reset();
+            setRating(0);
+
+            await loadProductReviews(productId);
+
+            document.getElementById('productDetailModal').classList.remove('hidden');
+        }
+
+        function closeProductDetailModal() {
+            document.getElementById('productDetailModal').classList.add('hidden');
+        }
+
+        async function loadProductReviews(productId) {
+            const container = document.getElementById('reviewsListContainer');
+            container.innerHTML = `<p class="text-xs text-slate-500 animate-pulse">Memuat ulasan...</p>`;
+
+            try {
+                const res = await fetch(`/api/reviews/${productId}`);
+                const data = await res.json();
+
+                document.getElementById('detailRatingSummary').innerHTML = `
+                    ${renderStarRating(data.averageRating)}
+                    <span class="text-[11px] text-slate-400">(${data.totalReviews} Penilaian)</span>
+                `;
+
+                if (!data.reviews || data.reviews.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
+                    return;
+                }
+
+                container.innerHTML = data.reviews.map(rev => {
+                    let mediaHtml = '';
+                    if (rev.media && rev.media.length > 0) {
+                        mediaHtml = `<div class="flex gap-2 mt-2 overflow-x-auto">` + rev.media.map(m => {
+                            if (m.type === 'video') {
+                                return `<video src="${m.url}" controls class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder"></video>`;
+                            }
+                            return `<img src="${m.url}" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder">`;
+                        }).join('') + `</div>`;
+                    }
+
+                    return `
+                        <div class="bg-cyberDark/80 p-3 rounded-xl border border-cyberBorder space-y-2">
+                            <div class="flex items-center gap-2.5">
+                                <img src="${rev.userAvatar}" class="w-7 h-7 rounded-full object-cover border border-cyberCyan">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-200">${rev.username}</p>
+                                    <div class="flex items-center gap-1">${renderStarRating(rev.rating)}</div>
+                                </div>
+                                <span class="ml-auto text-[9px] text-slate-500">${new Date(rev.createdAt).toLocaleDateString('id-ID')}</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">${rev.comment}</p>
+                            ${mediaHtml}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = `<p class="text-xs text-red-400">Gagal memuat ulasan.</p>`;
+            }
+        }
+
+        async function submitReview(event) {
+            event.preventDefault();
+            const productId = document.getElementById('reviewProductId').value;
+            const rating = document.getElementById('selectedRatingValue').value;
+            const comment = document.getElementById('reviewComment').value.trim();
+            const fileInput = document.getElementById('reviewMediaFiles');
+
+            if (!rating) {
+                Swal.fire({ icon: 'warning', title: 'RATING WAJIB', text: 'Silakan beri bintang rating!', customClass: { popup: 'cyber-swal' } });
+                return;
+            }
+
+            if (!comment) {
+                Swal.fire({ icon: 'warning', title: 'ULASAN WAJIB', text: 'Tuliskan ulasan penilaian Anda!', customClass: { popup: 'cyber-swal' } });
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('rating', rating);
+            formData.append('comment', comment);
+
+            if (fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('mediaFiles', fileInput.files[i]);
+                }
+            }
+
+            const btn = document.getElementById('btnSubmitReview');
+            btn.disabled = true;
+            btn.innerText = 'Mengirim...';
+
+            try {
+                const res = await fetch('/api/reviews', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await res.json();
+
+                if (result.status) {
+                    Swal.fire({ icon: 'success', title: 'BERHASIL!', text: 'Penilaian Anda telah diterbitkan.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
+                    document.getElementById('reviewForm').reset();
+                    setRating(0);
+                    await loadProductReviews(productId);
+                    await renderProduk();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'GAGAL', text: err.message || 'Gagal mengirim ulasan', customClass: { popup: 'cyber-swal' } });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Penilaian`;
+            }
+        }
+
         function selectCyberPayment(method) {
             document.getElementById('paymentMethodSelect').value = method;
 
@@ -704,7 +951,7 @@
                 }
 
                 generateKategoriButtons();
-                renderProduk();
+                await renderProduk();
             } catch (error) {
                 console.error('Fetch Error:', error);
                 if (statusElem) {
@@ -816,7 +1063,7 @@
             renderProduk();
         }
 
-        function renderProduk() {
+        async function renderProduk() {
             const grid = document.getElementById('productGrid');
             const emptyState = document.getElementById('emptyState');
             const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -838,8 +1085,23 @@
 
             emptyState.classList.add('hidden');
 
-            grid.innerHTML = filtered.map((produk) => {
-                const originalIndex = DATA_PRODUK.indexOf(produk);
+            const productsWithRatings = await Promise.all(filtered.map(async (produk) => {
+                const pId = produk.Id || produk._id;
+                try {
+                    const res = await fetch(`/api/reviews/${pId}`);
+                    const data = await res.json();
+                    return {
+                        ...produk,
+                        averageRating: data.averageRating || 0,
+                        totalReviews: data.totalReviews || 0
+                    };
+                } catch (e) {
+                    return { ...produk, averageRating: 0, totalReviews: 0 };
+                }
+            }));
+
+            grid.innerHTML = productsWithRatings.map((produk) => {
+                const originalIndex = DATA_PRODUK.findIndex(p => (p.Id || p._id) === (produk.Id || produk._id));
                 const badgeHtml = (produk.badge && produk.badge.trim() !== "") 
                     ? `<span class="absolute top-2 left-2 bg-cyberCyan text-cyberDark font-cyber text-[9px] font-black px-1.5 py-0.5 rounded shadow-glowCyanSm z-10 uppercase tracking-wider">${produk.badge}</span>` 
                     : '';
@@ -866,7 +1128,7 @@
                 const isLong = deskripsiTeks.length > maxChar;
 
                 return `
-                    <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group">
+                    <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group cursor-pointer" onclick="openProductDetailModal('${produk.Id || produk._id}')">
                         <div class="relative bg-cyberDark pt-[100%] overflow-hidden flex-shrink-0">
                             <img src="${produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" 
                                  alt="${produk.nama}" 
@@ -892,7 +1154,7 @@
                                                 ${deskripsiTeks}
                                             </p>
                                             ${isLong ? `
-                                                <button onclick="toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-cyberCyan font-bold hover:underline mt-0.5 inline-block text-[10px]">
+                                                <button onclick="event.stopPropagation(); toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-cyberCyan font-bold hover:underline mt-0.5 inline-block text-[10px]">
                                                     ... baca selengkapnya
                                                 </button>
                                             ` : ''}
@@ -904,19 +1166,25 @@
                                     <span>${stokBadge}</span>
                                     <span>${formatTerjual(produk.terjual)}</span>
                                 </div>
+
+                                <!-- RATING BINTANG DI BAWAH STOK (SHOPEE STYLE) -->
+                                <div class="flex items-center justify-between pt-1 border-t border-cyberBorder/30">
+                                    ${renderStarRating(produk.averageRating)}
+                                    <span class="text-[10px] text-slate-400">(${produk.totalReviews} ulasan)</span>
+                                </div>
                                 
                                 <div class="pt-1 border-t border-cyberBorder/50">
                                     ${hargaHtml}
                                 </div>
                             </div>
                             
-                            <button onclick="openCheckoutModal(${originalIndex})" 
+                            <button onclick="event.stopPropagation(); openCheckoutModal(${originalIndex})" 
                                     ${isOutOfStock ? 'disabled' : ''}
                                     class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed' : 'bg-cyberCyan/10 hover:bg-cyberCyan border-cyberCyan/40 text-cyberCyan hover:text-cyberDark shadow-glowCyanSm'} border font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
                                 <i class="fa-solid fa-cart-shopping"></i> ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
 
-                            <button onclick="shareProduk(${originalIndex})" 
+                            <button onclick="event.stopPropagation(); shareProduk(${originalIndex})" 
                                     class="w-full text-center bg-slate-800/80 hover:bg-slate-700/80 border border-cyberBorder text-slate-300 hover:text-cyberCyan font-bold py-1.5 rounded-lg text-[11px] font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-1.5">
                                 <i class="fa-solid fa-share-nodes text-cyberCyan"></i> Bagikan
                             </button>
@@ -1366,7 +1634,6 @@
                             const finalLink = result.data.productLink || (SELECTED_PRODUCT ? SELECTED_PRODUCT.link : null) || "#";
                             onPaymentSuccess(finalLink);
                             
-                            // Ambil ulang produk dari database MongoDB untuk memperbarui tampilan stok/terjual secara otomatis
                             fetchProduk();
                         } else if (status === "cancelled" || status === "failed") {
                             clearInterval(pollingInterval);
@@ -1507,7 +1774,6 @@
             const hargaUnit = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
             const calc = calculateFinalTotal();
 
-            // Potong stok dan tambah jumlah terjual secara otomatis di MongoDB backend untuk transaksi WhatsApp
             try {
                 await fetch('/api/store/manual-order', {
                     method: 'POST',
@@ -1518,7 +1784,6 @@
                     })
                 });
                 
-                // Ambil ulang produk dari MongoDB agar UI diperbarui secara real-time
                 fetchProduk();
             } catch (err) {
                 console.error("Gagal mengupdate stok manual order:", err);
@@ -1565,7 +1830,7 @@
                 const targetId = pathSegments[1];
                 const matchedIdx = DATA_PRODUK.findIndex(p => p.Id === targetId || p._id === targetId);
                 if (matchedIdx !== -1) {
-                    openCheckoutModal(matchedIdx);
+                    openProductDetailModal(targetId);
                 }
             }
         }
