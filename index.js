@@ -69,7 +69,7 @@ const checkAuthSession = (req, res, next) => {
         next();
     }
 };
-
+app.use(checkAuthSession);
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -1185,7 +1185,7 @@ app.post('/auth/login', (req, res, next) => {
                     sameSite: 'lax'
                 });
 
-                return res.redirect('/');
+                return res.redirect('/docs');
 
             } catch (error) {
                 console.error("Gagal sinkronisasi data premium saat login:", error);
@@ -1268,7 +1268,7 @@ app.post('/auth/register', async (req, res) => {
 
         req.logIn(newUser, (err) => {
             if (err) return res.redirect('/login');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs?showProfile=true');
+            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
         });
 
     } catch (error) {
@@ -1459,7 +1459,7 @@ app.post('/reset-password/:token', async (req, res) => {
 
 app.get('/login', (req, res) => {
     if (req.user) {
-        return res.redirect('/docs?showProfile=true'); 
+        return res.redirect('/docs'); 
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -1587,7 +1587,7 @@ app.get('/auth/github/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        return res.redirect('/docs?showProfile=true');
+        return res.redirect('/docs');
     } catch (error) {
         console.error("GitHub Auth Error:", error.message);
         return res.status(500).send('Login Error GitHub: ' + error.message);
@@ -1689,46 +1689,28 @@ app.get('/auth/google/callback', async (req, res) => {
             sameSite: 'lax'
         });
 
-        return res.redirect('/docs?showProfile=true');
+        return res.redirect('/docs');
     } catch (error) {
         console.error("Google Auth Error:", error.message);
         return res.status(500).send('Login Error Google: ' + error.message);
     }
 });
 
-app.get('/api/user-status', async (req, res) => {
+app.get('/api/user-status', (req, res) => {
     if (req.user) {
-        try {
-            // Ambil data user paling fresh langsung dari MongoDB Database
-            const freshUser = await User.findById(req.user.id || req.user._id);
-            const userObj = freshUser || req.user;
-
-            return res.json({
-                loggedIn: true,
-                user: {
-                    name: userObj.username,
-                    username: userObj.username,
-                    email: userObj.email,
-                    avatar: userObj.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
-                    apiKey: userObj.apikey || userObj.apiKey,
-                    role: userObj.role || 'Free User'
-                }
-            });
-        } catch (err) {
-            return res.json({
-                loggedIn: true,
-                user: {
-                    name: req.user.username,
-                    username: req.user.username,
-                    email: req.user.email,
-                    avatar: req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
-                    apiKey: req.user.apiKey,
-                    role: req.user.role
-                }
-            });
-        }
+        res.json({
+            loggedIn: true,
+            user: {
+                name: req.user.name,
+                username: req.user.username,
+                email: req.user.email,
+                avatar: req.user.avatar,
+                apiKey: req.user.apiKey,
+                role: req.user.role
+            }
+        });
     } else {
-        return res.json({ loggedIn: false });
+        res.json({ loggedIn: false });
     }
 });
 
@@ -1739,8 +1721,6 @@ app.get('/auth/logout', (req, res, next) => {
         res.redirect('/docs');
     });
 });
-
-app.use(checkAuthSession);
 
 const playlist = require('./database/playlist');
 const PREMIUM_USERS = require('./database/PREMIUM_USERS');
