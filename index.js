@@ -2965,7 +2965,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? req.user.apiKey : 'Silakan Login'}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -3431,7 +3431,7 @@ app.get('/docs', (req, res) => {
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${req.user ? req.user.apiKey : 'Silakan Login'}";
+    const displayApiKey = "${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 
