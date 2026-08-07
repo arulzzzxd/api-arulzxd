@@ -22,9 +22,13 @@ const compression = require('compression');
 const os = require('os');
 
 const app = express();
+app.use(compression());
 app.set('etag', false);
 const PORT = process.env.PORT || 3000;
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+    maxAge: '1d', // Caching file statis selama 1 hari
+    etag: true
+}));
 app.use(express.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString('utf8');
@@ -1029,8 +1033,7 @@ app.post('/api/store/manual-order', async (req, res) => {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
-
-app.use(compression()); 
+ 
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -1731,13 +1734,6 @@ const localFileUploader = fileUpload({
     createParentPath: true,
     limits: { fileSize: 100 * 1024 * 1024 }, 
 });
-
-const title = "API-ARULZXD - REST";
-const favicon = "https://arulz-xd.my.id/files/UBkDZZ.png";
-const logo = "https://arulz-xd.my.id/files/33s7XJ.png";
-const headertitle = `<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" />`;
-const headerdescription = "Browse, inspect & fire requests against live endpoints._";
-const footer = "© Arulz-XD";
 
 const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
 const a = 'g';
@@ -2646,16 +2642,26 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
+    // ⚡ Set Header Caching & Compression Optimization
+    res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>${title}</title>
-    <link id="faviconLink" rel="icon" type="image/x-icon" href="${favicon}">
+    <title>API-ARULZXD - REST</title>
+    <link id="faviconLink" rel="icon" type="image/x-icon" href="https://arulz-xd.my.id/files/UBkDZZ.png">
+    
+    <!-- Resource Hints untuk mempercepat loading CDN -->
+    <link rel="dns-prefetch" href="https://readme-typing-svg.demolab.com">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
@@ -2915,7 +2921,7 @@ app.get('/docs', (req, res) => {
         <div class="ring-outer"></div>
         <div class="ring-middle"></div>
         <div class="ring-inner"></div>
-        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
+        <img src="https://arulz-xd.my.id/files/33s7XJ.png" alt="Logo" class="hud-avatar" loading="eager">
     </div>
 
     <div class="text-center px-4">
@@ -3121,7 +3127,6 @@ app.get('/docs', (req, res) => {
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
-                    <!-- TAMBAHKAN ID id="sidebarUserAvatar" DI SINI -->
                     <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
@@ -3147,51 +3152,34 @@ app.get('/docs', (req, res) => {
         <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
     <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
-    <!-- Dashboard -->
     <a href="/" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300">
                 <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
                 <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M7 13v6M9 13v6M7 16h2" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M12 5v3M10 8h4" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round" />
-                <circle cx="12" cy="5.5" r="0.5" fill="#22d3ee" />
-                <circle cx="9" cy="9" r="0.4" fill="#22d3ee" />
-                <circle cx="15" cy="9" r="0.4" fill="#22d3ee" />
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Dashboard</span>
     </a>
 
-    <!-- Docs -->
     <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300">
                 <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#22d3ee" stroke-width="1.2" stroke-linejoin="round"/>
-                <path d="M12 4v14.5" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round"/>
-                <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#22d3ee" stroke-width="0.9" fill="none"/>
-                <line x1="6.5" y1="10" x2="9" y2="10" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-                <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-                <text x="16.8" y="11" fill="#22d3ee" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle">DOCS</text>
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Docs</span>
     </a>
 
-    <!-- Store -->
     <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Store</span>
     </a>
 
-    <!-- Changelog -->
     <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3201,7 +3189,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Changelog</span>
     </a>
 
-    <!-- Uploader -->
     <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3211,7 +3198,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Uploader</span>
     </a>
 
-    <!-- Pastecode -->
     <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3221,26 +3207,19 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Pastecode</span>
     </a>
 
-    <!-- Feedback -->
     <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Feedback</span>
     </a>
 
-    <!-- Stats / Status -->
     <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
-                <circle cx="12" cy="20.5" r="1.5"/>
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Stats / Status</span>
@@ -3248,23 +3227,19 @@ app.get('/docs', (req, res) => {
 
     <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
 
-    <!-- Privacy Policy -->
     <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Privacy Policy</span>
     </a>
 
-    <!-- Support -->
     <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Support</span>
@@ -3282,8 +3257,13 @@ app.get('/docs', (req, res) => {
                 </span>
             </div>
             
-            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">${headertitle}</div>
-            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">${headerdescription}</p>
+            <!-- HEADER TITLE INLINE SANGAT CEPAT TANPA TERGANTUNG CONST TAMBAHAN -->
+            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+                <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" loading="eager" />
+            </div>
+            
+            <!-- HEADER DESCRIPTION INLINE -->
+            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">Browse, inspect & fire requests against live endpoints._</p>
             
             <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
@@ -3338,17 +3318,11 @@ app.get('/docs', (req, res) => {
                 <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" 
                    target="_blank" 
                    class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
-                   <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l.08-.08a2.25 2.25 0 013.182 0l.397.397m-1.397-1.398a2.25 2.25 0 00-3.182 0l-3.472 3.472a2.25 2.25 0 000 3.181l.08.08a2.25 2.25 0 003.181 0l3.472-3.472a2.25 2.25 0 000-3.181c-.074-.074-.154-.14-.237-.196zm7.708-.943a2.25 2.25 0 00-3.182 0l-.397.397m1.397-1.397a2.25 2.25 0 013.182 0l3.472 3.473a2.25 2.25 0 010 3.182l-.08.08a2.25 2.25 0 01-3.181 0l-3.472-3.472a2.25 2.25 0 010-3.181c.074-.074.154-.14.237-.196z" />
-                   </svg>
                    Channel
                 </a>
                 <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" 
                    target="_blank" 
                    class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
-                   <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zm0 0l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0" />
-                   </svg>
                    Group
                 </a>
             </div>
@@ -3400,48 +3374,31 @@ app.get('/docs', (req, res) => {
                     placeholder="Cari endpoint berdasarkan nama, path, atau kategori..."
                     class="search-input w-full px-4 py-3.5 pl-11 text-xs rounded-xl focus:outline-none focus:border-cyan-500 transition-all font-mono glass-panel border border-white/5 text-white placeholder-slate-400 light-mode:text-slate-900 light-mode:placeholder-slate-500 light-mode:focus:border-cyan-600"
                 >
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
             </div>
             <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide max-w-4xl mx-auto"></div>
         </div>
 
         <div id="noResults" class="text-center py-12 hidden">
-            <div class="flex justify-center mb-3">
-                <svg class="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
             <h3 id="no-results-title" class="text-sm font-bold mb-1 text-white">Endpoint tidak ditemukan</h3>
             <p id="no-results-desc" class="text-xs text-slate-400 light-mode:text-slate-500">Coba gunakan kata kunci lain</p>
         </div>
 
         <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
 
+        <!-- FOOTER INLINE -->
         <footer id="siteFooter" class="mt-16 pt-6 border-t border-white/5 text-center text-[11px] text-slate-500">
-            ${footer}
+            © Arulz-XD
         </footer>
     </div>
 
-    <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-xs cursor-zoom-out">
-        <div class="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
-            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain scale-95 transition-transform duration-300" />
-            <button id="closeLightbox" class="absolute -top-12 right-0 text-white hover:text-cyan-400 transition-colors focus:outline-none flex items-center gap-1 bg-black/50 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-mono">
-                ✕ Close
-            </button>
-        </div>
-    </div>
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js" defer></script>
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
     const displayApiKey = "${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
 </script>
-<script src="script.js"></script>
+<script src="script.js" defer></script>
 
 <script>
         function copyText(text, label) {
@@ -3483,194 +3440,59 @@ app.get('/docs', (req, res) => {
             const usernameTag = document.getElementById('userEmail');
             const normalizedRole = (roleName || '').toLowerCase();
 
-            const iconFree = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>\`;
-            const iconPremium = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>\`;
-            const iconVip = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>\`;
-
-            const buildCrownSVG = (gradId) => \`
-                <svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fef08a" />
-                            <stop offset="40%" stop-color="#fbbf24" />
-                            <stop offset="70%" stop-color="#b45309" />
-                            <stop offset="100%" stop-color="#451a03" />
-                        </linearGradient>
-                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f3e8ff" />
-                            <stop offset="35%" stop-color="#c084fc" />
-                            <stop offset="70%" stop-color="#7e22ce" />
-                            <stop offset="100%" stop-color="#2e1065" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
-                    <circle cx="16" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
-                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-                </svg>\`;
+            const iconFree = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`;
+            const iconPremium = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>`;
+            const iconVip = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`;
 
             if (normalizedRole.includes('vip')) {
                 roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-purple-400 drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]";
-                roleContainer.innerHTML = \`\${iconVip} <span class="tracking-wide">VIP User</span>\`;
+                roleContainer.innerHTML = `${iconVip} <span class="tracking-wide">VIP User</span>`;
                 usernameTag.className = "text-purple-400 font-mono text-sm mb-4 opacity-90";
                 avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-                avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
             } else if (normalizedRole.includes('premium')) {
                 roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]";
-                roleContainer.innerHTML = \`\${iconPremium} <span class="tracking-wide">Premium User</span>\`;
+                roleContainer.innerHTML = `${iconPremium} <span class="tracking-wide">Premium User</span>`;
                 usernameTag.className = "text-amber-400 font-mono text-sm mb-4 opacity-90";
                 avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-                avatarBadge.innerHTML = buildCrownSVG('goldCrown');
             } else {
                 roleContainer.className = "flex items-center gap-1.5 font-semibold mb-3 text-emerald-400";
-                roleContainer.innerHTML = \`\${iconFree} <span class="tracking-wide">Free User</span>\`;
+                roleContainer.innerHTML = `${iconFree} <span class="tracking-wide">Free User</span>`;
                 usernameTag.className = "text-emerald-400 font-mono text-sm mb-4";
                 avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-                avatarBadge.innerHTML = ""; 
-            }
-        }
-        
-        async function uploadAvatarFile(input) {
-            if (!input.files || !input.files[0]) return;
-
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            const userAvatarImg = document.getElementById('userAvatar');
-            const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
-            const oldSrc = userAvatarImg ? userAvatarImg.src : '';
-
-            if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
-            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
-
-            // Helper untuk menampilkan SweetAlert2 bergaya Cyan Neon Cyberpunk
-            const showCyberAlert = (icon, title, text) => {
-                Swal.fire({
-                    icon: icon,
-                    title: title,
-                    text: text,
-                    background: '#0b1329',
-                    color: '#f8fafc',
-                    border: '1px solid rgba(6, 182, 212, 0.3)',
-                    confirmButtonText: 'OKE',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.25)] border border-cyan-500/30',
-                        title: 'text-cyan-400 font-extrabold tracking-wide font-["Space_Grotesk"]',
-                        htmlContainer: 'text-slate-300 text-xs font-["Space_Grotesk"]',
-                        confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl uppercase tracking-wider text-xs border-0 shadow-lg shadow-cyan-500/20'
-                    }
-                });
-            };
-
-            try {
-                const response = await fetch('/api/user/update-avatar', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.status) {
-                    const newAvatarUrl = result.avatar;
-
-                    // Force update DOM langsung menggunakan URL Data Base64 baru
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                        img.src = newAvatarUrl;
-                    });
-
-                    showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
-                } else {
-                    showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
-                    if (userAvatarImg) userAvatarImg.src = oldSrc;
-                    if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-                }
-            } catch (error) {
-                console.error("Error uploading avatar:", error);
-                showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
-                if (userAvatarImg) userAvatarImg.src = oldSrc;
-                if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-            } finally {
-                if (userAvatarImg) userAvatarImg.style.opacity = '1';
-                if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
-                input.value = '';
             }
         }
 
-        // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
-    fetch('/api/user-status')
-        .then(res => res.json())
-        .then(data => {
-            if (data.loggedIn && data.user) {
-                const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+                        const modalAvatar = document.getElementById('userAvatar');
+                        if (modalAvatar) modalAvatar.src = latestAvatar;
 
-                // Sync Avatar di Modal
-                const modalAvatar = document.getElementById('userAvatar');
-                if (modalAvatar) modalAvatar.src = latestAvatar;
+                        const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+                        if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
 
-                // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
-                const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-                if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
-
-                document.getElementById('userName').innerText = data.user.username || 'User';
-                document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                
-                // Perbaikan pembacaan apiKey / apikey
-                const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
-                document.getElementById('userApiKey').innerText = userKey;
-                
-                setRoleTheme(data.user.role || 'free');
-            }
-        })
-        .catch((err) => {
-            console.error("Gagal sinkronisasi profile:", err);
-            setRoleTheme("free"); 
-        });
-}
+                        document.getElementById('userName').innerText = data.user.username || 'User';
+                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                        
+                        const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
+                        document.getElementById('userApiKey').innerText = userKey;
+                        
+                        setRoleTheme(data.user.role || 'free');
+                    }
+                })
+                .catch((err) => {
+                    setRoleTheme("free"); 
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
         });
 
-        function getPageDisplayName() {
-            const path = window.location.pathname;
-            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-            const pageMap = {
-                'home': 'Home',
-                'docs': 'Dokumentasi',
-                'doc': 'Dokumentasi',
-                'status': 'Status Server',
-                'store': 'Store API',
-                'changelog': 'Changelog',
-                'uploader': 'Uploader File',
-                'pastecode': 'Pastecode',
-                'feedback': 'Feedback',
-                'privacy': 'Kebijakan Privasi',
-                'support': 'Dukungan Support',
-                'login': 'Halaman Login'
-            };
-
-            if (pageMap[fileName]) return pageMap[fileName];
-            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-        }
-
-        const pageName = getPageDisplayName();
-        const loaderTitleEl = document.getElementById('loader-title-text');
-        if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = \`Memuat \${pageName}<span class="animated-dots"></span>\`;
-        }
-
+        // LOADER OPTIMIZED SPEED
         let currentProgress = 0;
         let hasFinishedLoading = false;
         const progressFill = document.getElementById('loader-progress-fill');
@@ -3686,7 +3508,6 @@ app.get('/docs', (req, res) => {
         function finishLoader() {
             if (hasFinishedLoading) return;
             hasFinishedLoading = true;
-            clearInterval(progressInterval);
             updateProgress(100);
 
             setTimeout(() => {
@@ -3694,26 +3515,16 @@ app.get('/docs', (req, res) => {
                     loaderOverlay.classList.add('fade-out');
                     setTimeout(() => {
                         showWelcomePopup();
-                    }, 200);
+                    }, 150);
                 }
-            }, 400);
+            }, 250);
         }
 
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
-            }
-        }, 120);
-
         window.addEventListener('load', finishLoader);
-
-        setTimeout(finishLoader, 4000);
+        setTimeout(finishLoader, 1500);
 </script>
-
 </body>
-</html>
-    `);
+</html>`);
 });
 
 if (require.main === module) {
