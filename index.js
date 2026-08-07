@@ -51,6 +51,23 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
+const checkAuthSession = (req, res, next) => {
+    const token = req.cookies.auth_session;
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; 
+        next();
+    } catch (err) {
+        res.clearCookie('auth_session');
+        req.user = null;
+        next();
+    }
+};
+
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -1252,25 +1269,6 @@ const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
 const GOOGLE_CLIENT_SECRET = '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';
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
 
-const checkAuthSession = (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
-};
-
-app.use(checkAuthSession);
-
 function generateRandomApiKey() {
     return 'arulzfree-' + crypto.randomBytes(4).toString('hex');
 }
@@ -1518,6 +1516,8 @@ app.get('/auth/logout', (req, res, next) => {
         res.redirect('/docs');
     });
 });
+
+app.use(checkAuthSession);
 
 const playlist = require('./database/playlist');
 const PREMIUM_USERS = require('./database/PREMIUM_USERS');
