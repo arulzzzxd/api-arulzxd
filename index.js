@@ -1719,10 +1719,28 @@ app.get('/api/user-status', async (req, res) => {
 });
 
 app.get('/auth/logout', (req, res, next) => {
+    // 1. Hapus cookie JWT auth_session
     res.clearCookie('auth_session');
+    
+    // 2. Logout dari Passport
     req.logout((err) => {
         if (err) return next(err);
-        res.redirect('/docs');
+        
+        // 3. Hancurkan session dari Express-Session & MongoDB Store
+        if (req.session) {
+            req.session.destroy((sessionErr) => {
+                if (sessionErr) return next(sessionErr);
+                
+                // 4. Hapus cookie session default Passport/Express
+                res.clearCookie('connect.sid'); 
+                
+                // 5. Redirect ke halaman docs/login
+                return res.redirect('/docs');
+            });
+        } else {
+            res.clearCookie('connect.sid');
+            return res.redirect('/docs');
+        }
     });
 });
 
