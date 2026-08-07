@@ -164,6 +164,141 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
     });
 });
 
+// ----------------------------------------------------
+// 1. MONGOOSE SCHEMA & MODEL UNTUK REVIU / PENILAIAN
+// ----------------------------------------------------
+const reviewSchema = new mongoose.Schema({
+    productId: { type: String, required: true, index: true }, // Mengacu ke Id / _id produk
+    userId: { type: String, default: null },
+    username: { type: String, required: true },
+    userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    comment: { type: String, required: true, trim: true },
+    media: [{
+        type: { type: String, enum: ['image', 'video'] },
+        url: String // Formatted Data URI (Base64)
+    }],
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
+
+// ----------------------------------------------------
+// 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
+// ----------------------------------------------------
+const uploadReviewMedia = multer({
+    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('File harus berupa gambar atau video!'));
+        }
+    }
+});
+
+// ----------------------------------------------------
+// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
+// ----------------------------------------------------
+app.post('/api/reviews', checkAuthSession, (req, res) => {
+    uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah berkas.' });
+        }
+
+        try {
+            const { productId, rating, comment } = req.body;
+
+            if (!productId) {
+                return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
+            }
+
+            if (!rating || Number(rating) < 1 || Number(rating) > 5) {
+                return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
+            }
+
+            if (!comment || !comment.trim()) {
+                return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
+            }
+
+            // Profil pengguna (login vs anonim)
+            let username = 'Anonim';
+            let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            let userId = null;
+
+            if (req.user) {
+                username = req.user.username || req.user.name;
+                userAvatar = req.user.avatar || userAvatar;
+                userId = req.user.id || req.user._id;
+            }
+
+            // Proses upload media ke Base64 Data URI
+            const mediaList = [];
+            if (req.files && req.files.length > 0) {
+                for (const file of req.files) {
+                    const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
+                    const isVideo = mimeType.startsWith('video/');
+                    const base64 = file.buffer.toString('base64');
+                    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+                    mediaList.push({
+                        type: isVideo ? 'video' : 'image',
+                        url: dataUrl
+                    });
+                }
+            }
+
+            const newReview = new Review({
+                productId,
+                userId,
+                username,
+                userAvatar,
+                rating: Number(rating),
+                comment: comment.trim(),
+                media: mediaList
+            });
+
+            await newReview.save();
+
+            return res.json({
+                status: true,
+                message: 'Penilaian produk berhasil dikirim!',
+                data: newReview
+            });
+
+        } catch (error) {
+            console.error("Error submit review:", error);
+            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat mengirim ulasan.' });
+        }
+    });
+});
+
+// ----------------------------------------------------
+// 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
+// ----------------------------------------------------
+app.get('/api/reviews/:productId', async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
+
+        let averageRating = 0;
+        if (reviews.length > 0) {
+            const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
+            averageRating = Number((totalRating / reviews.length).toFixed(1));
+        }
+
+        return res.json({
+            status: true,
+            totalReviews: reviews.length,
+            averageRating: averageRating,
+            reviews: reviews
+        });
+    } catch (error) {
+        console.error("Error fetch reviews:", error);
+        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan produk.' });
+    }
+});
+
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
 const PAYWUZ_HEADERS = {
