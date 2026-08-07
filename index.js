@@ -3612,9 +3612,9 @@ app.get('/docs', (req, res) => {
                         const sidebarAvatar = document.getElementById('sidebarUserAvatar');
                         if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
 
-                        document.getElementById('userName').innerText = data.user.name || 'User';
+                        document.getElementById('userName').innerText = data.user.username || 'User';
                         document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        document.getElementById('userApiKey').innerText = data.user.apiKey || 'No Key';
+                        document.getElementById('userApiKey').innerText = data.user.apiKey || data.user.apikey || 'No Key';
                         
                         setRoleTheme(data.user.role || 'free');
                     }
