@@ -13,8 +13,6 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const mime = require('mime-types');
-const multer = require("multer");
-const { fileTypeFromBuffer } = require("file-type");
 const nodemailer = require('nodemailer');
 const https = require('https');
 const http = require('http');
@@ -68,103 +66,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-const checkAuthSession = (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; 
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
-};
-
-const uploadavatar = multer({ 
-    limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('File harus berupa gambar!'));
-        }
-    }
-});
-
-// Endpoint Upload / Ganti Avatar
-app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
-    uploadavatar.single('avatar')(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar.' });
-        }
-
-        try {
-            if (!req.user) {
-                return res.status(401).json({ status: false, message: 'Anda belum login!' });
-            }
-
-            if (!req.file) {
-                return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
-            }
-
-            // Validasi Mime-Type melalui Multer Buffer & mime-types
-            const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
-            if (!mimeType.startsWith('image/')) {
-                return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
-            }
-
-            // Ubah buffer ke Base64 Data URI
-            const base64 = req.file.buffer.toString("base64");
-            const avatarDataUrl = `data:${mimeType};base64,${base64}`;
-
-            // Simpan ke database Mongoose User
-            const updatedUser = await User.findByIdAndUpdate(
-                req.user.id || req.user._id,
-                { avatar: avatarDataUrl },
-                { new: true }
-            );
-
-            if (!updatedUser) {
-                return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
-            }
-
-            // Perbarui cookie session jika menggunakan JWT
-            const userPayload = {
-                id: updatedUser._id,
-                username: updatedUser.username,
-                email: updatedUser.email,
-                name: updatedUser.username,
-                avatar: updatedUser.avatar,
-                role: updatedUser.role,
-                apiKey: updatedUser.apikey
-            };
-
-            const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('auth_session', token, {
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: 'lax'
-            });
-
-            return res.json({
-                status: true,
-                message: 'Avatar berhasil diperbarui!',
-                avatar: updatedUser.avatar
-            });
-
-        } catch (error) {
-            console.error("Gagal update avatar:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
-        }
-    });
-});
-
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
 const PAYWUZ_HEADERS = {
@@ -211,6 +112,23 @@ const voucherSchema = new mongoose.Schema({
 });
 
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
+
+const productSchema = new mongoose.Schema({
+    Id: { type: String, required: true, unique: true, trim: true }, // Menggunakan custom Id tanpa default
+    nama: { type: String, required: true, trim: true },
+    harga: { type: Number, required: true },
+    harga_diskon: { type: Number, default: null },
+    kategori: { type: String, required: true },
+    badge: { type: String, default: "" },
+    terjual: { type: Number, default: 0 },
+    stok: { type: Number, default: 0 },
+    gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
+    deskripsi: { type: String, default: "" },
+    link: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 
 // Helper function untuk mengambil identifier user unik
 function getUserIdentifier(req) {
@@ -351,6 +269,33 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
+async function updateProductStockAndSold(productName, qtyPurchased = 1) {
+    try {
+        if (!productName) return null;
+        
+        // Cari berdasarkan nama produk (case insensitive)
+        const product = await Product.findOne({ 
+            nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
+        });
+
+        if (product) {
+            // Pengurangan stok tidak boleh di bawah 0
+            const newStock = Math.max(0, (product.stok || 0) - qtyPurchased);
+            const newSold = (product.terjual || 0) + qtyPurchased;
+
+            product.stok = newStock;
+            product.terjual = newSold;
+            await product.save();
+
+            console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${newStock}), Terjual (${newSold})`);
+            return product;
+        }
+    } catch (err) {
+        console.error("❌ Gagal meng-update stok produk:", err.message);
+    }
+    return null;
+}
+
 async function setCache(key, data) {
     try {
         await CacheModel.findOneAndUpdate(
@@ -433,7 +378,8 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
 // ==========================================
 app.post('/transactions', async (req, res) => {
     try {
-        const { orderId, amount, itemDetails } = req.body;
+        const { orderId, amount, itemDetails, qty } = req.body;
+        const buyQty = Number(qty) || 1;
 
         if (!orderId || !amount) {
             return res.status(400).json({ 
@@ -443,18 +389,13 @@ app.post('/transactions', async (req, res) => {
             });
         }
 
-        // --- IDEMPOTENSI: Jika orderId sudah ada, kembalikan data eksis ---
         const existingTrx = await Transaction.findOne({ orderId });
         if (existingTrx) {
-            return res.json({
-                status: true,
-                data: existingTrx
-            });
+            return res.json({ status: true, data: existingTrx });
         }
 
         const inputAmount = Number(amount);
 
-        // Request ke PayWuz API menggunakan helper retry dengan backoff
         const paywuzRes = await axiosPaywuzWithRetry({
             method: 'post',
             url: `${PAYWUZ_BASE_URL}/transactions`,
@@ -488,14 +429,13 @@ app.post('/transactions', async (req, res) => {
             finalAmount = inputAmount + feeVal;
         }
 
+        // Ambil link produk dari Mongo DB
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
-            const pathProduk = path.join(__dirname, 'database', 'produk.json');
-            if (fs.existsSync(pathProduk)) {
-                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                const matchedProduct = products.find(p => p.nama === itemDetails.nama);
-                if (matchedProduct) pLink = matchedProduct.link || null;
-            }
+            const dbProduct = await Product.findOne({ 
+                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
+            });
+            if (dbProduct) pLink = dbProduct.link;
         }
 
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
@@ -506,14 +446,16 @@ app.post('/transactions', async (req, res) => {
             paymentNumber: qrisNumber,
             paymentMethod: "QRIS",
             status: (transactionData.status || "pending").toLowerCase(),
-            itemDetails: itemDetails || null,
+            itemDetails: {
+                ...itemDetails,
+                qty: buyQty
+            },
             productLink: pLink,
             expiredAt: expiredAt
         });
 
         await newTransaction.save();
 
-        // FIX: Tambahkan properti 'status: true' agar terbaca sukses oleh Frontend
         return res.json({
             status: true,
             data: newTransaction
@@ -665,21 +607,15 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
-
-        // Gunakan req.rawBody jika ada, atau fallback ke req.body jika kosong
         const payloadToVerify = req.rawBody || req.body;
 
-        // Verifikasi Signature
         const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
 
-        if (!isValid) {
-            console.warn("⚠️ Signature Webhook tidak valid atau tidak cocok!");
-            if (process.env.NODE_ENV === 'production') {
-                return res.status(401).json({ 
-                    error: "INVALID_SIGNATURE", 
-                    message: "Signature webhook tidak valid!" 
-                });
-            }
+        if (!isValid && process.env.NODE_ENV === 'production') {
+            return res.status(401).json({ 
+                error: "INVALID_SIGNATURE", 
+                message: "Signature webhook tidak valid!" 
+            });
         }
 
         const payload = req.body;
@@ -695,7 +631,6 @@ app.post('/webhook', async (req, res) => {
             });
         }
 
-        // 2. Update Database & Proses Kredit Saldo / Event
         if (orderId && status) {
             let localTrx = await Transaction.findOne({ orderId });
 
@@ -704,41 +639,37 @@ app.post('/webhook', async (req, res) => {
                 localTrx.status = status;
                 localTrx.updatedAt = new Date();
 
-                // Dengarkan khusus event transaction.paid (atau status paid/settlement)
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
 
-                if (isPaidEvent && prevStatus !== "paid" && prevStatus !== "settlement") {
-                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} lunas. Memproses kredit saldo merchant...`);
+                if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
+                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
+                    // 1. Kurangi stok dan tambah terjual di MongoDB secara otomatis
+                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
+                        const qtyPurchased = localTrx.itemDetails.qty || 1;
+                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased);
+                    }
+
+                    // 2. Ambil Link Produk jika belum ada
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
-                        const pathProduk = path.join(__dirname, 'database', 'produk.json');
-                        if (fs.existsSync(pathProduk)) {
-                            try {
-                                const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                                const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
-                                const matchedProduct = products.find(p => p.nama && p.nama.trim().toLowerCase() === targetNama);
-
-                                if (matchedProduct && matchedProduct.link) {
-                                    localTrx.productLink = matchedProduct.link;
-                                }
-                            } catch (parseErr) {}
+                        const dbProduct = await Product.findOne({ 
+                            nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
+                        });
+                        if (dbProduct) {
+                            localTrx.productLink = dbProduct.link;
                         }
                     }
                 }
 
                 await localTrx.save();
-
-                // Invalidate Cache
                 await deleteCache(`trx_${orderId}`);
 
-                // Jadwalkan Hapus
                 if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
                     scheduleTransactionDeletion(orderId);
                 }
             }
         }
 
-        // Standard Success Response Envelope
         return res.status(200).json({ 
             data: {
                 message: "Webhook diproses dengan sukses",
@@ -752,6 +683,34 @@ app.post('/webhook', async (req, res) => {
             error: "WEBHOOK_PROCESSING_ERROR", 
             message: "Terjadi kesalahan internal saat memproses webhook" 
         });
+    }
+});
+
+app.post('/api/store/manual-order', async (req, res) => {
+    try {
+        const productName = req.body.productName;
+        const qty = req.body.qty;
+        const buyQty = Number(qty) || 1;
+
+        if (!productName) {
+            return res.status(400).json({ status: false, message: "Nama produk wajib diisi!" });
+        }
+
+        // Potong stok & tambah jumlah terjual secara otomatis untuk order manual WhatsApp
+        const updatedProduct = await updateProductStockAndSold(productName, buyQty);
+
+        if (!updatedProduct) {
+            return res.status(404).json({ status: false, message: "Produk tidak ditemukan di database." });
+        }
+
+        return res.json({
+            status: true,
+            message: "Stok dan jumlah terjual berhasil diperbarui secara otomatis!",
+            data: updatedProduct
+        });
+    } catch (err) {
+        console.error("Manual Order Error:", err);
+        return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
 
@@ -1211,6 +1170,23 @@ const id = "googleusercontent.com";
 const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
 const GOOGLE_CLIENT_SECRET = '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';
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
+
+const checkAuthSession = (req, res, next) => {
+    const token = req.cookies.auth_session;
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; 
+        next();
+    } catch (err) {
+        res.clearCookie('auth_session');
+        req.user = null;
+        next();
+    }
+};
 
 app.use(checkAuthSession);
 
@@ -2303,25 +2279,62 @@ app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
 });
 
-app.get('/database/produk', (req, res) => {
-    const pathProduk = path.join(__dirname, 'database', 'produk.json'); 
-
-    fs.readFile(pathProduk, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Gagal membaca database produk:", err);
-            return res.status(500).json({ error: "Gagal memuat data produk" });
-        }
-        try {
-            const produk = JSON.parse(data);
-            res.json(produk);
-        } catch (parseError) {
-            res.status(500).json({ error: "Format database produk rusak" });
-        }
-    });
+app.get('/database/produk', async (req, res) => {
+    try {
+        const produk = await Product.find({}).sort({ createdAt: -1 });
+        res.json(produk);
+    } catch (err) {
+        console.error("Gagal mengambil data produk dari MongoDB:", err);
+        res.status(500).json({ error: "Gagal memuat data produk" });
+    }
 });
 
 app.get('/store', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'store.html'));
+});
+
+// Route untuk halaman detail produk / shareable link
+app.get('/store/:productId', async (req, res) => {
+    try {
+        // Ambil productId dari URL params (:productId)
+        const productId = req.params.productId;
+        
+        // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
+        const product = await Product.findOne({ Id: productId });
+
+        // Baca file store.html
+        const storePath = path.join(__dirname, 'public', 'store.html');
+        let htmlContent = fs.readFileSync(storePath, 'utf8');
+
+        if (product) {
+            // Format harga untuk Open Graph Description
+            const hargaFormatted = product.harga_diskon 
+                ? `Rp ${product.harga_diskon.toLocaleString('id-ID')}` 
+                : `Rp ${product.harga.toLocaleString('id-ID')}`;
+
+            // Safe slice untuk deskripsi agar tidak error jika deskripsi kosong
+            const deskripsiClean = product.deskripsi ? product.deskripsi.slice(0, 150) : '';
+
+            // Inject Open Graph Meta Tags dinamis untuk WhatsApp / Medsos Preview
+            const metaTags = `
+    <!-- Open Graph / Meta Tags Dinamis -->
+    <meta property="og:title" content="${product.nama} - ArulzXD Store" />
+    <meta property="og:description" content="${deskripsiClean}... | Harga: ${hargaFormatted}" />
+    <meta property="og:image" content="${product.gambar}" />
+    <meta property="og:url" content="https://arulz-xd.my.id/store/${product.Id}" />
+    <meta property="og:type" content="product" />
+    <meta name="twitter:card" content="summary_large_image" />
+            `;
+
+            // Sisipkan meta tags di bawah tag <head>
+            htmlContent = htmlContent.replace('<head>', `<head>${metaTags}`);
+        }
+
+        res.send(htmlContent);
+    } catch (error) {
+        console.error('Error serving product page:', error);
+        res.sendFile(path.join(__dirname, 'public', 'store.html'));
+    }
 });
 
 // Endpoint untuk menyajikan halaman HTML Changelog
