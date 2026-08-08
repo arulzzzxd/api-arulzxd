@@ -20,6 +20,9 @@
             -webkit-user-select: none;
             user-select: none;
             background-color: #030712;
+            /* FIX 1: Smooth scrolling native & containment */
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
         .code-font {
             font-family: 'JetBrains Mono', monospace;
@@ -30,185 +33,200 @@
         }
         .glass-card {
             background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            /* FIX 2: Kurangi intensitas blur agar GPU tidak kepanasan saat scroll */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            /* Melakukan isolasi render card */
+            contain: content;
         }
         @keyframes pulse-glow {
             0%, 100% { opacity: 0.2; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(1.05); }
         }
+        
+        /* FIX 3: Paksa GPU Acceleration pada elemen efek glow & video agar rendering terpisah dari thread scroll */
         .glow-effect {
             animation: pulse-glow 8s infinite ease-in-out;
+            will-change: transform, opacity;
+            transform: translateZ(0);
         }
-         :root {
-        --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.4);
-        --bg-dark: #030712;
-        --bg-card: rgba(15, 23, 42, 0.75);
-        --border-color: rgba(0, 243, 255, 0.2);
-    }
 
-    /* Support Light Theme Mode */
-    html.light {
-        --neon-cyan: #008b9b;
-        --neon-glow: rgba(0, 139, 155, 0.25);
-        --bg-dark: #f0fdfa;
-        --bg-card: rgba(255, 255, 255, 0.85);
-        --border-color: rgba(0, 139, 155, 0.3);
-    }
+        .gpu-layer {
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
 
-    #cyber-loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background-color: var(--bg-dark);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
-    }
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-glow: rgba(0, 243, 255, 0.4);
+            --bg-dark: #030712;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --border-color: rgba(0, 243, 255, 0.2);
+        }
 
-    #cyber-loader-overlay.fade-out {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
+        /* Support Light Theme Mode */
+        html.light {
+            --neon-cyan: #008b9b;
+            --neon-glow: rgba(0, 139, 155, 0.25);
+            --bg-dark: #f0fdfa;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 139, 155, 0.3);
+        }
 
-    /* Laser Scanner Beam */
-    .scanner-beam {
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 300%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-        animation: scanAnimation 4s infinite linear;
-    }
-    @keyframes scanAnimation {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-    }
+        #cyber-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+        }
 
-    /* Concentric Hologram HUD Rotating Rings */
-    .hud-ring {
-        position: relative;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        #cyber-loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-    .ring-outer {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2px dashed var(--neon-cyan);
-        opacity: 0.6;
-        animation: spinClockwise 10s linear infinite;
-        box-shadow: 0 0 15px var(--neon-glow);
-    }
+        /* Laser Scanner Beam */
+        .scanner-beam {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
+            animation: scanAnimation 4s infinite linear;
+        }
+        @keyframes scanAnimation {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
 
-    .ring-middle {
-        position: absolute;
-        inset: 10px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: var(--neon-cyan);
-        border-bottom-color: var(--neon-cyan);
-        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
+        /* Concentric Hologram HUD Rotating Rings */
+        .hud-ring {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .ring-inner {
-        position: absolute;
-        inset: 20px;
-        border-radius: 50%;
-        border: 1px dotted var(--neon-cyan);
-        opacity: 0.8;
-        animation: spinClockwise 6s linear infinite;
-    }
+        .ring-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px dashed var(--neon-cyan);
+            opacity: 0.6;
+            animation: spinClockwise 10s linear infinite;
+            box-shadow: 0 0 15px var(--neon-glow);
+        }
 
-    .hud-avatar {
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--neon-cyan);
-        box-shadow: 0 0 20px var(--neon-cyan);
-        z-index: 10;
-    }
+        .ring-middle {
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
 
-    @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-    @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+        .ring-inner {
+            position: absolute;
+            inset: 20px;
+            border-radius: 50%;
+            border: 1px dotted var(--neon-cyan);
+            opacity: 0.8;
+            animation: spinClockwise 6s linear infinite;
+        }
 
-    /* Animated Dot Pulse */
-    .animated-dots::after {
-        content: '';
-        display: inline-block;
-        width: 1.5em;
-        text-align: left;
-        animation: dotsAnimation 1.5s steps(4, end) infinite;
-    }
-    @keyframes dotsAnimation {
-        0% { content: ''; }
-        25% { content: '.'; }
-        50% { content: '..'; }
-        75% { content: '...'; }
-    }
+        .hud-avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            z-index: 10;
+        }
 
-    .neon-progress-bar {
-        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-        box-shadow: 0 0 12px var(--neon-cyan);
-        transition: width 0.15s ease-out;
-    }
+        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
+        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+
+        /* Animated Dot Pulse */
+        .animated-dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.5em;
+            text-align: left;
+            animation: dotsAnimation 1.5s steps(4, end) infinite;
+        }
+        @keyframes dotsAnimation {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .neon-progress-bar {
+            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
+            box-shadow: 0 0 12px var(--neon-cyan);
+            transition: width 0.15s ease-out;
+        }
     </style>
 </head>
 <body class="bg-[#030712] text-slate-100 min-h-screen relative bg-dots flex flex-col justify-between antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
     <div id="cyber-loader-overlay">
-    <div class="scanner-beam"></div>
+        <div class="scanner-beam"></div>
 
-    <!-- Central Holographic HUD Ring Spinner -->
-    <div class="hud-ring mb-6">
-        <div class="ring-outer"></div>
-        <div class="ring-middle"></div>
-        <div class="ring-inner"></div>
-        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
-    </div>
+        <!-- Central Holographic HUD Ring Spinner -->
+        <div class="hud-ring mb-6">
+            <div class="ring-outer"></div>
+            <div class="ring-middle"></div>
+            <div class="ring-inner"></div>
+            <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
+        </div>
 
-    <!-- Dynamic Page Name & Animated Dot Text -->
-    <div class="text-center px-4">
-        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-            Memuat Halaman<span class="animated-dots"></span>
+        <!-- Dynamic Page Name & Animated Dot Text -->
+        <div class="text-center px-4">
+            <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
+                Memuat Halaman<span class="animated-dots"></span>
+            </div>
+            <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
+                SYSTEM INITIALIZING // CORE GATEWAY
+            </div>
         </div>
-        <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-            SYSTEM INITIALIZING // CORE GATEWAY
-        </div>
-    </div>
 
-    <!-- Progress Bar (0% - 100%) -->
-    <div class="w-64 sm:w-80 mt-6">
-        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-            <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+        <!-- Progress Bar (0% - 100%) -->
+        <div class="w-64 sm:w-80 mt-6">
+            <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
+                <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
+                <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
+                <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+            </div>
         </div>
-        <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-        </div>
-    </div>
 
-    <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-        Arulz-XD API v2.0
+        <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+            Arulz-XD API v2.0
+        </div>
     </div>
-</div>
 
     <!-- Efek Latar Belakang Digital Glow -->
-    <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vh] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none glow-effect"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none glow-effect" style="animation-delay: -4s;"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vh] bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none glow-effect"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[50vw] h-[50vh] bg-purple-500/10 rounded-full blur-[80px] pointer-events-none glow-effect" style="animation-delay: -4s;"></div>
 
     <!-- Header / Navbar Utama -->
     <header class="w-full max-w-2xl mx-auto px-6 py-6 flex items-center justify-between relative z-10">
@@ -236,12 +254,10 @@
             Sistem Siap Digunakan
         </div>
 
-        <!-- Banner Media / Video GIF Container HD -->
-        <div class="w-full mb-8 rounded-2xl overflow-hidden glass-card border border-cyan-500/20 shadow-[0_0_25px_rgba(0,243,255,0.15)] relative group">
-            <video autoplay loop muted playsinline class="w-full h-auto max-h-[350px] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105">
-                <!-- Ganti URL src di bawah ini dengan tautan video/GIF MP4 HD Anda -->
+        <!-- Banner Media / Video GIF Container HD (Optimized GPU Layer) -->
+        <div class="w-full mb-8 rounded-2xl overflow-hidden glass-card border border-cyan-500/20 shadow-[0_0_25px_rgba(0,243,255,0.15)] relative group gpu-layer">
+            <video id="heroVideo" autoplay loop muted playsinline preload="metadata" class="w-full h-auto max-h-[350px] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105 gpu-layer">
                 <source src="https://files.catbox.moe/c3ueb4.mp4" type="video/mp4">
-                <!-- Fallback Image jika format video tidak terbaca -->
                 <img src="https://files.catbox.moe/c3ueb4.mp4" alt="Hero Banner" class="w-full h-auto max-h-[350px] object-cover rounded-2xl">
             </video>
             <div class="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-transparent opacity-60 pointer-events-none"></div>
@@ -408,6 +424,39 @@
     });
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
+    // FIX 4: Intersection Observer & Scroll Pause untuk menghentikan render Video saat di luar layar / saat scrolling keras
+    document.addEventListener('DOMContentLoaded', () => {
+        const videoElement = document.getElementById('heroVideo');
+        
+        if (videoElement && 'IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        videoElement.play().catch(() => {});
+                    } else {
+                        videoElement.pause();
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(videoElement);
+        }
+
+        // Mencegah lag saat user sedang melakukan scroll cepat di Mobile
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (videoElement && !videoElement.paused) {
+                videoElement.pause();
+            }
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (videoElement && videoElement.dataset.isIntersecting !== 'false') {
+                    videoElement.play().catch(() => {});
+                }
+            }, 150);
+        }, { passive: true });
+    });
+
     // Bank Data Variasi Acak Endpoint & Query Disamarkan
     let apiEndpointsList = [];
     let trafficLogs = [];
@@ -561,6 +610,7 @@
             })
             .catch(err => console.error("Gagal memuat status user:", err));
     });
+
     function getPageDisplayName() {
         const path = window.location.pathname;
         let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
@@ -628,6 +678,6 @@
             loaderOverlay.classList.add('fade-out');
         }
     }, 4000);
-</script>
+    </script>
 </body>
 </html>
