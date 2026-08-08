@@ -178,7 +178,7 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
 // ----------------------------------------------------
 const reviewSchema = new mongoose.Schema({
     productId: { type: String, required: true, index: true },
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, default: null, index: true },
     username: { type: String, required: true },
     userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
     rating: { type: Number, required: true, min: 1, max: 5 },
@@ -191,8 +191,8 @@ const reviewSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Kombinasi indeks unik: 1 User hanya punya 1 review per produk
-reviewSchema.index({ productId: 1, userId: 1 }, { unique: true });
+// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
+reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
 
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
@@ -234,18 +234,18 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
             }
 
-            // Dapatkan ID User Unik (Bisa dari Session Login atau IP/Guest Identifier)
-            let userId = getUserIdentifier(req);
+            // Identitas User
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            let userId = getUserIdentifier(req);
 
             if (req.user) {
                 username = req.user.username || req.user.name;
                 userAvatar = req.user.avatar || userAvatar;
-                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString().toLowerCase().trim();
+                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
             }
 
-            // Upload Media jika ada lampiran
+            // Upload Media jika melampirkan berkas baru
             const mediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
@@ -261,11 +261,11 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 }
             }
 
-            // CEK RATING SEBELUMNYA OLEH USER INI
+            // CEK EDIT ATAU CREATE BARU
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
-                // EDIT / UPDATE PENILAIAN LAMA (Boleh diedit berkali-kali oleh user yang sama)
+                // UPDATE / EDIT PENILAIAN
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
                 if (mediaList.length > 0) {
@@ -280,7 +280,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                     data: existingReview
                 });
             } else {
-                // BUAT RATING BARU (Hanya 1 kali pertama)
+                // TAMBAH PENILAIAN BARU (1 KALI PERTAMA)
                 const newReview = new Review({
                     productId,
                     userId,
