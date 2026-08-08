@@ -853,13 +853,16 @@ function openCustomSelectModal(uniqueId) {
     const overlay = document.getElementById(`${uniqueId}-overlay`);
     const modal = document.getElementById(`${uniqueId}-modal`);
     if (overlay && modal) {
-        // Ensure modal layer sits behind fixed header components if open
-        overlay.style.zIndex = "9998";
-        modal.style.zIndex = "9999";
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
         
-        overlay.classList.add('active');
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Kunci scroll latar belakang
+        // Jeda 10ms agar transisi CSS berjalan mulus
+        setTimeout(() => {
+            overlay.classList.add('active');
+            modal.classList.add('active');
+        }, 10);
+        
+        document.body.classList.add('overflow-hidden');
     }
 }
 
@@ -870,19 +873,23 @@ function closeCustomSelectModal(uniqueId) {
     if (overlay && modal) {
         overlay.classList.remove('active');
         modal.classList.remove('active');
-        document.body.style.overflow = '';
+        document.body.classList.remove('overflow-hidden');
+
+        // Sembunyikan elemen setelah animasi selesai
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            modal.classList.add('hidden');
+        }, 300);
     }
 }
 
 // Pilih Opsi & Update Preview
 function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType) {
-    // 1. Update nilai pada label dan hidden input
     const input = document.getElementById(`${uniqueId}-input`);
     const label = document.getElementById(`${uniqueId}-label`);
     if (input) input.value = value;
     if (label) label.textContent = value;
 
-    // 2. Tandai item yang dipilih
     const modal = document.getElementById(`${uniqueId}-modal`);
     if (modal) {
         modal.querySelectorAll('.select-modal-item').forEach(item => {
@@ -894,10 +901,8 @@ function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType
         });
     }
 
-    // 3. Tutup modal
     closeCustomSelectModal(uniqueId);
 
-    // 4. Jalankan fungsi live preview bawaan
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
@@ -1074,10 +1079,8 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
     
     html += `
     <div class="relative w-full">
-        <!-- Input Hidden untuk Menyimpan Nilai Parameter yang Dipilih -->
         <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
         
-        <!-- Tombol Tampilan Select Cyberpunk -->
         <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
             <div class="flex items-center gap-2 truncate">
                 <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -1090,11 +1093,19 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
             </svg>
         </button>
 
-        <!-- Container Modal Option -->
-        <div id="${uniqueId}-overlay" class="select-modal-overlay" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-        <div id="${uniqueId}-modal" class="select-modal-container">
-            <div class="select-modal-handle"></div>
-            <div class="px-2 pb-2 mb-2 border-b border-white/10 text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">Pilih ${paramName}</div>
+        <!-- Overlay gelap dengan kelas hidden awal -->
+        <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+        
+        <!-- Modal sheet dengan kelas hidden awal -->
+        <div id="${uniqueId}-modal" class="select-modal-container hidden">
+            <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
             <ul class="select-modal-list">`;
             
     pType.options.forEach(opt => {
