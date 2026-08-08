@@ -27,7 +27,6 @@ router.get("/", async (req, res) => {
     try {
         const text = req.query.text;
 
-        // 2. Validasi Parameter Text
         if (!text) {
             return res.status(400).json({
                 status: false,
@@ -39,24 +38,23 @@ router.get("/", async (req, res) => {
         // 3. Pastikan font sudah ter-registrasi
         await loadFont();
 
-        // 4. Proses Rendering Super HD (2048x2048)
-        const width = 2048;
-        const height = 2048;
-        const margin = 120; // Disesuaikan dengan skala 4x
-        const wordSpacing = 60; // Disesuaikan dengan skala 4x
+        // 4. Proses Rendering Low Quality (256x256)
+        const width = 256;
+        const height = 256;
+        const margin = 15; // Skala diturunkan (setengah dari 512)
+        const wordSpacing = 7.5; // Skala diturunkan
 
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext("2d");
 
-        // Quality render settings
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
+        // Matikan smoothing untuk efek pikselasi/low res
+        ctx.imageSmoothingEnabled = false;
 
         // Background putih khas Brat
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, width, height);
 
-        let fontSize = 800; // Skala 4x dari 200
+        let fontSize = 100; // Skala setengah dari 200
         const lineHeightMultiplier = 1.1;
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -86,8 +84,8 @@ router.get("/", async (req, res) => {
 
         // Kurangi ukuran font secara berkala jika teks terlalu panjang dan meluber ke bawah
         rebuildLines();
-        while (lines.length * fontSize * lineHeightMultiplier > height - margin * 2 && fontSize > 80) {
-            fontSize -= 8;
+        while (lines.length * fontSize * lineHeightMultiplier > height - margin * 2 && fontSize > 10) {
+            fontSize -= 1;
             rebuildLines();
         }
 
@@ -108,7 +106,7 @@ router.get("/", async (req, res) => {
             y += lineHeight;
         }
 
-        // 5. Mengubah Canvas menjadi Buffer PNG HD
+        // 5. Mengubah Canvas menjadi Buffer PNG Low Res
         const buffer = canvas.toBuffer("image/png");
 
         // Mengirimkan gambar PNG murni ke client
