@@ -1,56 +1,73 @@
 /**
- * NAMA SCRAPE  :: SSWEB (FULL PAGE SCREENSHOT)
- * [•] BASIS        :: imagy.app / gcp.imagy.app
+ * NAMA SCRAPE  :: IMAGY SCREENSHOT (PUPPETEER)
+ * [•] BASIS        :: imagy.app
  */
 
-const axios = require('axios');
 const express = require('express');
+const puppeteer = require('puppeteer');
 const router = express.Router();
 
-async function ssweb(url) {
-  const headers = {
-    'accept': '*/*',
-    'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-    'content-type': 'application/json',
-    'origin': 'https://imagy.app',
-    'priority': 'u=1, i',
-    'referer': 'https://imagy.app/',
-    'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-site',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'
-  };
+async function scrapeImagyScreenshot(targetUrl) {
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu'
+      ]
+    });
 
-  const payload = {
-    url: url,
-    browserWidth: 1280,
-    browserHeight: 720,
-    fullPage: true, // Otomatis Full Page
-    deviceScaleFactor: 1,
-    format: 'png'
-  };
+    const page = await browser.newPage();
 
-  const res = await axios.post(
-    'https://gcp.imagy.app/screenshot/createscreenshot',
-    payload,
-    { headers }
-  );
+    // Set User-Agent & Viewport agar tidak terdeteksi bot
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setViewport({ width: 1280, height: 720 });
 
-  return {
-    id: res.data.id,
-    fileUrl: res.data.fileUrl,
-    success: true
-  };
+    await page.goto('https://imagy.app/full-page-screenshot-taker/', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
+    });
+
+    // Tunggu dan isi elemen input
+    await page.waitForSelector('textarea, input[type="text"], input[type="url"]', { timeout: 10000 });
+    const urlInput = await page.$('textarea, input[type="url"], input[type="text"]');
+    
+    if (urlInput) {
+      await urlInput.click();
+      await urlInput.type(targetUrl);
+    }
+
+    // Klik tombol submit/Take Screenshot
+    const submitButton = await page.$('button[type="submit"]');
+    if (submitButton) {
+      await submitButton.click();
+    }
+
+    // Tunggu indikator hasil atau elemen gambar yang selesai di-generate
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Ambil URL hasil screenshot dari tag img / link download jika ada
+    const resultUrl = await page.evaluate(() => {
+      const img = document.querySelector('img[src*="screenshot"], img[src*="imagy"], .result-image img');
+      const a = document.querySelector('a[href*="download"], a[href*=".png"], a[href*=".jpg"]');
+      return img?.src || a?.href || null;
+    });
+
+    return resultUrl;
+  } finally {
+    if (browser) await browser.close();
+  }
 }
 
 // Endpoint GET Utama
 router.get('/', async (req, res) => {
-  const url = req.query.url;
+  const targetUrl = req.query.url;
 
-  if (!url || !/^https?:\/\//i.test(url)) {
+  if (!targetUrl || !/^https?:\/\//i.test(targetUrl)) {
     return res.status(400).json({
       status: false,
       error: "Parameter 'url' tidak valid atau tidak ditemukan."
@@ -58,28 +75,26 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const result = await ssweb(url);
+    const fileUrl = await scrapeImagyScreenshot(targetUrl);
 
-    if (!result.fileUrl) {
-      return res.status(400).json({
+    if (!fileUrl) {
+      return res.status(500).json({
         status: false,
-        error: "Gagal membuat screenshot halaman web."
+        error: "Gagal mengambil URL hasil screenshot."
       });
     }
 
     return res.json({
       status: true,
       data: {
-        id: result.id,
-        fileUrl: result.fileUrl,
-        fullPage: true
+        targetUrl,
+        fileUrl
       }
     });
-
-  } catch (e) {
-    return res.status(e.response?.status || 500).json({
+  } catch (err) {
+    return res.status(500).json({
       status: false,
-      error: e.message
+      error: err.message
     });
   }
 });
