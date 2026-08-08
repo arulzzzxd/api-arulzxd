@@ -191,16 +191,14 @@ const reviewSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
-
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
 // ----------------------------------------------------
 // 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
 // ----------------------------------------------------
 const uploadReviewMedia = multer({
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
+    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
             cb(null, true);
@@ -222,56 +220,54 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
         try {
             const { productId, rating, comment, keepExistingMedia } = req.body;
 
-            if (!productId) {
-                return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
-            }
+            if (!productId) return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
+            if (!rating || Number(rating) < 1 || Number(rating) > 5) return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
+            if (!comment || !comment.trim()) return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan!' });
 
-            if (!rating || Number(rating) < 1 || Number(rating) > 5) {
-                return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
-            }
-
-            if (!comment || !comment.trim()) {
-                return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
-            }
-
-            // Identitas User
+            // Ambil User & Avatar Terbaru dari DB
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
             let userId = getUserIdentifier(req);
 
             if (req.user) {
-                username = req.user.username || req.user.name;
-                userAvatar = req.user.avatar || userAvatar;
-                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
+                const freshUser = await User.findById(req.user.id || req.user._id);
+                if (freshUser) {
+                    username = freshUser.username;
+                    userAvatar = freshUser.avatar || userAvatar;
+                    userId = freshUser._id.toString();
+                } else {
+                    username = req.user.username || req.user.name;
+                    userAvatar = req.user.avatar || userAvatar;
+                    userId = (req.user.id || req.user._id).toString();
+                }
             }
 
-            // Upload Media baru
             const newMediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
                     const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
                     const isVideo = mimeType.startsWith('video/');
                     const base64 = file.buffer.toString('base64');
-                    const dataUrl = `data:${mimeType};base64,${base64}`;
-
                     newMediaList.push({
                         type: isVideo ? 'video' : 'image',
-                        url: dataUrl
+                        url: `data:${mimeType};base64,${base64}`
                     });
                 }
             }
 
-            // CEK APAKAH USER SUDAH PERNAH MEMBERIKAN REVIU UNTUK PRODUK INI
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
-                // UPDATE / EDIT REVIU LAMA
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
+                existingReview.userAvatar = userAvatar;
+                existingReview.username = username;
 
-                // Logika Media saat Edit: Jika diizinkan mempertahankan media lama, atau ganti dengan yang baru
-                if (keepExistingMedia === 'false' || newMediaList.length > 0) {
+                // Jika tidak mempertahankan media lama atau mengunggah media baru
+                if (keepExistingMedia === 'false') {
                     existingReview.media = newMediaList;
+                } else if (newMediaList.length > 0) {
+                    existingReview.media = [...existingReview.media, ...newMediaList];
                 }
 
                 existingReview.updatedAt = new Date();
@@ -279,11 +275,10 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
 
                 return res.json({
                     status: true,
-                    message: 'Penilaian produk Anda berhasil diperbarui!',
+                    message: 'Penilaian berhasil diperbarui!',
                     data: existingReview
                 });
             } else {
-                // TAMBAH PENILAIAN BARU (1 KALI PERTAMA)
                 const newReview = new Review({
                     productId,
                     userId,
@@ -295,7 +290,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 });
 
                 await newReview.save();
-
                 return res.json({
                     status: true,
                     message: 'Penilaian produk berhasil dikirim!',
@@ -316,9 +310,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
 app.get('/api/reviews/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
-
-        // Ambil semua review berdasarkan productId, diurutkan dari yang terbaru
-        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
+        const reviews = await Review.find({ productId }).sort({ createdAt: -1 }).lean();
 
         if (!reviews || reviews.length === 0) {
             return res.json({
@@ -329,19 +321,57 @@ app.get('/api/reviews/:productId', async (req, res) => {
             });
         }
 
-        // Hitung rata-rata rating
-        const totalRating = reviews.reduce((acc, rev) => acc + rev.rating, 0);
-        const averageRating = (totalRating / reviews.length).toFixed(1);
+        // Sinkronisasi Avatar Terbaru dari database User
+        const updatedReviews = await Promise.all(reviews.map(async (rev) => {
+            if (rev.userId) {
+                const freshUser = await User.findOne({
+                    $or: [{ _id: mongoose.Types.ObjectId.isValid(rev.userId) ? rev.userId : null }, { email: rev.userId }, { username: rev.userId }]
+                }).select('avatar username');
+                
+                if (freshUser) {
+                    rev.userAvatar = freshUser.avatar || rev.userAvatar;
+                    rev.username = freshUser.username || rev.username;
+                }
+            }
+            return rev;
+        }));
+
+        const totalRating = updatedReviews.reduce((acc, rev) => acc + rev.rating, 0);
+        const averageRating = (totalRating / updatedReviews.length).toFixed(1);
 
         return res.json({
             status: true,
-            totalReviews: reviews.length,
+            totalReviews: updatedReviews.length,
             averageRating: parseFloat(averageRating),
-            reviews: reviews
+            reviews: updatedReviews
         });
     } catch (error) {
-        console.error("Error fetching reviews:", error);
-        return res.status(500).json({ status: false, message: 'Gagal mengambil data ulasan.' });
+        console.error("Error GET reviews:", error);
+        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan.' });
+    }
+});
+
+app.delete('/api/reviews/:id', checkAuthSession, async (req, res) => {
+    try {
+        const reviewId = req.params.id;
+        const userId = getUserIdentifier(req);
+
+        const review = await Review.findById(reviewId);
+        if (!review) {
+            return res.status(404).json({ status: false, message: 'Ulasan tidak ditemukan.' });
+        }
+
+        const isOwner = (req.user && (req.user.username === review.username || req.user.id === review.userId || req.user._id.toString() === review.userId)) || review.userId === userId;
+        
+        if (!isOwner) {
+            return res.status(403).json({ status: false, message: 'Anda tidak memiliki hak akses untuk menghapus ulasan ini.' });
+        }
+
+        await Review.findByIdAndDelete(reviewId);
+        return res.json({ status: true, message: 'Ulasan berhasil dihapus.' });
+    } catch (err) {
+        console.error("Error delete review:", err);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menghapus ulasan.' });
     }
 });
 
