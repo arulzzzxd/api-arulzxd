@@ -134,4 +134,6 @@ router.get('/', (req, res) => {
 
 router.status = "ready"; 
 router.type = "free";
+router.desc = "test";
+
 module.exports = router;
