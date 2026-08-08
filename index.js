@@ -313,28 +313,35 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
 // ----------------------------------------------------
 // 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
 // ----------------------------------------------------
-app.delete('/api/reviews/:id', checkAuthSession, async (req, res) => {
+app.get('/api/reviews/:productId', async (req, res) => {
     try {
-        const reviewId = req.params.id;
-        const userId = getUserIdentifier(req);
+        const { productId } = req.params;
 
-        const review = await Review.findById(reviewId);
-        if (!review) {
-            return res.status(404).json({ status: false, message: 'Ulasan tidak ditemukan.' });
+        // Ambil semua review berdasarkan productId, diurutkan dari yang terbaru
+        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
+
+        if (!reviews || reviews.length === 0) {
+            return res.json({
+                status: true,
+                totalReviews: 0,
+                averageRating: 0,
+                reviews: []
+            });
         }
 
-        // Verifikasi hak milik ulasan
-        const isOwner = (req.user && (req.user.username === review.username || req.user.id === review.userId)) || review.userId === userId;
-        
-        if (!isOwner) {
-            return res.status(403).json({ status: false, message: 'Anda tidak memiliki hak akses untuk menghapus ulasan ini.' });
-        }
+        // Hitung rata-rata rating
+        const totalRating = reviews.reduce((acc, rev) => acc + rev.rating, 0);
+        const averageRating = (totalRating / reviews.length).toFixed(1);
 
-        await Review.findByIdAndDelete(reviewId);
-        return res.json({ status: true, message: 'Ulasan berhasil dihapus.' });
-    } catch (err) {
-        console.error("Error delete review:", err);
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menghapus ulasan.' });
+        return res.json({
+            status: true,
+            totalReviews: reviews.length,
+            averageRating: parseFloat(averageRating),
+            reviews: reviews
+        });
+    } catch (error) {
+        console.error("Error fetching reviews:", error);
+        return res.status(500).json({ status: false, message: 'Gagal mengambil data ulasan.' });
     }
 });
 
