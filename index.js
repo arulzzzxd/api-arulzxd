@@ -220,7 +220,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
         }
 
         try {
-            const { productId, rating, comment } = req.body;
+            const { productId, rating, comment, keepExistingMedia } = req.body;
 
             if (!productId) {
                 return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
@@ -245,8 +245,8 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
             }
 
-            // Upload Media jika melampirkan berkas baru
-            const mediaList = [];
+            // Upload Media baru
+            const newMediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
                     const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
@@ -254,23 +254,26 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                     const base64 = file.buffer.toString('base64');
                     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-                    mediaList.push({
+                    newMediaList.push({
                         type: isVideo ? 'video' : 'image',
                         url: dataUrl
                     });
                 }
             }
 
-            // CEK EDIT ATAU CREATE BARU
+            // CEK APAKAH USER SUDAH PERNAH MEMBERIKAN REVIU UNTUK PRODUK INI
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
-                // UPDATE / EDIT PENILAIAN
+                // UPDATE / EDIT REVIU LAMA
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
-                if (mediaList.length > 0) {
-                    existingReview.media = mediaList;
+
+                // Logika Media saat Edit: Jika diizinkan mempertahankan media lama, atau ganti dengan yang baru
+                if (keepExistingMedia === 'false' || newMediaList.length > 0) {
+                    existingReview.media = newMediaList;
                 }
+
                 existingReview.updatedAt = new Date();
                 await existingReview.save();
 
@@ -288,7 +291,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                     userAvatar,
                     rating: Number(rating),
                     comment: comment.trim(),
-                    media: mediaList
+                    media: newMediaList
                 });
 
                 await newReview.save();
@@ -310,26 +313,28 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
 // ----------------------------------------------------
 // 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
 // ----------------------------------------------------
-app.get('/api/reviews/:productId', async (req, res) => {
+app.delete('/api/reviews/:id', checkAuthSession, async (req, res) => {
     try {
-        const { productId } = req.params;
-        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
+        const reviewId = req.params.id;
+        const userId = getUserIdentifier(req);
 
-        let averageRating = 0;
-        if (reviews.length > 0) {
-            const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
-            averageRating = Number((totalRating / reviews.length).toFixed(1));
+        const review = await Review.findById(reviewId);
+        if (!review) {
+            return res.status(404).json({ status: false, message: 'Ulasan tidak ditemukan.' });
         }
 
-        return res.json({
-            status: true,
-            totalReviews: reviews.length,
-            averageRating: averageRating,
-            reviews: reviews
-        });
-    } catch (error) {
-        console.error("Error fetch reviews:", error);
-        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan produk.' });
+        // Verifikasi hak milik ulasan
+        const isOwner = (req.user && (req.user.username === review.username || req.user.id === review.userId)) || review.userId === userId;
+        
+        if (!isOwner) {
+            return res.status(403).json({ status: false, message: 'Anda tidak memiliki hak akses untuk menghapus ulasan ini.' });
+        }
+
+        await Review.findByIdAndDelete(reviewId);
+        return res.json({ status: true, message: 'Ulasan berhasil dihapus.' });
+    } catch (err) {
+        console.error("Error delete review:", err);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menghapus ulasan.' });
     }
 });
 
