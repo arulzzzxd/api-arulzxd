@@ -107,7 +107,6 @@ async function drawTextWithEmojis(ctx, text, x, y, fontSize) {
             curX += fontSize;
         } else {
             ctx.fillText(part, curX, y);
-            ctx.measureText(part);
             curX += ctx.measureText(part).width;
         }
         EMOJI_REGEX.lastIndex = 0;
@@ -160,7 +159,7 @@ function tokenize(text) {
     return text.split(" ").filter(Boolean);
 }
 
-async function renderCanvas(text, theme, blurAmount) {
+async function renderCanvas(text, theme = "white", blurAmount = 0) {
     const selectedTheme = THEMES[theme] || THEMES.white;
     const size = 1000;
     const padding = 80;
@@ -200,22 +199,12 @@ async function renderCanvas(text, theme, blurAmount) {
 
 async function generateBratVideo({
     text = "",
-    theme = "white",
-    blur = 0,
-    format = "mp4",
     frameDuration = 0.4,
     holdDuration = 1.2,
     maxWordPerLayer = 1,
     maxWordBeforeReset = [7, 8],
     fastProgress = true
 } = {}) {
-    const blurAmount = [0, 1, 2, 3].includes(blur) ? blur : 0;
-    const step = Math.max(1, maxWordPerLayer);
-    const resetSchedule = Array.isArray(maxWordBeforeReset)
-        ? maxWordBeforeReset.map(n => Math.max(0, n))
-        : [Math.max(0, maxWordBeforeReset)];
-    const getResetAt = (batchIndex) => resetSchedule[batchIndex % resetSchedule.length];
-
     await loadFont();
     await loadEmojiMap();
 
@@ -227,6 +216,12 @@ async function generateBratVideo({
     const partialTexts = [];
     let batchStart = 0;
     let batchIndex = 0;
+    const step = Math.max(1, maxWordPerLayer);
+    const resetSchedule = Array.isArray(maxWordBeforeReset)
+        ? maxWordBeforeReset.map(n => Math.max(0, n))
+        : [Math.max(0, maxWordBeforeReset)];
+    const getResetAt = (idx) => resetSchedule[idx % resetSchedule.length];
+
     while (batchStart < tokens.length) {
         const resetAt = getResetAt(batchIndex);
         const batchEnd = resetAt > 0 ? Math.min(batchStart + resetAt, tokens.length) : tokens.length;
@@ -239,7 +234,7 @@ async function generateBratVideo({
     }
 
     const renderFrame = async (partialText, index) => {
-        const canvas = await renderCanvas(partialText, theme, blurAmount);
+        const canvas = await renderCanvas(partialText, "white", 0);
         const buffer = canvas.toBuffer("image/png");
         const framePath = path.join(tmpDir, `frame-${String(index + 1).padStart(4, "0")}.png`);
         writeFileSync(framePath, buffer);
@@ -269,35 +264,24 @@ async function generateBratVideo({
     const concatPath = path.join(tmpDir, "concat.txt");
     writeFileSync(concatPath, manifestLines.join("\n"));
 
-    const ext = format === "gif" ? "gif" : "mp4";
-    const outPath = path.join(tmpDir, `output.${ext}`);
+    const outPath = path.join(tmpDir, "output.mp4");
 
-    if (format === "gif") {
-        await execFileAsync("ffmpeg", [
-            "-y",
-            "-f", "concat", "-safe", "0", "-i", concatPath,
-            "-vf", "fps=10,scale=500:500:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer",
-            "-loop", "0",
-            outPath
-        ]);
-    } else {
-        await execFileAsync("ffmpeg", [
-            "-y",
-            "-f", "concat", "-safe", "0", "-i", concatPath,
-            "-vf", "scale=500:500",
-            "-c:v", "libx264",
-            "-preset", "fast",
-            "-crf", "23",
-            "-pix_fmt", "yuv420p",
-            "-movflags", "+faststart",
-            outPath
-        ]);
-    }
+    await execFileAsync("ffmpeg", [
+        "-y",
+        "-f", "concat", "-safe", "0", "-i", concatPath,
+        "-vf", "scale=500:500",
+        "-c:v", "libx264",
+        "-preset", "fast",
+        "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        outPath
+    ]);
 
     const videoBuffer = readFileSync(outPath);
     rmSync(tmpDir, { recursive: true, force: true });
 
-    return { buffer: videoBuffer, format: ext };
+    return videoBuffer;
 }
 
 router.get("/", async (req, res) => {
@@ -308,36 +292,18 @@ router.get("/", async (req, res) => {
             return res.status(400).json({
                 status: false,
                 message: "Parameter 'text' diperlukan.",
-                example: "/api/bratvid?text=Halo semuanya mari kita belajar"
+                example: "/api/sticker/bratvid?text=Halo semuanya"
             });
         }
 
         const wordCount = text.split(" ").filter(Boolean).length;
 
-        // Otomatisasi penentuan tema (jika tidak diinput)
-        const theme = req.query.theme && THEMES[req.query.theme.toLowerCase()] 
-            ? req.query.theme.toLowerCase() 
-            : "white";
-
-        // Otomatisasi blur (jika tidak diinput)
-        const blur = req.query.blur !== undefined 
-            ? parseInt(req.query.blur) 
-            : 0;
-
-        // Otomatisasi format (jika kata <= 3 otomatis GIF, selebihnya MP4)
-        const format = req.query.format 
-            ? (req.query.format === "gif" ? "gif" : "mp4")
-            : (wordCount <= 3 ? "gif" : "mp4");
-
-        // Otomatisasi kecepatan frame berdasarkan panjang kalimat
+        // Otomatisasi kecepatan animasi berdasarkan panjang kata
         const frameDuration = wordCount > 15 ? 0.25 : (wordCount > 8 ? 0.35 : 0.4);
         const holdDuration = wordCount > 15 ? 1.5 : 1.2;
 
-        const video = await generateBratVideo({
+        const videoBuffer = await generateBratVideo({
             text,
-            theme,
-            blur,
-            format,
             frameDuration,
             holdDuration,
             maxWordPerLayer: 1,
@@ -345,9 +311,8 @@ router.get("/", async (req, res) => {
             fastProgress: true
         });
 
-        const contentType = video.format === "gif" ? "image/gif" : "video/mp4";
-        res.setHeader("Content-Type", contentType);
-        return res.send(video.buffer);
+        res.setHeader("Content-Type", "video/mp4");
+        return res.send(videoBuffer);
 
     } catch (error) {
         res.status(500).json({
