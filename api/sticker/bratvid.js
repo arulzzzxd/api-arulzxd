@@ -22,7 +22,7 @@ async function loadFont() {
     }
 }
 
-// Fungsi Render Frame ke Canvas Buffer
+// Render Frame Canvas
 function renderFrameBuffer(text) {
     const width = 512;
     const height = 512;
@@ -86,47 +86,51 @@ function renderFrameBuffer(text) {
     return canvas.toBuffer("image/png");
 }
 
-// Render Video In-Memory Menggunakan FFmpeg Stream Pipe
+// Konversi Buffer PNG ke MP4 melalui FFmpeg Stdin/Stdout
 function generateVideoFromBuffers(frameBuffers, fps = 2.5) {
     return new Promise((resolve, reject) => {
-        // Membuka subprocess FFmpeg yang menerima input imagepipe dari stdin
         const ffmpeg = spawn("ffmpeg", [
             "-y",
             "-f", "image2pipe",
             "-vcodec", "png",
-            "-r", String(fps),             // Frame rate / kecepatan animasi
-            "-i", "-",                      // '-' berarti membaca input dari stdin Stream
+            "-r", String(fps),
+            "-i", "-",
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
             "-preset", "ultrafast",
             "-f", "mp4",
-            "-movflags", "frag_keyframe+empty_moov", // Izinkan output stream MP4 langsung di RAM
-            "pipe:1"                        // Output dikirim ke stdout Stream
+            "-movflags", "frag_keyframe+empty_moov",
+            "pipe:1"
         ]);
 
         const chunks = [];
+        let errorMsg = "";
 
         ffmpeg.stdout.on("data", (chunk) => chunks.push(chunk));
-        ffmpeg.stderr.on("data", () => {}); // Supaya buffer stderr tidak memicu error
+        ffmpeg.stderr.on("data", (data) => {
+            errorMsg += data.toString();
+        });
 
         ffmpeg.on("close", (code) => {
             if (code === 0) {
                 resolve(Buffer.concat(chunks));
             } else {
-                reject(new Error(`FFmpeg exited with code ${code}`));
+                reject(new Error(`FFmpeg Exit Code ${code}: ${errorMsg}`));
             }
         });
 
-        ffmpeg.on("error", (err) => reject(err));
+        ffmpeg.on("error", (err) => {
+            reject(new Error("FFmpeg tidak ditemukan di sistem. Pastikan FFmpeg sudah diinstall. " + err.message));
+        });
 
-        // Tulis semua buffer gambar bertahap ke stdin FFmpeg
+        // Kirim frame satu per satu ke pipe FFmpeg
         for (const buf of frameBuffers) {
             ffmpeg.stdin.write(buf);
         }
 
-        // Tahan frame terakhir (repeat) beberapa kali agar tulisan akhir sempat terbaca
+        // Tahan frame terakhir selama beberapa detik
         const lastFrame = frameBuffers[frameBuffers.length - 1];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 4; i++) {
             ffmpeg.stdin.write(lastFrame);
         }
 
@@ -151,20 +155,19 @@ router.get("/", async (req, res) => {
         const words = text.split(" ").filter(Boolean);
         const frameBuffers = [];
 
-        // Buat frame buffer secara in-memory
         for (let i = 0; i < words.length; i++) {
             const partialText = words.slice(0, i + 1).join(" ");
             const frameBuf = renderFrameBuffer(partialText);
             frameBuffers.push(frameBuf);
         }
 
-        // Konversi deretan buffer frame ke buffer video MP4
         const videoBuffer = await generateVideoFromBuffers(frameBuffers, 2.5);
 
         res.setHeader("Content-Type", "video/mp4");
         return res.send(videoBuffer);
 
     } catch (error) {
+        console.error("BratVid Error:", error);
         res.status(500).json({
             status: false,
             creator: "ArulzXD",
