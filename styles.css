@@ -423,12 +423,17 @@
     }
 }
 
+
+
+
+
 /* Container Modal Bottom Sheet */
 .select-modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -445,17 +450,61 @@
     bottom: 0;
     left: 0;
     right: 0;
-    max-height: 50vh;
-    background-color: #ffffff;
+    max-height: 60vh;
+    background-color: #090d16; /* Latar belakang dark theme */
+    border-top: 1px solid rgba(0, 240, 255, 0.2);
     border-top-left-radius: 1.25rem;
     border-top-right-radius: 1.25rem;
-    padding: 1rem;
+    padding: 1.25rem;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
     z-index: 9999;
     overflow-y: auto;
+    box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
 .select-modal-container.active {
     transform: translateY(0);
+}
+
+/* Handle garis di atas modal */
+.select-modal-handle {
+    width: 36px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    margin: 0 auto 1rem auto;
+}
+
+/* Styling Opsi List */
+.select-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.select-modal-item {
+    display: flex;
+    items-center: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #e2e8f0; /* TeksSlate-200 terang */
+    font-size: 0.875rem;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.select-modal-item:hover {
+    background-color: rgba(0, 240, 255, 0.1);
+    color: #00f0ff;
+    border-color: rgba(0, 240, 255, 0.3);
+}
+
+.select-modal-item.selected {
+    background-color: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    font-weight: 700;
+    border-color: rgba(0, 240, 255, 0.5);
 }
