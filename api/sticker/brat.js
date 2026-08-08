@@ -4,7 +4,7 @@ const { createCanvas, GlobalFonts } = require("@napi-rs/canvas");
 
 const router = express.Router();
 
-// URL Font Arial Narrow dari GitHub Raw (Bisa diganti dengan repository Anda sendiri)
+// URL Font Arial Narrow dari GitHub Raw
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/arialnarrow.ttf";
 let isFontRegistered = false;
 
@@ -25,16 +25,7 @@ async function loadFont() {
 
 router.get("/", async (req, res) => {
     try {
-        const apikey = req.query.apikey;
         const text = req.query.text;
-
-        // 1. Validasi Apikey
-        if (!apikey) {
-            return res.status(403).json({ status: false, message: "Parameter 'apikey' diperlukan." });
-        }
-        if (apikey !== "arulzxd-keys") {
-            return res.status(403).json({ status: false, message: "Apikey tidak valid." });
-        }
 
         // 2. Validasi Parameter Text
         if (!text) {
@@ -48,20 +39,24 @@ router.get("/", async (req, res) => {
         // 3. Pastikan font sudah ter-registrasi
         await loadFont();
 
-        // 4. Proses Rendering Menggunakan @napi-rs/canvas
-        const width = 512;
-        const height = 512;
-        const margin = 30;
-        const wordSpacing = 15; // Jarak antar kata disesuaikan agar lebih proporsional
+        // 4. Proses Rendering Super HD (2048x2048)
+        const width = 2048;
+        const height = 2048;
+        const margin = 120; // Disesuaikan dengan skala 4x
+        const wordSpacing = 60; // Disesuaikan dengan skala 4x
 
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext("2d");
+
+        // Quality render settings
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
 
         // Background putih khas Brat
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, width, height);
 
-        let fontSize = 200; // Mulai dari ukuran font besar
+        let fontSize = 800; // Skala 4x dari 200
         const lineHeightMultiplier = 1.1;
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
@@ -70,7 +65,7 @@ router.get("/", async (req, res) => {
         const words = text.split(" ");
         let lines = [];
 
-        // Fungsi rekonstruksi baris teks teks agar pas di canvas
+        // Fungsi rekonstruksi baris teks agar pas di canvas
         const rebuildLines = () => {
             lines = [];
             let currentLine = "";
@@ -91,8 +86,8 @@ router.get("/", async (req, res) => {
 
         // Kurangi ukuran font secara berkala jika teks terlalu panjang dan meluber ke bawah
         rebuildLines();
-        while (lines.length * fontSize * lineHeightMultiplier > height - margin * 2 && fontSize > 20) {
-            fontSize -= 2;
+        while (lines.length * fontSize * lineHeightMultiplier > height - margin * 2 && fontSize > 80) {
+            fontSize -= 8;
             rebuildLines();
         }
 
@@ -113,10 +108,10 @@ router.get("/", async (req, res) => {
             y += lineHeight;
         }
 
-        // 5. Mengubah Canvas menjadi Buffer PNG
+        // 5. Mengubah Canvas menjadi Buffer PNG HD
         const buffer = canvas.toBuffer("image/png");
 
-        // Mengirimkan gambar PNG murni ke client (Siap dipakai untuk fitur bot/sticker)
+        // Mengirimkan gambar PNG murni ke client
         res.setHeader("Content-Type", "image/png");
         return res.send(buffer);
 
