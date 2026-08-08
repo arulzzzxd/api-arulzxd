@@ -767,8 +767,10 @@
         let currentSelectedRating = 0;
         let CURRENT_LOGGED_USER = null;
 
-        // VARIABEL MANAJEMEN PREVIEW BERKAS PENILAIAN LOKAL
+        // VARIABEL MANAJEMEN PREVIEW BERKAS PENILAIAN LOKAL & EDIT MEDIA
         let SELECTED_FILE_LIST = []; 
+        let EXISTING_MEDIA_LIST = []; 
+        let REMOVED_MEDIA_URLS = []; 
         let KEEP_EXISTING_MEDIA = true;
 
         // Mengambil status user saat ini untuk identifikasi kepemilikan ulasan
@@ -837,18 +839,21 @@
                 for (let i = 0; i < input.files.length; i++) {
                     SELECTED_FILE_LIST.push(input.files[i]);
                 }
-                // Jika user menambah berkas baru saat edit, hapus kepemilikan media lama
-                KEEP_EXISTING_MEDIA = false;
             }
             input.value = ''; // Reset input
             renderMediaPreviews();
         }
 
+        function removeExistingMedia(index) {
+            if (EXISTING_MEDIA_LIST[index]) {
+                REMOVED_MEDIA_URLS.push(EXISTING_MEDIA_LIST[index].url);
+                EXISTING_MEDIA_LIST.splice(index, 1);
+            }
+            renderMediaPreviews();
+        }
+
         function removeSelectedFile(index) {
             SELECTED_FILE_LIST.splice(index, 1);
-            if (SELECTED_FILE_LIST.length === 0 && document.getElementById('isEditReviewMode').value === 'true') {
-                KEEP_EXISTING_MEDIA = false;
-            }
             renderMediaPreviews();
         }
 
@@ -856,26 +861,44 @@
             const container = document.getElementById('mediaPreviewContainer');
             if (!container) return;
 
-            if (SELECTED_FILE_LIST.length === 0) {
+            if (EXISTING_MEDIA_LIST.length === 0 && SELECTED_FILE_LIST.length === 0) {
                 container.classList.add('hidden');
                 container.innerHTML = '';
                 return;
             }
 
             container.classList.remove('hidden');
-            container.innerHTML = SELECTED_FILE_LIST.map((file, idx) => {
-                const isVideo = file.type.startsWith('video/');
-                const objectUrl = URL.createObjectURL(file);
-
+            
+            // Pratinjau Foto/Video Lama
+            let html = EXISTING_MEDIA_LIST.map((media, idx) => {
+                const isVideo = media.type === 'video';
                 return `
-                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-cyberBorder flex-shrink-0 group">
-                        ${isVideo ? `<video src="${objectUrl}" class="w-full h-full object-cover"></video>` : `<img src="${objectUrl}" class="w-full h-full object-cover">`}
-                        <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition">
+                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-cyberCyan flex-shrink-0 group">
+                        ${isVideo ? `<video src="${media.url}" class="w-full h-full object-cover"></video>` : `<img src="${media.url}" class="w-full h-full object-cover">`}
+                        <span class="absolute bottom-0 inset-x-0 bg-cyberCyan/80 text-[8px] text-black text-center font-bold font-cyber">LAMA</span>
+                        <button type="button" onclick="removeExistingMedia(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition" title="Hapus berkas ini">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
                 `;
             }).join('');
+
+            // Pratinjau Foto/Video Baru
+            html += SELECTED_FILE_LIST.map((file, idx) => {
+                const isVideo = file.type.startsWith('video/');
+                const objectUrl = URL.createObjectURL(file);
+                return `
+                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-emerald-500 flex-shrink-0 group">
+                        ${isVideo ? `<video src="${objectUrl}" class="w-full h-full object-cover"></video>` : `<img src="${objectUrl}" class="w-full h-full object-cover">`}
+                        <span class="absolute bottom-0 inset-x-0 bg-emerald-500/80 text-[8px] text-black text-center font-bold font-cyber">BARU</span>
+                        <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition" title="Batal unggah">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
         }
 
         function resetReviewForm() {
@@ -889,6 +912,8 @@
             if (commentInput) commentInput.style.height = 'auto';
 
             SELECTED_FILE_LIST = [];
+            EXISTING_MEDIA_LIST = [];
+            REMOVED_MEDIA_URLS = [];
             KEEP_EXISTING_MEDIA = true;
             renderMediaPreviews();
             setRating(0);
@@ -975,7 +1000,15 @@
             }
             
             SELECTED_FILE_LIST = [];
+            REMOVED_MEDIA_URLS = [];
             KEEP_EXISTING_MEDIA = true;
+
+            try {
+                EXISTING_MEDIA_LIST = mediaJsonStr ? JSON.parse(decodeURIComponent(mediaJsonStr)) : [];
+            } catch (e) {
+                EXISTING_MEDIA_LIST = [];
+            }
+
             renderMediaPreviews();
 
             const hotbar = document.getElementById('reviewHotbarContainer');
@@ -1060,9 +1093,11 @@
                     const isMyReview = (currentUsername && rev.username.toLowerCase() === currentUsername.toLowerCase()) ||
                                        (currentUserId && rev.userId === currentUserId);
 
+                    const encodedMedia = encodeURIComponent(JSON.stringify(rev.media || []));
+
                     const actionBtnsHtml = isMyReview ? `
                         <div class="flex items-center gap-1.5 ml-2">
-                            <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}')" 
+                            <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}', '${encodedMedia}')" 
                                     class="text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
                                 <i class="fa-solid fa-pen-to-square"></i> Edit Rating
                             </button>
@@ -1118,6 +1153,7 @@
             formData.append('rating', rating);
             formData.append('comment', comment);
             formData.append('keepExistingMedia', KEEP_EXISTING_MEDIA ? 'true' : 'false');
+            formData.append('removedMediaUrls', JSON.stringify(REMOVED_MEDIA_URLS));
 
             if (SELECTED_FILE_LIST.length > 0) {
                 for (let i = 0; i < SELECTED_FILE_LIST.length; i++) {
@@ -1138,7 +1174,7 @@
                 const result = await res.json();
 
                 if (result.status) {
-                    Swal.fire({ icon: 'success', title: 'BERHASIL!', text: result.message || 'Penilaian Anda telah diterbitkan.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
+                    Swal.fire({ icon: 'success', title: 'BERHASIL!', text: result.message || 'Penilaian Anda telah diperbarui.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
                     
                     resetReviewForm();
                     await loadProductReviews(productId);
