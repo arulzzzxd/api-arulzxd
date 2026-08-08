@@ -423,8 +423,50 @@
     }
 }
 
-/* ==========================================
-   GLOBAL SELECT MODAL (MIRIP GAMBAR 2)
-   ========================================== */
+/* Custom Styling untuk Select Cyberpunk */
+.select-cyberpunk {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: rgba(3, 7, 18, 0.85) !important;
+    color: #00f0ff !important;
+    border: 1px solid rgba(0, 240, 255, 0.4) !important;
+    border-radius: 0.5rem;
+    padding: 0.6rem 2.5rem 0.6rem 2.75rem !important;/* Ruang untuk icon kiri dan panah kanan */
+    font-family: monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 240, 255, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
 
-/* Overlay Latar Gelap yang Menutupi Seluruh Layar */
+.select-cyberpunk:focus {
+    outline: none;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.select-cyberpunk option {
+    background-color: #030712;
+    color: #ffffff;
+    padding: 10px;
+}
+
+/* Animasi Bintang Cyberpunk */
+@keyframes starPulseGlow {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 2px #00f0ff) drop-shadow(0 0 6px #00f0ff);
+    }
+    50% {
+        transform: scale(1.25) rotate(180deg);
+        filter: drop-shadow(0 0 5px #00f0ff) drop-shadow(0 0 12px #00f0ff);
+    }
+}
+
+.star-cyber-icon {
+    animation: starPulseGlow 2.5s infinite ease-in-out;
+    transform-origin: center;
+}
