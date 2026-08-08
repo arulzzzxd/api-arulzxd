@@ -209,7 +209,7 @@ const uploadReviewMedia = multer({
 });
 
 // ----------------------------------------------------
-// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
+// ENDPOINT TAMBAH / EDIT ULASAN PRODUK & MEDIA
 // ----------------------------------------------------
 app.post('/api/reviews', checkAuthSession, (req, res) => {
     uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
@@ -218,13 +218,13 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
         }
 
         try {
-            const { productId, rating, comment, keepExistingMedia } = req.body;
+            const { productId, rating, comment, keepExistingMedia, removedMediaUrls } = req.body;
 
             if (!productId) return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
             if (!rating || Number(rating) < 1 || Number(rating) > 5) return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
             if (!comment || !comment.trim()) return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan!' });
 
-            // Ambil User & Avatar Terbaru dari DB
+            // Identifikasi User & Avatar Terbaru
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
             let userId = getUserIdentifier(req);
@@ -242,6 +242,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 }
             }
 
+            // Proses Berkas Media Baru (jika ada)
             const newMediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
@@ -258,27 +259,44 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
+                // UPDATE REVIU LAMA TANPA MENGHAPUS RATING ATAU KOMENTAR
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
                 existingReview.userAvatar = userAvatar;
                 existingReview.username = username;
 
-                // Jika tidak mempertahankan media lama atau mengunggah media baru
-                if (keepExistingMedia === 'false') {
-                    existingReview.media = newMediaList;
-                } else if (newMediaList.length > 0) {
-                    existingReview.media = [...existingReview.media, ...newMediaList];
+                let updatedMedia = existingReview.media || [];
+
+                // 1. Jika ada daftar media lama yang dihapus pengguna saat edit
+                if (removedMediaUrls) {
+                    let urlsToRemove = [];
+                    try {
+                        urlsToRemove = JSON.parse(removedMediaUrls);
+                    } catch (e) {
+                        urlsToRemove = Array.isArray(removedMediaUrls) ? removedMediaUrls : [removedMediaUrls];
+                    }
+                    updatedMedia = updatedMedia.filter(m => !urlsToRemove.includes(m.url));
                 }
 
+                // 2. Jika `keepExistingMedia` diset false (reset total media lama)
+                if (keepExistingMedia === 'false') {
+                    updatedMedia = newMediaList;
+                } else {
+                    // Gabungkan media lama yang dipertahankan dengan media baru yang diunggah
+                    updatedMedia = [...updatedMedia, ...newMediaList];
+                }
+
+                existingReview.media = updatedMedia;
                 existingReview.updatedAt = new Date();
                 await existingReview.save();
 
                 return res.json({
                     status: true,
-                    message: 'Penilaian berhasil diperbarui!',
+                    message: 'Penilaian & media ulasan berhasil diperbarui!',
                     data: existingReview
                 });
             } else {
+                // BUAT REVIU BARU
                 const newReview = new Review({
                     productId,
                     userId,
