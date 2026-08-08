@@ -22,7 +22,6 @@ const compression = require('compression');
 const os = require('os');
 
 const app = express();
-app.use(compression());
 app.set('etag', false);
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
@@ -39,8 +38,6 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haq
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
-
-const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
 app.use(session({
     secret: 'arulzxd_secret_session_key_99', 
@@ -62,11 +59,7 @@ const checkAuthSession = (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = {
-            ...decoded,
-            apiKey: decoded.apiKey || decoded.apikey, // <--- Perbaikan di sini
-            apikey: decoded.apikey || decoded.apiKey
-        }; 
+        req.user = decoded; 
         next();
     } catch (err) {
         res.clearCookie('auth_session');
@@ -74,8 +67,6 @@ const checkAuthSession = (req, res, next) => {
         next();
     }
 };
-
-app.use(checkAuthSession);
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
@@ -130,13 +121,13 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
             const base64 = req.file.buffer.toString("base64");
             const avatarDataUrl = `data:${mimeType};base64,${base64}`;
 
-            const userIdToUpdate = req.user.id || req.user._id;
+            // Simpan ke database Mongoose User
             const updatedUser = await User.findByIdAndUpdate(
-                userIdToUpdate,
-                { $set: { avatar: avatarDataUrl } },
-                { new: true, runValidators: true }
+                req.user.id || req.user._id,
+                { avatar: avatarDataUrl },
+                { new: true }
             );
-            
+
             if (!updatedUser) {
                 return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
             }
@@ -171,183 +162,6 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
             return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
         }
     });
-});
-
-// ----------------------------------------------------
-// 1. MONGOOSE SCHEMA & MODEL UNTUK REVIU / PENILAIAN
-// ----------------------------------------------------
-const reviewSchema = new mongoose.Schema({
-    productId: { type: String, required: true, index: true },
-    userId: { type: String, default: null, index: true },
-    username: { type: String, required: true },
-    userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String, required: true, trim: true },
-    media: [{
-        type: { type: String, enum: ['image', 'video'] },
-        url: String
-    }],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
-reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
-
-const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
-
-// ----------------------------------------------------
-// 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
-// ----------------------------------------------------
-const uploadReviewMedia = multer({
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('File harus berupa gambar atau video!'));
-        }
-    }
-});
-
-// ----------------------------------------------------
-// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
-// ----------------------------------------------------
-app.post('/api/reviews', checkAuthSession, (req, res) => {
-    uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah berkas.' });
-        }
-
-        try {
-            const { productId, rating, comment } = req.body;
-
-            if (!productId) {
-                return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
-            }
-
-            if (!rating || Number(rating) < 1 || Number(rating) > 5) {
-                return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
-            }
-
-            if (!comment || !comment.trim()) {
-                return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
-            }
-
-            // Identitas User
-            let username = 'Anonim';
-            let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
-            let userId = getUserIdentifier(req);
-
-            if (req.user) {
-                username = req.user.username || req.user.name;
-                userAvatar = req.user.avatar || userAvatar;
-                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
-            }
-
-            // Cek apakah user pernah membeli produk ini
-            const product = await Product.findOne({
-                $or: [{ Id: productId }, { _id: mongoose.Types.ObjectId.isValid(productId) ? productId : null }]
-            });
-
-            if (product && product.purchasedBy) {
-                const userClean = userId.toLowerCase().trim();
-                const isBuyer = product.purchasedBy.some(p => p.toLowerCase().trim() === userClean);
-
-                if (!isBuyer && process.env.NODE_ENV === 'production') {
-                    return res.status(403).json({
-                        status: false,
-                        message: 'Anda belum pernah membeli produk ini, tidak dapat memberikan penilaian!'
-                    });
-                }
-            }
-
-            // Upload Media jika ada
-            const mediaList = [];
-            if (req.files && req.files.length > 0) {
-                for (const file of req.files) {
-                    const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
-                    const isVideo = mimeType.startsWith('video/');
-                    const base64 = file.buffer.toString('base64');
-                    const dataUrl = `data:${mimeType};base64,${base64}`;
-
-                    mediaList.push({
-                        type: isVideo ? 'video' : 'image',
-                        url: dataUrl
-                    });
-                }
-            }
-
-            // CEK EDIT OR CREATE: Cari review sebelumnya oleh User ini di Produk ini
-            let existingReview = await Review.findOne({ productId, userId });
-
-            if (existingReview) {
-                // EDIT / UPDATE RATING LAMA
-                existingReview.rating = Number(rating);
-                existingReview.comment = comment.trim();
-                if (mediaList.length > 0) {
-                    existingReview.media = mediaList; // Perbarui media jika melampirkan baru
-                }
-                existingReview.updatedAt = new Date();
-                await existingReview.save();
-
-                return res.json({
-                    status: true,
-                    message: 'Penilaian produk Anda berhasil diperbarui!',
-                    data: existingReview
-                });
-            } else {
-                // BUAT RATING BARU (PERTAMA KALI)
-                const newReview = new Review({
-                    productId,
-                    userId,
-                    username,
-                    userAvatar,
-                    rating: Number(rating),
-                    comment: comment.trim(),
-                    media: mediaList
-                });
-
-                await newReview.save();
-
-                return res.json({
-                    status: true,
-                    message: 'Penilaian produk berhasil dikirim!',
-                    data: newReview
-                });
-            }
-
-        } catch (error) {
-            console.error("Error submit review:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menyimpan ulasan.' });
-        }
-    });
-});
-
-// ----------------------------------------------------
-// 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
-// ----------------------------------------------------
-app.get('/api/reviews/:productId', async (req, res) => {
-    try {
-        const { productId } = req.params;
-        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
-
-        let averageRating = 0;
-        if (reviews.length > 0) {
-            const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
-            averageRating = Number((totalRating / reviews.length).toFixed(1));
-        }
-
-        return res.json({
-            status: true,
-            totalReviews: reviews.length,
-            averageRating: averageRating,
-            reviews: reviews
-        });
-    } catch (error) {
-        console.error("Error fetch reviews:", error);
-        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan produk.' });
-    }
 });
 
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
@@ -398,7 +212,7 @@ const voucherSchema = new mongoose.Schema({
 const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
 
 const productSchema = new mongoose.Schema({
-    Id: { type: String, required: true, unique: true, trim: true },
+    Id: { type: String, required: true, unique: true, trim: true }, // Menggunakan custom Id tanpa default
     nama: { type: String, required: true, trim: true },
     harga: { type: Number, required: true },
     harga_diskon: { type: Number, default: null },
@@ -409,7 +223,6 @@ const productSchema = new mongoose.Schema({
     gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
     deskripsi: { type: String, default: "" },
     link: { type: String, required: true },
-    purchasedBy: [{ type: String }], // Array ID/Username/Email pembeli yang pernah sukses membeli
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -439,7 +252,7 @@ app.post('/api/vouchers/claim', async (req, res) => {
 
         // Mengambil HANYA dari koleksi Voucher Mongoose
         const voucher = await Voucher.findOne({ code: cleanCode });
-
+        
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
@@ -554,40 +367,25 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
-async function recordProductBuyer(productName, userIdentifier) {
-    if (!productName || !userIdentifier) return;
-    try {
-        await Product.findOneAndUpdate(
-            { nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } },
-            { $addToSet: { purchasedBy: userIdentifier.toString().toLowerCase().trim() } }
-        );
-    } catch (err) {
-        console.error("❌ Gagal mencatat pembeli produk:", err.message);
-    }
-}
-
-async function updateProductStockAndSold(productName, qtyChange = 1, isRollback = false) {
+async function updateProductStockAndSold(productName, qtyPurchased = 1) {
     try {
         if (!productName) return null;
-
+        
+        // Cari berdasarkan nama produk (case insensitive)
         const product = await Product.findOne({ 
             nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
         });
 
         if (product) {
-            if (isRollback) {
-                // Pemulihan stok ketika dibatalkan
-                product.stok = (product.stok || 0) + qtyChange;
-                product.terjual = Math.max(0, (product.terjual || 0) - qtyChange);
-                console.log(`🔄 [STOK RESTORED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
-            } else {
-                // Pengurangan stok saat sukses
-                product.stok = Math.max(0, (product.stok || 0) - qtyChange);
-                product.terjual = (product.terjual || 0) + qtyChange;
-                console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
-            }
+            // Pengurangan stok tidak boleh di bawah 0
+            const newStock = Math.max(0, (product.stok || 0) - qtyPurchased);
+            const newSold = (product.terjual || 0) + qtyPurchased;
 
+            product.stok = newStock;
+            product.terjual = newSold;
             await product.save();
+
+            console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${newStock}), Terjual (${newSold})`);
             return product;
         }
     } catch (err) {
@@ -873,50 +671,30 @@ app.get('/transactions/:orderId', async (req, res) => {
 app.post('/transactions/:orderId/cancel', async (req, res) => {
     try {
         const { orderId } = req.params;
-        const localTrx = await Transaction.findOne({ orderId });
 
-        if (!localTrx) {
-            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
-        }
+        const cancelRes = await axiosPaywuzWithRetry({
+            method: 'post',
+            url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
+            headers: PAYWUZ_HEADERS
+        });
 
-        const prevStatus = localTrx.status.toLowerCase();
-
-        // Panggil PayWuz Cancel API
-        try {
-            await axiosPaywuzWithRetry({
-                method: 'post',
-                url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
-                headers: PAYWUZ_HEADERS
-            });
-        } catch (err) {
-            console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
-        }
-
-        // Jika sebelumnya berstatus Lunas/Success dan dibatalkan, kembalikan stok & terjual
-        if (["paid", "settlement", "success"].includes(prevStatus)) {
-            if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                const qtyPurchased = localTrx.itemDetails.qty || 1;
-                await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
-            }
-        }
-
-        localTrx.status = "cancelled";
-        localTrx.updatedAt = new Date();
-        await localTrx.save();
+        await Transaction.findOneAndUpdate(
+            { orderId },
+            { status: "cancelled", updatedAt: new Date() }
+        );
 
         await deleteCache(`trx_${orderId}`);
         scheduleTransactionDeletion(orderId);
 
-        return res.json({
-            status: true,
-            data: { orderId, status: "cancelled" }
+        res.json({
+            data: cancelRes.data?.data || cancelRes.data || { orderId, status: "cancelled" }
         });
 
     } catch (error) {
-        console.error("Error Cancel TRX:", error.message);
+        console.error("Error Cancel TRX:", error.response?.data || error.message);
         res.status(500).json({
             error: "CANCEL_TRANSACTION_FAILED",
-            message: error.message || "Gagal membatalkan transaksi"
+            message: error.response?.data?.message || error.message || "Gagal membatalkan transaksi"
         });
     }
 });
@@ -945,7 +723,10 @@ app.post('/webhook', async (req, res) => {
         const status = payloadData?.status ? payloadData.status.toLowerCase() : null;
 
         if (!orderId) {
-            return res.status(400).json({ error: "MISSING_ORDER_ID", message: "orderId tidak ada!" });
+            return res.status(400).json({ 
+                error: "MISSING_ORDER_ID", 
+                message: "orderId tidak ditemukan pada payload webhook!" 
+            });
         }
 
         if (orderId && status) {
@@ -957,32 +738,24 @@ app.post('/webhook', async (req, res) => {
                 localTrx.updatedAt = new Date();
 
                 const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
-                const isCancelEvent = ["cancelled", "failed", "expire"].includes(status);
 
                 if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
                     console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
+                    // 1. Kurangi stok dan tambah terjual di MongoDB secara otomatis
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
-
-                        // Simpan user pembeli di productSchema jika user terautentikasi / terdeteksi
-                        const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
-                        await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
+                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased);
                     }
 
+                    // 2. Ambil Link Produk jika belum ada
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
                         });
-                        if (dbProduct) localTrx.productLink = dbProduct.link;
-                    }
-                } 
-                // KONDISI BATAL/FAILED: Kembalikan Stok & Terjual
-                else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
+                        if (dbProduct) {
+                            localTrx.productLink = dbProduct.link;
+                        }
                     }
                 }
 
@@ -995,11 +768,19 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
-        return res.status(200).json({ data: { message: "Webhook diproses dengan sukses", orderId } });
+        return res.status(200).json({ 
+            data: {
+                message: "Webhook diproses dengan sukses",
+                orderId
+            }
+        });
 
     } catch (err) {
         console.error("Webhook Error:", err);
-        return res.status(500).json({ error: "WEBHOOK_PROCESSING_ERROR", message: "Error internal webhook" });
+        return res.status(500).json({ 
+            error: "WEBHOOK_PROCESSING_ERROR", 
+            message: "Terjadi kesalahan internal saat memproses webhook" 
+        });
     }
 });
 
@@ -1030,7 +811,8 @@ app.post('/api/store/manual-order', async (req, res) => {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
- 
+
+app.use(compression()); 
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -1191,7 +973,7 @@ app.post('/auth/login', (req, res, next) => {
                     sameSite: 'lax'
                 });
 
-                return res.redirect('/docs');
+                return res.redirect('/');
 
             } catch (error) {
                 console.error("Gagal sinkronisasi data premium saat login:", error);
@@ -1274,7 +1056,7 @@ app.post('/auth/register', async (req, res) => {
 
         req.logIn(newUser, (err) => {
             if (err) return res.redirect('/login');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
+            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs?showProfile=true');
         });
 
     } catch (error) {
@@ -1465,11 +1247,13 @@ app.post('/reset-password/:token', async (req, res) => {
 
 app.get('/login', (req, res) => {
     if (req.user) {
-        return res.redirect('/docs'); 
+        return res.redirect('/docs?showProfile=true'); 
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+
+const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
 const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
 const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
@@ -1692,36 +1476,36 @@ app.get('/auth/google/callback', async (req, res) => {
 app.get('/api/user-status', async (req, res) => {
     if (req.user) {
         try {
-            // Ambil data user paling baru dari MongoDB agar avatar terbaru selalu terbaca
+            // Ambil data user paling fresh langsung dari MongoDB Database
             const freshUser = await User.findById(req.user.id || req.user._id);
-            const activeUser = freshUser || req.user;
+            const userObj = freshUser || req.user;
 
-            res.json({
+            return res.json({
                 loggedIn: true,
                 user: {
-                    name: activeUser.username,
-                    username: activeUser.username,
-                    email: activeUser.email,
-                    avatar: activeUser.avatar,
-                    apiKey: activeUser.apikey || activeUser.apiKey,
-                    role: activeUser.role
+                    name: userObj.username,
+                    username: userObj.username,
+                    email: userObj.email,
+                    avatar: userObj.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    apiKey: userObj.apikey || userObj.apiKey,
+                    role: userObj.role || 'Free User'
                 }
             });
         } catch (err) {
-            res.json({
+            return res.json({
                 loggedIn: true,
                 user: {
-                    name: req.user.name || req.user.username,
+                    name: req.user.username,
                     username: req.user.username,
                     email: req.user.email,
-                    avatar: req.user.avatar,
-                    apiKey: req.user.apiKey || req.user.apikey,
+                    avatar: req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    apiKey: req.user.apiKey,
                     role: req.user.role
                 }
             });
         }
     } else {
-        res.json({ loggedIn: false });
+        return res.json({ loggedIn: false });
     }
 });
 
@@ -1733,6 +1517,8 @@ app.get('/auth/logout', (req, res, next) => {
     });
 });
 
+app.use(checkAuthSession);
+
 const playlist = require('./database/playlist');
 const PREMIUM_USERS = require('./database/PREMIUM_USERS');
 const VIP_USERS = require('./database/VIP_USERS');
@@ -1741,6 +1527,13 @@ const localFileUploader = fileUpload({
     createParentPath: true,
     limits: { fileSize: 100 * 1024 * 1024 }, 
 });
+
+const title = "API-ARULZXD - REST";
+const favicon = "https://arulz-xd.my.id/files/UBkDZZ.png";
+const logo = "https://arulz-xd.my.id/files/33s7XJ.png";
+const headertitle = `<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" />`;
+const headerdescription = "Browse, inspect & fire requests against live endpoints._";
+const footer = "© Arulz-XD";
 
 const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
 const a = 'g';
@@ -2441,7 +2234,7 @@ function getEndpointsFromRouter(category, file) {
   subRouter.stack.forEach(layer => {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
-
+      
       // Default: Selalu sediakan apikey sebagai parameter pertama
       let params = { apikey: "" }; 
 
@@ -2586,7 +2379,7 @@ app.get('/store/:productId', async (req, res) => {
     try {
         // Ambil productId dari URL params (:productId)
         const productId = req.params.productId;
-
+        
         // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
         const product = await Product.findOne({ Id: productId });
 
@@ -2655,8 +2448,8 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>API-ARULZXD - REST</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/UBkDZZ.png" type="image/png">
+    <title>${title}</title>
+    <link id="faviconLink" rel="icon" type="image/x-icon" href="${favicon}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2907,6 +2700,185 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 0 12px var(--neon-cyan);
         transition: width 0.15s ease-out;
     }
+    .cyber-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999 !important;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: flex-end; /* Tampilan Bottom-sheet di mobile */
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Kontainer Utama Modal */
+.cyber-modal-container {
+    width: 100%;
+    max-width: 540px;
+    max-height: 80vh;
+    background-color: #ffffff;
+    border-top-left-radius: 1.25rem;
+    border-top-right-radius: 1.25rem;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Modal centered pada layar desktop */
+@media (min-width: 640px) {
+    .cyber-modal-overlay {
+        align-items: center;
+        padding: 1.5rem;
+    }
+    .cyber-modal-container {
+        border-radius: 1.25rem;
+        transform: scale(0.9) translateY(20px);
+    }
+    .cyber-modal-overlay.active .cyber-modal-container {
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cyber-modal-overlay.active .cyber-modal-container {
+    transform: translateY(0);
+}
+
+/* Header Modal */
+.cyber-modal-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #ffffff;
+}
+
+.cyber-modal-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111827;
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: capitalize;
+}
+
+.cyber-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.cyber-modal-close:hover {
+    color: #111827;
+}
+
+/* Body Modal List */
+.cyber-modal-body {
+    overflow-y: auto;
+    padding: 0.5rem 0;
+    max-height: 60vh;
+}
+
+/* Item Opsi Bergaya Baris Gambar 2 */
+.cyber-modal-body .cyber-option {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.875rem;
+    font-family: monospace;
+    color: #374151;
+    background-color: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.cyber-modal-body .cyber-option:last-child {
+    border-bottom: none;
+}
+
+.cyber-modal-body .cyber-option:hover {
+    background-color: #f9fafb;
+    color: #111827;
+}
+
+.cyber-modal-body .cyber-option.selected {
+    background-color: #f3f4f6;
+    color: #0284c7;
+    font-weight: 700;
+}
+
+/* Support Dark Mode untuk Modal */
+body:not(.light-mode) .cyber-modal-container {
+    background-color: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body:not(.light-mode) .cyber-modal-header {
+    background-color: #0f172a;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body:not(.light-mode) .cyber-modal-title {
+    color: #f8fafc;
+}
+
+body:not(.light-mode) .cyber-modal-close {
+    color: #94a3b8;
+}
+
+body:not(.light-mode) .cyber-modal-body .cyber-option {
+    background-color: #0f172a;
+    color: #cbd5e1;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+body:not(.light-mode) .cyber-modal-body .cyber-option:hover {
+    background-color: #1e293b;
+    color: #38bdf8;
+}
+
+body:not(.light-mode) .cyber-modal-body .cyber-option.selected {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+}
+
+/* Icon Bintang Tetap Sama */
+.cyber-star-icon {
+    display: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    color: #00f0ff;
+    filter: drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #00f0ff);
+    will-change: transform, opacity;
+}
+
+.cyber-option.selected .cyber-star-icon {
+    display: block;
+    animation: starPulse 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes starPulse {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    70% { transform: scale(1.25) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
@@ -2976,7 +2948,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? req.user.apiKey : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -3285,11 +3257,9 @@ app.get('/docs', (req, res) => {
                 </span>
             </div>
             
-            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white"><img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" /></div>
-            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">
-  Jelajahi, uji, dan jalankan request secara langsung ke endpoint aktif.
-</p>
-
+            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white">${headertitle}</div>
+            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">${headerdescription}</p>
+            
             <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
                     <div class="text-center font-['Space_Grotesk']">
@@ -3425,7 +3395,7 @@ app.get('/docs', (req, res) => {
         <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
 
         <footer id="siteFooter" class="mt-16 pt-6 border-t border-white/5 text-center text-[11px] text-slate-500">
-            © Arulz-XD
+            ${footer}
         </footer>
     </div>
 
@@ -3444,7 +3414,7 @@ app.get('/docs', (req, res) => {
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
+    const displayApiKey = "${req.user ? req.user.apiKey : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 
@@ -3586,12 +3556,18 @@ app.get('/docs', (req, res) => {
                 if (result.status) {
                     const newAvatarUrl = result.avatar;
 
-                    // Force update DOM langsung menggunakan URL Data Base64 baru
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                        img.src = newAvatarUrl;
-                    });
+                    // 1. Update avatar di Modal Profile Popup
+                    if (userAvatarImg) userAvatarImg.src = newAvatarUrl;
+
+                    // 2. Update avatar di Sidebar Menu AUTHORIZED USER
+                    if (sidebarAvatarImg) sidebarAvatarImg.src = newAvatarUrl;
 
                     showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+
+                    // 3. Re-fetch data user agar state aplikasi dan cache ter-synchronize
+                    if (typeof fetchUserProfile === 'function') {
+                        fetchUserProfile();
+                    }
                 } else {
                     showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
                     if (userAvatarImg) userAvatarImg.src = oldSrc;
@@ -3611,35 +3587,32 @@ app.get('/docs', (req, res) => {
 
         // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
-    fetch('/api/user-status')
-        .then(res => res.json())
-        .then(data => {
-            if (data.loggedIn && data.user) {
-                const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
 
-                // Sync Avatar di Modal
-                const modalAvatar = document.getElementById('userAvatar');
-                if (modalAvatar) modalAvatar.src = latestAvatar;
+                        // Sync Avatar di Modal
+                        const modalAvatar = document.getElementById('userAvatar');
+                        if (modalAvatar) modalAvatar.src = latestAvatar;
 
-                // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
-                const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-                if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
+                        // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
+                        const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+                        if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
 
-                document.getElementById('userName').innerText = data.user.username || 'User';
-                document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                
-                // Perbaikan pembacaan apiKey / apikey
-                const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
-                document.getElementById('userApiKey').innerText = userKey;
-                
-                setRoleTheme(data.user.role || 'free');
-            }
-        })
-        .catch((err) => {
-            console.error("Gagal sinkronisasi profile:", err);
-            setRoleTheme("free"); 
-        });
-}
+                        document.getElementById('userName').innerText = data.user.name || 'User';
+                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                        document.getElementById('userApiKey').innerText = data.user.apiKey || 'No Key';
+                        
+                        setRoleTheme(data.user.role || 'free');
+                    }
+                })
+                .catch((err) => {
+                    console.error("Gagal sinkronisasi profile:", err);
+                    setRoleTheme("free"); 
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
@@ -3713,7 +3686,7 @@ app.get('/docs', (req, res) => {
 
         window.addEventListener('load', finishLoader);
 
-        setTimeout(finishLoader, 1500);
+        setTimeout(finishLoader, 4000);
 </script>
 
 </body>
