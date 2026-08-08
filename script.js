@@ -838,73 +838,95 @@ function performSearch() {
     });
 }
 
-// Toggle Popup Select dengan Animasi Spring/Bounce
-// Toggle Popup Select dengan penanganan z-index dinamis
+// Fungsi Membuka Modal Select (Bottom Sheet / Centered Floating Modal)
 function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
-    const optionsEl = wrapper.querySelector('.cyber-select-options');
-    const isOpen = optionsEl.classList.contains('show');
-
-    // Tutup semua dropdown lain yang sedang terbuka
-    closeAllCyberSelects();
-
-    if (!isOpen) {
-        optionsEl.classList.add('show');
-        triggerEl.classList.add('active');
-        
-        // Naikkan z-index wrapper & elemen kontainer induk agar tidak tertutup elemen di bawahnya
-        if (wrapper) {
-            wrapper.style.zIndex = '9999';
-            const apiItem = wrapper.closest('.api-item');
-            if (apiItem) apiItem.style.zIndex = '9999';
-        }
-    }
-}
-
-// Handler Pemilihan Opsi + Animasi Bintang
-function selectCyberOption(optionEl, catIdx, epIdx, paramName, method, path, epType) {
-    const wrapper = optionEl.closest('.cyber-select-wrapper');
-    const hiddenInput = wrapper.querySelector(`input[id="select-input-${catIdx}-${epIdx}-${paramName}"]`);
-    const triggerText = wrapper.querySelector('.selected-text');
-    const triggerEl = wrapper.querySelector('.cyber-select-trigger');
     const optionsContainer = wrapper.querySelector('.cyber-select-options');
-    const val = optionEl.getAttribute('data-value');
+    const paramName = wrapper.dataset.param || 'Select Option';
 
-    // Update Nilai
-    if (hiddenInput) hiddenInput.value = val;
-    if (triggerText) triggerText.textContent = val;
+    // Buat Overlay Modal Dinamis ke Body
+    let modalOverlay = document.getElementById('globalSelectModal');
+    if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.id = 'globalSelectModal';
+        modalOverlay.className = 'cyber-modal-overlay';
+        document.body.appendChild(modalOverlay);
+    }
 
-    // Reset dan aktifkan kelas 'selected' (Memicu animasi bintang)
-    optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
-    optionEl.classList.add('selected');
+    // Ambil daftar opsi dari elemen tersembunyi
+    const optionsHtml = optionsContainer.innerHTML;
 
-    // Tutup Popup
-    optionsContainer.classList.remove('show');
-    if (triggerEl) triggerEl.classList.remove('active');
+    modalOverlay.innerHTML = `
+        <div class="cyber-modal-container">
+            <div class="cyber-modal-header">
+                <span class="cyber-modal-title">Pilih ${paramName}</span>
+                <button type="button" class="cyber-modal-close" onclick="closeGlobalSelectModal()">&times;</button>
+            </div>
+            <div class="cyber-modal-body scrollbar-thin">
+                ${optionsHtml}
+            </div>
+        </div>
+    `;
 
-    // Pembaruan URL Live Preview
-    if (typeof updateLivePreview === 'function') {
-        updateLivePreview(catIdx, epIdx, method, path, epType);
+    // Pasang Event Listener Klik pada Opsi Modal
+    const modalOptions = modalOverlay.querySelectorAll('.cyber-option');
+    modalOptions.forEach(opt => {
+        opt.onclick = function () {
+            const val = this.getAttribute('data-value');
+            
+            // Update input hidden & teks trigger pada form asal
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+            const triggerText = wrapper.querySelector('.selected-text');
+            
+            if (hiddenInput) hiddenInput.value = val;
+            if (triggerText) triggerText.textContent = val;
+
+            // Update kelas selected di container asal
+            optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
+            const targetInWrapper = optionsContainer.querySelector(`[data-value="${CSS.escape(val)}"]`);
+            if (targetInWrapper) targetInWrapper.classList.add('selected');
+
+            // Panggil Live Preview Update jika ada
+            const catIdx = wrapper.dataset.cat;
+            const epIdx = wrapper.dataset.ep;
+            const method = wrapper.dataset.method;
+            const path = wrapper.dataset.path;
+            const epType = wrapper.dataset.type;
+
+            if (typeof updateLivePreview === 'function') {
+                updateLivePreview(catIdx, epIdx, method, path, epType);
+            }
+
+            closeGlobalSelectModal();
+        };
+    });
+
+    // Tampilkan Modal dengan animasi
+    requestAnimationFrame(() => {
+        modalOverlay.classList.add('active');
+        document.body.classList.add('overflow-hidden');
+    });
+
+    // Tutup saat overlay diklik
+    modalOverlay.onclick = function (e) {
+        if (e.target === modalOverlay) closeGlobalSelectModal();
+    };
+}
+
+// Fungsi Menutup Modal Select
+function closeGlobalSelectModal() {
+    const modalOverlay = document.getElementById('globalSelectModal');
+    if (modalOverlay) {
+        modalOverlay.classList.remove('active');
+        document.body.classList.remove('overflow-hidden');
     }
 }
 
-// Tutup Semua Popup Select
-function closeAllCyberSelects() {
-    document.querySelectorAll('.cyber-select-options.show').forEach(el => {
-        el.classList.remove('show');
-        const wrapper = el.closest('.cyber-select-wrapper');
-        if (wrapper) {
-            wrapper.style.zIndex = '';
-            const apiItem = wrapper.closest('.api-item');
-            if (apiItem) apiItem.style.zIndex = '';
-        }
-    });
-    document.querySelectorAll('.cyber-select-trigger.active').forEach(el => el.classList.remove('active'));
-}
-
-// Listener Klik di Luar Menu
-document.addEventListener('click', closeAllCyberSelects);
+// Tutup modal jika menekan tombol Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeGlobalSelectModal();
+});
 
 function loadApis() {
     const apiList = document.getElementById('apiList');
@@ -1038,24 +1060,24 @@ function loadApis() {
                         let inputPlaceholder = `Masukkan ${paramName}`;
 
                         // Logika API Key dengan pemisahan tipe Free, Premium, dan VIP
-if (paramName.toLowerCase() === 'apikey') {
-    // Cek apakah displayApiKey terdefinisi dan BUKAN 'Silakan Login'
-    const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                        if (paramName.toLowerCase() === 'apikey') {
+                            // Cek apakah displayApiKey terdefinisi dan BUKAN 'Silakan Login'
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
 
-    if (epType === 'vip') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey VIP';
-    } else if (epType === 'premium') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey Premium';
-    } else {
-        // Isi otomatis HANYA untuk endpoint tipe FREE
-        inputValue = isUserLoggedIn ? displayApiKey : '';
-        inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-    }
-}
+                            if (epType === 'vip') {
+                                // KOSONGKAN value agar tidak memakai apikey free
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                // KOSONGKAN value agar tidak memakai apikey free
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                // Isi otomatis HANYA untuk endpoint tipe FREE
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
 
                         html += `
                         <div>
@@ -1067,39 +1089,37 @@ if (paramName.toLowerCase() === 'apikey') {
                             </div>`;
 
                         // Potongan kode di dalam fungsi loadApis() saat generate form parameter:
-if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-    html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
-} else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-    const defaultVal = pType.options[0] || '';
+                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+                            const defaultVal = pType.options[0] || '';
 
-    // SVG Bintang Beranimasi & Chevron Transisi Halus
-    const SVG_STAR = `<svg class="cyber-star-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-    const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
+                            // SVG Chevron Transisi Halus
+                            const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
 
-    html += `
-    <div class="cyber-select-wrapper">
-        <input type="hidden" name="${paramName}" value="${defaultVal}" id="select-input-${catIdx}-${epIdx}-${paramName}">
-        <div class="cyber-select-trigger" onclick="toggleCyberSelect(event, this)">
-            <span class="selected-text">${defaultVal}</span>
-            ${SVG_CHEVRON}
-        </div>
-        <div class="cyber-select-options scrollbar-thin">`;
+                            html += `
+                            <div class="cyber-select-wrapper" data-cat="${catIdx}" data-ep="${epIdx}" data-param="${paramName}" data-method="${method}" data-path="${path}" data-type="${epType}">
+                                <input type="hidden" name="${paramName}" value="${defaultVal}" id="select-input-${catIdx}-${epIdx}-${paramName}">
+                                <div class="cyber-select-trigger" onclick="toggleCyberSelect(event, this)">
+                                    <span class="selected-text">${defaultVal}</span>
+                                    ${SVG_CHEVRON}
+                                </div>
+                                <div class="cyber-select-options hidden">`;
 
-    pType.options.forEach((opt, oIdx) => {
-        const isSel = oIdx === 0 ? 'selected' : '';
-        html += `
-            <div class="cyber-option ${isSel}" onclick="selectCyberOption(this, '${catIdx}', '${epIdx}', '${paramName}', '${method}', '${path}', '${epType}')" data-value="${opt}">
-                <span>${opt}</span>
-                ${SVG_STAR}
-            </div>`;
-    });
+                            pType.options.forEach((opt, oIdx) => {
+                                const isSel = oIdx === 0 ? 'selected' : '';
+                                html += `
+                                    <div class="cyber-option ${isSel}" data-value="${opt}">
+                                        <span>${opt}</span>
+                                    </div>`;
+                            });
 
-    html += `
-        </div>
-    </div>`;
-} else {
-    html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
-}
+                            html += `
+                                </div>
+                            </div>`;
+                        } else {
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                        }
                         html += `</div>`;
                     });
                 }
