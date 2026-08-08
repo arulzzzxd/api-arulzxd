@@ -423,57 +423,16 @@
     }
 }
 
-/* Styling Tombol Pemicu Select Cyberpunk */
-.custom-select-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    background-color: rgba(3, 7, 18, 0.85);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    border-radius: 0.5rem;
-    color: #00f0ff;
-    font-family: monospace;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
-    transition: all 0.2s ease;
-}
-
-.custom-select-trigger:hover {
-    border-color: #00f0ff;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-}
-
-/* Animasi Bintang */
-@keyframes starPulseGlow {
-    0%, 100% {
-        transform: scale(1) rotate(0deg);
-        filter: drop-shadow(0 0 2px #00f0ff);
-    }
-    50% {
-        transform: scale(1.2) rotate(180deg);
-        filter: drop-shadow(0 0 8px #00f0ff);
-    }
-}
-
-.star-cyber-icon {
-    animation: starPulseGlow 2.5s infinite ease-in-out;
-    transform-origin: center;
-}
-
-/* Overlay Gelap di Belakang Modal */
+/* Container Modal Bottom Sheet */
 .select-modal-overlay {
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
-    z-index: 99998;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
+    z-index: 9998;
 }
 
 .select-modal-overlay.active {
@@ -481,68 +440,22 @@
     pointer-events: auto;
 }
 
-/* Container Modal Putih (Sesuai Gambar 2) */
 .select-modal-container {
     position: fixed;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateY(100%);
-    width: 100%;
-    max-width: 480px;
-    max-height: 80vh;
+    left: 0;
+    right: 0;
+    max-height: 50vh;
     background-color: #ffffff;
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
-    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.3);
-    z-index: 99999;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top-left-radius: 1.25rem;
+    border-top-right-radius: 1.25rem;
+    padding: 1rem;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 9999;
+    overflow-y: auto;
 }
 
 .select-modal-container.active {
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Handle Bar Atas Modal */
-.select-modal-handle {
-    width: 40px;
-    height: 4px;
-    background-color: #e2e8f0;
-    border-radius: 2px;
-    margin: 12px auto 8px auto;
-}
-
-/* Daftar Opsi di Dalam Modal */
-.select-modal-list {
-    overflow-y: auto;
-    max-height: 70vh;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
-.select-modal-item {
-    padding: 14px 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #1e293b;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.select-modal-item:last-child {
-    border-bottom: none;
-}
-
-.select-modal-item:hover,
-.select-modal-item.selected {
-    background-color: #f8fafc;
-    color: #0284c7;
-    font-weight: 700;
+    transform: translateY(0);
 }
