@@ -845,11 +845,18 @@ function performSearch() {
 
 
 
+
+
+
 // Buka Modal Select
 function openCustomSelectModal(uniqueId) {
     const overlay = document.getElementById(`${uniqueId}-overlay`);
     const modal = document.getElementById(`${uniqueId}-modal`);
     if (overlay && modal) {
+        // Ensure modal layer sits behind fixed header components if open
+        overlay.style.zIndex = "9998";
+        modal.style.zIndex = "9999";
+        
         overlay.classList.add('active');
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Kunci scroll latar belakang
