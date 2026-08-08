@@ -838,14 +838,13 @@ function performSearch() {
     });
 }
 
-// Fungsi Membuka Modal Select (Bottom Sheet / Centered Floating Modal)
+// Fungsi Membuka Modal Select (100% Mirip Gambar Acuan)
 function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
     const optionsContainer = wrapper.querySelector('.cyber-select-options');
-    const paramName = wrapper.dataset.param || 'Select Option';
 
-    // Buat Overlay Modal Dinamis ke Body
+    // Buat Overlay Modal Dinamis ke Body jika belum ada
     let modalOverlay = document.getElementById('globalSelectModal');
     if (!modalOverlay) {
         modalOverlay = document.createElement('div');
@@ -857,12 +856,10 @@ function toggleCyberSelect(event, triggerEl) {
     // Ambil daftar opsi dari elemen tersembunyi
     const optionsHtml = optionsContainer.innerHTML;
 
+    // Render struktur sheet putih bersih
     modalOverlay.innerHTML = `
         <div class="cyber-modal-container">
-            <div class="cyber-modal-header">
-                <span class="cyber-modal-title">Pilih ${paramName}</span>
-                <button type="button" class="cyber-modal-close" onclick="closeGlobalSelectModal()">&times;</button>
-            </div>
+            <div class="cyber-modal-drag-handle"></div>
             <div class="cyber-modal-body scrollbar-thin">
                 ${optionsHtml}
             </div>
@@ -882,12 +879,12 @@ function toggleCyberSelect(event, triggerEl) {
             if (hiddenInput) hiddenInput.value = val;
             if (triggerText) triggerText.textContent = val;
 
-            // Update kelas selected di container asal
+            // Update status 'selected'
             optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
             const targetInWrapper = optionsContainer.querySelector(`[data-value="${CSS.escape(val)}"]`);
             if (targetInWrapper) targetInWrapper.classList.add('selected');
 
-            // Panggil Live Preview Update jika ada
+            // Panggil Live Preview Update
             const catIdx = wrapper.dataset.cat;
             const epIdx = wrapper.dataset.ep;
             const method = wrapper.dataset.method;
@@ -902,13 +899,13 @@ function toggleCyberSelect(event, triggerEl) {
         };
     });
 
-    // Tampilkan Modal dengan animasi
+    // Tampilkan Modal dengan animasi naik dari bawah
     requestAnimationFrame(() => {
         modalOverlay.classList.add('active');
         document.body.classList.add('overflow-hidden');
     });
 
-    // Tutup saat overlay diklik
+    // Tutup modal jika area gelap luar diklik
     modalOverlay.onclick = function (e) {
         if (e.target === modalOverlay) closeGlobalSelectModal();
     };
@@ -922,11 +919,6 @@ function closeGlobalSelectModal() {
         document.body.classList.remove('overflow-hidden');
     }
 }
-
-// Tutup modal jika menekan tombol Escape
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeGlobalSelectModal();
-});
 
 function loadApis() {
     const apiList = document.getElementById('apiList');

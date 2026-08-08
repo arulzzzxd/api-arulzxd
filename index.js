@@ -2700,15 +2700,20 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 0 12px var(--neon-cyan);
         transition: width 0.15s ease-out;
     }
-    .cyber-modal-overlay {
+    /* =========================================================
+   BOTTOM SHEET / SELECT MODAL STYLE (MATCHING REFERENCE IMAGE)
+   ========================================================= */
+
+/* Backdrop overlay transparan gelap */
+.cyber-modal-overlay {
     position: fixed;
     inset: 0;
     z-index: 999999 !important;
-    background-color: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background-color: rgba(0, 0, 0, 0.5); /* Gelap transparan */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
-    align-items: flex-end; /* Tampilan Bottom-sheet di mobile */
+    align-items: flex-end; /* Efek bottom-sheet dari bawah layar */
     justify-content: center;
     opacity: 0;
     pointer-events: none;
@@ -2720,15 +2725,15 @@ app.get('/docs', (req, res) => {
     pointer-events: auto;
 }
 
-/* Kontainer Utama Modal */
+/* Kontainer Utama Bottom Sheet (Latar Putih, Rounded Top) */
 .cyber-modal-container {
     width: 100%;
-    max-width: 540px;
-    max-height: 80vh;
-    background-color: #ffffff;
-    border-top-left-radius: 1.25rem;
-    border-top-right-radius: 1.25rem;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    max-height: 85vh;
+    background-color: #ffffff !important; /* Putih bersih sesuai gambar */
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -2736,15 +2741,15 @@ app.get('/docs', (req, res) => {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Modal centered pada layar desktop */
+/* Tampilan Tengah/Centered untuk Desktop / Layar Lebar */
 @media (min-width: 640px) {
     .cyber-modal-overlay {
         align-items: center;
         padding: 1.5rem;
     }
     .cyber-modal-container {
-        border-radius: 1.25rem;
-        transform: scale(0.9) translateY(20px);
+        border-radius: 20px;
+        transform: scale(0.95) translateY(20px);
     }
     .cyber-modal-overlay.active .cyber-modal-container {
         transform: scale(1) translateY(0);
@@ -2755,130 +2760,53 @@ app.get('/docs', (req, res) => {
     transform: translateY(0);
 }
 
-/* Header Modal */
-.cyber-modal-header {
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #ffffff;
+/* Indikator Handle Drag di Bagian Atas */
+.cyber-modal-drag-handle {
+    width: 36px;
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    margin: 10px auto 4px auto;
 }
 
-.cyber-modal-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #111827;
-    font-family: 'Space Grotesk', sans-serif;
-    text-transform: capitalize;
-}
-
-.cyber-modal-close {
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    line-height: 1;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 0.25rem;
-}
-
-.cyber-modal-close:hover {
-    color: #111827;
-}
-
-/* Body Modal List */
+/* Body Modal & List Items */
 .cyber-modal-body {
     overflow-y: auto;
-    padding: 0.5rem 0;
-    max-height: 60vh;
+    padding: 0;
+    max-height: 75vh;
 }
 
-/* Item Opsi Bergaya Baris Gambar 2 */
+/* Style Tiap Baris Opsi Pilih (100% Mirip Gambar Acuan) */
 .cyber-modal-body .cyber-option {
-    padding: 0.85rem 1.25rem;
-    font-size: 0.875rem;
-    font-family: monospace;
-    color: #374151;
-    background-color: #ffffff;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 14px 20px !important;
+    font-size: 13px !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    color: #1e293b !important; /* Teks gelap pekat */
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f1f5f9 !important; /* Pemisah garis horizontal sangat tipis */
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .cyber-modal-body .cyber-option:last-child {
-    border-bottom: none;
+    border-bottom: none !important;
 }
 
 .cyber-modal-body .cyber-option:hover {
-    background-color: #f9fafb;
-    color: #111827;
+    background-color: #f8fafc !important;
 }
 
+/* Opsi Terpilih (Selected) */
 .cyber-modal-body .cyber-option.selected {
-    background-color: #f3f4f6;
-    color: #0284c7;
+    background-color: #f1f5f9 !important;
+    color: #0284c7 !important;
     font-weight: 700;
 }
 
-/* Support Dark Mode untuk Modal */
-body:not(.light-mode) .cyber-modal-container {
-    background-color: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-body:not(.light-mode) .cyber-modal-header {
-    background-color: #0f172a;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-body:not(.light-mode) .cyber-modal-title {
-    color: #f8fafc;
-}
-
-body:not(.light-mode) .cyber-modal-close {
-    color: #94a3b8;
-}
-
-body:not(.light-mode) .cyber-modal-body .cyber-option {
-    background-color: #0f172a;
-    color: #cbd5e1;
-    border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
-body:not(.light-mode) .cyber-modal-body .cyber-option:hover {
-    background-color: #1e293b;
-    color: #38bdf8;
-}
-
-body:not(.light-mode) .cyber-modal-body .cyber-option.selected {
-    background-color: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-}
-
-/* Icon Bintang Tetap Sama */
-.cyber-star-icon {
-    display: none;
-    width: 1.15rem;
-    height: 1.15rem;
-    color: #00f0ff;
-    filter: drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #00f0ff);
-    will-change: transform, opacity;
-}
-
-.cyber-option.selected .cyber-star-icon {
-    display: block;
-    animation: starPulse 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes starPulse {
-    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-    70% { transform: scale(1.25) rotate(10deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
