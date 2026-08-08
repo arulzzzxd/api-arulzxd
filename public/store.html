@@ -449,19 +449,20 @@
                 </div>
             </div>
 
-            <!-- FORM BERI PENILAIAN (HOTBAR GEMINI BISA UNTUK SEMUA USER) -->
+            <!-- FORM BERI / EDIT PENILAIAN (HOTBAR GEMINI BISA UNTUK SEMUA USER) -->
             <div id="reviewHotbarContainer" class="sticky bottom-0 z-20 p-3 bg-cyberDark/95 backdrop-blur-md border-t border-cyberCyan/30 shadow-[0_-8px_20px_rgba(0,0,0,0.6)] space-y-2">
                 <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-2">
                     <input type="hidden" id="reviewProductId">
                     <input type="hidden" id="selectedRatingValue" required>
+                    <input type="hidden" id="isEditReviewMode" value="false">
 
                     <!-- Container Input Utama ala Gemini -->
                     <div class="bg-cyberCard/90 border border-cyberBorder focus-within:border-cyberCyan focus-within:shadow-glowCyanSm rounded-2xl p-2.5 transition-all duration-200 space-y-2">
                         
-                        <!-- Baris Atas: Bintang Rating & Pilihan Media -->
+                        <!-- Baris Atas: Bintang Rating & Mode status -->
                         <div class="flex items-center justify-between px-1">
                             <div class="flex items-center gap-1.5">
-                                <span class="text-[10px] text-slate-400 font-cyber font-semibold">Rating:</span>
+                                <span id="reviewModeBadge" class="text-[10px] text-slate-400 font-cyber font-semibold">Rating:</span>
                                 <div class="flex items-center gap-1 text-sm text-slate-600" id="starInputGroup">
                                     <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(1)"></i>
                                     <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(2)"></i>
@@ -471,10 +472,14 @@
                                 </div>
                             </div>
 
-                            <!-- Indicator Jumlah File Ditambahkan -->
-                            <span id="mediaCountBadge" class="text-[10px] font-mono text-cyberCyan hidden bg-cyberCyan/10 px-2 py-0.5 rounded-full border border-cyberCyan/30">
-                                0 file dipilih
-                            </span>
+                            <button type="button" id="btnCancelEditMode" onclick="resetReviewForm()" class="hidden text-[10px] text-red-400 hover:underline">
+                                Batal Edit
+                            </button>
+                        </div>
+
+                        <!-- CONTAINER PREVIEW BERKAS / MEDIA LOKAL YANG DIPILIH / DIEDIT -->
+                        <div id="mediaPreviewContainer" class="hidden flex gap-2 overflow-x-auto py-1 border-t border-cyberBorder/40">
+                            <!-- JS Inject Preview items dengan tombol hapus (x) -->
                         </div>
 
                         <!-- Baris Tengah: Textarea Input ala Gemini & Tombol Kirim -->
@@ -489,7 +494,7 @@
                                 <label for="reviewMediaFiles" title="Lampirkan Gambar/Video" class="w-8 h-8 rounded-xl bg-cyberDark border border-cyberBorder hover:border-cyberCyan hover:text-cyberCyan text-slate-400 flex items-center justify-center cursor-pointer transition active:scale-95">
                                     <i class="fa-solid fa-paperclip text-xs"></i>
                                 </label>
-                                <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" class="hidden" onchange="updateMediaBadge(this)">
+                                <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" class="hidden" onchange="handleFileSelection(this)">
 
                                 <!-- Tombol Kirim ala Gemini Hotbar -->
                                 <button type="submit" id="btnSubmitReview" title="Kirim Ulasan" class="w-8 h-8 rounded-xl bg-cyberCyan text-cyberDark hover:bg-cyan-300 font-bold flex items-center justify-center transition shadow-glowCyanSm active:scale-95">
@@ -499,11 +504,6 @@
                         </div>
                     </div>
                 </form>
-
-                <div id="reviewNotPurchasedNotice" class="hidden bg-cyberCard/80 border border-amber-500/30 rounded-xl p-2.5 text-center flex items-center justify-center gap-2 text-amber-400 text-xs">
-                    <i class="fa-solid fa-lock text-sm"></i>
-                    <span>Hanya pembeli yang telah bertransaksi yang dapat memberikan ulasan produk ini.</span>
-                </div>
             </div>
 
         </div>
@@ -767,6 +767,10 @@
         let currentSelectedRating = 0;
         let CURRENT_LOGGED_USER = null;
 
+        // VARIABEL MANAJEMEN PREVIEW BERKAS PENILAIAN LOKAL
+        let SELECTED_FILE_LIST = []; 
+        let KEEP_EXISTING_MEDIA = true;
+
         // Mengambil status user saat ini untuk identifikasi kepemilikan ulasan
         async function fetchCurrentUserStatus() {
             try {
@@ -827,16 +831,67 @@
             });
         }
 
-        function updateMediaBadge(input) {
-            const badge = document.getElementById('mediaCountBadge');
-            if (!badge) return;
-
+        // MANAJEMEN PENAMBAHAN DAN PENGHAPUSAN PREVIEW MEDIA LOKAL DARI USER
+        function handleFileSelection(input) {
             if (input.files && input.files.length > 0) {
-                badge.innerText = `${input.files.length} media dipilih`;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+                for (let i = 0; i < input.files.length; i++) {
+                    SELECTED_FILE_LIST.push(input.files[i]);
+                }
+                // Jika user menambah berkas baru saat edit, hapus kepemilikan media lama
+                KEEP_EXISTING_MEDIA = false;
             }
+            input.value = ''; // Reset input
+            renderMediaPreviews();
+        }
+
+        function removeSelectedFile(index) {
+            SELECTED_FILE_LIST.splice(index, 1);
+            if (SELECTED_FILE_LIST.length === 0 && document.getElementById('isEditReviewMode').value === 'true') {
+                KEEP_EXISTING_MEDIA = false;
+            }
+            renderMediaPreviews();
+        }
+
+        function renderMediaPreviews() {
+            const container = document.getElementById('mediaPreviewContainer');
+            if (!container) return;
+
+            if (SELECTED_FILE_LIST.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = SELECTED_FILE_LIST.map((file, idx) => {
+                const isVideo = file.type.startsWith('video/');
+                const objectUrl = URL.createObjectURL(file);
+
+                return `
+                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-cyberBorder flex-shrink-0 group">
+                        ${isVideo ? `<video src="${objectUrl}" class="w-full h-full object-cover"></video>` : `<img src="${objectUrl}" class="w-full h-full object-cover">`}
+                        <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function resetReviewForm() {
+            document.getElementById('reviewForm').reset();
+            document.getElementById('isEditReviewMode').value = 'false';
+            document.getElementById('reviewModeBadge').innerText = 'Rating:';
+            document.getElementById('reviewModeBadge').className = 'text-[10px] text-slate-400 font-cyber font-semibold';
+            document.getElementById('btnCancelEditMode').classList.add('hidden');
+
+            const commentInput = document.getElementById('reviewComment');
+            if (commentInput) commentInput.style.height = 'auto';
+
+            SELECTED_FILE_LIST = [];
+            KEEP_EXISTING_MEDIA = true;
+            renderMediaPreviews();
+            setRating(0);
         }
 
         // BUKA MODAL LANGSUNG TANPA DELAY & SCROLL LANGSUNG KE RATING
@@ -851,24 +906,10 @@
             document.getElementById('detailPrice').innerText = formatRupiah(product.harga_diskon || product.harga);
             document.getElementById('detailDesc').innerText = product.deskripsi || 'Tidak ada deskripsi.';
 
-            document.getElementById('reviewForm').reset();
-            const commentInput = document.getElementById('reviewComment');
-            if (commentInput) commentInput.style.height = 'auto';
-            const badge = document.getElementById('mediaCountBadge');
-            if (badge) badge.classList.add('hidden');
-
-            setRating(0);
-
-            // TAMPILKAN MODAL SECARA INSTAN TANPA DELAY
-            const reviewForm = document.getElementById('reviewForm');
-            const noticeBox = document.getElementById('reviewNotPurchasedNotice');
-
-            reviewForm.classList.remove('hidden');
-            if (noticeBox) noticeBox.classList.add('hidden');
+            resetReviewForm();
 
             document.getElementById('productDetailModal').classList.remove('hidden');
 
-            // SCROLL LANGSUNG KE BAGIAN PENILAIAN/RATING SEGERA SAAT MODAL TERBUKA
             setTimeout(() => {
                 const scrollableContainer = document.getElementById('modalDetailScrollable');
                 const ratingSection = document.getElementById('ratingSectionHeader');
@@ -877,7 +918,6 @@
                 }
             }, 10);
 
-            // PROSES AMBIL DATA ULASAN DI BACKGROUND
             loadProductReviews(pIdStr);
         }
 
@@ -885,7 +925,7 @@
             document.getElementById('productDetailModal').classList.add('hidden');
         }
 
-        // LIGHTBOX FUNGSIONALITAS (OPEN & AUTOPLAY)
+        // LIGHTBOX FUNGSIONALITAS
         function openMediaLightbox(url, type) {
             const lightbox = document.getElementById('mediaLightboxModal');
             const img = document.getElementById('lightboxImage');
@@ -918,7 +958,13 @@
             return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        function editMyReview(rating, comment) {
+        // MENYIAPKAN EDIT RATING & MEMUAT REVIU LAMA KE INPUL FORM
+        function editMyReview(rating, comment, mediaJsonStr) {
+            document.getElementById('isEditReviewMode').value = 'true';
+            document.getElementById('reviewModeBadge').innerText = 'Edit Rating:';
+            document.getElementById('reviewModeBadge').className = 'text-[10px] text-cyberCyan font-cyber font-bold animate-pulse';
+            document.getElementById('btnCancelEditMode').classList.remove('hidden');
+
             setRating(rating);
             const commentInput = document.getElementById('reviewComment');
             if (commentInput) {
@@ -928,9 +974,45 @@
                 commentInput.style.height = Math.min(commentInput.scrollHeight, 90) + 'px';
             }
             
+            SELECTED_FILE_LIST = [];
+            KEEP_EXISTING_MEDIA = true;
+            renderMediaPreviews();
+
             const hotbar = document.getElementById('reviewHotbarContainer');
             if (hotbar) {
                 hotbar.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // MENGHAPUS REVIU DARI DATABASE
+        async function deleteMyReview(reviewId) {
+            const confirm = await Swal.fire({
+                title: 'HAPUS ULASAN?',
+                text: 'Ulasan dan bintang rating Anda akan dihapus secara permanen.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                customClass: { popup: 'cyber-swal' }
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const res = await fetch(`/api/reviews/${reviewId}`, { method: 'DELETE' });
+                    const result = await res.json();
+
+                    if (result.status) {
+                        Swal.fire({ icon: 'success', title: 'TERHAPUS', text: 'Ulasan berhasil dihapus.', timer: 1500, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
+                        const productId = document.getElementById('reviewProductId').value;
+                        resetReviewForm();
+                        await loadProductReviews(productId);
+                        await renderProduk();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (err) {
+                    Swal.fire({ icon: 'error', title: 'GAGAL', text: err.message || 'Gagal menghapus ulasan.', customClass: { popup: 'cyber-swal' } });
+                }
             }
         }
 
@@ -978,11 +1060,17 @@
                     const isMyReview = (currentUsername && rev.username.toLowerCase() === currentUsername.toLowerCase()) ||
                                        (currentUserId && rev.userId === currentUserId);
 
-                    const editBtnHtml = isMyReview ? `
-                        <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}')" 
-                                class="ml-2 text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
-                            <i class="fa-solid fa-pen-to-square"></i> Edit Rating
-                        </button>
+                    const actionBtnsHtml = isMyReview ? `
+                        <div class="flex items-center gap-1.5 ml-2">
+                            <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}')" 
+                                    class="text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit Rating
+                            </button>
+                            <button onclick="deleteMyReview('${rev._id}')" 
+                                    class="text-[10px] font-bold text-red-400 hover:underline flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/30 transition" title="Hapus Ulasan">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     ` : '';
 
                     return `
@@ -992,7 +1080,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center">
                                         <p class="text-xs font-bold text-slate-200">${rev.username}</p>
-                                        ${editBtnHtml}
+                                        ${actionBtnsHtml}
                                     </div>
                                     <div class="flex items-center gap-1 mt-0.5">${renderStarRating(rev.rating)}</div>
                                 </div>
@@ -1014,7 +1102,6 @@
             const productId = document.getElementById('reviewProductId').value;
             const rating = document.getElementById('selectedRatingValue').value;
             const comment = document.getElementById('reviewComment').value.trim();
-            const fileInput = document.getElementById('reviewMediaFiles');
 
             if (!rating) {
                 Swal.fire({ icon: 'warning', title: 'RATING WAJIB', text: 'Silakan beri bintang rating!', customClass: { popup: 'cyber-swal' } });
@@ -1030,10 +1117,11 @@
             formData.append('productId', productId);
             formData.append('rating', rating);
             formData.append('comment', comment);
+            formData.append('keepExistingMedia', KEEP_EXISTING_MEDIA ? 'true' : 'false');
 
-            if (fileInput.files.length > 0) {
-                for (let i = 0; i < fileInput.files.length; i++) {
-                    formData.append('mediaFiles', fileInput.files[i]);
+            if (SELECTED_FILE_LIST.length > 0) {
+                for (let i = 0; i < SELECTED_FILE_LIST.length; i++) {
+                    formData.append('mediaFiles', SELECTED_FILE_LIST[i]);
                 }
             }
 
@@ -1051,13 +1139,8 @@
 
                 if (result.status) {
                     Swal.fire({ icon: 'success', title: 'BERHASIL!', text: result.message || 'Penilaian Anda telah diterbitkan.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
-                    document.getElementById('reviewForm').reset();
-                    const commentInput = document.getElementById('reviewComment');
-                    if (commentInput) commentInput.style.height = 'auto';
-                    const badge = document.getElementById('mediaCountBadge');
-                    if (badge) badge.classList.add('hidden');
-
-                    setRating(0);
+                    
+                    resetReviewForm();
                     await loadProductReviews(productId);
                     await renderProduk();
                 } else {
