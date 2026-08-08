@@ -1006,12 +1006,34 @@ if (paramName.toLowerCase() === 'apikey') {
 if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
     html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-    html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-cyan-400 focus:outline-none focus:border-cyan-500 code-font text-sm">`;
+    html += `
+    <div class="relative w-full flex items-center">
+        <!-- SVG Icon Bintang Beranimasi Tebal (Sisi Kiri) -->
+        <div class="absolute left-3 pointer-events-none z-10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-cyan-400 star-cyber-icon" viewBox="0 0 24 24" fill="currentColor" stroke="#00f0ff" stroke-width="1.5">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+        </div>
+
+        <!-- Select Element -->
+        <select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="select-cyberpunk w-full">`;
+    
     pType.options.forEach(opt => {
-        html += `<option value="${opt}" class="bg-slate-900 text-white">${opt}</option>`;
+        html += `<option value="${opt}">${opt}</option>`;
     });
-    html += `</select>`;
-} else {
+
+    html += `
+        </select>
+
+        <!-- Icon Panah Dropdown Cyan (Sisi Kanan) -->
+        <div class="absolute right-3 pointer-events-none z-10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+    </div>`;
+}
+ else {
     html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
 }
                         html += `</div>`;
