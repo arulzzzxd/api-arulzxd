@@ -2438,6 +2438,9 @@ function getEndpointsFromRouter(category, file) {
   const subRouter = route.stack ? route : route.router || route;
   if (!subRouter || !subRouter.stack) return endpoints;
 
+  // Mengambil deskripsi dari berkas endpoint jika ada
+  const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
+
   subRouter.stack.forEach(layer => {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
@@ -2475,7 +2478,7 @@ function getEndpointsFromRouter(category, file) {
       endpoints.push({
         name: `/${category}/${file.replace(/\.js$/, "")}`,
         path: `/api/${category}/${file.replace(/\.js$/, "")}`,
-        desc: `/${category}/${file.replace(/\.js$/, "")}`,
+        desc: routeDesc, // Menggunakan deskripsi dinamis yang diambil dari file
         status: route.status || "ready",
         type: route.type || "free",
         params,
