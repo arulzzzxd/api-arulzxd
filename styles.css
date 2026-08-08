@@ -423,24 +423,23 @@
     }
 }
 
-/* Custom Cyberpunk Floating Select Wrapper */
+/* Memastikan wrapper membentuk konteks tumpukan (stacking context) yang benar */
 .cyber-select-wrapper {
     position: relative;
     width: 100%;
-    z-index: 10; 
 }
 
-/* Kenaikan z-index saat dropdown dibuka agar melayang teratas menembus container */
+/* Kenaikan z-index saat dropdown dibuka agar melayang di atas elemen lain */
 .cyber-select-wrapper:has(.cyber-select-options.show) {
-    z-index: 99999 !important; 
+    z-index: 9999 !important; 
 }
 
 .cyber-select-trigger {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    background-color: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(0, 240, 255, 0.3);
+    background-color: rgba(15, 23, 42, 0.95); /* Menjelaskan warna background */
+    border: 1px solid rgba(0, 240, 255, 0.4);
     color: #00f0ff;
     font-family: monospace;
     font-size: 0.875rem;
@@ -450,7 +449,6 @@
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
-    will-change: transform;
 }
 
 .cyber-select-trigger:hover, .cyber-select-trigger.active {
@@ -462,22 +460,22 @@
     transform: rotate(180deg);
 }
 
-/* Floating Overlay Menu Melayang */
+/* PERBAIKAN BUG utama pada Floating Overlay Option Menu */
 .cyber-select-options {
     position: absolute;
-    /* FIX: Mengubah posisi agar melayang di atas select (menutupi), bukan jatuh ke bawah */
-    top: -2px; 
+    top: calc(100% + 6px); /* Muncul tepat di bawah box select dengan jarak 6px */
     left: 0;
     right: 0;
     z-index: 99999 !important; 
     
-    /* Warna latar diatur lebih solid agar elemen di bawahnya tidak tembus pandang berlebihan */
-    background: rgba(3, 7, 18, 0.98); 
+    /* Background Pekat (Solid Dark Slate) agar elemen di belakangnya TIDAK TEMBUS */
+    background-color: #030712 !important; 
     border: 1px solid #00f0ff;
     border-radius: 0.75rem;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.25);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95), 0 0 15px rgba(0, 240, 255, 0.25);
+    
     max-height: 220px;
     overflow-y: auto;
     
@@ -494,7 +492,7 @@
     transform: scale(1) translateY(0);
 }
 
-/* Opsi Item */
+/* Opsi Item Select */
 .cyber-option {
     padding: 0.75rem 0.85rem;
     color: #e2e8f0;
@@ -504,28 +502,26 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background-color: #030712; /* Memastikan background tiap baris tetap solid */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     transition: background-color 0.15s ease, color 0.15s ease, padding-left 0.2s ease;
-    
-    /* FIX: Garis pembatas antar select */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Menghilangkan garis pembatas di item paling akhir */
 .cyber-option:last-child {
     border-bottom: none;
 }
 
 .cyber-option:hover {
-    background: rgba(0, 240, 255, 0.15);
+    background-color: rgba(0, 240, 255, 0.15);
     color: #00f0ff;
-    padding-left: 1.1rem; /* Efek interaktif sedikit bergeser ke kanan */
+    padding-left: 1.1rem;
 }
 
 .cyber-option.selected {
-    background: rgba(0, 240, 255, 0.22);
+    background-color: rgba(0, 240, 255, 0.22);
     color: #00f0ff;
     font-weight: bold;
-    border-left: 3px solid #00f0ff; /* Penanda visual item terpilih */
+    border-left: 3px solid #00f0ff;
 }
 
 /* Icon Bintang Tetap Sama */
@@ -547,156 +543,4 @@
     0% { transform: scale(0) rotate(-45deg); opacity: 0; }
     70% { transform: scale(1.25) rotate(10deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-/*loading*/
-.loader-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: #0b0906;
-  color: #f4f4f5;
-  user-select: none;
-}
-
-body.light-mode .loader-overlay,
-html.light-mode .loader-overlay {
-  background-color: #ffffff !important;
-  color: #09090b !important;
-}
-
-.loader-bg-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.08;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-}
-
-body.light-mode .loader-bg-grid,
-html.light-mode .loader-bg-grid {
-  opacity: 0.2;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px);
-}
-
-.loader-card {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 16rem;
-}
-
-.loader-logo-wrapper {
-  margin-bottom: 2.5rem;
-  width: 6rem;
-  height: 6rem;
-  padding: 0.75rem;
-  border-radius: 1.5rem;
-  background-color: #18181b;
-  border: 1px solid #27272a;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-}
-
-body.light-mode .loader-logo-wrapper,
-html.light-mode .loader-logo-wrapper {
-  background-color: #ffffff;
-  border-color: #f4f4f5;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.loader-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.75rem;
-}
-
-.loader-progress-container {
-  width: 100%;
-}
-
-.loader-status-text {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.loader-title {
-  font-size: 9px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-  color: #f4f4f5;
-}
-
-body.light-mode .loader-title,
-html.light-mode .loader-title {
-  color: #09090b;
-}
-
-.loader-percent {
-  font-size: 12px;
-  font-weight: 900;
-  color: #f4f4f5;
-  font-family: monospace;
-}
-
-body.light-mode .loader-percent,
-html.light-mode .loader-percent {
-  color: #09090b;
-}
-
-.loader-bar-bg {
-  height: 0.375rem;
-  width: 100%;
-  background-color: #27272a;
-  border: 1px solid #3f3f46;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-body.light-mode .loader-bar-bg,
-html.light-mode .loader-bar-bg {
-  background-color: #fafafa;
-  border-color: #f4f4f5;
-}
-
-.loader-bar-fill {
-  height: 100%;
-  width: 0%;
-  background-color: #f4f4f5;
-  border-radius: 9999px;
-  transition: width 0.05s linear;
-}
-
-body.light-mode .loader-bar-fill,
-html.light-mode .loader-bar-fill {
-  background-color: #09090b;
-}
-
-.loader-footer-credit {
-  position: absolute;
-  bottom: 2.5rem;
-  font-size: 8px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.6em;
-  color: #3f3f46;
-}
-
-body.light-mode .loader-footer-credit,
-html.light-mode .loader-footer-credit {
-  color: #d4d4d8;
 }

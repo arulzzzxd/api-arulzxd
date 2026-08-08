@@ -1,7 +1,3 @@
-/* =========================================================================
-   SCRIPT.JS REST API (UPDATED & FIXED)
-   ========================================================================= */
-
 const BASE_URL = window.location.origin;
 let isRequestInProgress = false;
 let apiData = null;
@@ -270,7 +266,7 @@ function showToast(message, isError = false) {
 
     // 1. BUAT ELEMEN BOX TOAST SECARA DINAMIS (Bentuk Persegi Panjang Cyberpunk)
     const toast = document.createElement('div');
-    
+
     // Base Class: Desain persegi panjang, backdrop blur, dan animasi performa tinggi
     toast.className = "flex items-center gap-3.5 px-5 py-3.5 rounded-xl border backdrop-blur-xl min-w-[300px] max-w-[420px] transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] opacity-0 translate-y-[-20px] scale-95 pointer-events-auto will-change-[transform,opacity] select-none";
 
@@ -315,7 +311,7 @@ function showToast(message, isError = false) {
     setTimeout(() => {
         toast.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
         toast.classList.add('opacity-0', 'scale-90', 'translate-x-[20px]');
-        
+
         // Hapus dari DOM setelah animasi transisi CSS selesai
         setTimeout(() => {
             toast.remove();
@@ -341,7 +337,7 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     if (!form) return;
 
     const formData = new FormData(form);
-    
+
     // Cek apakah ada file yang dipilih
     let formHasFile = false;
     form.querySelectorAll('input[type="file"]').forEach(fileInput => {
@@ -371,7 +367,7 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     const curlContainer = document.getElementById(`live-curl-${catIdx}-${epIdx}`);
 
     if (urlContainer) urlContainer.textContent = finalUrl;
-    
+
     if (curlContainer) {
         if (finalMethod === 'GET' || finalMethod === 'DELETE') {
             curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"`;
@@ -518,7 +514,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 </div>
             `;
             showToast(data.message || "Akses Ditolak!", true);
-            
+
             if (typeof fetchAndUpdateUserLimit === 'function') {
                 fetchAndUpdateUserLimit();
             }
@@ -559,7 +555,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
             if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
                  hintText = getMediaHint(detectedMediaUrl);
-                 
+
                  let mediaMarkup = '';
                  const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
@@ -588,7 +584,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             mediaBlobObject = await response.blob(); 
             if (!bytes) bytes = mediaBlobObject.size;
             const blobUrl = URL.createObjectURL(mediaBlobObject);
-            
+
             if (cleanContentType.startsWith("audio/")) {
                 finalInnerContent = `
                     <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
@@ -843,19 +839,26 @@ function performSearch() {
 }
 
 // Toggle Popup Select dengan Animasi Spring/Bounce
+// Toggle Popup Select dengan penanganan z-index dinamis
 function toggleCyberSelect(event, triggerEl) {
     event.stopPropagation();
     const wrapper = triggerEl.closest('.cyber-select-wrapper');
     const optionsEl = wrapper.querySelector('.cyber-select-options');
     const isOpen = optionsEl.classList.contains('show');
-    
-    // Tutup popup lain yang terbuka
+
+    // Tutup semua dropdown lain yang sedang terbuka
     closeAllCyberSelects();
 
     if (!isOpen) {
         optionsEl.classList.add('show');
         triggerEl.classList.add('active');
-        if (wrapper) wrapper.style.zIndex = '999';
+        
+        // Naikkan z-index wrapper & elemen kontainer induk agar tidak tertutup elemen di bawahnya
+        if (wrapper) {
+            wrapper.style.zIndex = '9999';
+            const apiItem = wrapper.closest('.api-item');
+            if (apiItem) apiItem.style.zIndex = '9999';
+        }
     }
 }
 
@@ -891,7 +894,11 @@ function closeAllCyberSelects() {
     document.querySelectorAll('.cyber-select-options.show').forEach(el => {
         el.classList.remove('show');
         const wrapper = el.closest('.cyber-select-wrapper');
-        if (wrapper) wrapper.style.zIndex = '';
+        if (wrapper) {
+            wrapper.style.zIndex = '';
+            const apiItem = wrapper.closest('.api-item');
+            if (apiItem) apiItem.style.zIndex = '';
+        }
     });
     document.querySelectorAll('.cyber-select-trigger.active').forEach(el => el.classList.remove('active'));
 }
@@ -1034,7 +1041,7 @@ function loadApis() {
 if (paramName.toLowerCase() === 'apikey') {
     // Cek apakah displayApiKey terdefinisi dan BUKAN 'Silakan Login'
     const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
-    
+
     if (epType === 'vip') {
         // KOSONGKAN value agar tidak memakai apikey free
         inputValue = ''; 
@@ -1064,7 +1071,7 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
     html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
 } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
     const defaultVal = pType.options[0] || '';
-    
+
     // SVG Bintang Beranimasi & Chevron Transisi Halus
     const SVG_STAR = `<svg class="cyber-star-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
     const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
@@ -1077,7 +1084,7 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
             ${SVG_CHEVRON}
         </div>
         <div class="cyber-select-options scrollbar-thin">`;
-        
+
     pType.options.forEach((opt, oIdx) => {
         const isSel = oIdx === 0 ? 'selected' : '';
         html += `
@@ -1086,7 +1093,7 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
                 ${SVG_STAR}
             </div>`;
     });
-    
+
     html += `
         </div>
     </div>`;
@@ -1171,16 +1178,16 @@ function initMultiMusicPlayer() {
     function loadTrack(index) {
         currentTrackIdx = index;
         const track = playlist[index];
-        
+
         // Memastikan elemen ada sebelum memanipulasi DOM
         if (audio) audio.src = track.url || '';
         if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
         if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
         if (coverImg) coverImg.src = track.cover || 'default-cover.png';
-        
+
         if (progressBar) progressBar.style.width = '0%';
         if (currentTimeEl) currentTimeEl.textContent = '0:00';
-        
+
         // --- Integrasi dengan Notifikasi Sistem / Media Session API ---
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
@@ -1219,7 +1226,7 @@ function initMultiMusicPlayer() {
             navigator.mediaSession.setActionHandler('pause', () => {
                 if (audio) audio.pause();
             });
-            
+
             // Fitur agar garis durasi di Android bisa digeser maju-mundur
             navigator.mediaSession.setActionHandler('seekto', (details) => {
                 if (audio && details.seekTime) {
@@ -1229,14 +1236,14 @@ function initMultiMusicPlayer() {
             });
         }
         // -------------------------------------------------------------
-        
+
         renderPlaylistItems();
     }
 
     function renderPlaylistItems() {
         if (!playlistPanel) return;
         playlistPanel.innerHTML = '';
-        
+
         playlist.forEach((track, idx) => {
             const isActive = idx === currentTrackIdx;
             const itemBtn = document.createElement('button');
@@ -1245,7 +1252,7 @@ function initMultiMusicPlayer() {
                 ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-500 light-mode:text-cyan-700 font-bold' 
                 : 'hover:bg-white/5 light-mode:hover:bg-black/5 text-slate-400 light-mode:text-slate-600'
             }`;
-            
+
             itemBtn.innerHTML = `
                 <div class="flex items-center gap-2 truncate">
                     <span class="opacity-50 text-[10px] code-font">${String(idx + 1).padStart(2, '0')}</span>
@@ -1253,7 +1260,7 @@ function initMultiMusicPlayer() {
                 </div>
                 ${isActive ? '<span class="text-[9px] tracking-wider text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded animate-pulse font-bold">PLAYING</span>' : ''}
             `;
-            
+
             itemBtn.addEventListener('click', () => {
                 loadTrack(idx);
                 audio.play().catch(e => console.log("Playback dicegah oleh browser:", e));
@@ -1273,7 +1280,7 @@ function initMultiMusicPlayer() {
         audio.addEventListener('play', () => {
             if (playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             if (coverImg) coverImg.classList.add('scale-105', 'rotate-3');
-            
+
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = "playing";
             }
@@ -1283,7 +1290,7 @@ function initMultiMusicPlayer() {
         audio.addEventListener('pause', () => {
             if (playIcon) playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
             if (coverImg) coverImg.classList.remove('scale-105', 'rotate-3');
-            
+
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = "paused";
             }
@@ -1300,7 +1307,7 @@ function initMultiMusicPlayer() {
 
         audio.addEventListener('loadedmetadata', () => { 
             if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration); 
-            
+
             // Memberikan sedikit jeda agar objek audio.duration siap terbaca penuh oleh browser
             setTimeout(() => {
                 updateMediaSessionPosition();
@@ -1396,7 +1403,7 @@ function initImageLightbox() {
 async function fetchAndUpdateUserLimit() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        
+
         // Prioritas pencarian API Key: URL Param -> Global Variable -> LocalStorage -> Form Input
         let apiKey = urlParams.get('apikey') 
             || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
@@ -1414,7 +1421,7 @@ async function fetchAndUpdateUserLimit() {
         });
 
         if (!response.ok) return;
-        
+
         const data = await response.json();
 
         const limitUsedEl = document.getElementById('userLimitUsed');
@@ -1429,10 +1436,10 @@ async function fetchAndUpdateUserLimit() {
             if (data.maxLimit !== undefined && data.maxLimit !== null) {
                 limitMaxEl.textContent = data.maxLimit;
             }
-            
+
             if (limitBadgeEl && data.type) {
                 limitBadgeEl.textContent = data.type.toUpperCase();
-                
+
                 // Ubah styling badge secara konsisten
                 if (data.type === 'vip') {
                     limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
@@ -1451,7 +1458,7 @@ async function fetchAndUpdateUserLimit() {
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('lang') || 'id';
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     initTheme();
     initDigitalClock();
     initImageLightbox(); 
@@ -1525,14 +1532,14 @@ if (urlParams.get('showProfile') === 'true') {
             window.location.href = '/uploader'; 
         });
     }
-    
+
     fetch('/api/apilist')
         .then(res => res.json())
         .then(data => {
             apiData = data;
             loadApis();
             fetchAndUpdateUserLimit();
-            
+
         })
         .catch(err => {
             const apiListEl = document.getElementById('apiList');
