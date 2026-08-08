@@ -853,15 +853,20 @@ function openCustomSelectModal(uniqueId) {
     const overlay = document.getElementById(`${uniqueId}-overlay`);
     const modal = document.getElementById(`${uniqueId}-modal`);
     if (overlay && modal) {
+        // Pindahkan elemen ke document.body agar position: fixed menempel di viewport utama
+        if (overlay.parentElement !== document.body) {
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+        }
+
         overlay.classList.remove('hidden');
         modal.classList.remove('hidden');
-        
-        // Jeda 10ms agar transisi CSS berjalan mulus
+
         setTimeout(() => {
             overlay.classList.add('active');
             modal.classList.add('active');
         }, 10);
-        
+
         document.body.classList.add('overflow-hidden');
     }
 }
@@ -875,7 +880,6 @@ function closeCustomSelectModal(uniqueId) {
         modal.classList.remove('active');
         document.body.classList.remove('overflow-hidden');
 
-        // Sembunyikan elemen setelah animasi selesai
         setTimeout(() => {
             overlay.classList.add('hidden');
             modal.classList.add('hidden');
@@ -883,7 +887,7 @@ function closeCustomSelectModal(uniqueId) {
     }
 }
 
-// Pilih Opsi & Update Preview
+// Pilih Opsi & Otomatis Tutup Modal
 function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType) {
     const input = document.getElementById(`${uniqueId}-input`);
     const label = document.getElementById(`${uniqueId}-label`);
@@ -901,12 +905,14 @@ function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType
         });
     }
 
+    // Otomatis menutup modal saat item dipilih
     closeCustomSelectModal(uniqueId);
 
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
 }
+
 
 
 
@@ -1081,31 +1087,37 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
     <div class="relative w-full">
         <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
         
-        <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-            <div class="flex items-center gap-2 truncate">
-                <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
-            </div>
+        <!-- Tombol Tampilan Select (SVG Bintang Sudah Dihapus) -->
+        <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+            <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
             <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
             </svg>
         </button>
 
-        <!-- Overlay gelap dengan kelas hidden awal -->
+        <!-- Overlay gelap -->
         <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
         
-        <!-- Modal sheet dengan kelas hidden awal -->
+        <!-- Modal sheet -->
         <div id="${uniqueId}-modal" class="select-modal-container hidden">
+            <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+            
             <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
-                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                <!-- Header Modal dengan Bintang Beranimasi Tebal -->
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                </div>
+
                 <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
+            
             <ul class="select-modal-list">`;
             
     pType.options.forEach(opt => {
