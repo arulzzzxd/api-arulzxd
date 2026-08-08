@@ -1,287 +1,137 @@
 const express = require("express");
 const axios = require("axios");
-const { createCanvas, loadImage, GlobalFonts } = require("@napi-rs/canvas");
-const { writeFileSync, readFileSync, mkdtempSync, rmSync } = require("fs");
-const path = require("path");
-const os = require("os");
-const { execFile } = require("child_process");
-const { promisify } = require("util");
+const { createCanvas, GlobalFonts } = require("@napi-rs/canvas");
+const { spawn } = require("child_process");
 
-const execFileAsync = promisify(execFile);
 const router = express.Router();
 
-// Asset URLs
-const FONT_URL = "https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Font/ARIALN.ttf";
-const EMOJI_JSON_URL = "https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json";
-
-const THEMES = {
-    black: { bg: "#000000", text: "#ffffff" },
-    white: { bg: "#ffffff", text: "#000000" },
-    green: { bg: "#8ace00", text: "#000000" }
-};
-
+// Asset URL
+const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/arialnarrow.ttf";
 let isFontRegistered = false;
-let emojiMap = null;
-const emojiImageCache = new Map();
 
-// Load & Register Font langsung dari Buffer (Runtime)
+// Load & Register Font langsung ke Memory (RAM)
 async function loadFont() {
     if (isFontRegistered) return;
     try {
         const response = await axios.get(FONT_URL, { responseType: "arraybuffer" });
         const fontBuffer = Buffer.from(response.data);
-        GlobalFonts.register(fontBuffer, "ArialNarrow");
+        GlobalFonts.register(fontBuffer, "Narrow");
         isFontRegistered = true;
     } catch (err) {
         throw new Error("Gagal memuat font dari GitHub Raw: " + err.message);
     }
 }
 
-// Load Emoji JSON langsung dari Memory (Runtime)
-async function loadEmojiMap() {
-    if (emojiMap) return emojiMap;
-    try {
-        const response = await axios.get(EMOJI_JSON_URL, { responseType: "json" });
-        emojiMap = response.data;
-        return emojiMap;
-    } catch (err) {
-        throw new Error("Gagal memuat Emoji Map: " + err.message);
-    }
-}
+// Fungsi Render Frame ke Canvas Buffer
+function renderFrameBuffer(text) {
+    const width = 512;
+    const height = 512;
+    const margin = 30;
+    const wordSpacing = 15;
 
-function emojiToUnicode(emoji) {
-    return [...emoji].map(c => c.codePointAt(0).toString(16).padStart(4, "0")).join("-");
-}
-
-async function getEmojiImage(emoji) {
-    if (emojiImageCache.has(emoji)) return emojiImageCache.get(emoji);
-    const map = await loadEmojiMap();
-    const base = emojiToUnicode(emoji);
-    const variants = [
-        base,
-        base.replace(/-fe0f/gi, ""),
-        `${base.replace(/-fe0f/gi, "")}-fe0f`,
-        base.toUpperCase(),
-        base.replace(/-fe0f/gi, "").toUpperCase(),
-        base.replace(/-fe0f/gi, "").toUpperCase() + "-FE0F"
-    ];
-    let b64 = null;
-    for (const v of variants) {
-        if (map[v]) { b64 = map[v]; break; }
-    }
-    if (!b64) return null;
-    const img = await loadImage(Buffer.from(b64, "base64"));
-    emojiImageCache.set(emoji, img);
-    return img;
-}
-
-async function drawAppleEmoji(ctx, emoji, x, y, size) {
-    const img = await getEmojiImage(emoji);
-    if (!img) { ctx.fillText(emoji, x, y); return; }
-    ctx.drawImage(img, x, y, size, size);
-}
-
-const EMOJI_REGEX = /(\p{Emoji_Modifier_Base}\p{Emoji_Modifier}|\p{Emoji_Presentation}\uFE0F?|\p{Emoji}\uFE0F|[\u{1F1E0}-\u{1F1FF}]{2}|\p{Extended_Pictographic}\uFE0F?)/gu;
-
-function measureTextCustom(ctx, text, fontSize) {
-    const parts = text.split(EMOJI_REGEX);
-    let w = 0;
-    for (const part of parts) {
-        if (!part) continue;
-        EMOJI_REGEX.lastIndex = 0;
-        if (EMOJI_REGEX.test(part)) w += fontSize;
-        else w += ctx.measureText(part).width;
-        EMOJI_REGEX.lastIndex = 0;
-    }
-    return w;
-}
-
-async function drawTextWithEmojis(ctx, text, x, y, fontSize) {
-    const parts = text.split(EMOJI_REGEX);
-    let curX = x;
-    for (const part of parts) {
-        if (!part) continue;
-        EMOJI_REGEX.lastIndex = 0;
-        if (EMOJI_REGEX.test(part)) {
-            await drawAppleEmoji(ctx, part, curX, y, fontSize);
-            curX += fontSize;
-        } else {
-            ctx.fillText(part, curX, y);
-            curX += ctx.measureText(part).width;
-        }
-        EMOJI_REGEX.lastIndex = 0;
-    }
-}
-
-function wrapText(ctx, text, maxWidth, fontSize) {
-    ctx.font = `${fontSize}px ArialNarrow`;
-    const words = text.split(" ");
-    const lines = [];
-    let cur = "";
-    for (const word of words) {
-        const test = cur ? cur + " " + word : word;
-        if (measureTextCustom(ctx, test, fontSize) > maxWidth && cur) {
-            lines.push(cur);
-            cur = word;
-        } else {
-            cur = test;
-        }
-    }
-    if (cur) lines.push(cur);
-    return lines;
-}
-
-function fitsAt(ctx, text, fontSize, maxWidth, maxHeight, lineGap) {
-    const lines = wrapText(ctx, text, maxWidth, fontSize);
-    const longestWord = Math.max(...text.split(" ").map(w => measureTextCustom(ctx, w, fontSize)));
-    const totalHeight = lines.length * (fontSize + lineGap) - lineGap;
-    return longestWord <= maxWidth && totalHeight <= maxHeight;
-}
-
-function findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap) {
-    let lo = 10;
-    let hi = 700;
-    let best = lo;
-
-    while (lo <= hi) {
-        const mid = Math.floor((lo + hi) / 2);
-        if (fitsAt(ctx, text, mid, maxWidth, maxHeight, lineGap)) {
-            best = mid;
-            lo = mid + 1;
-        } else {
-            hi = mid - 1;
-        }
-    }
-    return best;
-}
-
-function tokenize(text) {
-    return text.split(" ").filter(Boolean);
-}
-
-async function renderCanvas(text, theme = "white", blurAmount = 0) {
-    const selectedTheme = THEMES[theme] || THEMES.white;
-    const size = 1000;
-    const padding = 80;
-    const lineGap = 20;
-    const maxWidth = size - padding * 2;
-    const maxHeight = size - padding * 2;
-
-    const canvas = createCanvas(size, size);
+    const canvas = createCanvas(width, height);
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle = selectedTheme.bg;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, width, height);
 
-    if (!text.trim()) return canvas;
-
-    const fontSize = findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap);
-    const lines = wrapText(ctx, text, maxWidth, fontSize);
-
-    ctx.fillStyle = selectedTheme.text;
-    ctx.font = `${fontSize}px ArialNarrow`;
+    let fontSize = 200;
+    const lineHeightMultiplier = 1.1;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
+    ctx.fillStyle = "black";
 
-    ctx.save();
-    if (blurAmount > 0) ctx.filter = `blur(${blurAmount}px)`;
+    const words = text.split(" ");
+    let lines = [];
 
-    const totalTextHeight = lines.length * (fontSize + lineGap) - lineGap;
-    let y = (size - totalTextHeight) / 2;
-    for (const line of lines) {
-        await drawTextWithEmojis(ctx, line, padding, y, fontSize);
-        y += fontSize + lineGap;
-    }
-
-    ctx.restore();
-    return canvas;
-}
-
-async function generateBratVideo({
-    text = "",
-    frameDuration = 0.4,
-    holdDuration = 1.2,
-    maxWordPerLayer = 1,
-    maxWordBeforeReset = [7, 8],
-    fastProgress = true
-} = {}) {
-    await loadFont();
-    await loadEmojiMap();
-
-    const tokens = tokenize(text);
-    if (!tokens.length) throw new Error("Teks kosong");
-
-    const tmpDir = mkdtempSync(path.join(os.tmpdir(), "brat-"));
-
-    const partialTexts = [];
-    let batchStart = 0;
-    let batchIndex = 0;
-    const step = Math.max(1, maxWordPerLayer);
-    const resetSchedule = Array.isArray(maxWordBeforeReset)
-        ? maxWordBeforeReset.map(n => Math.max(0, n))
-        : [Math.max(0, maxWordBeforeReset)];
-    const getResetAt = (idx) => resetSchedule[idx % resetSchedule.length];
-
-    while (batchStart < tokens.length) {
-        const resetAt = getResetAt(batchIndex);
-        const batchEnd = resetAt > 0 ? Math.min(batchStart + resetAt, tokens.length) : tokens.length;
-        for (let i = batchStart + step; i < batchEnd; i += step) {
-            partialTexts.push(tokens.slice(batchStart, i).join(" "));
+    const rebuildLines = () => {
+        lines = [];
+        let currentLine = "";
+        for (let word of words) {
+            let testLine = currentLine ? `${currentLine} ${word}` : word;
+            ctx.font = `${fontSize}px Narrow`;
+            let lineWidth = ctx.measureText(testLine).width;
+            
+            if (lineWidth < width - margin * 2) {
+                currentLine = testLine;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
         }
-        partialTexts.push(tokens.slice(batchStart, batchEnd).join(" "));
-        batchStart = batchEnd;
-        batchIndex++;
-    }
-
-    const renderFrame = async (partialText, index) => {
-        const canvas = await renderCanvas(partialText, "white", 0);
-        const buffer = canvas.toBuffer("image/png");
-        const framePath = path.join(tmpDir, `frame-${String(index + 1).padStart(4, "0")}.png`);
-        writeFileSync(framePath, buffer);
-        return framePath;
+        if (currentLine) lines.push(currentLine);
     };
 
-    let framePaths;
-    if (fastProgress) {
-        framePaths = await Promise.all(partialTexts.map((t, i) => renderFrame(t, i)));
-    } else {
-        framePaths = [];
-        for (let i = 0; i < partialTexts.length; i++) {
-            framePaths.push(await renderFrame(partialTexts[i], i));
+    rebuildLines();
+    while (lines.length * fontSize * lineHeightMultiplier > height - margin * 2 && fontSize > 20) {
+        fontSize -= 2;
+        rebuildLines();
+    }
+
+    const lineHeight = fontSize * lineHeightMultiplier;
+    let y = margin;
+    
+    for (let line of lines) {
+        let wordsInLine = line.split(" ");
+        let x = margin;
+        ctx.font = `${fontSize}px Narrow`;
+        
+        for (let word of wordsInLine) {
+            ctx.fillText(word, x, y);
+            x += ctx.measureText(word).width + wordSpacing;
         }
+        y += lineHeight;
     }
 
-    const durations = framePaths.map((_, i) =>
-        i === framePaths.length - 1 ? holdDuration : frameDuration
-    );
+    return canvas.toBuffer("image/png");
+}
 
-    const manifestLines = [];
-    for (let i = 0; i < framePaths.length; i++) {
-        manifestLines.push(`file '${framePaths[i].replace(/'/g, "'\\''")}'`);
-        manifestLines.push(`duration ${durations[i]}`);
-    }
-    manifestLines.push(`file '${framePaths[framePaths.length - 1].replace(/'/g, "'\\''")}'`);
-    const concatPath = path.join(tmpDir, "concat.txt");
-    writeFileSync(concatPath, manifestLines.join("\n"));
+// Render Video In-Memory Menggunakan FFmpeg Stream Pipe
+function generateVideoFromBuffers(frameBuffers, fps = 2.5) {
+    return new Promise((resolve, reject) => {
+        // Membuka subprocess FFmpeg yang menerima input imagepipe dari stdin
+        const ffmpeg = spawn("ffmpeg", [
+            "-y",
+            "-f", "image2pipe",
+            "-vcodec", "png",
+            "-r", String(fps),             // Frame rate / kecepatan animasi
+            "-i", "-",                      // '-' berarti membaca input dari stdin Stream
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-preset", "ultrafast",
+            "-f", "mp4",
+            "-movflags", "frag_keyframe+empty_moov", // Izinkan output stream MP4 langsung di RAM
+            "pipe:1"                        // Output dikirim ke stdout Stream
+        ]);
 
-    const outPath = path.join(tmpDir, "output.mp4");
+        const chunks = [];
 
-    await execFileAsync("ffmpeg", [
-        "-y",
-        "-f", "concat", "-safe", "0", "-i", concatPath,
-        "-vf", "scale=500:500",
-        "-c:v", "libx264",
-        "-preset", "fast",
-        "-crf", "23",
-        "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
-        outPath
-    ]);
+        ffmpeg.stdout.on("data", (chunk) => chunks.push(chunk));
+        ffmpeg.stderr.on("data", () => {}); // Supaya buffer stderr tidak memicu error
 
-    const videoBuffer = readFileSync(outPath);
-    rmSync(tmpDir, { recursive: true, force: true });
+        ffmpeg.on("close", (code) => {
+            if (code === 0) {
+                resolve(Buffer.concat(chunks));
+            } else {
+                reject(new Error(`FFmpeg exited with code ${code}`));
+            }
+        });
 
-    return videoBuffer;
+        ffmpeg.on("error", (err) => reject(err));
+
+        // Tulis semua buffer gambar bertahap ke stdin FFmpeg
+        for (const buf of frameBuffers) {
+            ffmpeg.stdin.write(buf);
+        }
+
+        // Tahan frame terakhir (repeat) beberapa kali agar tulisan akhir sempat terbaca
+        const lastFrame = frameBuffers[frameBuffers.length - 1];
+        for (let i = 0; i < 3; i++) {
+            ffmpeg.stdin.write(lastFrame);
+        }
+
+        ffmpeg.stdin.end();
+    });
 }
 
 router.get("/", async (req, res) => {
@@ -296,20 +146,20 @@ router.get("/", async (req, res) => {
             });
         }
 
-        const wordCount = text.split(" ").filter(Boolean).length;
+        await loadFont();
 
-        // Otomatisasi kecepatan animasi berdasarkan panjang kata
-        const frameDuration = wordCount > 15 ? 0.25 : (wordCount > 8 ? 0.35 : 0.4);
-        const holdDuration = wordCount > 15 ? 1.5 : 1.2;
+        const words = text.split(" ").filter(Boolean);
+        const frameBuffers = [];
 
-        const videoBuffer = await generateBratVideo({
-            text,
-            frameDuration,
-            holdDuration,
-            maxWordPerLayer: 1,
-            maxWordBeforeReset: [7, 8],
-            fastProgress: true
-        });
+        // Buat frame buffer secara in-memory
+        for (let i = 0; i < words.length; i++) {
+            const partialText = words.slice(0, i + 1).join(" ");
+            const frameBuf = renderFrameBuffer(partialText);
+            frameBuffers.push(frameBuf);
+        }
+
+        // Konversi deretan buffer frame ke buffer video MP4
+        const videoBuffer = await generateVideoFromBuffers(frameBuffers, 2.5);
 
         res.setHeader("Content-Type", "video/mp4");
         return res.send(videoBuffer);
@@ -317,7 +167,7 @@ router.get("/", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             status: false,
-            creator: "Lynx Decode",
+            creator: "ArulzXD",
             error: error.message
         });
     }
