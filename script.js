@@ -838,88 +838,6 @@ function performSearch() {
     });
 }
 
-// Fungsi Membuka Modal Select (100% Mirip Gambar Acuan)
-function toggleCyberSelect(event, triggerEl) {
-    event.stopPropagation();
-    const wrapper = triggerEl.closest('.cyber-select-wrapper');
-    const optionsContainer = wrapper.querySelector('.cyber-select-options');
-
-    // Buat Overlay Modal Dinamis ke Body jika belum ada
-    let modalOverlay = document.getElementById('globalSelectModal');
-    if (!modalOverlay) {
-        modalOverlay = document.createElement('div');
-        modalOverlay.id = 'globalSelectModal';
-        modalOverlay.className = 'cyber-modal-overlay';
-        document.body.appendChild(modalOverlay);
-    }
-
-    // Ambil daftar opsi dari elemen tersembunyi
-    const optionsHtml = optionsContainer.innerHTML;
-
-    // Render struktur sheet putih bersih
-    modalOverlay.innerHTML = `
-        <div class="cyber-modal-container">
-            <div class="cyber-modal-drag-handle"></div>
-            <div class="cyber-modal-body scrollbar-thin">
-                ${optionsHtml}
-            </div>
-        </div>
-    `;
-
-    // Pasang Event Listener Klik pada Opsi Modal
-    const modalOptions = modalOverlay.querySelectorAll('.cyber-option');
-    modalOptions.forEach(opt => {
-        opt.onclick = function () {
-            const val = this.getAttribute('data-value');
-            
-            // Update input hidden & teks trigger pada form asal
-            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-            const triggerText = wrapper.querySelector('.selected-text');
-            
-            if (hiddenInput) hiddenInput.value = val;
-            if (triggerText) triggerText.textContent = val;
-
-            // Update status 'selected'
-            optionsContainer.querySelectorAll('.cyber-option').forEach(el => el.classList.remove('selected'));
-            const targetInWrapper = optionsContainer.querySelector(`[data-value="${CSS.escape(val)}"]`);
-            if (targetInWrapper) targetInWrapper.classList.add('selected');
-
-            // Panggil Live Preview Update
-            const catIdx = wrapper.dataset.cat;
-            const epIdx = wrapper.dataset.ep;
-            const method = wrapper.dataset.method;
-            const path = wrapper.dataset.path;
-            const epType = wrapper.dataset.type;
-
-            if (typeof updateLivePreview === 'function') {
-                updateLivePreview(catIdx, epIdx, method, path, epType);
-            }
-
-            closeGlobalSelectModal();
-        };
-    });
-
-    // Tampilkan Modal dengan animasi naik dari bawah
-    requestAnimationFrame(() => {
-        modalOverlay.classList.add('active');
-        document.body.classList.add('overflow-hidden');
-    });
-
-    // Tutup modal jika area gelap luar diklik
-    modalOverlay.onclick = function (e) {
-        if (e.target === modalOverlay) closeGlobalSelectModal();
-    };
-}
-
-// Fungsi Menutup Modal Select
-function closeGlobalSelectModal() {
-    const modalOverlay = document.getElementById('globalSelectModal');
-    if (modalOverlay) {
-        modalOverlay.classList.remove('active');
-        document.body.classList.remove('overflow-hidden');
-    }
-}
-
 function loadApis() {
     const apiList = document.getElementById('apiList');
     if (!apiData || !apiData.categories) {
@@ -1084,31 +1002,11 @@ function loadApis() {
                         if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
                             html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
                         } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-                            const defaultVal = pType.options[0] || '';
-
-                            // SVG Chevron Transisi Halus
-                            const SVG_CHEVRON = `<svg class="w-4 h-4 chevron-icon transition-transform duration-200 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
-
-                            html += `
-                            <div class="cyber-select-wrapper" data-cat="${catIdx}" data-ep="${epIdx}" data-param="${paramName}" data-method="${method}" data-path="${path}" data-type="${epType}">
-                                <input type="hidden" name="${paramName}" value="${defaultVal}" id="select-input-${catIdx}-${epIdx}-${paramName}">
-                                <div class="cyber-select-trigger" onclick="toggleCyberSelect(event, this)">
-                                    <span class="selected-text">${defaultVal}</span>
-                                    ${SVG_CHEVRON}
-                                </div>
-                                <div class="cyber-select-options hidden">`;
-
-                            pType.options.forEach((opt, oIdx) => {
-                                const isSel = oIdx === 0 ? 'selected' : '';
-                                html += `
-                                    <div class="cyber-option ${isSel}" data-value="${opt}">
-                                        <span>${opt}</span>
-                                    </div>`;
+                            html += `<select name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm">`;
+                            pType.options.forEach(opt => {
+                                html += `<option value="${opt}" class="bg-slate-900 text-white">${opt}</option>`;
                             });
-
-                            html += `
-                                </div>
-                            </div>`;
+                            html += `</select>`;
                         } else {
                             html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
                         }
