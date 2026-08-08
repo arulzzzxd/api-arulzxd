@@ -1078,22 +1078,23 @@ if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCas
         <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
         
         <!-- Tombol Tampilan Select Cyberpunk -->
-        <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="custom-select-trigger">
+        <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
             <div class="flex items-center gap-2 truncate">
-                <svg class="w-4 h-4 text-cyan-400 star-cyber-icon flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="#00f0ff" stroke-width="1.5">
+                <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
-                <span id="${uniqueId}-label" class="truncate">${defaultVal}</span>
+                <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
             </div>
             <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
             </svg>
         </button>
 
-        <!-- Container Modal Putih (Gambar 2) -->
+        <!-- Container Modal Option -->
         <div id="${uniqueId}-overlay" class="select-modal-overlay" onclick="closeCustomSelectModal('${uniqueId}')"></div>
         <div id="${uniqueId}-modal" class="select-modal-container">
             <div class="select-modal-handle"></div>
+            <div class="px-2 pb-2 mb-2 border-b border-white/10 text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">Pilih ${paramName}</div>
             <ul class="select-modal-list">`;
             
     pType.options.forEach(opt => {
