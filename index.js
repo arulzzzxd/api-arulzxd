@@ -3734,29 +3734,30 @@ function fetchUserActivityLogs(apiKey) {
     const container = document.getElementById('activityLogsContainer');
     if (!container) return;
 
-    fetch(`/api/user-activity?apikey=${encodeURIComponent(apiKey)}`)
+    fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
         .then(res => res.json())
         .then(resData => {
             if (resData.status && resData.data && resData.data.length > 0) {
-                container.innerHTML = resData.data.map(logText => `
-                    <div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">
-                        ${logText}
-                    </div>
-                `).join('');
+                container.innerHTML = resData.data.map(logText => 
+                    '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
+                        logText +
+                    '</div>'
+                ).join('');
             } else {
-                container.innerHTML = `
-                    <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
-                        Belum ada aktivitas request
-                    </div>`;
+                container.innerHTML = 
+                    '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                        'Belum ada aktivitas request' +
+                    '</div>';
             }
         })
         .catch(err => {
-            container.innerHTML = `
-                <div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
-                    Gagal memuat aktivitas
-                </div>`;
+            container.innerHTML = 
+                '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                    'Gagal memuat aktivitas' +
+                '</div>';
         });
 }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
