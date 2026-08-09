@@ -776,11 +776,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 </div>
             </div>
         `;
-        
-        const clearBtn = document.getElementById(`clear-btn-${catIdx}-${epIdx}`);
-        if (clearBtn) {
-            clearBtn.classList.remove('hidden');
-        }
 
         document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
             copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
@@ -862,23 +857,17 @@ function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
     
     if (responseDiv) {
-        // Hentikan pemutaran media jika ada
+        // --- PERBAIKAN: Hentikan pemutaran Audio/Video sebelum menyembunyikan response ---
         const mediaElements = responseDiv.querySelectorAll('video, audio');
         mediaElements.forEach(media => {
-            media.pause();
-            media.currentTime = 0;
-            media.src = '';
-            media.load();
+            media.pause();        // Hentikan pemutaran (suara langsung mati)
+            media.currentTime = 0; // Kembalikan ke detik awal
+            media.src = '';        // Kosongkan sumber media dari memori
+            media.load();          // Reset elemen media
         });
 
         // Sembunyikan container response
         responseDiv.classList.add('hidden');
-    }
-
-    // ---> Sembunyikan kembali tombol BERSIHKAN <---
-    const clearBtn = document.getElementById(`clear-btn-${catIdx}-${epIdx}`);
-    if (clearBtn) {
-        clearBtn.classList.add('hidden');
     }
 
     const form = document.getElementById(`form-${catIdx}-${epIdx}`);
@@ -913,17 +902,10 @@ function renderCategoryFilters() {
 
 function filterByCategory(catName) {
     activeCategory = catName;
-    
-    // Update status tombol filter aktif
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        if (btn.dataset.filter === catName) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
+        if (btn.dataset.filter === catName) btn.classList.add('active');
+        else btn.classList.remove('active');
     });
-
-    // Jalankan penyaringan ulang
     performSearch();
 }
 
@@ -935,11 +917,7 @@ function performSearch() {
     requestAnimationFrame(() => {
         document.querySelectorAll('.category-group').forEach(category => {
             const catName = category.dataset.category;
-            
-            // Cek apakah kategori sesuai dengan filter tombol yang aktif
-            const isCategoryMatchingFilter = (activeCategory === 'all' || catName === activeCategory);
-
-            if (!isCategoryMatchingFilter) {
+            if (activeCategory !== 'all' && catName !== activeCategory) {
                 category.classList.add('hidden');
                 return;
             }
@@ -961,18 +939,9 @@ function performSearch() {
                     item.classList.add('hidden');
                 }
             }
-
-            // Tampilkan/sembunyikan grup kategori berdasarkan hasil match search & filter
-            if (categoryHasVisibleItems) {
-                category.classList.remove('hidden');
-            } else {
-                category.classList.add('hidden');
-            }
+            category.classList.toggle('hidden', !categoryHasVisibleItems);
         });
-
-        if (noResults) {
-            noResults.classList.toggle('hidden', hasVisibleItems);
-        }
+        noResults.classList.toggle('hidden', hasVisibleItems);
     });
 }
 
@@ -1128,9 +1097,21 @@ function loadApis() {
                  </span>
                 </button>
                 <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
-                    <p class="text-xs mb-4 ${isLightMode ? 'text-slate-700' : 'opacity-80'}">${item.desc}</p>
-                    
-                    <div class="mb-4">
+    
+    <!-- BOX DESKRIPSI BARU -->
+    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+        <div class="flex items-center gap-2 mb-1.5">
+            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
+            </svg>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+        </div>
+        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+            ${item.desc}
+        </p>
+    </div>
+
+    <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
                             <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
@@ -1243,12 +1224,11 @@ function loadApis() {
                 }
 
                 html += `
+                            </div>
                             <div class="flex gap-3">
-    <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
-    
-    <!-- Tombol Bersihkan ditambah ID dan class hidden -->
-    <button type="button" id="clear-btn-${catIdx}-${epIdx}" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="hidden px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
-</div>
+                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                            </div>
                         </form>
 
                         <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
@@ -1267,7 +1247,6 @@ function loadApis() {
     });
     apiList.innerHTML = html;
     allApiElements = Array.from(document.querySelectorAll('.api-item'));
-    performSearch();
 }
 
 function initMultiMusicPlayer() {
