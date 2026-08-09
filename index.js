@@ -3593,67 +3593,67 @@ app.get('/docs', (req, res) => {
             }
         }
 
-        function setRoleTheme(roleName) {
-    const avatar3DBorder = document.getElementById('avatar3DBorder');
-    const avatarBadge = document.getElementById('avatarBadge');
-    const planText = document.getElementById('userPlanText');
-    const planContainer = document.getElementById('planBoxContainer');
-    const role = (roleName || '').toLowerCase();
+                function setRoleTheme(roleName) {
+            const avatar3DBorder = document.getElementById('avatar3DBorder');
+            const avatarBadge = document.getElementById('avatarBadge');
+            const planText = document.getElementById('userPlanText');
+            const planContainer = document.getElementById('planBoxContainer');
+            const role = (roleName || '').toLowerCase();
 
-    const iconFree = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`;
-    const iconPremium = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>`;
-    const iconVip = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`;
+            const iconFree = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`;
+            const iconPremium = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>`;
+            const iconVip = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>`;
 
-    const buildCrownSVG = (gradId) => `
-        <svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#fef08a" />
-                    <stop offset="40%" stop-color="#fbbf24" />
-                    <stop offset="70%" stop-color="#b45309" />
-                    <stop offset="100%" stop-color="#451a03" />
-                </linearGradient>
-                <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#f3e8ff" />
-                    <stop offset="35%" stop-color="#c084fc" />
-                    <stop offset="70%" stop-color="#7e22ce" />
-                    <stop offset="100%" stop-color="#2e1065" />
-                </linearGradient>
-            </defs>
-            <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#${gradId})" />
-            <circle cx="16" cy="39" r="2.5" fill="url(#${gradId})" />
-            <circle cx="34" cy="30" r="2.5" fill="url(#${gradId})" />
-            <circle cx="66" cy="30" r="2.5" fill="url(#${gradId})" />
-            <circle cx="84" cy="39" r="2.5" fill="url(#${gradId})" />
-            <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#${gradId})" />
-            <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-            <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-            <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-        </svg>`;
+            const buildCrownSVG = (gradId) => `
+                <svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef08a" />
+                            <stop offset="40%" stop-color="#fbbf24" />
+                            <stop offset="70%" stop-color="#b45309" />
+                            <stop offset="100%" stop-color="#451a03" />
+                        </linearGradient>
+                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f3e8ff" />
+                            <stop offset="35%" stop-color="#c084fc" />
+                            <stop offset="70%" stop-color="#7e22ce" />
+                            <stop offset="100%" stop-color="#2e1065" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#${gradId})" />
+                    <circle cx="16" cy="39" r="2.5" fill="url(#${gradId})" />
+                    <circle cx="34" cy="30" r="2.5" fill="url(#${gradId})" />
+                    <circle cx="66" cy="30" r="2.5" fill="url(#${gradId})" />
+                    <circle cx="84" cy="39" r="2.5" fill="url(#${gradId})" />
+                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#${gradId})" />
+                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
+                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
+                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                </svg>`;
 
-    if (role.includes('vip')) {
-        if (planText) planText.innerText = 'VIP';
-        if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
-        if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-        if (avatarBadge) {
-            avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-            avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
+            if (role.includes('vip')) {
+                if (planText) planText.innerText = 'VIP';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
+                    avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
+                }
+            } else if (role.includes('premium')) {
+                if (planText) planText.innerText = 'PREM';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
+                    avatarBadge.innerHTML = buildCrownSVG('goldCrown');
+                }
+            } else {
+                if (planText) planText.innerText = 'FREE';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
+                if (avatarBadge) avatarBadge.innerHTML = "";
+            }
         }
-    } else if (role.includes('premium')) {
-        if (planText) planText.innerText = 'PREM';
-        if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
-        if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-        if (avatarBadge) {
-            avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-            avatarBadge.innerHTML = buildCrownSVG('goldCrown');
-        }
-    } else {
-        if (planText) planText.innerText = 'FREE';
-        if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
-        if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-        if (avatarBadge) avatarBadge.innerHTML = "";
-    }
-}
 
         async function uploadAvatarFile(input) {
             if (!input.files || !input.files[0]) return;
