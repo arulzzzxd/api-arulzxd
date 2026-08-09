@@ -123,16 +123,30 @@ function closeSidebarMenu() {
 }
 
 // Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi
+// Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi (Updated Auto-play & Dynamic Box)
 function createMediaPreview(url, contentType, fullPath) {
     const type = contentType || '';
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
-        return `<div class="mt-2 flex justify-center bg-black/20 p-2 rounded-lg border border-white/5"><img src="${url}" class="media-image max-h-64 rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.02]" alt="Preview"></div>`;
+        return `
+            <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
+                <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
+            </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
-        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><video src="${url}" controls class="w-full max-h-64 rounded-lg"></video></div>`;
+        return `
+            <div class="w-full bg-black/40 p-2 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                <video src="${url}" 
+                       controls 
+                       autoplay 
+                       loop 
+                       muted 
+                       playsinline 
+                       class="w-full h-auto max-h-[85vh] rounded-lg object-contain bg-black">
+                </video>
+            </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
-        return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls class="w-full"></audio></div>`;
+        return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
     } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
-        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-64 rounded-lg border-0"></iframe></div>`;
+        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
     }
     return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
@@ -542,7 +556,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             const str = urlOrMime.toLowerCase();
             if (str.includes('image/') || str.match(/\.(jpeg|jpg|gif|png|webp)/i)) return "Klik gambar untuk memperbesar gambar";
             if (str.includes('audio/') || str.match(/\.(mp3|wav|ogg|mpeg)/i)) return "Gunakan pemutar audio di bawah";
-            if (str.includes('video/') || str.match(/\.(mp4|webm|mov)/i)) return "Klik video untuk memutar full screen";
+            if (str.includes('video/') || str.match(/\.(mp4|webm|mov)/i)) return "Video otomatis diputar";
             if (str.includes('application/pdf') || str.match(/\.pdf/i)) return "Klik untuk membuka dokumen PDF";
             return "Berkas media terdeteksi";
         }
@@ -564,14 +578,14 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                  const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
                  if (isAudioUrl) {
-                     mediaMarkup = `<audio controls class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
+                     mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
                  } else {
                      mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
                  }
 
                  finalInnerContent = `
-                    <div class="p-4 border-b-2 border-white/20 dark:border-white/20 light-mode:border-slate-300 bg-black/20 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
-                        <div class="w-full flex justify-center [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_video]:max-w-full">
+                    <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+                        <div class="w-full flex justify-center items-center">
                             ${mediaMarkup}
                         </div>
                     </div>
@@ -592,15 +606,15 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             if (cleanContentType.startsWith("audio/")) {
                 finalInnerContent = `
                     <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
-                        <audio controls class="w-full max-w-md mx-auto block" src="${blobUrl}">
+                        <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
                             Browser Anda tidak mendukung pemutar audio.
                         </audio>
                     </div>
                 `;
             } else {
                 finalInnerContent = `
-                    <div class="p-6 bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
-                        <div class="w-full flex justify-center [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_video]:max-w-full">
+                    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
+                        <div class="w-full flex justify-center items-center">
                             ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
                         </div>
                     </div>
