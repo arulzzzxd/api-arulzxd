@@ -12,7 +12,6 @@ let totalEndpoints = 0;
 let totalCategories = 0;
 let activeCategory = 'all';
 
-
 const themeToggleBtn = document.getElementById('themeToggle');
 const body = document.body;
 const themeBg = document.getElementById('themeBg');
@@ -72,10 +71,9 @@ const i18n = {
 };
 
 /* =========================================================================
-   ADDITIONAL / MISSING CORE FUNCTIONS
+   ADDITIONAL / MISSING CORE FUNCTIONS & MEDIA PREVIEW DEFINITION
    ========================================================================= */
 
-// Fungsi Toggle Grup Kategori Utama
 function toggleCategory(catIdx) {
     const catDiv = document.getElementById(`cat-${catIdx}`);
     const catIcon = document.getElementById(`cat-icon-${catIdx}`);
@@ -91,11 +89,9 @@ function toggleCategory(catIdx) {
     }
 }
 
-// SVG Icon Helper untuk Plus (+) & Minus (-)
 const SVG_PLUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>`;
 const SVG_MINUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>`;
 
-// Fungsi Toggle Detail Formulir Endpoint (+ / -)
 function toggleEndpoint(catIdx, epIdx) {
     const epDiv = document.getElementById(`ep-${catIdx}-${epIdx}`);
     const epIcon = document.getElementById(`ep-icon-${catIdx}-${epIdx}`);
@@ -111,8 +107,6 @@ function toggleEndpoint(catIdx, epIdx) {
     }
 }
 
-
-// Fungsi Menutup Sidebar Menu Bio & Overlay
 function closeSidebarMenu() {
     const bioDropdown = document.getElementById('bioDropdown');
     const menuOverlay = document.getElementById('menuOverlay');
@@ -122,9 +116,7 @@ function closeSidebarMenu() {
     }
 }
 
-// =========================================================================
-// FUNGSI GENERATOR PRATINJAU MEDIA (UI TIKTOK STYLE)
-// =========================================================================
+// FUNGSI CREATEMEDIAPREVIEW DIDEKLARASIKAN DI ATAS
 function createMediaPreview(url, contentType, fullPath, endpointName = 'video', endpointDesc = '') {
     const type = contentType || '';
     
@@ -134,14 +126,11 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
-        // Format Nama TikTok & Deskripsi berdasarkan Endpoint
         const tiktokHandle = `@arulzxd_${endpointName.toLowerCase().replace(/\s+/g, '_')}`;
         const tiktokDesc = endpointDesc || 'Video response dari API';
 
         return `
             <div class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col justify-between select-none">
-                
-                <!-- Header Atas (Tab Tiktok & Badge Live/Stream) -->
                 <div class="absolute top-0 left-0 right-0 z-20 p-3 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between text-white text-xs font-semibold">
                     <div class="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full border border-white/10">
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
@@ -156,53 +145,31 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </button>
                 </div>
 
-                <!-- Video Element -->
-                <video src="${url}" 
-                       controls 
-                       autoplay 
-                       loop 
-                       muted 
-                       playsinline 
-                       class="w-full h-full object-cover bg-black">
-                </video>
+                <video src="${url}" controls autoplay loop muted playsinline class="w-full h-full object-cover bg-black"></video>
 
-                <!-- Sidebar Kanan (Tombol Aksi ala TikTok) -->
                 <div class="absolute right-3 bottom-16 z-20 flex flex-col items-center gap-4 text-white">
-                    <!-- Profile Avatar -->
                     <div class="relative mb-2">
-                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center font-bold text-cyan-400 text-sm overflow-hidden shadow-md">
-                            AZ
-                        </div>
-                        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                            +
-                        </div>
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center font-bold text-cyan-400 text-sm overflow-hidden shadow-md">AZ</div>
+                        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">+</div>
                     </div>
-
-                    <!-- Like Button -->
                     <div class="flex flex-col items-center gap-1 cursor-pointer group">
                         <div class="p-2.5 bg-black/40 rounded-full backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
                             <svg class="w-6 h-6 text-white group-hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                         </div>
                         <span class="text-[11px] font-bold shadow-sm">24.5K</span>
                     </div>
-
-                    <!-- Comment Button -->
                     <div class="flex flex-col items-center gap-1 cursor-pointer group">
                         <div class="p-2.5 bg-black/40 rounded-full backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
                             <svg class="w-6 h-6 text-white group-hover:text-cyan-400 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
                         </div>
                         <span class="text-[11px] font-bold shadow-sm">821</span>
                     </div>
-
-                    <!-- Bookmark Button -->
                     <div class="flex flex-col items-center gap-1 cursor-pointer group">
                         <div class="p-2.5 bg-black/40 rounded-full backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
                             <svg class="w-6 h-6 text-white group-hover:text-yellow-400 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
                         </div>
                         <span class="text-[11px] font-bold shadow-sm">3.1K</span>
                     </div>
-
-                    <!-- Share Button -->
                     <div class="flex flex-col items-center gap-1 cursor-pointer group">
                         <div class="p-2.5 bg-black/40 rounded-full backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
                             <svg class="w-6 h-6 text-white group-hover:text-emerald-400 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
@@ -211,26 +178,17 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </div>
                 </div>
 
-                <!-- Footer Bawah (Username, Deskripsi, dan Sound) -->
                 <div class="absolute bottom-0 left-0 right-14 z-20 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col gap-1 text-left">
-                    <!-- Username -->
                     <div class="flex items-center gap-1.5">
                         <span class="font-bold text-sm text-white drop-shadow">${tiktokHandle}</span>
                         <svg class="w-3.5 h-3.5 text-cyan-400 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                     </div>
-
-                    <!-- Deskripsi Endpoint -->
-                    <p class="text-xs text-slate-200 line-clamp-2 leading-relaxed drop-shadow-sm font-sans">
-                        ${tiktokDesc}
-                    </p>
-
-                    <!-- Original Sound Banner -->
+                    <p class="text-xs text-slate-200 line-clamp-2 leading-relaxed drop-shadow-sm font-sans">${tiktokDesc}</p>
                     <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300">
                         <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
                         <span class="truncate font-mono">Suara asli - ${tiktokHandle}</span>
                     </div>
                 </div>
-
             </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
         return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
@@ -239,49 +197,6 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
     }
     return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
-
-// =========================================================================
-// PENERAPAN PADA BLOK PANGGILAN DI SCRIPT.JS
-// =========================================================================
-
-// 1. Pada blok Penanganan Direct Content Type (Video/Image/Audio Direct Stream):
-const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
-const epName = currentEndpoint?.name || 'video';
-const epDesc = currentEndpoint?.desc || '';
-
-finalInnerContent = `
-    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
-        <div class="w-full flex justify-center items-center">
-            ${createMediaPreview(blobUrl, cleanContentType, fullPath, epName, epDesc)}
-        </div>
-    </div>
-`;
-
-// 2. Pada blok Penanganan JSON Data (Jika mereturn URL video):
-if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
-    hintText = getMediaHint(detectedMediaUrl);
-    
-    let mediaMarkup = '';
-    const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
-
-    if (isAudioUrl) {
-        mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
-    } else {
-        mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epName, epDesc);
-    }
-
-    finalInnerContent = `
-        <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
-            <div class="w-full flex justify-center items-center">
-                ${mediaMarkup}
-            </div>
-        </div>
-        <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-        <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
-    `;
-    isMedia = true;
-}
-
 
 /* =========================================================================
    THEME & APPLICATION FUNCTIONS
@@ -414,27 +329,22 @@ function showToast(message, isError = false) {
     const container = document.getElementById('toast');
     if (!container) return;
 
-    // 1. BUAT ELEMEN BOX TOAST SECARA DINAMIS (Bentuk Persegi Panjang Cyberpunk)
     const toast = document.createElement('div');
-    
-    // Base Class: Desain persegi panjang, backdrop blur, dan animasi performa tinggi
     toast.className = "flex items-center gap-3.5 px-5 py-3.5 rounded-xl border backdrop-blur-xl min-w-[300px] max-w-[420px] transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] opacity-0 translate-y-[-20px] scale-95 pointer-events-auto will-change-[transform,opacity] select-none";
 
     let iconHTML = '';
     let iconColor = '';
 
-    // 2. ATUR WARNA NEON CYBERPUNK (Cyan untuk Sukses, Pink-Red untuk Error)
     if (isError) {
         iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
-        iconColor = '#ff2a74'; // Neon Pink
+        iconColor = '#ff2a74';
         toast.classList.add('border-pink-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(255,42,116,0.15)]');
     } else {
         iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>';
-        iconColor = '#00f0ff'; // Electric Cyan
+        iconColor = '#00f0ff';
         toast.classList.add('border-cyan-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(0,240,255,0.15)]');
     }
 
-    // 3. STRUKTUR INTERNAL (Mirip komponen lama Anda tapi berbasis template string dinamis)
     toast.innerHTML = `
         <div class="flex-shrink-0 p-1.5 rounded-lg bg-white/5">
             <svg class="w-6 h-6 flex-shrink-0 transition-all duration-500 scale-100" viewBox="0 0 20 20" fill="currentColor" style="color: ${iconColor};">
@@ -448,21 +358,16 @@ function showToast(message, isError = false) {
         </div>
     `;
 
-    // 4. MASUKKAN KE CONTAINER (Otomatis menumpuk ke bawah)
     container.appendChild(toast);
 
-    // Memicu animasi muncul yang mulus
     requestAnimationFrame(() => {
         toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'scale-95');
         toast.classList.add('opacity-100', 'translate-y-0', 'scale-100');
     });
 
-    // 5. ANIMASI HILANG SATU PER SATU (Setiap toast punya timer 4 detik mandiri)
     setTimeout(() => {
         toast.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
         toast.classList.add('opacity-0', 'scale-90', 'translate-x-[20px]');
-        
-        // Hapus dari DOM setelah animasi transisi CSS selesai
         setTimeout(() => {
             toast.remove();
         }, 500);
@@ -488,7 +393,6 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
 
     const formData = new FormData(form);
     
-    // Cek apakah ada file yang dipilih
     let formHasFile = false;
     form.querySelectorAll('input[type="file"]').forEach(fileInput => {
         if (fileInput.files && fileInput.files.length > 0) {
@@ -522,7 +426,6 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
         if (finalMethod === 'GET' || finalMethod === 'DELETE') {
             curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"`;
         } else if (formHasFile) {
-            // Tampilan cURL khusus upload multipart/form-data
             const bodyParams = [];
             for (const [key, value] of formData.entries()) {
                 if (value instanceof File) {
@@ -535,7 +438,6 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
             const dataString = bodyParams.length ? ` ${bodyParams.join(' ')}` : '';
             curlContainer.textContent = `curl -X POST "${finalUrl}"${dataString}`;
         } else {
-            // Tampilan cURL JSON biasa
             const bodyParams = [];
             for (const [key, value] of formData.entries()) {
                 if (value && typeof value === 'string') {
@@ -576,7 +478,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
     responseDiv.classList.remove('hidden');
 
-    // LOADING STATE: Menggunakan skeleton loader & pulse modern
     responseContent.innerHTML = `
         <div class="flex flex-col items-center justify-center p-12 text-sm font-mono tracking-wider text-cyan-400 gap-3">
             <div class="relative flex h-4 w-4">
@@ -646,7 +547,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
         const endTime = performance.now();
         const duration = Math.round(endTime - startTime);
 
-        // Handler Error Status (403 / 429 / 503)
         if (response.status === 403 || response.status === 429 || response.status === 503) {
             const data = await response.json().catch(() => ({ message: "Akses Ditolak" }));
             const rawErrText = JSON.stringify(data, null, 2);
@@ -693,6 +593,10 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             return "Berkas media terdeteksi";
         }
 
+        const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
+        const epName = currentEndpoint?.name || 'video';
+        const epDesc = currentEndpoint?.desc || '';
+
         if (cleanContentType.includes("application/json")) {
             const data = await response.json();
             rawResponseText = JSON.stringify(data, null, 2);
@@ -712,11 +616,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                  if (isAudioUrl) {
                      mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
                  } else {
-const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
-const epName = currentEndpoint?.name || 'video';
-const epDesc = currentEndpoint?.desc || '';
-
-mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epName, epDesc);
+                     mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epName, epDesc);
                  }
 
                  finalInnerContent = `
@@ -751,7 +651,7 @@ mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epNam
                 finalInnerContent = `
                     <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
                         <div class="w-full flex justify-center items-center">
-                            ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
+                            ${createMediaPreview(blobUrl, cleanContentType, fullPath, epName, epDesc)}
                         </div>
                     </div>
                 `;
@@ -781,10 +681,8 @@ mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epNam
             </button>
         `;
 
-        // RENDER CONTAINER UTAMA
         responseContent.innerHTML = `
             <div class="rounded-xl overflow-hidden border-2 border-cyan-500/40 dark:border-2 dark:border-cyan-500/40 light-mode:border-2 light-mode:border-slate-400 bg-slate-950/40 dark:bg-slate-950/40 light-mode:bg-white shadow-2xl transition-all duration-300">
-                
                 <div class="px-4 py-2.5 bg-black/60 dark:bg-black/60 light-mode:bg-slate-100 border-b-2 border-white/20 light-mode:border-slate-300 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
@@ -809,7 +707,6 @@ mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epNam
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Content Type</span>
                         <span class="text-[11px] text-slate-300 dark:text-slate-300 light-mode:text-slate-600 truncate max-w-full font-semibold" title="${cleanContentType}">${cleanContentType}</span>
                     </div>
-                    
                     ${hintText ? `
                     <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-500/30 bg-cyan-950/20 col-span-2 sm:col-span-1">
                         <span class="text-[9px] text-cyan-500 uppercase font-bold tracking-wider mb-0.5">Action Hint</span>
@@ -827,14 +724,11 @@ mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epNam
                         <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         <span>Copy Response</span>
                     </button>
-                    
                     ${downloadButtonHtml}
                 </div>
-
             </div>
         `;
 
-        // PENGIKAT EVENT HANDLER
         document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
             copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
         };
@@ -901,7 +795,6 @@ mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epNam
     }
 }
 
-// Helper sanitasi string tag HTML
 function escapeHtml(text) {
     if (typeof text !== 'string') return text;
     return text
@@ -933,7 +826,6 @@ function clearResponse(catIdx, epIdx, endpointType) {
         }
     }
 }
-
 
 function renderCategoryFilters() {
     const container = document.getElementById('categoryFilters');
@@ -992,18 +884,10 @@ function performSearch() {
     });
 }
 
-
-
-
-
-
-
-// Buka Modal Select
 function openCustomSelectModal(uniqueId) {
     const overlay = document.getElementById(`${uniqueId}-overlay`);
     const modal = document.getElementById(`${uniqueId}-modal`);
     if (overlay && modal) {
-        // Pindahkan elemen ke document.body agar position: fixed menempel di viewport utama
         if (overlay.parentElement !== document.body) {
             document.body.appendChild(overlay);
             document.body.appendChild(modal);
@@ -1021,7 +905,6 @@ function openCustomSelectModal(uniqueId) {
     }
 }
 
-// Tutup Modal Select
 function closeCustomSelectModal(uniqueId) {
     const overlay = document.getElementById(`${uniqueId}-overlay`);
     const modal = document.getElementById(`${uniqueId}-modal`);
@@ -1037,7 +920,6 @@ function closeCustomSelectModal(uniqueId) {
     }
 }
 
-// Pilih Opsi & Otomatis Tutup Modal
 function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType) {
     const input = document.getElementById(`${uniqueId}-input`);
     const label = document.getElementById(`${uniqueId}-label`);
@@ -1055,16 +937,12 @@ function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType
         });
     }
 
-    // Otomatis menutup modal saat item dipilih
     closeCustomSelectModal(uniqueId);
 
     if (typeof updateLivePreview === 'function') {
         updateLivePreview(catIdx, epIdx, method, path, epType);
     }
 }
-
-
-
 
 function loadApis() {
     const apiList = document.getElementById('apiList');
@@ -1123,7 +1001,6 @@ function loadApis() {
             if (item.status === 'update') { statusClass = 'status-update'; statusText = "UPDATE"; }
             else if (item.status === 'error' || item.status === 'perbaikan') { statusClass = 'status-error'; statusText = "MAINTENANCE"; }
 
-            // Menentukan Badge Berdasarkan Tipe Endpoint (VIP, PREMIUM, FREE) dengan SVG
             let badgeTypeHtml = '';
             if (epType === 'vip') {
                 badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold uppercase tracking-wider animate-pulse">
@@ -1197,25 +1074,20 @@ function loadApis() {
                         let inputValue = '';
                         let inputPlaceholder = `Masukkan ${paramName}`;
 
-                        // Logika API Key dengan pemisahan tipe Free, Premium, dan VIP
-if (paramName.toLowerCase() === 'apikey') {
-    // Cek apakah displayApiKey terdefinisi dan BUKAN 'Silakan Login'
-    const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
-    
-    if (epType === 'vip') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey VIP';
-    } else if (epType === 'premium') {
-        // KOSONGKAN value agar tidak memakai apikey free
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey Premium';
-    } else {
-        // Isi otomatis HANYA untuk endpoint tipe FREE
-        inputValue = isUserLoggedIn ? displayApiKey : '';
-        inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-    }
-}
+                        if (paramName.toLowerCase() === 'apikey') {
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                            
+                            if (epType === 'vip') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
 
                         html += `
                         <div>
@@ -1226,65 +1098,54 @@ if (paramName.toLowerCase() === 'apikey') {
                                 <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
                             </div>`;
 
-                        // Potongan kode di dalam fungsi loadApis() saat generate form parameter:
-if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-    html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
-} else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-    const defaultVal = pType.options[0] || '';
-    const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
-    
-    html += `
-    <div class="relative w-full">
-        <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-        
-        <!-- Tombol Tampilan Select (SVG Bintang Sudah Dihapus) -->
-        <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-            <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
-            <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-            </svg>
-        </button>
+                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+                            const defaultVal = pType.options[0] || '';
+                            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
+                            
+                            html += `
+                            <div class="relative w-full">
+                                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
+                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                <div id="${uniqueId}-modal" class="select-modal-container hidden">
+                                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
+                                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                                        </div>
+                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul class="select-modal-list">`;
+                                    
+                            pType.options.forEach(opt => {
+                                const isSelected = opt === defaultVal ? 'selected' : '';
+                                html += `
+                                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                                        <span>${opt}</span>
+                                    </li>`;
+                            });
 
-        <!-- Overlay gelap -->
-        <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-        
-        <!-- Modal sheet -->
-        <div id="${uniqueId}-modal" class="select-modal-container hidden">
-            <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-            
-            <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
-                <!-- Header Modal dengan Bintang Beranimasi Tebal -->
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
-                </div>
-
-                <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <ul class="select-modal-list">`;
-            
-    pType.options.forEach(opt => {
-        const isSelected = opt === defaultVal ? 'selected' : '';
-        html += `
-            <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
-                <span>${opt}</span>
-            </li>`;
-    });
-
-    html += `
-            </ul>
-        </div>
-    </div>`;
-} else {
-    html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
-}
+                            html += `
+                                    </ul>
+                                </div>
+                            </div>`;
+                        } else {
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                        }
                         html += `</div>`;
                     });
                 }
@@ -1345,7 +1206,6 @@ function initMultiMusicPlayer() {
         return `${mins}:${remainingSecs < 10 ? '0' : ''}${remainingSecs}`;
     }
 
-    // Fungsi utama mengirim durasi dan posisi detik ke sistem Android
     function updateMediaSessionPosition() {
         if ('mediaSession' in navigator && audio && !isNaN(audio.duration) && audio.duration > 0) {
             try {
@@ -1364,7 +1224,6 @@ function initMultiMusicPlayer() {
         currentTrackIdx = index;
         const track = playlist[index];
         
-        // Memastikan elemen ada sebelum memanipulasi DOM
         if (audio) audio.src = track.url || '';
         if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
         if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
@@ -1373,7 +1232,6 @@ function initMultiMusicPlayer() {
         if (progressBar) progressBar.style.width = '0%';
         if (currentTimeEl) currentTimeEl.textContent = '0:00';
         
-        // --- Integrasi dengan Notifikasi Sistem / Media Session API ---
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: track.title || 'Unknown Title',
@@ -1389,7 +1247,6 @@ function initMultiMusicPlayer() {
                 ]
             });
 
-            // Reset posisi bar Android menjadi 0 saat lagu berpindah
             if ('setPositionState' in navigator.mediaSession) {
                 navigator.mediaSession.setPositionState({
                     duration: 0,
@@ -1398,7 +1255,6 @@ function initMultiMusicPlayer() {
                 });
             }
 
-            // Hubungkan tombol notifikasi sistem Android ke aksi player web
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 if (prevBtn) prevBtn.click();
             });
@@ -1412,7 +1268,6 @@ function initMultiMusicPlayer() {
                 if (audio) audio.pause();
             });
             
-            // Fitur agar garis durasi di Android bisa digeser maju-mundur
             navigator.mediaSession.setActionHandler('seekto', (details) => {
                 if (audio && details.seekTime) {
                     audio.currentTime = details.seekTime;
@@ -1420,7 +1275,6 @@ function initMultiMusicPlayer() {
                 }
             });
         }
-        // -------------------------------------------------------------
         
         renderPlaylistItems();
     }
@@ -1454,7 +1308,6 @@ function initMultiMusicPlayer() {
         });
     }
 
-    // Event Listeners dengan pengecekan elemen gratis (anti error)
     if (playBtn && audio) {
         playBtn.addEventListener('click', () => { 
             audio.paused ? audio.play().catch(e => console.log(e)) : audio.pause(); 
@@ -1486,14 +1339,11 @@ function initMultiMusicPlayer() {
                 progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
                 currentTimeEl.textContent = formatTime(audio.currentTime);
             }
-            // Kirim data waktu berjalan secara berkala ke sistem Android
             updateMediaSessionPosition();
         });
 
         audio.addEventListener('loadedmetadata', () => { 
             if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration); 
-            
-            // Memberikan sedikit jeda agar objek audio.duration siap terbaca penuh oleh browser
             setTimeout(() => {
                 updateMediaSessionPosition();
             }, 250);
@@ -1535,7 +1385,6 @@ function initMultiMusicPlayer() {
         });
     }
 
-    // Muat lagu pertama saat inisialisasi awal
     loadTrack(0);
 }
 
@@ -1607,28 +1456,23 @@ async function fetchAndUpdateUserLimit() {
         
         const data = await response.json();
 
-        // Elemen Header Dashboard
         const limitUsedEl = document.getElementById('userLimitUsed');
         const limitMaxEl = document.getElementById('userLimitMax');
         const limitBadgeEl = document.getElementById('userLimitBadge');
 
-        // Elemen Pop-up Profile
         const popupLimitUsedEl = document.getElementById('popupLimitUsed');
         const popupLimitMaxEl = document.getElementById('popupLimitMax');
 
         const limitUsedValue = data.limitUsed !== undefined ? data.limitUsed : 0;
         let limitMaxValue = data.maxLimit !== undefined ? data.maxLimit : 100;
 
-        // Penyesuaian format Tipe User (Unlimited / Premium / Free)
         if (data.type === 'vip' || limitMaxValue === Infinity || limitMaxValue === 'Unlimited') {
             limitMaxValue = 'Unlimited';
         }
 
-        // Update UI Header
         if (limitUsedEl) limitUsedEl.textContent = limitUsedValue;
         if (limitMaxEl) limitMaxEl.textContent = limitMaxValue;
 
-        // Update UI Pop-up Profile
         if (popupLimitUsedEl) popupLimitUsedEl.textContent = limitUsedValue;
         if (popupLimitMaxEl) popupLimitMaxEl.textContent = limitMaxValue;
 
@@ -1661,41 +1505,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const notifBtn = document.getElementById('notifMenuBtn');
-const notifPopup = document.getElementById('notifPopup');
-const closeNotifBtn = document.getElementById('closeNotifBtn');
-const notifOverlay = document.getElementById('notifOverlay');
-const notifBadge = document.getElementById('notifBadge');
+    const notifPopup = document.getElementById('notifPopup');
+    const closeNotifBtn = document.getElementById('closeNotifBtn');
+    const notifOverlay = document.getElementById('notifOverlay');
+    const notifBadge = document.getElementById('notifBadge');
 
-if (notifBtn && notifPopup) {
-    // Buka Notifikasi
-    notifBtn.addEventListener('click', () => {
-        notifPopup.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+    if (notifBtn && notifPopup) {
+        notifBtn.addEventListener('click', () => {
+            notifPopup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
 
-        // Sembunyikan angka 1 saat ditekan / dibaca
-        if (notifBadge) {
-            notifBadge.classList.add('hidden');
+            if (notifBadge) {
+                notifBadge.classList.add('hidden');
+            }
+        });
+
+        if (closeNotifBtn) {
+            closeNotifBtn.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
         }
-    });
 
-    // Tutup Notifikasi via Tombol X
-    if (closeNotifBtn) {
-        closeNotifBtn.addEventListener('click', () => {
-            notifPopup.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        });
+        if (notifOverlay) {
+            notifOverlay.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+        }
     }
 
-    // Tutup Notifikasi via Klik Area Gelap Luar
-    if (notifOverlay) {
-        notifOverlay.addEventListener('click', () => {
-            notifPopup.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        });
-    }
-}
-
-if (urlParams.get('showProfile') === 'true') {
+    if (urlParams.get('showProfile') === 'true') {
         if (typeof openProfilePopup === "function") {
             openProfilePopup();
         }
@@ -1731,7 +1571,6 @@ if (urlParams.get('showProfile') === 'true') {
             apiData = data;
             loadApis();
             fetchAndUpdateUserLimit();
-            
         })
         .catch(err => {
             const apiListEl = document.getElementById('apiList');
@@ -1741,10 +1580,15 @@ if (urlParams.get('showProfile') === 'true') {
         });
 });
 
-themeToggleBtn.addEventListener('click', toggleTheme);
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
+}
 
 let searchTimeout;
-document.getElementById('searchInput').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(performSearch, 150);
-});
+const searchInputEl = document.getElementById('searchInput');
+if (searchInputEl) {
+    searchInputEl.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 150);
+    });
+}
