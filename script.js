@@ -126,15 +126,15 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
-        // Format Username Bersih (Menghapus karakter path & /)
-        const cleanHandle = `@arulzxd_${endpointName.toLowerCase().replace(/[^a-z0-9_]/g, '')}`;
-        const tiktokDesc = endpointDesc || 'Video response dari API';
+        const cleanUsername = "@arulzxd";
+        const displayTitle = endpointName || 'Random Video';
+        const tiktokDesc = endpointDesc || displayTitle;
 
         return `
             <div class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col justify-between select-none">
                 <!-- Top Header Overlay -->
-                <div class="absolute top-0 left-0 right-0 z-20 p-3 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between text-white text-xs font-semibold pointer-events-none">
-                    <div class="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full border border-white/10">
+                <div class="absolute top-0 left-0 right-0 z-20 p-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex items-center justify-between text-white text-xs font-semibold pointer-events-none">
+                    <div class="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm">
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
                         <span class="text-[10px] tracking-wider uppercase font-bold text-slate-200">Stream Player</span>
                     </div>
@@ -147,20 +147,23 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </div>
                 </div>
 
-                <!-- Video Element dengan Suara Aktif -->
-                <video src="${url}" controls autoplay loop playsinline class="w-full h-full object-cover bg-black"></video>
+                <!-- Video Element (Tanpa Controls, Klik untuk Pause/Play) -->
+                <video src="${url}" autoplay loop playsinline 
+                    onclick="this.paused ? this.play() : this.pause()" 
+                    class="w-full h-full object-cover bg-black cursor-pointer select-none">
+                </video>
 
                 <!-- Right Action Bar (Pajangan / Non-interaktif) -->
-                <div class="absolute right-3 bottom-12 z-20 flex flex-col items-center gap-3.5 text-white pointer-events-none">
+                <div class="absolute right-2.5 bottom-16 z-20 flex flex-col items-center gap-3.5 text-white pointer-events-none">
                     <!-- Profile Icon -->
-                    <div class="relative mb-1">
+                    <div class="relative mb-0.5">
                         <div class="w-9 h-9 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center font-bold text-cyan-400 text-xs overflow-hidden shadow-md">AZ</div>
                         <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">+</div>
                     </div>
 
                     <!-- Like -->
                     <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/40 rounded-full backdrop-blur-md border border-white/10">
+                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                         </div>
                         <span class="text-[10px] font-bold shadow-sm">24.5K</span>
@@ -168,7 +171,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
 
                     <!-- Comment -->
                     <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/40 rounded-full backdrop-blur-md border border-white/10">
+                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
                         </div>
                         <span class="text-[10px] font-bold shadow-sm">821</span>
@@ -176,7 +179,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
 
                     <!-- Save / Bookmark -->
                     <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/40 rounded-full backdrop-blur-md border border-white/10">
+                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
                         </div>
                         <span class="text-[10px] font-bold shadow-sm">3.1K</span>
@@ -184,33 +187,37 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
 
                     <!-- Share -->
                     <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/40 rounded-full backdrop-blur-md border border-white/10">
+                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
                         </div>
                         <span class="text-[10px] font-bold shadow-sm">Bagikan</span>
                     </div>
+                </div>
 
-                    <!-- Spinning Disc / Vinyl -->
-                    <div class="mt-1 w-9 h-9 rounded-full bg-slate-900 border-2 border-slate-700/80 p-1 flex items-center justify-center animate-spin [animation-duration:4s] shadow-lg">
-                        <div class="w-full h-full rounded-full bg-gradient-to-tr from-gray-900 via-gray-700 to-gray-900 flex items-center justify-center border border-white/20">
-                            <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 border border-black"></div>
+                <!-- Spinning Disc / Vinyl -->
+                <div class="absolute right-3 bottom-3 z-20 pointer-events-none">
+                    <div class="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-700/80 p-1 flex items-center justify-center animate-spin [animation-duration:4s] shadow-2xl">
+                        <div class="w-full h-full rounded-full bg-gradient-to-tr from-gray-950 via-gray-700 to-gray-950 flex items-center justify-center border border-white/20">
+                            <div class="w-3 h-3 rounded-full bg-cyan-400 border border-black flex items-center justify-center">
+                                <div class="w-1 h-1 rounded-full bg-black"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bottom Description Overlay -->
-                <div class="absolute bottom-0 left-0 right-14 z-20 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col gap-1 text-left pointer-events-none">
+                <div class="absolute bottom-0 left-0 right-16 z-20 p-3.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col gap-1 text-left pointer-events-none">
                     <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-sm text-white drop-shadow">${cleanHandle}</span>
+                        <span class="font-bold text-sm text-white drop-shadow">${cleanUsername}</span>
                         <!-- Ikon Centang Biru Terverifikasi TikTok -->
                         <svg class="w-4 h-4 text-[#20D5EC] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
                     </div>
                     <p class="text-xs text-slate-200 line-clamp-2 leading-relaxed drop-shadow-sm font-sans">${tiktokDesc}</p>
-                    <div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300">
+                    <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-300">
                         <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-                        <span class="truncate font-mono">Suara asli - ${cleanHandle}</span>
+                        <span class="truncate font-mono">Suara asli - ${cleanUsername}</span>
                     </div>
                 </div>
             </div>`;
@@ -221,6 +228,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
     }
     return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
+
 
 /* =========================================================================
    THEME & APPLICATION FUNCTIONS
