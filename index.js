@@ -1,6 +1,7 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
+const { createClient } = require('@supabase/supabase-js');
 const mongoose = require('mongoose');
 const { MongoStore } = require('connect-mongo');
 const passport = require('passport');
@@ -33,6 +34,10 @@ app.use(express.json({
 }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gwnccwopnxqtddeszsgm.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_6cySP-RH5iFZx5dLQRvHrA_4FonEkJ7';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
@@ -76,6 +81,62 @@ const checkAuthSession = (req, res, next) => {
 };
 
 app.use(checkAuthSession);
+
+const logApiActivity = async (req, res, next) => {
+    const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
+    
+    // Tangkap event finish response
+    res.on('finish', async () => {
+        if (userKey && req.path.startsWith('/api/')) {
+            try {
+                await supabase.from('api_logs').insert([{
+                    apikey: userKey,
+                    method: req.method,
+                    endpoint: req.path,
+                    status_code: res.statusCode
+                }]);
+            } catch (err) {
+                console.error("Gagal simpan log ke Supabase:", err.message);
+            }
+        }
+    });
+    next();
+};
+
+app.get('/api/user-activity', checkAuthSession, async (req, res) => {
+    let userKey = req.query.apikey || req.headers['x-api-key'];
+    if (!userKey && req.user) {
+        userKey = req.user.apiKey || req.user.apikey;
+    }
+
+    if (!userKey) {
+        return res.json({ status: false, data: [] });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('api_logs')
+            .select('method, endpoint, status_code, created_at')
+            .eq('apikey', userKey)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        // Format data sesuai tampilan UI
+        const formattedLogs = data.map(log => {
+            const date = new Date(log.created_at);
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
+            return `[${timeStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+        });
+
+        return res.json({ status: true, data: formattedLogs });
+    } catch (err) {
+        console.error("Error fetching logs:", err.message);
+        return res.status(500).json({ status: false, data: [] });
+    }
+});
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
@@ -191,14 +252,16 @@ const reviewSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
+
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
 // ----------------------------------------------------
 // 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
 // ----------------------------------------------------
 const uploadReviewMedia = multer({
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
             cb(null, true);
@@ -209,7 +272,7 @@ const uploadReviewMedia = multer({
 });
 
 // ----------------------------------------------------
-// ENDPOINT TAMBAH / EDIT ULASAN PRODUK & MEDIA
+// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
 // ----------------------------------------------------
 app.post('/api/reviews', checkAuthSession, (req, res) => {
     uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
@@ -218,85 +281,84 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
         }
 
         try {
-            const { productId, rating, comment, keepExistingMedia, removedMediaUrls } = req.body;
+            const { productId, rating, comment } = req.body;
 
-            if (!productId) return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
-            if (!rating || Number(rating) < 1 || Number(rating) > 5) return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
-            if (!comment || !comment.trim()) return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan!' });
+            if (!productId) {
+                return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
+            }
 
-            // Identifikasi User & Avatar Terbaru
+            if (!rating || Number(rating) < 1 || Number(rating) > 5) {
+                return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
+            }
+
+            if (!comment || !comment.trim()) {
+                return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
+            }
+
+            // Identitas User
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
             let userId = getUserIdentifier(req);
 
             if (req.user) {
-                const freshUser = await User.findById(req.user.id || req.user._id);
-                if (freshUser) {
-                    username = freshUser.username;
-                    userAvatar = freshUser.avatar || userAvatar;
-                    userId = freshUser._id.toString();
-                } else {
-                    username = req.user.username || req.user.name;
-                    userAvatar = req.user.avatar || userAvatar;
-                    userId = (req.user.id || req.user._id).toString();
+                username = req.user.username || req.user.name;
+                userAvatar = req.user.avatar || userAvatar;
+                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
+            }
+
+            // Cek apakah user pernah membeli produk ini
+            const product = await Product.findOne({
+                $or: [{ Id: productId }, { _id: mongoose.Types.ObjectId.isValid(productId) ? productId : null }]
+            });
+
+            if (product && product.purchasedBy) {
+                const userClean = userId.toLowerCase().trim();
+                const isBuyer = product.purchasedBy.some(p => p.toLowerCase().trim() === userClean);
+
+                if (!isBuyer && process.env.NODE_ENV === 'production') {
+                    return res.status(403).json({
+                        status: false,
+                        message: 'Anda belum pernah membeli produk ini, tidak dapat memberikan penilaian!'
+                    });
                 }
             }
 
-            // Proses Berkas Media Baru (jika ada)
-            const newMediaList = [];
+            // Upload Media jika ada
+            const mediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
                     const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
                     const isVideo = mimeType.startsWith('video/');
                     const base64 = file.buffer.toString('base64');
-                    newMediaList.push({
+                    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+                    mediaList.push({
                         type: isVideo ? 'video' : 'image',
-                        url: `data:${mimeType};base64,${base64}`
+                        url: dataUrl
                     });
                 }
             }
 
+            // CEK EDIT OR CREATE: Cari review sebelumnya oleh User ini di Produk ini
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
-                // UPDATE REVIU LAMA TANPA MENGHAPUS RATING ATAU KOMENTAR
+                // EDIT / UPDATE RATING LAMA
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
-                existingReview.userAvatar = userAvatar;
-                existingReview.username = username;
-
-                let updatedMedia = existingReview.media || [];
-
-                // 1. Jika ada daftar media lama yang dihapus pengguna saat edit
-                if (removedMediaUrls) {
-                    let urlsToRemove = [];
-                    try {
-                        urlsToRemove = JSON.parse(removedMediaUrls);
-                    } catch (e) {
-                        urlsToRemove = Array.isArray(removedMediaUrls) ? removedMediaUrls : [removedMediaUrls];
-                    }
-                    updatedMedia = updatedMedia.filter(m => !urlsToRemove.includes(m.url));
+                if (mediaList.length > 0) {
+                    existingReview.media = mediaList; // Perbarui media jika melampirkan baru
                 }
-
-                // 2. Jika `keepExistingMedia` diset false (reset total media lama)
-                if (keepExistingMedia === 'false') {
-                    updatedMedia = newMediaList;
-                } else {
-                    // Gabungkan media lama yang dipertahankan dengan media baru yang diunggah
-                    updatedMedia = [...updatedMedia, ...newMediaList];
-                }
-
-                existingReview.media = updatedMedia;
                 existingReview.updatedAt = new Date();
                 await existingReview.save();
 
                 return res.json({
                     status: true,
-                    message: 'Penilaian & media ulasan berhasil diperbarui!',
+                    message: 'Penilaian produk Anda berhasil diperbarui!',
                     data: existingReview
                 });
             } else {
-                // BUAT REVIU BARU
+                // BUAT RATING BARU (PERTAMA KALI)
                 const newReview = new Review({
                     productId,
                     userId,
@@ -304,10 +366,11 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                     userAvatar,
                     rating: Number(rating),
                     comment: comment.trim(),
-                    media: newMediaList
+                    media: mediaList
                 });
 
                 await newReview.save();
+
                 return res.json({
                     status: true,
                     message: 'Penilaian produk berhasil dikirim!',
@@ -328,68 +391,23 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
 app.get('/api/reviews/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
-        const reviews = await Review.find({ productId }).sort({ createdAt: -1 }).lean();
+        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
 
-        if (!reviews || reviews.length === 0) {
-            return res.json({
-                status: true,
-                totalReviews: 0,
-                averageRating: 0,
-                reviews: []
-            });
+        let averageRating = 0;
+        if (reviews.length > 0) {
+            const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
+            averageRating = Number((totalRating / reviews.length).toFixed(1));
         }
-
-        // Sinkronisasi Avatar Terbaru dari database User
-        const updatedReviews = await Promise.all(reviews.map(async (rev) => {
-            if (rev.userId) {
-                const freshUser = await User.findOne({
-                    $or: [{ _id: mongoose.Types.ObjectId.isValid(rev.userId) ? rev.userId : null }, { email: rev.userId }, { username: rev.userId }]
-                }).select('avatar username');
-                
-                if (freshUser) {
-                    rev.userAvatar = freshUser.avatar || rev.userAvatar;
-                    rev.username = freshUser.username || rev.username;
-                }
-            }
-            return rev;
-        }));
-
-        const totalRating = updatedReviews.reduce((acc, rev) => acc + rev.rating, 0);
-        const averageRating = (totalRating / updatedReviews.length).toFixed(1);
 
         return res.json({
             status: true,
-            totalReviews: updatedReviews.length,
-            averageRating: parseFloat(averageRating),
-            reviews: updatedReviews
+            totalReviews: reviews.length,
+            averageRating: averageRating,
+            reviews: reviews
         });
     } catch (error) {
-        console.error("Error GET reviews:", error);
-        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan.' });
-    }
-});
-
-app.delete('/api/reviews/:id', checkAuthSession, async (req, res) => {
-    try {
-        const reviewId = req.params.id;
-        const userId = getUserIdentifier(req);
-
-        const review = await Review.findById(reviewId);
-        if (!review) {
-            return res.status(404).json({ status: false, message: 'Ulasan tidak ditemukan.' });
-        }
-
-        const isOwner = (req.user && (req.user.username === review.username || req.user.id === review.userId || req.user._id.toString() === review.userId)) || review.userId === userId;
-        
-        if (!isOwner) {
-            return res.status(403).json({ status: false, message: 'Anda tidak memiliki hak akses untuk menghapus ulasan ini.' });
-        }
-
-        await Review.findByIdAndDelete(reviewId);
-        return res.json({ status: true, message: 'Ulasan berhasil dihapus.' });
-    } catch (err) {
-        console.error("Error delete review:", err);
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menghapus ulasan.' });
+        console.error("Error fetch reviews:", error);
+        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan produk.' });
     }
 });
 
@@ -2591,7 +2609,7 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
-app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, router);
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
 app.get('/script.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'script.js'));
@@ -3036,94 +3054,103 @@ app.get('/docs', (req, res) => {
     
 <!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
+    <div class="w-full max-w-sm bg-[#0a0f1d] border-2 border-cyan-400 rounded-3xl p-5 shadow-[0_0_25px_rgba(34,211,238,0.25)] relative font-['Space_Grotesk'] text-white">
         
-        <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
-        <div class="flex flex-col items-center text-center mt-2 relative z-10">
-            <!-- Input File Tersembunyi -->
-            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-
-            <div class="relative w-32 h-32 flex items-center justify-center mb-3">
-                <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
-                
-                <!-- Avatar Container -->
-                <div class="relative group cursor-pointer" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ganti avatar">
-                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
-                        <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
-                            <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
-                            
-                            <!-- Overlay Hover -->
-                            <div class="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">Ubah</span>
-                            </div>
-                        </div>
+        <!-- Header: Avatar, Nama, Plan -->
+        <div class="flex items-center justify-between mb-5 gap-2">
+            <!-- Avatar dengan Badge Mahkota -->
+            <div class="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
+                <div id="avatarBadge" class="absolute -top-4 z-20 scale-90"></div>
+                <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
+                    <div id="avatar3DBorder" class="w-20 h-20 rounded-full p-[2px] z-10 flex items-center justify-center border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]">
+                        <img id="userAvatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover">
                     </div>
-
-                    <!-- Tombol SVG Kamera Samping Bawah -->
-                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-900 shadow-lg transition-transform duration-200 group-hover:scale-110 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                        </svg>
+                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-1 rounded-full border border-slate-950">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
                     </div>
                 </div>
             </div>
 
-            <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
-            <p id="userEmail" class="text-slate-400 font-mono text-xs mb-5">loading-email@mail.com</p>
+            <!-- Nama & Email User -->
+            <div class="flex-1 flex flex-col gap-1.5 min-w-0 px-1">
+                <div class="bg-[#0f1d2e] border border-cyan-400/80 rounded-full py-1 px-3 text-center truncate">
+                    <span id="userName" class="text-xs font-bold text-cyan-200 tracking-wider">NAMA USER</span>
+                </div>
+                <div class="bg-[#0f1d2e] border border-cyan-400/80 rounded-full py-1 px-3 text-center truncate">
+                    <span id="userEmail" class="text-[10px] font-mono text-cyan-300">email_user@gmail.com</span>
+                </div>
+            </div>
+
+            <!-- User Plan Box -->
+            <div class="w-16 flex flex-col items-center justify-between">
+                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-1 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
+                <div id="planBoxContainer" class="w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">VIP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row Middle: Api Key & Limit User -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <!-- Box API Key -->
+            <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-2.5 flex flex-col justify-between relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-md border border-white/20">Api Key Kamu :</span>
+                    <svg class="w-5 h-5 text-amber-300 animate-spin" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                </div>
+                <div class="bg-gray-200 text-slate-900 font-mono text-[11px] font-bold py-1 px-2 rounded-lg truncate mb-2 text-center">
+                    <span id="userApiKey">loading-key</span>
+                </div>
+                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-1.5 rounded-lg uppercase tracking-wider shadow-md">
+                    Salin Api Key
+                </button>
+            </div>
+
+            <!-- Box Limit User -->
+            <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-2.5 flex flex-col items-center justify-between">
+                <div class="w-full bg-white text-slate-950 text-center text-[10px] font-black py-0.5 rounded-md uppercase tracking-wider mb-1">
+                    LIMIT USER
+                </div>
+                <div class="my-auto">
+                    <span class="text-2xl font-black text-slate-900 bg-white px-3 py-0.5 rounded-xl border border-black font-mono tracking-tight shadow-inner">
+                        <span id="userLimitUsed">0</span> / <span id="userLimitMax">100</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Box Aktifitas Request API Terakhir -->
+        <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-3 mb-5 shadow-inner">
+            <div class="bg-white text-slate-950 text-center text-[11px] font-black py-1 rounded-xl uppercase tracking-wider mb-3">
+                Aktifitas Request Api Terakhir
+            </div>
             
-            <div class="w-full space-y-4 text-left mb-5">
-                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1">
-                    <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
-                    <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
-                        <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-2">
-                    <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
-                        Jangan bagikan API Key ini kepada siapapun!
-                    </div>
-                    
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
-                        <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
-                        <span id="userApiKey">loading-key-xxxx</span>
-                    </div>
+            <div id="activityLogsContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
+                <div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-3 rounded-lg text-center shadow">
+                    Memuat aktifitas...
                 </div>
             </div>
+        </div>
 
-            <div class="w-full flex flex-col gap-3">
-                <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    Upgrade
+        <!-- Action Buttons -->
+        <div class="space-y-2">
+            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-lg">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                UPGRADE
+            </a>
+
+            <div class="flex gap-2">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-[#1a2332] hover:bg-[#253246] text-slate-200 font-bold text-xs py-2.5 rounded-xl uppercase tracking-wider border border-white/10">
+                    TUTUP
+                </button>
+                <a href="/auth/logout" class="flex-1 bg-red-950/60 hover:bg-red-900/80 text-red-400 border border-red-500/40 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1 uppercase tracking-wider">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    LOG OUT
                 </a>
-                
-                <div class="flex gap-3 w-full">
-                    <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
-                        Tutup
-                    </button>
-                    <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        Log Out
-                    </a>
-                </div>
             </div>
-
         </div>
     </div>
   </div>
@@ -3663,27 +3690,71 @@ app.get('/docs', (req, res) => {
             if (data.loggedIn && data.user) {
                 const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
 
-                // Sync Avatar di Modal
-                const modalAvatar = document.getElementById('userAvatar');
-                if (modalAvatar) modalAvatar.src = latestAvatar;
-
-                // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
-                const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-                if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
+                // Sync Elements
+                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                    if (img) img.src = latestAvatar;
+                });
 
                 document.getElementById('userName').innerText = data.user.username || 'User';
                 document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
                 
-                // Perbaikan pembacaan apiKey / apikey
                 const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
                 document.getElementById('userApiKey').innerText = userKey;
                 
-                setRoleTheme(data.user.role || 'free');
+                // Update Plan UI
+                updateUserPlanUI(data.user.role || 'free');
+
+                // Load Limit & Logs Activity
+                fetchUserActivityLogs(userKey);
             }
         })
         .catch((err) => {
             console.error("Gagal sinkronisasi profile:", err);
-            setRoleTheme("free"); 
+        });
+}
+
+function updateUserPlanUI(roleName) {
+    const planText = document.getElementById('userPlanText');
+    const planContainer = document.getElementById('planBoxContainer');
+    const role = (roleName || '').toLowerCase();
+
+    if (role.includes('vip')) {
+        planText.innerText = 'VIP';
+        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]";
+    } else if (role.includes('premium')) {
+        planText.innerText = 'PREM';
+        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)]";
+    } else {
+        planText.innerText = 'FREE';
+        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+    }
+}
+
+function fetchUserActivityLogs(apiKey) {
+    const container = document.getElementById('activityLogsContainer');
+    if (!container) return;
+
+    fetch(`/api/user-activity?apikey=${encodeURIComponent(apiKey)}`)
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.status && resData.data && resData.data.length > 0) {
+                container.innerHTML = resData.data.map(logText => `
+                    <div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">
+                        ${logText}
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
+                        Belum ada aktivitas request
+                    </div>`;
+            }
+        })
+        .catch(err => {
+            container.innerHTML = `
+                <div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
+                    Gagal memuat aktivitas
+                </div>`;
         });
 }
 
