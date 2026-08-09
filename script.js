@@ -1439,19 +1439,17 @@ async function fetchAndUpdateUserLimit() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Prioritas pencarian API Key: URL Param -> Global Variable -> LocalStorage -> Form Input
         let apiKey = urlParams.get('apikey') 
             || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
 
         if (!apiKey) {
-            const firstApiKeyInput = document.querySelector('input[name="apikey"]');
-            if (firstApiKeyInput && firstApiKeyInput.value) {
-                apiKey = firstApiKeyInput.value;
+            const userApiKeyEl = document.getElementById('userApiKey');
+            if (userApiKeyEl && userApiKeyEl.innerText !== 'loading-key') {
+                apiKey = userApiKeyEl.innerText;
             }
         }
 
-        // Panggil endpoint user-limit (cookie auth_session akan otomatis terkirim via credentials)
-        const response = await fetch(`/api/user-limit?apikey=${encodeURIComponent(apiKey)}`, {
+        const response = await fetch('/api/user-limit?apikey=' + encodeURIComponent(apiKey), {
             headers: { 'Cache-Control': 'no-cache' }
         });
 
@@ -1459,36 +1457,41 @@ async function fetchAndUpdateUserLimit() {
         
         const data = await response.json();
 
+        // Elemen Header Dashboard
         const limitUsedEl = document.getElementById('userLimitUsed');
         const limitMaxEl = document.getElementById('userLimitMax');
         const limitBadgeEl = document.getElementById('userLimitBadge');
 
-        if (limitUsedEl && limitMaxEl) {
-            // Update UI jika data dari server valid
-            if (data.limitUsed !== undefined && data.limitUsed !== null) {
-                limitUsedEl.textContent = data.limitUsed;
-            }
-            if (data.maxLimit !== undefined && data.maxLimit !== null) {
-                limitMaxEl.textContent = data.maxLimit;
-            }
-            
-            if (limitBadgeEl && data.type) {
-                limitBadgeEl.textContent = data.type.toUpperCase();
-                
-                // Ubah styling badge secara konsisten
-                if (data.type === 'vip') {
-                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
-                } else if (data.type === 'premium') {
-                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest border border-amber-500/30";
-                } else {
-                    limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest border border-white/5";
-                }
+        // Elemen Pop-up Profile
+        const popupLimitUsedEl = document.getElementById('popupLimitUsed');
+        const popupLimitMaxEl = document.getElementById('popupLimitMax');
+
+        const limitUsedValue = data.limitUsed !== undefined ? data.limitUsed : 0;
+        const limitMaxValue = data.maxLimit !== undefined ? data.maxLimit : 100;
+
+        // Update UI Header
+        if (limitUsedEl) limitUsedEl.textContent = limitUsedValue;
+        if (limitMaxEl) limitMaxEl.textContent = limitMaxValue;
+
+        // Update UI Pop-up Profile
+        if (popupLimitUsedEl) popupLimitUsedEl.textContent = limitUsedValue;
+        if (popupLimitMaxEl) popupLimitMaxEl.textContent = limitMaxValue;
+
+        if (limitBadgeEl && data.type) {
+            limitBadgeEl.textContent = data.type.toUpperCase();
+            if (data.type === 'vip') {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
+            } else if (data.type === 'premium') {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest border border-amber-500/30";
+            } else {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest border border-white/5";
             }
         }
     } catch (error) {
         console.error("Gagal memperbarui data limit di UI:", error);
     }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('lang') || 'id';

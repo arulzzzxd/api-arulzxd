@@ -1854,11 +1854,11 @@ function getApiKeyType(userKey, user = null) {
     return 'free';
 }
 
-app.get('/api/user-limit', (req, res) => {
+app.get('/api/user-limit', checkAuthSession, (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    if (!userKey && req.user && req.user.apiKey) {
-        userKey = req.user.apiKey;
+    if (!userKey && req.user) {
+        userKey = req.user.apiKey || req.user.apikey;
     }
 
     if (!userKey) {
@@ -3052,43 +3052,43 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal -->
+<!-- User Profile Pop-up Modal (Tampilan Diperbesar & Avatar 3D Aktif) -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-[#0a0f1d] border-2 border-cyan-400 rounded-3xl p-5 shadow-[0_0_25px_rgba(34,211,238,0.25)] relative font-['Space_Grotesk'] text-white">
+    <div class="w-full max-w-md bg-[#0a0f1d] border-2 border-cyan-400/80 rounded-3xl p-6 shadow-[0_0_35px_rgba(34,211,238,0.3)] relative font-['Space_Grotesk'] text-white">
         
-        <!-- Header: Avatar, Nama, Plan -->
-        <div class="flex items-center justify-between mb-5 gap-2">
-            <!-- Avatar dengan Badge Mahkota -->
-            <div class="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
+        <!-- Header Profile -->
+        <div class="flex items-center justify-between mb-5 gap-3">
+            <!-- Avatar 3D & Badge Crown -->
+            <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div id="avatarBadge" class="absolute -top-4 z-20 scale-90"></div>
+                <div id="avatarBadge" class="absolute -top-6 z-20 scale-100"></div>
                 <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div id="avatar3DBorder" class="w-20 h-20 rounded-full p-[2px] z-10 flex items-center justify-center border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]">
-                        <img id="userAvatar" src="https://via.placeholder.com/150" class="w-full h-full rounded-full object-cover">
+                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-free">
+                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
                     </div>
-                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-1 rounded-full border border-slate-950">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-1.5 rounded-full border-2 border-slate-950 shadow-md">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
                     </div>
                 </div>
             </div>
 
-            <!-- Nama & Email User -->
-            <div class="flex-1 flex flex-col gap-1.5 min-w-0 px-1">
-                <div class="bg-[#0f1d2e] border border-cyan-400/80 rounded-full py-1 px-3 text-center truncate">
+            <!-- Username & Email -->
+            <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-1.5 px-3.5 text-center truncate">
                     <span id="userName" class="text-xs font-bold text-cyan-200 tracking-wider">NAMA USER</span>
                 </div>
-                <div class="bg-[#0f1d2e] border border-cyan-400/80 rounded-full py-1 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] font-mono text-cyan-300">email_user@gmail.com</span>
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-1.5 px-3.5 text-center truncate">
+                    <span id="userEmail" class="text-[11px] font-mono text-cyan-300">email_user@gmail.com</span>
                 </div>
             </div>
 
             <!-- User Plan Box -->
             <div class="w-16 flex flex-col items-center justify-between">
-                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-1 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
-                <div id="planBoxContainer" class="w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">VIP</span>
+                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-1.5 py-0.5 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
+                <div id="planBoxContainer" class="w-14 h-14 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
+                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">FREE</span>
                 </div>
             </div>
         </div>
@@ -3096,41 +3096,41 @@ app.get('/docs', (req, res) => {
         <!-- Row Middle: Api Key & Limit User -->
         <div class="grid grid-cols-2 gap-3 mb-4">
             <!-- Box API Key -->
-            <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-2.5 flex flex-col justify-between relative overflow-hidden">
-                <div class="flex items-center justify-between mb-1">
+            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-1.5">
                     <span class="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-md border border-white/20">Api Key Kamu :</span>
-                    <svg class="w-5 h-5 text-amber-300 animate-spin" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                    <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
                 </div>
-                <div class="bg-gray-200 text-slate-900 font-mono text-[11px] font-bold py-1 px-2 rounded-lg truncate mb-2 text-center">
+                <div class="bg-white text-slate-950 font-mono text-[11px] font-bold py-1.5 px-2 rounded-xl truncate mb-2 text-center">
                     <span id="userApiKey">loading-key</span>
                 </div>
-                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-1.5 rounded-lg uppercase tracking-wider shadow-md">
+                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-1.5 rounded-xl uppercase tracking-wider shadow-md">
                     Salin Api Key
                 </button>
             </div>
 
             <!-- Box Limit User -->
-            <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-2.5 flex flex-col items-center justify-between">
+            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3 flex flex-col items-center justify-between">
                 <div class="w-full bg-white text-slate-950 text-center text-[10px] font-black py-0.5 rounded-md uppercase tracking-wider mb-1">
                     LIMIT USER
                 </div>
-                <div class="my-auto">
-                    <span class="text-2xl font-black text-slate-900 bg-white px-3 py-0.5 rounded-xl border border-black font-mono tracking-tight shadow-inner">
-                        <span id="userLimitUsed">0</span> / <span id="userLimitMax">100</span>
+                <div class="my-auto py-1">
+                    <span class="text-xl sm:text-2xl font-black text-slate-950 bg-white px-3 py-1 rounded-xl border border-black/20 font-mono tracking-tight shadow-inner">
+                        <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
                     </span>
                 </div>
             </div>
         </div>
 
         <!-- Box Aktifitas Request API Terakhir -->
-        <div class="bg-[#030712] border-2 border-cyan-400 rounded-2xl p-3 mb-5 shadow-inner">
+        <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3 mb-5 shadow-inner">
             <div class="bg-white text-slate-950 text-center text-[11px] font-black py-1 rounded-xl uppercase tracking-wider mb-3">
                 Aktifitas Request Api Terakhir
             </div>
             
-            <div id="activityLogsContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
-                <div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-3 rounded-lg text-center shadow">
-                    Memuat aktifitas...
+            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
+                <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
+                    Belum ada aktivitas request
                 </div>
             </div>
         </div>
@@ -3146,7 +3146,7 @@ app.get('/docs', (req, res) => {
                 <button onclick="closeProfilePopup()" class="flex-1 bg-[#1a2332] hover:bg-[#253246] text-slate-200 font-bold text-xs py-2.5 rounded-xl uppercase tracking-wider border border-white/10">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 bg-red-950/60 hover:bg-red-900/80 text-red-400 border border-red-500/40 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1 uppercase tracking-wider">
+                <a href="/auth/logout" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/40 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1 uppercase tracking-wider">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     LOG OUT
                 </a>
@@ -3197,7 +3197,6 @@ app.get('/docs', (req, res) => {
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
-                    <!-- TAMBAHKAN ID id="sidebarUserAvatar" DI SINI -->
                     <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
@@ -3555,63 +3554,42 @@ app.get('/docs', (req, res) => {
         }
 
         function setRoleTheme(roleName) {
-            const roleContainer = document.getElementById('userRoleContainer');
             const avatar3DBorder = document.getElementById('avatar3DBorder');
             const avatarBadge = document.getElementById('avatarBadge');
-            const usernameTag = document.getElementById('userEmail');
-            const normalizedRole = (roleName || '').toLowerCase();
+            const planText = document.getElementById('userPlanText');
+            const planContainer = document.getElementById('planBoxContainer');
+            const role = (roleName || '').toLowerCase();
 
-            const iconFree = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>\`;
-            const iconPremium = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>\`;
-            const iconVip = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>\`;
+            const buildCrownSVG = (gradId) => '<svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                    '<linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a"/><stop offset="40%" stop-color="#fbbf24"/><stop offset="70%" stop-color="#b45309"/><stop offset="100%" stop-color="#451a03"/></linearGradient>' +
+                    '<linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f3e8ff"/><stop offset="35%" stop-color="#c084fc"/><stop offset="70%" stop-color="#7e22ce"/><stop offset="100%" stop-color="#2e1065"/></linearGradient>' +
+                '</defs>' +
+                '<path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#' + gradId + ')" />' +
+                '<circle cx="16" cy="39" r="2.5" fill="url(#' + gradId + ')" />' +
+                '<circle cx="34" cy="30" r="2.5" fill="url(#' + gradId + ')" />' +
+                '<circle cx="66" cy="30" r="2.5" fill="url(#' + gradId + ')" />' +
+                '<circle cx="84" cy="39" r="2.5" fill="url(#' + gradId + ')" />' +
+                '<path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#' + gradId + ')" />' +
+            '</svg>';
 
-            const buildCrownSVG = (gradId) => \`
-                <svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fef08a" />
-                            <stop offset="40%" stop-color="#fbbf24" />
-                            <stop offset="70%" stop-color="#b45309" />
-                            <stop offset="100%" stop-color="#451a03" />
-                        </linearGradient>
-                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f3e8ff" />
-                            <stop offset="35%" stop-color="#c084fc" />
-                            <stop offset="70%" stop-color="#7e22ce" />
-                            <stop offset="100%" stop-color="#2e1065" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
-                    <circle cx="16" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
-                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-                </svg>\`;
-
-            if (normalizedRole.includes('vip')) {
-                roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-purple-400 drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]";
-                roleContainer.innerHTML = \`\${iconVip} <span class="tracking-wide">VIP User</span>\`;
-                usernameTag.className = "text-purple-400 font-mono text-sm mb-4 opacity-90";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
+            if (role.includes('vip')) {
+                planText.innerText = 'VIP';
+                planContainer.className = "w-14 h-14 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
+                avatar3DBorder.className = "w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-vip";
+                avatarBadge.className = "absolute -top-6 z-20 scale-110";
                 avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
-            } else if (normalizedRole.includes('premium')) {
-                roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]";
-                roleContainer.innerHTML = \`\${iconPremium} <span class="tracking-wide">Premium User</span>\`;
-                usernameTag.className = "text-amber-400 font-mono text-sm mb-4 opacity-90";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
+            } else if (role.includes('premium')) {
+                planText.innerText = 'PREM';
+                planContainer.className = "w-14 h-14 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
+                avatar3DBorder.className = "w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-premium";
+                avatarBadge.className = "absolute -top-6 z-20 scale-110";
                 avatarBadge.innerHTML = buildCrownSVG('goldCrown');
             } else {
-                roleContainer.className = "flex items-center gap-1.5 font-semibold mb-3 text-emerald-400";
-                roleContainer.innerHTML = \`\${iconFree} <span class="tracking-wide">Free User</span>\`;
-                usernameTag.className = "text-emerald-400 font-mono text-sm mb-4";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-                avatarBadge.innerHTML = ""; 
+                planText.innerText = 'FREE';
+                planContainer.className = "w-14 h-14 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+                avatar3DBorder.className = "w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-free";
+                avatarBadge.innerHTML = "";
             }
         }
         
@@ -3629,7 +3607,6 @@ app.get('/docs', (req, res) => {
             if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
 
-            // Helper untuk menampilkan SweetAlert2 bergaya Cyan Neon Cyberpunk
             const showCyberAlert = (icon, title, text) => {
                 Swal.fire({
                     icon: icon,
@@ -3659,7 +3636,6 @@ app.get('/docs', (req, res) => {
                 if (result.status) {
                     const newAvatarUrl = result.avatar;
 
-                    // Force update DOM langsung menggunakan URL Data Base64 baru
                     document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
                         img.src = newAvatarUrl;
                     });
@@ -3682,82 +3658,63 @@ app.get('/docs', (req, res) => {
             }
         }
 
-        // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
-    fetch('/api/user-status')
-        .then(res => res.json())
-        .then(data => {
-            if (data.loggedIn && data.user) {
-                const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
 
-                // Sync Elements
-                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                    if (img) img.src = latestAvatar;
+                        document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                            if (img) img.src = latestAvatar;
+                        });
+
+                        document.getElementById('userName').innerText = data.user.username || 'User';
+                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                        
+                        const userKey = data.user.apiKey || data.user.apikey || '';
+                        document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
+                        
+                        setRoleTheme(data.user.role || 'Free User');
+
+                        fetchUserActivityLogs(userKey);
+                        if (typeof fetchAndUpdateUserLimit === 'function') {
+                            fetchAndUpdateUserLimit();
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.error("Gagal sinkronisasi profile:", err);
                 });
+        }
 
-                document.getElementById('userName').innerText = data.user.username || 'User';
-                document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                
-                const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
-                document.getElementById('userApiKey').innerText = userKey;
-                
-                // Update Plan UI
-                updateUserPlanUI(data.user.role || 'free');
+        function fetchUserActivityLogs(apiKey) {
+            const container = document.getElementById('activityLogsContainer');
+            if (!container) return;
 
-                // Load Limit & Logs Activity
-                fetchUserActivityLogs(userKey);
-            }
-        })
-        .catch((err) => {
-            console.error("Gagal sinkronisasi profile:", err);
-        });
-}
-
-function updateUserPlanUI(roleName) {
-    const planText = document.getElementById('userPlanText');
-    const planContainer = document.getElementById('planBoxContainer');
-    const role = (roleName || '').toLowerCase();
-
-    if (role.includes('vip')) {
-        planText.innerText = 'VIP';
-        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]";
-    } else if (role.includes('premium')) {
-        planText.innerText = 'PREM';
-        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)]";
-    } else {
-        planText.innerText = 'FREE';
-        planContainer.className = "w-14 h-14 rounded-xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
-    }
-}
-
-function fetchUserActivityLogs(apiKey) {
-    const container = document.getElementById('activityLogsContainer');
-    if (!container) return;
-
-    fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
-        .then(res => res.json())
-        .then(resData => {
-            if (resData.status && resData.data && resData.data.length > 0) {
-                container.innerHTML = resData.data.map(logText => 
-                    '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
-                        logText +
-                    '</div>'
-                ).join('');
-            } else {
-                container.innerHTML = 
-                    '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
-                        'Belum ada aktivitas request' +
-                    '</div>';
-            }
-        })
-        .catch(err => {
-            container.innerHTML = 
-                '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
-                    'Gagal memuat aktivitas' +
-                '</div>';
-        });
-}
-
+            fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData.status && resData.data && resData.data.length > 0) {
+                        container.innerHTML = resData.data.map(logText => 
+                            '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
+                                logText +
+                            '</div>'
+                        ).join('');
+                    } else {
+                        container.innerHTML = 
+                            '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                                'Belum ada aktivitas request' +
+                            '</div>';
+                    }
+                })
+                .catch(err => {
+                    container.innerHTML = 
+                        '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                            'Gagal memuat aktivitas' +
+                        '</div>';
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
@@ -3791,7 +3748,7 @@ function fetchUserActivityLogs(apiKey) {
         const pageName = getPageDisplayName();
         const loaderTitleEl = document.getElementById('loader-title-text');
         if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = \`Memuat \${pageName}<span class="animated-dots"></span>\`;
+            loaderTitleEl.innerHTML = 'Memuat ' + pageName + '<span class="animated-dots"></span>';
         }
 
         let currentProgress = 0;
