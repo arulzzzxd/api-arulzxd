@@ -1467,7 +1467,12 @@ async function fetchAndUpdateUserLimit() {
         const popupLimitMaxEl = document.getElementById('popupLimitMax');
 
         const limitUsedValue = data.limitUsed !== undefined ? data.limitUsed : 0;
-        const limitMaxValue = data.maxLimit !== undefined ? data.maxLimit : 100;
+        let limitMaxValue = data.maxLimit !== undefined ? data.maxLimit : 100;
+
+        // Penyesuaian format Tipe User (Unlimited / Premium / Free)
+        if (data.type === 'vip' || limitMaxValue === Infinity || limitMaxValue === 'Unlimited') {
+            limitMaxValue = 'Unlimited';
+        }
 
         // Update UI Header
         if (limitUsedEl) limitUsedEl.textContent = limitUsedValue;
@@ -1491,7 +1496,6 @@ async function fetchAndUpdateUserLimit() {
         console.error("Gagal memperbarui data limit di UI:", error);
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('lang') || 'id';
