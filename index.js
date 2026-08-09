@@ -3593,7 +3593,7 @@ app.get('/docs', (req, res) => {
             }
         }
 
-                function setRoleTheme(roleName) {
+                                function setRoleTheme(roleName) {
             const avatar3DBorder = document.getElementById('avatar3DBorder');
             const avatarBadge = document.getElementById('avatarBadge');
             const planText = document.getElementById('userPlanText');
