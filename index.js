@@ -738,8 +738,8 @@ app.post('/transactions', async (req, res) => {
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
             const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
-            });
+                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') }
+            }).lean();
             if (dbProduct) pLink = dbProduct.link;
         }
 
@@ -979,7 +979,7 @@ app.post('/webhook', async (req, res) => {
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
-                        });
+                        }).lean();
                         if (dbProduct) localTrx.productLink = dbProduct.link;
                     }
                 } 
@@ -1832,10 +1832,9 @@ const getLimitMessage = (keyType, limitCount) => {
     return `Limit API Key Free Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket Premium (1.000 req/hari) atau VIP (Unlimited) untuk melanjutkan!`;
 };
 
+const apiKeyUserCache = new Map();
 const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist') {
-        return next();
-    }
+    if (req.path === '/apilist') return next();
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
 
@@ -1854,34 +1853,20 @@ const validateApiKey = async (req, res, next) => {
     const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
     let callerUser = req.user || null;
 
+    // Gunakan In-Memory Cache untuk menghindari query MongoDB berulang
     if (!callerUser) {
-        const callerIdentifier = req.query.username || req.body?.username || req.headers['x-username'] || 
-                                 req.query.email || req.body?.email || req.headers['x-email'];
-
-        if (callerIdentifier) {
-            const cleanIdentifier = callerIdentifier.toLowerCase().trim();
-            callerUser = await User.findOne({
-                $or: [{ username: cleanIdentifier }, { email: cleanIdentifier }]
-            });
-        }
-    }
-
-    if (isVipKeyString) {
-        if (!callerUser || !isVipAuthorized(callerUser, userKey)) {
-            return res.status(403).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Akses Ditolak! API Key VIP ini terproteksi dan TIDAK BISA digunakan oleh pengguna publik."
-            });
-        }
-    }
-
-    if (!callerUser) {
-        try {
-            callerUser = await User.findOne({ apikey: userKey });
-        } catch (dbErr) {
-            console.error("Gagal verifikasi API Key di Database:", dbErr.message);
-            return res.status(500).json({ status: false, message: "Internal server error." });
+        const cachedUser = apiKeyUserCache.get(userKey);
+        if (cachedUser && (Date.now() - cachedUser.timestamp < 300000)) { // 5 menit
+            callerUser = cachedUser.data;
+        } else {
+            try {
+                callerUser = await User.findOne({ apikey: userKey }).lean();
+                if (callerUser) {
+                    apiKeyUserCache.set(userKey, { data: callerUser, timestamp: Date.now() });
+                }
+            } catch (dbErr) {
+                return res.status(500).json({ status: false, message: "Internal server error." });
+            }
         }
     }
 
@@ -1893,52 +1878,51 @@ const validateApiKey = async (req, res, next) => {
         });
     }
 
+    if (isVipKeyString && !isVipAuthorized(callerUser, userKey)) {
+        return res.status(403).json({
+            status: false,
+            creator: "Arulz-XD",
+            message: "Akses Ditolak! API Key VIP ini terproteksi."
+        });
+    }
+
     req.user = callerUser;
     req.activeApiKey = userKey;
 
     let finalRole = (callerUser.role || 'Free User').toLowerCase();
 
-    try {
-        const pathParts = req.path.split('/');
-        const currentCategory = pathParts[1]; 
-        const currentRouteName = pathParts[2];   
+    // Mengambil modul dari memory cache (instant look-up O(1))
+    const pathParts = req.path.split('/');
+    const routeKey = `${pathParts[1]}/${pathParts[2]}`;
+    const routeModule = routeModuleCache.get(routeKey);
 
-        if (currentCategory && currentRouteName) {
-            const routeFilePath = path.join(apiPath, currentCategory, `${currentRouteName}.js`);
-            if (fs.existsSync(routeFilePath)) {
-                const routeModule = require(routeFilePath);
-
-                if (routeModule.status === "error" || routeModule.status === "perbaikan") {
-                    return res.status(503).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Fitur ini sedang dalam perbaikan / maintenance!"
-                    });
-                }
-
-                if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint ini khusus pengguna Premium!"
-                    });
-                }
-
-                if (routeModule.type === "vip" && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint eksklusif ini khusus pengguna VIP!"
-                    });
-                }
-            }
+    if (routeModule) {
+        if (routeModule.status === "error" || routeModule.status === "perbaikan") {
+            return res.status(503).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Fitur ini sedang dalam perbaikan / maintenance!"
+            });
         }
 
-        next();
-    } catch (e) {
-        console.error("Gagal memvalidasi status/type router:", e.message);
-        return res.status(500).json({ status: false, message: "Internal server error." });
+        if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Endpoint ini khusus pengguna Premium!"
+            });
+        }
+
+        if (routeModule.type === "vip" && !finalRole.includes("vip")) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Endpoint eksklusif ini khusus pengguna VIP!"
+            });
+        }
     }
+
+    next();
 };
 
 const trackAndEnforceLimit = (req, res, next) => {
@@ -2410,7 +2394,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
     res.status(500).send('Error uploading file.');
   }
 });
-
+const routeModuleCache = new Map();
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
 
@@ -2423,7 +2407,13 @@ for (const category of endpointDirs) {
   const files = fs.readdirSync(categoryPath).filter(f => f.endsWith('.js'));
   for (const file of files) {
     const routeName = path.basename(file, '.js');
-    const route = require(path.join(categoryPath, file));
+    const routeFilePath = path.join(categoryPath, file);
+    
+    // Require sekali di awal dan simpan di memory
+    const route = require(routeFilePath);
+    const routeKey = `${category}/${routeName}`;
+    routeModuleCache.set(routeKey, route);
+
     router.use(`/${category}/${routeName}`, route);
   }
 }
