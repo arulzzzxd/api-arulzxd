@@ -776,6 +776,11 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 </div>
             </div>
         `;
+        
+        const clearBtn = document.getElementById(`clear-btn-${catIdx}-${epIdx}`);
+        if (clearBtn) {
+            clearBtn.classList.remove('hidden');
+        }
 
         document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
             copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
@@ -855,7 +860,26 @@ function escapeHtml(text) {
 
 function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
-    if (responseDiv) responseDiv.classList.add('hidden');
+    
+    if (responseDiv) {
+        // Hentikan pemutaran media jika ada
+        const mediaElements = responseDiv.querySelectorAll('video, audio');
+        mediaElements.forEach(media => {
+            media.pause();
+            media.currentTime = 0;
+            media.src = '';
+            media.load();
+        });
+
+        // Sembunyikan container response
+        responseDiv.classList.add('hidden');
+    }
+
+    // ---> Sembunyikan kembali tombol BERSIHKAN <---
+    const clearBtn = document.getElementById(`clear-btn-${catIdx}-${epIdx}`);
+    if (clearBtn) {
+        clearBtn.classList.add('hidden');
+    }
 
     const form = document.getElementById(`form-${catIdx}-${epIdx}`);
     if (form) {
@@ -1199,11 +1223,12 @@ function loadApis() {
                 }
 
                 html += `
-                            </div>
                             <div class="flex gap-3">
-                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
-                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
-                            </div>
+    <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
+    
+    <!-- Tombol Bersihkan ditambah ID dan class hidden -->
+    <button type="button" id="clear-btn-${catIdx}-${epIdx}" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="hidden px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+</div>
                         </form>
 
                         <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
