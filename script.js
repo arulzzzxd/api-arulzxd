@@ -928,9 +928,14 @@ function performSearch() {
     requestAnimationFrame(() => {
         document.querySelectorAll('.category-group').forEach(category => {
             const catName = category.dataset.category;
+            
+            // PERBAIKAN: Jika filter 'all', pastikan grup kategori tidak disembunyikan oleh filter kategori
             if (activeCategory !== 'all' && catName !== activeCategory) {
                 category.classList.add('hidden');
                 return;
+            } else {
+                // Pastikan class hidden dilepas jika kategori sesuai atau activeCategory === 'all'
+                category.classList.remove('hidden');
             }
 
             let categoryHasVisibleItems = false;
@@ -950,9 +955,14 @@ function performSearch() {
                     item.classList.add('hidden');
                 }
             }
+            
+            // Sembunyikan kategori hanya jika tidak ada item yang cocok dengan pencarian
             category.classList.toggle('hidden', !categoryHasVisibleItems);
         });
-        noResults.classList.toggle('hidden', hasVisibleItems);
+
+        if (noResults) {
+            noResults.classList.toggle('hidden', hasVisibleItems);
+        }
     });
 }
 
