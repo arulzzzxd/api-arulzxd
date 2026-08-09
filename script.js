@@ -913,10 +913,17 @@ function renderCategoryFilters() {
 
 function filterByCategory(catName) {
     activeCategory = catName;
+    
+    // Update status tombol filter aktif
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        if (btn.dataset.filter === catName) btn.classList.add('active');
-        else btn.classList.remove('active');
+        if (btn.dataset.filter === catName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
+
+    // Jalankan penyaringan ulang
     performSearch();
 }
 
@@ -929,13 +936,12 @@ function performSearch() {
         document.querySelectorAll('.category-group').forEach(category => {
             const catName = category.dataset.category;
             
-            // PERBAIKAN: Jika filter 'all', pastikan grup kategori tidak disembunyikan oleh filter kategori
-            if (activeCategory !== 'all' && catName !== activeCategory) {
+            // Cek apakah kategori sesuai dengan filter tombol yang aktif
+            const isCategoryMatchingFilter = (activeCategory === 'all' || catName === activeCategory);
+
+            if (!isCategoryMatchingFilter) {
                 category.classList.add('hidden');
                 return;
-            } else {
-                // Pastikan class hidden dilepas jika kategori sesuai atau activeCategory === 'all'
-                category.classList.remove('hidden');
             }
 
             let categoryHasVisibleItems = false;
@@ -955,9 +961,13 @@ function performSearch() {
                     item.classList.add('hidden');
                 }
             }
-            
-            // Sembunyikan kategori hanya jika tidak ada item yang cocok dengan pencarian
-            category.classList.toggle('hidden', !categoryHasVisibleItems);
+
+            // Tampilkan/sembunyikan grup kategori berdasarkan hasil match search & filter
+            if (categoryHasVisibleItems) {
+                category.classList.remove('hidden');
+            } else {
+                category.classList.add('hidden');
+            }
         });
 
         if (noResults) {
@@ -1257,6 +1267,7 @@ function loadApis() {
     });
     apiList.innerHTML = html;
     allApiElements = Array.from(document.querySelectorAll('.api-item'));
+    performSearch();
 }
 
 function initMultiMusicPlayer() {
