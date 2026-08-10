@@ -35,10 +35,6 @@ app.use(express.json({
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gwnccwopnxqtddeszsgm.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_6cySP-RH5iFZx5dLQRvHrA_4FonEkJ7';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
 mongoose.connect(MONGODB_URI)
@@ -2543,6 +2539,20 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
+// Schema MongoDB untuk Log Aktivitas API per User
+const apiLogSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    apikey: { type: String, required: true, index: true },
+    username: { type: String, required: true },
+    method: { type: String, required: true },
+    endpoint: { type: String, required: true },
+    status_code: { type: Number, required: true },
+    createdAt: { type: Date, default: Date.now, expires: '7d' } // Otomatis terhapus setelah 7 hari
+});
+
+const ApiLog = mongoose.models.ApiLog || mongoose.model('ApiLog', apiLogSchema);
+
+
 const logApiActivity = async (req, res, next) => {
     res.on('finish', async () => {
         const userKey = req.activeApiKey 
@@ -2555,78 +2565,58 @@ const logApiActivity = async (req, res, next) => {
 
         if (
             userKey && 
+            req.user && // Memastikan user terautentikasi
             fullEndpoint.startsWith('/api/') && 
             fullEndpoint !== '/api/user-activity' && 
             fullEndpoint !== '/api/user-limit' && 
             fullEndpoint !== '/api/apilist'
         ) {
             try {
-                // Tentukan username pemanggil berdasarkan req.user atau req.activeUser dari validateApiKey
-                let userIdentifier = 'Guest';
-                if (req.user && req.user.username) {
-                    userIdentifier = req.user.username;
-                }
+                const userId = req.user._id || req.user.id;
+                const username = req.user.username || 'User';
 
-                const { error } = await supabase.from('api_logs').insert([{
+                // Simpan Log ke MongoDB
+                await ApiLog.create({
+                    userId: userId,
                     apikey: userKey.trim(),
-                    username: userIdentifier,
+                    username: username,
                     method: req.method,
                     endpoint: fullEndpoint,
                     status_code: res.statusCode
-                }]);
+                });
 
-                if (error) {
-                    console.error("❌ Supabase Insert Log Error:", error.message);
-                } else {
-                    console.log(`✅ [LOG SAVED] User: ${userIdentifier} | Key: ${userKey} | Method: ${req.method} | Path: ${fullEndpoint}`);
-                }
+                console.log(`✅ [LOG MONGO] User: ${username} | Method: ${req.method} | Path: ${fullEndpoint}`);
             } catch (err) {
-                console.error("Gagal simpan log ke Supabase:", err.message);
+                console.error("❌ Gagal simpan log ke MongoDB:", err.message);
             }
         }
     });
     next();
 };
 
-
 app.get('/api/user-activity', checkAuthSession, async (req, res) => {
-    let userKey = req.query.apikey || req.headers['x-api-key'];
-
-    if (!userKey && req.user) {
-        userKey = req.user.apiKey || req.user.apikey;
-    }
-
-    if (!userKey && req.user) {
-        try {
-            const dbUser = await User.findById(req.user.id || req.user._id);
-            if (dbUser) userKey = dbUser.apikey;
-        } catch (e) {}
-    }
-
-    if (!userKey) {
-        return res.json({ status: false, message: "API Key tidak ditemukan", data: [] });
+    if (!req.user) {
+        return res.status(401).json({ status: false, message: "Anda belum login!", data: [] });
     }
 
     try {
-        const cleanKey = userKey.trim();
+        const userId = req.user._id || req.user.id;
 
-        // Ambil kolom log langsung dari Supabase berdasarkan API Key
-        const { data, error } = await supabase
-            .from('api_logs')
-            .select('username, method, endpoint, status_code, created_at')
-            .eq('apikey', cleanKey)
-            .neq('endpoint', '/api/apilist')
-            .order('created_at', { ascending: false })
-            .limit(10);
+        // Ambil 10 aktivitas API TERAKHIR milik user ini saja dari MongoDB
+        const logs = await ApiLog.find({ 
+            userId: userId,
+            endpoint: { $ne: '/api/apilist' }
+        })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean();
 
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
+        if (!logs || logs.length === 0) {
             return res.json({ status: true, data: [] });
         }
 
-        const formattedLogs = data.map(log => {
-            const date = new Date(log.created_at);
+        const formattedLogs = logs.map(log => {
+            const date = new Date(log.createdAt);
             const timeStr = date.toLocaleTimeString('id-ID', { 
                 hour: '2-digit', 
                 minute: '2-digit', 
@@ -2634,21 +2624,17 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
                 timeZone: 'Asia/Jakarta'
             });
             const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
-            
-            // GUNAKAN USERNAME RIIL DARI SUPABASE (Bukan fallback ke session browser)
-            const userStr = log.username && log.username !== 'Guest' ? log.username : 'User';
 
-            // Format UI: [Jam] [Nama Pemanggil API] [Status] [Method] : Endpoint
-            return `[${timeStr}] [${userStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+            // Format UI tanpa [username]: [Jam] [Status] [Method] : Endpoint
+            return `[${timeStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
         });
 
         return res.json({ status: true, data: formattedLogs });
     } catch (err) {
-        console.error("Error fetching logs:", err.message);
+        console.error("Error fetching logs from MongoDB:", err.message);
         return res.status(500).json({ status: false, data: [] });
     }
 });
-
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
