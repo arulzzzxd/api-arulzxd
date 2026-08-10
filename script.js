@@ -116,7 +116,6 @@ function closeSidebarMenu() {
     }
 }
 
-// Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi (Updated)
 function createMediaPreview(url, contentType, fullPath) {
     const type = contentType || '';
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
@@ -140,7 +139,7 @@ function createMediaPreview(url, contentType, fullPath) {
     } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
         return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
     }
-    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
+    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" rel="noopener noreferrer" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
 
 /* =========================================================================
@@ -218,14 +217,23 @@ function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('lang', lang);
 
-    document.getElementById('lang-id').classList.toggle('active', lang === 'id');
-    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    document.getElementById('lang-id')?.classList.toggle('active', lang === 'id');
+    document.getElementById('lang-en')?.classList.toggle('active', lang === 'en');
 
-    document.getElementById('searchInput').placeholder = i18n[lang].searchPlaceholder;
-    document.getElementById('no-results-title').textContent = i18n[lang].noResultsTitle;
-    document.getElementById('no-results-desc').textContent = i18n[lang].noResultsDesc;
-    document.getElementById('stat-endpoints-title').textContent = i18n[lang].endpointsTitle;
-    document.getElementById('stat-categories-title').textContent = i18n[lang].categoriesTitle;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.placeholder = i18n[lang].searchPlaceholder;
+
+    const noResTitle = document.getElementById('no-results-title');
+    if (noResTitle) noResTitle.textContent = i18n[lang].noResultsTitle;
+
+    const noResDesc = document.getElementById('no-results-desc');
+    if (noResDesc) noResDesc.textContent = i18n[lang].noResultsDesc;
+
+    const statEpTitle = document.getElementById('stat-endpoints-title');
+    if (statEpTitle) statEpTitle.textContent = i18n[lang].endpointsTitle;
+
+    const statCatTitle = document.getElementById('stat-categories-title');
+    if (statCatTitle) statCatTitle.textContent = i18n[lang].categoriesTitle;
 
     const dateElement = document.getElementById('liveDate');
     if (dateElement && typeof moment !== 'undefined') {
@@ -267,8 +275,15 @@ function initDigitalClock() {
     setInterval(updateClock, 1000);
 }
 
-function updateTotalEndpoints() { document.getElementById('totalEndpoints').textContent = totalEndpoints; }
-function updateTotalCategories() { document.getElementById('totalCategories').textContent = totalCategories; }
+function updateTotalEndpoints() {
+    const el = document.getElementById('totalEndpoints');
+    if (el) el.textContent = totalEndpoints;
+}
+
+function updateTotalCategories() {
+    const el = document.getElementById('totalCategories');
+    if (el) el.textContent = totalCategories;
+}
 
 function showToast(message, isError = false) {
     const container = document.getElementById('toast');
@@ -405,6 +420,8 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
     const form = document.getElementById(`form-${catIdx}-${epIdx}`);
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
     const responseContent = document.getElementById(`response-content-${catIdx}-${epIdx}`);
+    if (!form || !responseDiv || !responseContent) return;
+
     const executeBtn = form.querySelector('button[type="submit"]');
 
     let spinner = executeBtn.querySelector('.local-spinner');
@@ -451,7 +468,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
     let formHasFile = false;
     form.querySelectorAll('input[type="file"]').forEach(fileInput => {
-        if (fileInput.files.length > 0) {
+        if (fileInput.files && fileInput.files.length > 0) {
             formHasFile = true;
         }
     });
@@ -509,7 +526,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 </div>
             `;
             showToast(data.message || "Akses Ditolak!", true);
-            
             if (typeof fetchAndUpdateUserLimit === 'function') {
                 fetchAndUpdateUserLimit();
             }
@@ -538,10 +554,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             return "Berkas media terdeteksi";
         }
 
-        const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
-        const epName = currentEndpoint?.name || 'video';
-        const epDesc = currentEndpoint?.desc || '';
-
         if (cleanContentType.includes("application/json")) {
             const data = await response.json();
             rawResponseText = JSON.stringify(data, null, 2);
@@ -552,57 +564,56 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             if (data.url && typeof data.url === 'string' && data.url.startsWith('http')) detectedMediaUrl = data.url;
             else if (data.result && data.result.url && typeof data.result.url === 'string') detectedMediaUrl = data.result.url;
 
-            // Jika berupa response JSON yang mengandung URL Video/Gambar
-if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
-    hintText = getMediaHint(detectedMediaUrl);
-    
-    let mediaMarkup = '';
-    const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
+            if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
+                hintText = getMediaHint(detectedMediaUrl);
+                
+                let mediaMarkup = '';
+                const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
-    if (isAudioUrl) {
-        mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
-    } else {
-        mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
-    }
+                if (isAudioUrl) {
+                    mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
+                } else {
+                    mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
+                }
 
-    finalInnerContent = `
-       <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
-           <div class="w-full flex justify-center items-center">
-               ${mediaMarkup}
-           </div>
-       </div>
-       <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-       <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
-    `;
-    isMedia = true;
-} else {
-                 finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
+                finalInnerContent = `
+                   <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+                       <div class="w-full flex justify-center items-center">
+                           ${mediaMarkup}
+                       </div>
+                   </div>
+                   <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+                   <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+                `;
+                isMedia = true;
+            } else {
+                finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
             }
         } else if (cleanContentType.startsWith("image/") || cleanContentType.startsWith("video/") || cleanContentType.startsWith("audio/") || cleanContentType.includes("application/pdf")) {
-    isMedia = true;
-    hintText = getMediaHint(cleanContentType);
-    mediaBlobObject = await response.blob(); 
-    if (!bytes) bytes = mediaBlobObject.size;
-    const blobUrl = URL.createObjectURL(mediaBlobObject);
-    
-    if (cleanContentType.startsWith("audio/")) {
-        finalInnerContent = `
-            <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
-                <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
-                    Browser Anda tidak mendukung pemutar audio.
-                </audio>
-            </div>
-        `;
-    } else {
-        finalInnerContent = `
-            <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
-                <div class="w-full flex justify-center items-center">
-                    ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
-                </div>
-            </div>
-        `;
-    }
-} else {
+            isMedia = true;
+            hintText = getMediaHint(cleanContentType);
+            mediaBlobObject = await response.blob(); 
+            if (!bytes) bytes = mediaBlobObject.size;
+            const blobUrl = URL.createObjectURL(mediaBlobObject);
+            
+            if (cleanContentType.startsWith("audio/")) {
+                finalInnerContent = `
+                    <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
+                        <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
+                            Browser Anda tidak mendukung pemutar audio.
+                        </audio>
+                    </div>
+                `;
+            } else {
+                finalInnerContent = `
+                    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
+                        <div class="w-full flex justify-center items-center">
+                            ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
             rawResponseText = await response.text();
             if (!bytes) bytes = new Blob([rawResponseText]).size;
             hintText = "Klik teks untuk memperbesar";
@@ -675,45 +686,50 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
             </div>
         `;
 
-        document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
-            copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
-        };
+        const copyBtn = document.getElementById(`copy-btn-${catIdx}-${epIdx}`);
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
+            };
+        }
 
         const downloadBtn = document.getElementById(`download-btn-${catIdx}-${epIdx}`);
-        if (!isMedia) {
-            downloadBtn.onclick = () => {
-                const blob = new Blob([rawResponseText], { type: cleanContentType });
-                const extension = cleanContentType.includes('json') ? 'json' : (cleanContentType.includes('html') ? 'html' : 'txt');
-                const downloadUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `response-${Date.now()}.${extension}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(downloadUrl);
-            };
-        } else {
-            downloadBtn.onclick = async () => {
-                try {
-                    let finalBlob = mediaBlobObject;
-                    if (!finalBlob) {
-                        const mediaRes = await fetch(fullPath);
-                        finalBlob = await mediaRes.blob();
-                    }
-                    const downloadUrl = URL.createObjectURL(finalBlob);
+        if (downloadBtn) {
+            if (!isMedia) {
+                downloadBtn.onclick = () => {
+                    const blob = new Blob([rawResponseText], { type: cleanContentType });
+                    const extension = cleanContentType.includes('json') ? 'json' : (cleanContentType.includes('html') ? 'html' : 'txt');
+                    const downloadUrl = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = downloadUrl;
-                    const ext = cleanContentType.split('/')[1] || 'bin';
-                    a.download = `media-${Date.now()}.${ext}`;
+                    a.download = `response-${Date.now()}.${extension}`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(downloadUrl);
-                } catch (err) {
-                    showToast('Gagal mengunduh file media', true);
-                }
-            };
+                };
+            } else {
+                downloadBtn.onclick = async () => {
+                    try {
+                        let finalBlob = mediaBlobObject;
+                        if (!finalBlob) {
+                            const mediaRes = await fetch(fullPath);
+                            finalBlob = await mediaRes.blob();
+                        }
+                        const downloadUrl = URL.createObjectURL(finalBlob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        const ext = cleanContentType.split('/')[1] || 'bin';
+                        a.download = `media-${Date.now()}.${ext}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(downloadUrl);
+                    } catch (err) {
+                        showToast('Gagal mengunduh file media', true);
+                    }
+                };
+            }
         }
 
         showToast(i18n[currentLang].toastRequestSuccess);
@@ -737,7 +753,9 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
         spinner.style.display = ''; 
         spinner.classList.remove('active');
         executeBtn.innerHTML = originalBtnHtml;
-        fetchAndUpdateUserLimit();
+        if (typeof fetchAndUpdateUserLimit === 'function') {
+            fetchAndUpdateUserLimit();
+        }
     }
 }
 
@@ -755,13 +773,22 @@ function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
     
     if (responseDiv) {
-        // Hanya hentikan audio/video di dalam card response endpoint tersebut
         const mediaElements = responseDiv.querySelectorAll('video, audio');
         mediaElements.forEach(media => {
             media.pause();
+            if (media.src && media.src.startsWith('blob:')) {
+                URL.revokeObjectURL(media.src);
+            }
             media.currentTime = 0;
-            media.src = '';
+            media.removeAttribute('src');
             media.load();
+        });
+
+        const images = responseDiv.querySelectorAll('img.media-image');
+        images.forEach(img => {
+            if (img.src && img.src.startsWith('blob:')) {
+                URL.revokeObjectURL(img.src);
+            }
         });
 
         responseDiv.classList.add('hidden');
@@ -807,7 +834,8 @@ function filterByCategory(catName) {
 }
 
 function performSearch() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const noResults = document.getElementById('noResults');
     let hasVisibleItems = false;
 
@@ -838,7 +866,7 @@ function performSearch() {
             }
             category.classList.toggle('hidden', !categoryHasVisibleItems);
         });
-        noResults.classList.toggle('hidden', hasVisibleItems);
+        if (noResults) noResults.classList.toggle('hidden', hasVisibleItems);
     });
 }
 
@@ -904,6 +932,8 @@ function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType
 
 function loadApis() {
     const apiList = document.getElementById('apiList');
+    if (!apiList) return;
+
     if (!apiData || !apiData.categories) {
         apiList.innerHTML = '<p class="text-center">No API data loaded.</p>';
         return;
@@ -990,25 +1020,23 @@ function loadApis() {
                         </div>
                     </div>
                     <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
-                   ${SVG_PLUS}
-                 </span>
+                        ${SVG_PLUS}
+                    </span>
                 </button>
                 <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
-    
-    <!-- BOX DESKRIPSI BARU -->
-    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
-        <div class="flex items-center gap-2 mb-1.5">
-            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
-            </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
-        </div>
-        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
-            ${item.desc}
-        </p>
-    </div>
+                    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
+                            </svg>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+                        </div>
+                        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+                            ${item.desc}
+                        </p>
+                    </div>
 
-    <div class="mb-4">
+                    <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
                             <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
@@ -1148,10 +1176,7 @@ function loadApis() {
 
 function initMultiMusicPlayer() {
     const playlist = window.musicPlaylist || [];
-    if (!playlist.length) {
-        console.warn("Playlist kosong atau tidak ditemukan.");
-        return;
-    }
+    if (!playlist.length) return;
 
     let currentTrackIdx = 0;
     const audio = document.getElementById('audioElement');
@@ -1272,7 +1297,7 @@ function initMultiMusicPlayer() {
             
             itemBtn.addEventListener('click', () => {
                 loadTrack(idx);
-                audio.play().catch(e => console.log("Playback dicegah oleh browser:", e));
+                if (audio) audio.play().catch(e => console.log("Playback dicegah oleh browser:", e));
             });
             playlistPanel.appendChild(itemBtn);
         });
@@ -1337,14 +1362,14 @@ function initMultiMusicPlayer() {
     if (prevBtn && audio) {
         prevBtn.addEventListener('click', () => { 
             loadTrack(currentTrackIdx - 1 < 0 ? playlist.length - 1 : currentTrackIdx - 1); 
-            audio.play().catch(e => console.log(e)); 
+            if (audio) audio.play().catch(e => console.log(e)); 
         });
     }
 
     if (nextBtn && audio) {
         nextBtn.addEventListener('click', () => { 
             loadTrack(currentTrackIdx + 1 >= playlist.length ? 0 : currentTrackIdx + 1); 
-            audio.play().catch(e => console.log(e)); 
+            if (audio) audio.play().catch(e => console.log(e)); 
         });
     }
 
@@ -1365,19 +1390,22 @@ function initImageLightbox() {
 
     if (!lightbox || !lightboxImg) return;
 
-    document.getElementById('apiList').addEventListener('click', (e) => {
-        if (e.target.tagName === 'IMG' && e.target.classList.contains('media-image')) {
-            e.preventDefault();
-            lightboxImg.src = e.target.src;
-            lightbox.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                lightbox.classList.remove('opacity-0');
-                lightbox.classList.add('opacity-100');
-                lightboxImg.classList.remove('scale-95');
-                lightboxImg.classList.add('scale-100');
-            });
-        }
-    });
+    const apiList = document.getElementById('apiList');
+    if (apiList) {
+        apiList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG' && e.target.classList.contains('media-image')) {
+                e.preventDefault();
+                lightboxImg.src = e.target.src;
+                lightbox.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    lightbox.classList.remove('opacity-0');
+                    lightbox.classList.add('opacity-100');
+                    lightboxImg.classList.remove('scale-95');
+                    lightboxImg.classList.add('scale-100');
+                });
+            }
+        });
+    }
 
     function hideLightbox() {
         lightbox.classList.remove('opacity-100');
