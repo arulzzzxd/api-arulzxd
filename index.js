@@ -141,7 +141,7 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
                 { $set: { avatar: avatarDataUrl } },
                 { new: true, runValidators: true }
             );
-            
+
             if (!updatedUser) {
                 return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
             }
@@ -1035,7 +1035,7 @@ app.post('/api/store/manual-order', async (req, res) => {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
- 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -2408,7 +2408,7 @@ for (const category of endpointDirs) {
   for (const file of files) {
     const routeName = path.basename(file, '.js');
     const routeFilePath = path.join(categoryPath, file);
-    
+
     // Require sekali di awal dan simpan di memory
     const route = require(routeFilePath);
     const routeKey = `${category}/${routeName}`;
@@ -2552,7 +2552,7 @@ const logApiActivity = async (req, res, next) => {
                      || req.body?.apikey 
                      || req.headers['x-api-key'] 
                      || (req.user ? (req.user.apiKey || req.user.apikey) : null);
-        
+
         // Ambil endpoint path
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
@@ -3080,44 +3080,53 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal (Tampilan Diperbesar & Avatar 3D Aktif) -->
-<!-- User Profile Pop-up Modal (Diperbesar & Responsif) -->
+<!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
     <div class="w-full max-w-lg bg-[#0a0f1d] border-2 border-cyan-400/80 rounded-3xl p-5 sm:p-7 shadow-[0_0_45px_rgba(34,211,238,0.35)] relative font-['Space_Grotesk'] text-white my-auto">
         
         <!-- Header Profile -->
-        <div class="flex items-center justify-between mb-6 gap-4">
-            <!-- Avatar 3D & Badge Crown -->
-            <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 flex items-center justify-center">
+        <div class="flex items-center justify-between mb-6 gap-3 sm:gap-4">
+            
+            <!-- Avatar 3D & Badge Crown (Ukuran Seimbang dengan User Plan) -->
+            <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div id="avatarBadge" class="absolute -top-7 z-20 scale-100"></div>
+                
+                <!-- Mahkota / Badge 3D (Berada di atas Lingkaran Profile) -->
+                <div id="avatarBadge" class="absolute -top-6 sm:-top-8 z-30 pointer-events-none"></div>
+                
+                <!-- Container Avatar + Kamera -->
                 <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div id="avatar3DBorder" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-free">
+                    <div id="avatar3DBorder" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] z-10 flex items-center justify-center border-3d-free">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
                     </div>
-                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-950 shadow-md">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+                    
+                    <!-- Ikon Kamera di Bawah Kanan Avatar -->
+                    <div class="absolute bottom-0 right-0 z-20 bg-cyan-400 text-slate-950 p-1.5 rounded-full border-2 border-slate-950 shadow-md">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
+                        </svg>
                     </div>
                 </div>
             </div>
 
             <!-- Username & Email -->
             <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
-                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-1.5 px-3 text-center truncate shadow-inner">
                     <span id="userName" class="text-xs sm:text-sm font-bold text-cyan-200 tracking-wider">LOADING USER...</span>
                 </div>
-                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
-                    <span id="userEmail" class="text-[11px] sm:text-xs font-mono text-cyan-300">user@mail.com</span>
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-1.5 px-3 text-center truncate shadow-inner">
+                    <span id="userEmail" class="text-[10px] sm:text-xs font-mono text-cyan-300">user@mail.com</span>
                 </div>
             </div>
 
-            <!-- User Plan Box -->
-            <div class="w-16 sm:w-20 flex flex-col items-center justify-between">
-                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-2 py-0.5 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
-                <div id="planBoxContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
-                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">FREE</span>
+            <!-- User Plan Box (Ukuran Seimbang dengan Avatar) -->
+            <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex flex-col items-center justify-between">
+                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-2 py-0.5 rounded border border-cyan-400/40 w-full text-center truncate">USER PLAN</span>
+                <div id="planBoxContainer" class="w-full flex-1 mt-1 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
+                    <span id="userPlanText" class="text-xs sm:text-sm font-black text-white uppercase tracking-wider">FREE</span>
                 </div>
             </div>
         </div>
@@ -3134,11 +3143,11 @@ app.get('/docs', (req, res) => {
                     <span id="userApiKey">loading-key</span>
                 </div>
                 <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-2 rounded-xl uppercase tracking-wider shadow-md active:scale-95 transition-all">
-                    Salin Api Key
+                    SALIN API KEY
                 </button>
             </div>
 
-            <!-- Box Limit User (Disesuaikan Otomatis jika Unlimited/0/Premium) -->
+            <!-- Box Limit User -->
             <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 flex flex-col items-center justify-between shadow-md">
                 <div class="w-full bg-white text-slate-950 text-center text-[10px] font-black py-1 rounded-md uppercase tracking-wider mb-2">
                     LIMIT USER
@@ -3154,9 +3163,8 @@ app.get('/docs', (req, res) => {
         <!-- Box Aktifitas Request API Terakhir -->
         <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 mb-5 shadow-inner">
             <div class="bg-white text-slate-950 text-center text-[11px] font-black py-1 rounded-xl uppercase tracking-wider mb-3">
-                Aktifitas Request Api Terakhir
+                AKTIFITAS REQUEST API TERAKHIR
             </div>
-            
             <div id="activityLogsContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
                 <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
                     Belum ada aktivitas request
@@ -3181,10 +3189,10 @@ app.get('/docs', (req, res) => {
                 </a>
             </div>
         </div>
+
     </div>
   </div>
 </div>
-
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
@@ -3584,66 +3592,62 @@ app.get('/docs', (req, res) => {
         }
 
         function setRoleTheme(roleName) {
-            const avatar3DBorder = document.getElementById('avatar3DBorder');
-            const avatarBadge = document.getElementById('avatarBadge');
-            const planText = document.getElementById('userPlanText');
-            const planContainer = document.getElementById('planBoxContainer');
-            const role = (roleName || '').toLowerCase();
+    const avatar3DBorder = document.getElementById('avatar3DBorder');
+    const avatarBadge = document.getElementById('avatarBadge');
+    const planText = document.getElementById('userPlanText');
+    const planContainer = document.getElementById('planBoxContainer');
+    const role = (roleName || '').toLowerCase();
 
-            const iconFree = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>\`;
-            const iconPremium = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>\`;
-            const iconVip = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>\`;
+    const buildCrownSVG = (gradId) => `
+        <svg class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fef08a" />
+                    <stop offset="40%" stop-color="#fbbf24" />
+                    <stop offset="70%" stop-color="#b45309" />
+                    <stop offset="100%" stop-color="#451a03" />
+                </linearGradient>
+                <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f3e8ff" />
+                    <stop offset="35%" stop-color="#c084fc" />
+                    <stop offset="70%" stop-color="#7e22ce" />
+                    <stop offset="100%" stop-color="#2e1065" />
+                </linearGradient>
+            </defs>
+            <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#${gradId})" />
+            <circle cx="16" cy="39" r="2.5" fill="url(#${gradId})" />
+            <circle cx="34" cy="30" r="2.5" fill="url(#${gradId})" />
+            <circle cx="66" cy="30" r="2.5" fill="url(#${gradId})" />
+            <circle cx="84" cy="39" r="2.5" fill="url(#${gradId})" />
+            <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#${gradId})" />
+            <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
+            <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
+        </svg>`;
 
-            const buildCrownSVG = (gradId) => \`
-                <svg class="w-20 h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fef08a" />
-                            <stop offset="40%" stop-color="#fbbf24" />
-                            <stop offset="70%" stop-color="#b45309" />
-                            <stop offset="100%" stop-color="#451a03" />
-                        </linearGradient>
-                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f3e8ff" />
-                            <stop offset="35%" stop-color="#c084fc" />
-                            <stop offset="70%" stop-color="#7e22ce" />
-                            <stop offset="100%" stop-color="#2e1065" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
-                    <circle cx="16" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
-                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-                </svg>\`;
-
-            if (role.includes('vip')) {
-                if (planText) planText.innerText = 'VIP';
-                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
-                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-                if (avatarBadge) {
-                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-                    avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
-                }
-            } else if (role.includes('premium')) {
-                if (planText) planText.innerText = 'PREM';
-                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
-                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-                if (avatarBadge) {
-                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-                    avatarBadge.innerHTML = buildCrownSVG('goldCrown');
-                }
-            } else {
-                if (planText) planText.innerText = 'FREE';
-                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
-                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-                if (avatarBadge) avatarBadge.innerHTML = "";
-            }
+    if (role.includes('vip')) {
+        if (planText) planText.innerText = 'VIP';
+        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
+        if (avatarBadge) {
+            avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
+            avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
         }
+    } else if (role.includes('premium')) {
+        if (planText) planText.innerText = 'PREM';
+        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
+        if (avatarBadge) {
+            avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
+            avatarBadge.innerHTML = buildCrownSVG('goldCrown');
+        }
+    } else {
+        if (planText) planText.innerText = 'FREE';
+        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
+        if (avatarBadge) avatarBadge.innerHTML = "";
+    }
+}
 
         async function uploadAvatarFile(input) {
             if (!input.files || !input.files[0]) return;
