@@ -3295,7 +3295,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apikey) : 'Silakan Login'}</span>
+                apikey : <span id="welcomeApiKey" class="font-mono text-cyan-400 select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -3963,6 +3963,10 @@ app.get('/docs', (req, res) => {
                         
                         const userKey = data.user.apikey || '';
                         document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
+                        if (document.getElementById('welcomeApiKey')) {
+                        document.getElementById('welcomeApiKey').innerText = userKey || 'Silakan Login';
+                        }
+
                         
                         setRoleTheme(data.user.role || 'Free User');
 
