@@ -3006,6 +3006,44 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 0 12px var(--neon-cyan);
         transition: width 0.15s ease-out;
     }
+    /* Styling Khusus Tema Cyberpunk Neon */
+.cyber-card-bg {
+  background-color: #030a12;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.08), transparent 70%),
+    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px, 20px 20px;
+}
+
+.gold-btn-gradient {
+  background: linear-gradient(180deg, #fef08a 0%, #d97706 40%, #b45309 70%, #78350f 100%);
+  border: 1px solid #fef08a;
+  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.gold-btn-gradient:hover {
+  filter: brightness(1.15);
+}
+
+.cyan-pill-header {
+  background: #00f3ff;
+  color: #020d18;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
+}
+
+/* Custom Scrollbar tipis untuk Log */
+.cyber-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.cyber-scrollbar::-webkit-scrollbar-track {
+  background: rgba(2, 13, 24, 0.5);
+}
+.cyber-scrollbar::-webkit-scrollbar-thumb {
+  background: #00f3ff;
+  border-radius: 4px;
+}
+
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
@@ -3087,23 +3125,23 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal (Cyberpunk Neon Theme) -->
+<!-- User Profile Pop-up Modal (Cyberpunk Neon Exact Match) -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-    <div class="w-full max-w-md bg-[#020d18] border-2 border-cyan-400 rounded-3xl p-5 sm:p-6 shadow-[0_0_35px_rgba(6,182,212,0.4)] relative font-mono text-cyan-400 my-auto">
+  <div class="fixed inset-0 bg-black/85 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="w-full max-w-[420px] cyber-card-bg border-2 border-cyan-400 rounded-[28px] p-4 sm:p-5 shadow-[0_0_40px_rgba(0,243,255,0.35)] relative font-mono text-cyan-400 my-auto">
         
         <!-- Header Profile -->
-        <div class="flex items-center justify-between mb-5 gap-3">
-            <!-- Avatar Circle with Camera Icon -->
-            <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+        <div class="flex items-center justify-between mb-4 gap-2">
+            <!-- Avatar Circle with Camera Overlay -->
+            <div class="relative w-20 h-20 sm:w-22 sm:h-22 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-[2px] border-2 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.6)] overflow-hidden">
+                <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
+                    <div class="w-full h-full rounded-full p-[2px] border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,243,255,0.7)] overflow-hidden">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
                     <!-- Camera Button Overlay -->
-                    <div class="absolute bottom-0 right-0 bg-[#020d18] text-cyan-400 p-1.5 rounded-full border border-cyan-400 shadow-md">
+                    <div class="absolute bottom-0 right-0 bg-[#030a12] text-cyan-400 p-1.5 rounded-full border border-cyan-400 shadow-[0_0_8px_rgba(0,243,255,0.8)]">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
                             <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
@@ -3112,93 +3150,97 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <!-- Username & Email Capsule -->
-            <div class="flex-1 flex flex-col gap-2 min-w-0">
-                <div class="bg-[#011425] border border-cyan-400/80 rounded-full py-1.5 px-4 text-center truncate shadow-[0_0_10px_rgba(6,182,212,0.2)]">
-                    <span id="userName" class="text-xs font-semibold text-cyan-300 tracking-wider">arulzzzxd</span>
+            <!-- Username & Email Capsules -->
+            <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
+                <div class="bg-[#021324]/90 border border-cyan-400/80 rounded-2xl py-1.5 px-4 text-center truncate shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                    <span id="userName" class="text-xs font-bold text-cyan-200 tracking-wider">arulzzzxd</span>
                 </div>
-                <div class="bg-[#011425] border border-cyan-400/80 rounded-full py-1.5 px-4 text-center truncate shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                <div class="bg-[#021324]/90 border border-cyan-400/80 rounded-2xl py-1.5 px-4 text-center truncate shadow-[0_0_10px_rgba(0,243,255,0.2)]">
                     <span id="userEmail" class="text-[11px] text-cyan-300">arul***@gmail.com</span>
                 </div>
             </div>
 
-            <!-- User Plan Badge -->
-            <div class="flex flex-col items-center justify-center pl-1">
-                <div id="planBoxContainer" class="relative flex flex-col items-center justify-center p-2 rounded-2xl border-2 border-cyan-400 bg-[#011425] shadow-[0_0_15px_rgba(6,182,212,0.3)] min-w-[60px]">
-                    <span class="text-[8px] font-bold text-cyan-300 tracking-widest mb-1 uppercase">USER PLAN</span>
-                    <!-- VIP Badge Shield Icon -->
-                    <div class="w-8 h-8 relative flex items-center justify-center">
-                        <svg class="w-full h-full text-cyan-400 filter drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#011425"/>
-                            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- User Plan Emblem Shield -->
+            <div class="flex-shrink-0 flex flex-col items-center justify-center pl-1">
+                <div id="planBoxContainer" class="relative flex flex-col items-center justify-center p-1.5 rounded-2xl border border-purple-400/80 bg-[#090518] shadow-[0_0_15px_rgba(168,85,247,0.4)] min-w-[62px]">
+                    <span class="text-[7px] font-black text-cyan-300 tracking-widest leading-none mb-1">USER PLAN</span>
+                    
+                    <!-- Emblem Shield Icon -->
+                    <div class="w-8 h-8 relative flex items-center justify-center my-0.5">
+                        <svg class="w-full h-full filter drop-shadow-[0_0_6px_rgba(168,85,247,0.8)]" viewBox="0 0 100 100" fill="none">
+                            <path d="M50 5 L90 25 L90 65 L50 95 L10 65 L10 25 Z" fill="#120a2a" stroke="#a855f7" stroke-width="4"/>
+                            <path d="M50 15 L80 30 L80 60 L50 82 L20 60 L20 30 Z" fill="#090518" stroke="#38bdf8" stroke-width="2"/>
+                            <path d="M35 45 L50 60 L65 45" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </div>
-                    <span id="userPlanText" class="text-xs font-black text-cyan-300 uppercase tracking-widest mt-0.5">VIP</span>
+                    
+                    <span id="userPlanText" class="text-xs font-black text-white uppercase tracking-widest">VIP</span>
                 </div>
             </div>
         </div>
 
         <!-- Section 1: Api Key Kamu -->
-        <div class="bg-[#011425] border border-cyan-400/80 rounded-2xl p-3.5 mb-3.5 relative shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+        <div class="bg-[#021324]/80 border border-cyan-400/80 rounded-2xl p-3 mb-3 relative shadow-[0_0_12px_rgba(0,243,255,0.15)]">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold text-cyan-300 border border-cyan-400/60 bg-[#020d18] px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
-                <svg class="w-4 h-4 text-amber-300 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <span class="text-[10px] font-bold text-cyan-300 border border-cyan-400/60 bg-[#030a12] px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
+                <svg class="w-4 h-4 text-amber-300 fill-current drop-shadow-[0_0_4px_rgba(252,211,77,0.8)]" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
             </div>
             
-            <div class="bg-[#020d18] border border-cyan-400/60 text-cyan-200 text-xs font-bold py-2 px-3 rounded-xl truncate mb-3 text-center tracking-wider shadow-inner">
+            <div class="bg-[#030a12] border border-cyan-400/60 text-cyan-200 text-xs font-bold py-2 px-3 rounded-xl truncate mb-2.5 text-center tracking-wider shadow-inner">
                 <span id="userApiKey">arulz-vip-123</span>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 hover:brightness-110 text-slate-950 font-black text-xs py-2 rounded-xl uppercase tracking-widest shadow-[0_0_10px_rgba(251,191,36,0.3)] transition-all">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-btn-gradient text-slate-950 font-black text-xs py-2 rounded-xl uppercase tracking-widest shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
         <!-- Section 2: Limit User -->
-        <div class="bg-[#011425] border border-cyan-400/80 rounded-2xl p-3 mb-3.5 text-center shadow-[0_0_12px_rgba(6,182,212,0.15)]">
-            <div class="w-full bg-cyan-400 text-slate-950 text-[11px] font-black py-1 rounded-lg uppercase tracking-widest mb-3">
+        <div class="bg-[#021324]/80 border border-cyan-400/80 rounded-2xl p-2.5 mb-3 text-center shadow-[0_0_12px_rgba(0,243,255,0.15)]">
+            <div class="w-full cyan-pill-header text-[11px] font-black py-1 rounded-xl uppercase tracking-widest mb-2.5">
                 LIMIT USER
             </div>
-            <div class="py-1">
-                <span class="inline-block border border-cyan-400/60 bg-[#020d18] text-cyan-300 px-5 py-1.5 rounded-full text-base font-bold tracking-widest shadow-inner">
+            <div class="py-0.5">
+                <span class="inline-block border border-cyan-400/60 bg-[#030a12] text-cyan-300 px-6 py-1 rounded-full text-sm font-bold tracking-widest shadow-inner">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">Unlimited</span>
                 </span>
             </div>
         </div>
 
         <!-- Section 3: Aktifitas Request API Terakhir -->
-        <div class="bg-[#011425] border border-cyan-400/80 rounded-2xl p-3 mb-4 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
-            <div class="w-full bg-cyan-400 text-slate-950 text-[11px] font-black py-1 rounded-lg uppercase tracking-widest mb-3 text-center">
+        <div class="bg-[#021324]/80 border border-cyan-400/80 rounded-2xl p-2.5 mb-3.5 shadow-[0_0_12px_rgba(0,243,255,0.15)]">
+            <div class="w-full cyan-pill-header text-[11px] font-black py-1 rounded-xl uppercase tracking-widest mb-2.5 text-center">
                 AKTIFITAS REQUEST API TERAKHIR
             </div>
             
-            <div id="activityLogsContainer" class="space-y-1.5 max-h-44 overflow-y-auto pr-1 scrollbar-thin">
-                <div class="bg-[#020d18] border border-cyan-400/40 text-cyan-300 text-[10px] py-1.5 px-3 rounded-xl text-center truncate">
+            <div id="activityLogsContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 cyber-scrollbar">
+                <div class="bg-[#030a12] border border-cyan-400/40 text-cyan-300 text-[10px] py-1.5 px-3 rounded-xl text-center truncate">
                     [16.55] [OK] [GET] : /api/random/tobrut
                 </div>
-                <div class="bg-[#020d18] border border-cyan-400/40 text-cyan-300 text-[10px] py-1.5 px-3 rounded-xl text-center truncate">
-                    [16.54] [OK] [GET] : /api/apilist
+                <div class="bg-[#030a12] border border-cyan-400/40 text-cyan-300 text-[10px] py-1.5 px-3 rounded-xl text-center truncate">
+                    [16.15] [OK] [GET] : /api/download/aio-downloader
                 </div>
             </div>
         </div>
 
         <!-- Buttons Footer -->
         <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 hover:brightness-110 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-[0_0_12px_rgba(251,191,36,0.3)] transition-all">
+            <a href="/upgrade-apikey" class="w-full gold-btn-gradient text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all">
                 <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                 UPGRADE
             </a>
 
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 bg-[#011425] hover:bg-[#021f38] text-cyan-300 border border-cyan-400/80 font-bold text-xs py-2.5 rounded-xl uppercase tracking-widest transition-all">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-[#021324] hover:bg-[#03203c] text-cyan-300 border border-cyan-400/80 font-bold text-xs py-2 rounded-xl uppercase tracking-widest transition-all active:scale-95">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 bg-[#011425] hover:bg-red-950 text-red-400 border border-red-500/80 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest transition-all">
+                <a href="/auth/logout" class="flex-1 bg-[#021324] hover:bg-red-950/80 text-red-400 border border-red-500/80 font-bold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest transition-all active:scale-95">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     LOG OUT
                 </a>
             </div>
         </div>
+
     </div>
   </div>
 </div>
@@ -3770,26 +3812,26 @@ app.get('/docs', (req, res) => {
 
                 if (filteredLogs.length > 0) {
                     container.innerHTML = filteredLogs.map(logText => 
-                        '<div class="bg-[#020d18] border border-cyan-400/40 text-cyan-300 font-mono text-[10px] py-1.5 px-3 rounded-xl text-center truncate shadow-inner">' +
+                        '<div class="bg-[#030a12] border border-cyan-400/40 text-cyan-300 font-mono text-[10px] py-1.5 px-3 rounded-xl text-center truncate shadow-inner">' +
                             logText +
                         '</div>'
                     ).join('');
                 } else {
                     container.innerHTML = 
-                        '<div class="bg-[#020d18] border border-cyan-400/40 text-cyan-400/60 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
+                        '<div class="bg-[#030a12] border border-cyan-400/40 text-cyan-400/60 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
                             'Belum ada aktivitas request' +
                         '</div>';
                 }
             } else {
                 container.innerHTML = 
-                    '<div class="bg-[#020d18] border border-cyan-400/40 text-cyan-400/60 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
+                    '<div class="bg-[#030a12] border border-cyan-400/40 text-cyan-400/60 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
                         'Belum ada aktivitas request' +
                     '</div>';
             }
         })
         .catch(err => {
             container.innerHTML = 
-                '<div class="bg-[#020d18] border border-red-500/40 text-red-400 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
+                '<div class="bg-[#030a12] border border-red-500/40 text-red-400 font-mono text-[10px] py-2 px-3 rounded-xl text-center">' +
                     'Gagal memuat aktivitas' +
                 '</div>';
         });
