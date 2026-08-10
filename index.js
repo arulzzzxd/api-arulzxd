@@ -3217,7 +3217,7 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal (100% Precision Match) -->
+<!-- User Profile Pop-up Modal (Fix Blank Page & Precision Cyberpunk) -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/85 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3254,49 +3254,50 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <!-- User Plan Emblem Badge (100% Pixel Perfect to Target Image) -->
-<div id="planBoxContainer" class="relative w-20 h-28 flex flex-col items-center justify-center flex-shrink-0">
-    <svg class="w-full h-full filter drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <!-- Gradien Cyan ke Ungu untuk Wings & Shield Border -->
-            <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00f3ff" />
-                <stop offset="50%" stop-color="#38bdf8" />
-                <stop offset="100%" stop-color="#c084fc" />
-            </linearGradient>
+            <!-- User Plan Emblem Badge (100% Precision Match to Image) -->
+            <div id="planBoxContainer" class="relative w-20 h-28 flex flex-col items-center justify-center flex-shrink-0">
+                <svg class="w-full h-full filter drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Gradien Cyan ke Ungu untuk Wings & Shield Border -->
+                        <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00f3ff" />
+                            <stop offset="50%" stop-color="#38bdf8" />
+                            <stop offset="100%" stop-color="#c084fc" />
+                        </linearGradient>
 
-            <!-- Gradien Hijau Neon untuk Ikon Chevron -->
-            <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#4ade80" />
-                <stop offset="100%" stop-color="#16a34a" />
-            </linearGradient>
-        </defs>
+                        <!-- Gradien Hijau Neon untuk Ikon Chevron -->
+                        <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#4ade80" />
+                            <stop offset="100%" stop-color="#16a34a" />
+                        </linearGradient>
+                    </defs>
 
-        <!-- TULISAN: USER PLAN -->
-        <text x="50" y="14" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">USER</text>
-        <text x="50" y="24" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">PLAN</text>
+                    <!-- TULISAN: USER PLAN -->
+                    <text x="50" y="14" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">USER</text>
+                    <text x="50" y="24" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">PLAN</text>
 
-        <!-- SAYAP KIRI (LEFT CYBER WING) -->
-        <path d="M 20 31 L 8 47 L 18 80 L 25 68 L 20 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
-        <path d="M 20 31 L 8 47 L 18 80" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round"/>
+                    <!-- SAYAP KIRI (LEFT CYBER WING) -->
+                    <path d="M 20 31 L 8 47 L 18 80 L 25 68 L 20 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+                    <path d="M 20 31 L 8 47 L 18 80" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round"/>
 
-        <!-- SAYAP KANAN (RIGHT CYBER WING) -->
-        <path d="M 80 31 L 92 47 L 82 80 L 75 68 L 80 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
-        <path d="M 80 31 L 92 47 L 82 80" stroke="#c084fc" stroke-width="1.5" stroke-linejoin="round"/>
+                    <!-- SAYAP KANAN (RIGHT CYBER WING) -->
+                    <path d="M 80 31 L 92 47 L 82 80 L 75 68 L 80 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+                    <path d="M 80 31 L 92 47 L 82 80" stroke="#c084fc" stroke-width="1.5" stroke-linejoin="round"/>
 
-        <!-- PERISAI LUAR (OUTER SHIELD BORDER) -->
-        <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+                    <!-- PERISAI LUAR (OUTER SHIELD BORDER) -->
+                    <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5" stroke-linejoin="round"/>
 
-        <!-- PERISAI DALAM (INNER SHIELD BORDER) -->
-        <path d="M 50 46 L 71 53 L 73 79 L 50 104 L 27 79 L 29 53 Z" fill="#020d1a" stroke="url(#cyberGrad)" stroke-width="1.5" stroke-linejoin="round"/>
+                    <!-- PERISAI DALAM (INNER SHIELD BORDER) -->
+                    <path d="M 50 46 L 71 53 L 73 79 L 50 104 L 27 79 L 29 53 Z" fill="#020d1a" stroke="url(#cyberGrad)" stroke-width="1.5" stroke-linejoin="round"/>
 
-        <!-- IKON CHEVRON HIJAU NEON (TOP CENTER EMBLEM) -->
-        <path d="M 42 41 L 50 48 L 58 41 L 58 46 L 50 53 L 42 46 Z" fill="url(#greenGrad)" stroke="#22c55e" stroke-width="0.8"/>
+                    <!-- IKON CHEVRON HIJAU NEON (TOP CENTER EMBLEM) -->
+                    <path d="M 42 41 L 50 48 L 58 41 L 58 46 L 50 53 L 42 46 Z" fill="url(#greenGrad)" stroke="#22c55e" stroke-width="0.8"/>
 
-        <!-- TEKS: VIP / DYNAMIC ROLE -->
-        <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="20" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="1">VIP</text>
-    </svg>
-</div>
+                    <!-- TEKS: VIP / DYNAMIC ROLE -->
+                    <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="20" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="1">VIP</text>
+                </svg>
+            </div>
+        </div>
 
         <!-- Section 1: Api Key Kamu -->
         <div class="double-border-cyan rounded-2xl p-3 mb-4 relative">
@@ -3349,15 +3350,6 @@ app.get('/docs', (req, res) => {
             <div id="activityLogsContainer" class="space-y-2 max-h-44 overflow-y-auto pr-1">
                 <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
                     [16.55] [OK] [GET] : /api/random/tobrut
-                </div>
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    [16.55] [OK] [GET] : /api/random/tobrut
-                </div>
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    [16.54] [OK] [GET] : /api/random/tobrut
-                </div>
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    [16.15] [OK] [GET] : /api/download/aio-downloader
                 </div>
             </div>
         </div>
@@ -3793,10 +3785,10 @@ app.get('/docs', (req, res) => {
         planText.setAttribute('fill', '#00f3ff');
     } else if (role.includes('premium')) {
         planText.textContent = 'PREM';
-        planText.setAttribute('fill', '#fbbf24'); // Warna Emas untuk Premium
+        planText.setAttribute('fill', '#fbbf24');
     } else {
         planText.textContent = 'FREE';
-        planText.setAttribute('fill', '#34d399'); // Warna Emerald untuk Free
+        planText.setAttribute('fill', '#34d399');
     }
 }
 
@@ -3932,6 +3924,7 @@ app.get('/docs', (req, res) => {
                 '</div>';
         });
 }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
         });
