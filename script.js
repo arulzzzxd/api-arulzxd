@@ -116,112 +116,24 @@ function closeSidebarMenu() {
     }
 }
 
-// Gantilah fungsi createMediaPreview yang lama dengan yang baru ini di script.js Anda.
-
-function createMediaPreview(url, contentType, fullPath, endpointName = 'video', endpointDesc = '') {
+// Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi (Updated)
+function createMediaPreview(url, contentType, fullPath) {
     const type = contentType || '';
-    
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
         return `
             <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
-        const cleanUsername = "@arulzxd";
-        const displayTitle = endpointName || 'Random Video';
-        const tiktokDesc = endpointDesc || displayTitle;
-
         return `
-            <div class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col justify-between select-none">
-                
-                <!-- Top Header Overlay -->
-                <div class="absolute top-0 left-0 right-0 z-20 p-3 bg-gradient-to-b from-black/60 via-black/20 to-transparent flex items-center justify-between text-white text-xs font-semibold pointer-events-none">
-                    <div class="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm">
-                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                        <span class="text-[10px] tracking-wider uppercase font-bold text-slate-200">Stream Player</span>
-                    </div>
-                    <div class="flex items-center gap-3 text-slate-300 font-bold text-xs">
-                        <span class="opacity-60">Mengikuti</span>
-                        <span class="border-b-2 border-white pb-0.5 text-white">Untuk Anda</span>
-                    </div>
-                    <div class="p-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </div>
-                </div>
-
-                <!-- Video Element (Dioptimalkan agar tidak lag/berhenti saat scroll/click) -->
+            <div class="w-full bg-black/40 p-2 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
                 <video src="${url}" 
-                    autoplay 
-                    loop  
-                    playsinline 
-                    webkit-playsinline
-                    preload="auto"
-                    disablePictureInPicture
-                    onclick="event.stopPropagation(); this.paused ? this.play().catch(e=>{}) : this.pause()" 
-                    class="w-full h-full object-cover bg-black cursor-pointer select-none pointer-events-auto">
+                       controls
+                       autoplay
+                       loop 
+                       playsinline
+                       class="w-full h-auto max-h-[85vh] rounded-lg object-contain bg-black">
                 </video>
-
-                <!-- Right Action Bar -->
-                <div class="absolute right-2.5 bottom-16 z-20 flex flex-col items-center gap-3.5 text-white pointer-events-none">
-                    <div class="relative mb-0.5">
-                        <div class="w-9 h-9 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center font-bold text-cyan-400 text-xs overflow-hidden shadow-md">AZ</div>
-                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">+</div>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        </div>
-                        <span class="text-[10px] font-bold drop-shadow-md">24.5K</span>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
-                        </div>
-                        <span class="text-[10px] font-bold drop-shadow-md">821</span>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
-                        </div>
-                        <span class="text-[10px] font-bold drop-shadow-md">3.1K</span>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-0.5">
-                        <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
-                        </div>
-                        <span class="text-[10px] font-bold drop-shadow-md">Bagikan</span>
-                    </div>
-                </div>
-
-                <!-- Vinyl Icon -->
-                <div class="absolute right-3 bottom-3 z-20 pointer-events-none">
-                    <div class="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-700/80 p-1 flex items-center justify-center animate-spin [animation-duration:4s] shadow-2xl">
-                        <div class="w-full h-full rounded-full bg-gradient-to-tr from-gray-950 via-gray-700 to-gray-950 flex items-center justify-center border border-white/20">
-                            <div class="w-3 h-3 rounded-full bg-cyan-400 border border-black flex items-center justify-center">
-                                <div class="w-1 h-1 rounded-full bg-black"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Description Overlay -->
-                <div class="absolute bottom-0 left-0 right-16 z-20 p-4 flex flex-col gap-1.5 text-left pointer-events-none">
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-sm text-white drop-shadow-lg">${cleanUsername}</span>
-                        <svg class="w-4 h-4 text-[#20D5EC] flex-shrink-0 drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <p class="text-xs text-white line-clamp-2 leading-relaxed font-sans drop-shadow-lg">${tiktokDesc}</p>
-                    <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-200 drop-shadow-sm">
-                        <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-                        <span class="truncate font-mono">Suara asli - ${cleanUsername}</span>
-                    </div>
-                </div>
             </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
         return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
@@ -230,6 +142,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
     }
     return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
+
 /* =========================================================================
    THEME & APPLICATION FUNCTIONS
    ========================================================================= */
@@ -639,56 +552,57 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             if (data.url && typeof data.url === 'string' && data.url.startsWith('http')) detectedMediaUrl = data.url;
             else if (data.result && data.result.url && typeof data.result.url === 'string') detectedMediaUrl = data.result.url;
 
-            if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
-                 hintText = getMediaHint(detectedMediaUrl);
-                 
-                 let mediaMarkup = '';
-                 const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
+            // Jika berupa response JSON yang mengandung URL Video/Gambar
+if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
+    hintText = getMediaHint(detectedMediaUrl);
+    
+    let mediaMarkup = '';
+    const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
-                 if (isAudioUrl) {
-                     mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
-                 } else {
-                     mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl, epName, epDesc);
-                 }
+    if (isAudioUrl) {
+        mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
+    } else {
+        mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
+    }
 
-                 finalInnerContent = `
-                    <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
-                        <div class="w-full flex justify-center items-center">
-                            ${mediaMarkup}
-                        </div>
-                    </div>
-                    <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-                    <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
-                 `;
-                 isMedia = true;
-            } else {
+    finalInnerContent = `
+       <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+           <div class="w-full flex justify-center items-center">
+               ${mediaMarkup}
+           </div>
+       </div>
+       <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+       <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+    `;
+    isMedia = true;
+} else {
                  finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
             }
         } else if (cleanContentType.startsWith("image/") || cleanContentType.startsWith("video/") || cleanContentType.startsWith("audio/") || cleanContentType.includes("application/pdf")) {
-            isMedia = true;
-            hintText = getMediaHint(cleanContentType);
-            mediaBlobObject = await response.blob(); 
-            if (!bytes) bytes = mediaBlobObject.size;
-            const blobUrl = URL.createObjectURL(mediaBlobObject);
-            
-            if (cleanContentType.startsWith("audio/")) {
-                finalInnerContent = `
-                    <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
-                        <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
-                            Browser Anda tidak mendukung pemutar audio.
-                        </audio>
-                    </div>
-                `;
-            } else {
-                finalInnerContent = `
-                    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
-                        <div class="w-full flex justify-center items-center">
-                            ${createMediaPreview(blobUrl, cleanContentType, fullPath, epName, epDesc)}
-                        </div>
-                    </div>
-                `;
-            }
-        } else {
+    isMedia = true;
+    hintText = getMediaHint(cleanContentType);
+    mediaBlobObject = await response.blob(); 
+    if (!bytes) bytes = mediaBlobObject.size;
+    const blobUrl = URL.createObjectURL(mediaBlobObject);
+    
+    if (cleanContentType.startsWith("audio/")) {
+        finalInnerContent = `
+            <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
+                <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
+                    Browser Anda tidak mendukung pemutar audio.
+                </audio>
+            </div>
+        `;
+    } else {
+        finalInnerContent = `
+            <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
+                <div class="w-full flex justify-center items-center">
+                    ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
+                </div>
+            </div>
+        `;
+    }
+} else {
             rawResponseText = await response.text();
             if (!bytes) bytes = new Blob([rawResponseText]).size;
             hintText = "Klik teks untuk memperbesar";
