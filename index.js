@@ -3598,7 +3598,7 @@ app.get('/docs', (req, res) => {
     const planContainer = document.getElementById('planBoxContainer');
     const role = (roleName || '').toLowerCase();
 
-    const buildCrownSVG = (gradId) => `
+    const buildCrownSVG = (gradId) => \`
         <svg class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -3614,16 +3614,16 @@ app.get('/docs', (req, res) => {
                     <stop offset="100%" stop-color="#2e1065" />
                 </linearGradient>
             </defs>
-            <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#${gradId})" />
-            <circle cx="16" cy="39" r="2.5" fill="url(#${gradId})" />
-            <circle cx="34" cy="30" r="2.5" fill="url(#${gradId})" />
-            <circle cx="66" cy="30" r="2.5" fill="url(#${gradId})" />
-            <circle cx="84" cy="39" r="2.5" fill="url(#${gradId})" />
-            <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#${gradId})" />
+            <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
+            <circle cx="16" cy="39" r="2.5" fill="url(#^${gradId})" />
+            <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
+            <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
+            <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
+            <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
             <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-            <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-            <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-        </svg>`;
+            <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
+            <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
+        </svg>\`;
 
     if (role.includes('vip')) {
         if (planText) planText.innerText = 'VIP';
