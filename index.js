@@ -3963,11 +3963,7 @@ app.get('/docs', (req, res) => {
                         
                         const userKey = data.user.apikey || '';
                         document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
-                        if (document.getElementById('welcomeApiKey')) {
-                        document.getElementById('welcomeApiKey').innerText = userKey || 'Silakan Login';
-                        }
-
-                        
+                                                
                         setRoleTheme(data.user.role || 'Free User');
 
                         fetchUserActivityLogs(userKey);
