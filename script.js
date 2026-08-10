@@ -1,4094 +1,1564 @@
-const express = require('express');
-const fileUpload = require('express-fileupload');
-const session = require('express-session');
-const mongoose = require('mongoose');
-const cron = require('node-cron');
-const { MongoStore } = require('connect-mongo');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
-const rateLimit = require('express-rate-limit');
-const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
-const path = require('path');
-const fs = require('fs');
-const axios = require('axios');
-const mime = require('mime-types');
-const multer = require("multer");
-const nodemailer = require('nodemailer');
-const https = require('https');
-const http = require('http');
-const crypto = require('crypto');
-const compression = require('compression');
-const os = require('os');
+/* =========================================================================
+   SCRIPT.JS REST API (UPDATED & FIXED)
+   ========================================================================= */
 
-const app = express();
-app.use(compression());
-app.set('etag', false);
-const PORT = process.env.PORT || 3000;
-app.use(express.static(path.join(__dirname)));
-app.use(express.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf.toString('utf8');
-    }
-}));
-app.use(cookieParser());
-app.set('trust proxy', 1);
+const BASE_URL = window.location.origin;
+let isRequestInProgress = false;
+let apiData = null;
+let currentTheme = 'dark';
+let currentLang = 'id';
+let allApiElements = [];
+let totalEndpoints = 0;
+let totalCategories = 0;
+let activeCategory = 'all';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
+const themeToggleBtn = document.getElementById('themeToggle');
+const body = document.body;
+const themeBg = document.getElementById('themeBg');
 
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
-    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
-
-const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
-
-app.use(session({
-    secret: 'arulzxd_secret_session_key_99', 
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: MONGODB_URI,
-        dbName: 'sessions',
-        ttl: 24 * 60 * 60
-    }),
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } 
-}));
-
-const checkAuthSession = (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = {
-            ...decoded,
-            apikey: decoded.apikey
-        }; 
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
+const categoryIcons = {
+    'ai': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2 2 0 1 1 12 2zm-2 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm4 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>',
+    'download': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm9 4H3v-2h18v2z"/></svg>',
+    'search': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>',
+    'image': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+    'tools': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.1L9 6 6 9 1.8 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>',
+    'maker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+    'stalker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+    'canvas': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>',
+    'security': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>',
+    'news': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H5V5h14v14zm-9-2h8v-2h-8v2zm0-4h8v-2h-8v2zm0-4h8V7h-8v2zm-4 8h2v-8H6v8z"/></svg>',
+    'random': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>',
+    'islam': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
+    'game': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M7 8h10a4 4 0 0 1 4 4v4a3 3 0 0 1-5.12 2.12L13.76 16H10.24l-2.12 2.12A3 3 0 0 1 3 16v-4a4 4 0 0 1 4-4zm0 3v2H5v2h2v2h2v-2h2v-2H9v-2H7zm9 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm3 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
+    'quotes': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M7 17H3V9h6v6c0 1.1-.9 2-2 2zm10 0h-4V9h6v6c0 1.1-.9 2-2 2z"/></svg>',
+    'sticker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M5 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 1v4h4M8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-4 5c2.2 0 4-1.3 4-3H8c0 1.7 1.8 3 4 3z"/></svg>',
+    'default': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
 };
 
-app.use(checkAuthSession);
-
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    password: { type: String, default: null },
-    provider: { type: String, default: 'local' },
-    providerId: { type: String, default: null },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    apikey: { type: String, required: true, unique: true },
-    role: { type: String, default: 'Free User' },
-    limit: { type: Number, default: 0 },
-    lastLimitReset: { type: Date, default: Date.now },
-    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
-    createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.models.User || mongoose.model('User', userSchema);
-
-cron.schedule('0 0 * * *', async () => {
-    try {
-        await User.updateMany({}, { $set: { limit: 0, lastLimitReset: new Date() } });
-        console.log('🔄 [CRON] Semua limit user berhasil di-reset pada jam 12 malam!');
-    } catch (err) {
-        console.error('❌ [CRON] Gagal melakukan reset limit harian:', err.message);
-    }
-}, {
-    scheduled: true,
-    timezone: "Asia/Jakarta"
-});
-
-const uploadavatar = multer({ 
-    limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('File harus berupa gambar!'));
-        }
-    }
-});
-
-// Endpoint Upload / Ganti Avatar
-app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
-    uploadavatar.single('avatar')(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar.' });
-        }
-
-        try {
-            if (!req.user) {
-                return res.status(401).json({ status: false, message: 'Anda belum login!' });
-            }
-
-            if (!req.file) {
-                return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
-            }
-
-            // Validasi Mime-Type melalui Multer Buffer & mime-types
-            const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
-            if (!mimeType.startsWith('image/')) {
-                return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
-            }
-
-            // Ubah buffer ke Base64 Data URI
-            const base64 = req.file.buffer.toString("base64");
-            const avatarDataUrl = `data:${mimeType};base64,${base64}`;
-
-            const userIdToUpdate = req.user.id || req.user._id;
-            const updatedUser = await User.findByIdAndUpdate(
-                userIdToUpdate,
-                { $set: { avatar: avatarDataUrl } },
-                { new: true, runValidators: true }
-            );
-
-            if (!updatedUser) {
-                return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
-            }
-
-            // Perbarui cookie session jika menggunakan JWT
-            const userPayload = {
-                id: updatedUser._id,
-                username: updatedUser.username,
-                email: updatedUser.email,
-                name: updatedUser.username,
-                avatar: updatedUser.avatar,
-                role: updatedUser.role,
-                apikey: updatedUser.apikey
-            };
-
-            const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('auth_session', token, {
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: 'lax'
-            });
-
-            return res.json({
-                status: true,
-                message: 'Avatar berhasil diperbarui!',
-                avatar: updatedUser.avatar
-            });
-
-        } catch (error) {
-            console.error("Gagal update avatar:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
-        }
-    });
-});
-
-// ----------------------------------------------------
-// 1. MONGOOSE SCHEMA & MODEL UNTUK REVIU / PENILAIAN
-// ----------------------------------------------------
-const reviewSchema = new mongoose.Schema({
-    productId: { type: String, required: true, index: true },
-    userId: { type: String, default: null, index: true },
-    username: { type: String, required: true },
-    userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String, required: true, trim: true },
-    media: [{
-        type: { type: String, enum: ['image', 'video'] },
-        url: String
-    }],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
-reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
-
-const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
-
-// ----------------------------------------------------
-// 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
-// ----------------------------------------------------
-const uploadReviewMedia = multer({
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('File harus berupa gambar atau video!'));
-        }
-    }
-});
-
-// ----------------------------------------------------
-// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
-// ----------------------------------------------------
-app.post('/api/reviews', checkAuthSession, (req, res) => {
-    uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah berkas.' });
-        }
-
-        try {
-            const { productId, rating, comment } = req.body;
-
-            if (!productId) {
-                return res.status(400).json({ status: false, message: 'Product ID wajib diisi!' });
-            }
-
-            if (!rating || Number(rating) < 1 || Number(rating) > 5) {
-                return res.status(400).json({ status: false, message: 'Rating bintang wajib diisi (1-5)!' });
-            }
-
-            if (!comment || !comment.trim()) {
-                return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
-            }
-
-            // Identitas User
-            let username = 'Anonim';
-            let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
-            let userId = getUserIdentifier(req);
-
-            if (req.user) {
-                username = req.user.username || req.user.name;
-                userAvatar = req.user.avatar || userAvatar;
-                userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
-            }
-
-            // Cek apakah user pernah membeli produk ini
-            const product = await Product.findOne({
-                $or: [{ Id: productId }, { _id: mongoose.Types.ObjectId.isValid(productId) ? productId : null }]
-            });
-
-            if (product && product.purchasedBy) {
-                const userClean = userId.toLowerCase().trim();
-                const isBuyer = product.purchasedBy.some(p => p.toLowerCase().trim() === userClean);
-
-                if (!isBuyer && process.env.NODE_ENV === 'production') {
-                    return res.status(403).json({
-                        status: false,
-                        message: 'Anda belum pernah membeli produk ini, tidak dapat memberikan penilaian!'
-                    });
-                }
-            }
-
-            // Upload Media jika ada
-            const mediaList = [];
-            if (req.files && req.files.length > 0) {
-                for (const file of req.files) {
-                    const mimeType = file.mimetype || mime.lookup(file.originalname) || '';
-                    const isVideo = mimeType.startsWith('video/');
-                    const base64 = file.buffer.toString('base64');
-                    const dataUrl = `data:${mimeType};base64,${base64}`;
-
-                    mediaList.push({
-                        type: isVideo ? 'video' : 'image',
-                        url: dataUrl
-                    });
-                }
-            }
-
-            // CEK EDIT OR CREATE: Cari review sebelumnya oleh User ini di Produk ini
-            let existingReview = await Review.findOne({ productId, userId });
-
-            if (existingReview) {
-                // EDIT / UPDATE RATING LAMA
-                existingReview.rating = Number(rating);
-                existingReview.comment = comment.trim();
-                if (mediaList.length > 0) {
-                    existingReview.media = mediaList; // Perbarui media jika melampirkan baru
-                }
-                existingReview.updatedAt = new Date();
-                await existingReview.save();
-
-                return res.json({
-                    status: true,
-                    message: 'Penilaian produk Anda berhasil diperbarui!',
-                    data: existingReview
-                });
-            } else {
-                // BUAT RATING BARU (PERTAMA KALI)
-                const newReview = new Review({
-                    productId,
-                    userId,
-                    username,
-                    userAvatar,
-                    rating: Number(rating),
-                    comment: comment.trim(),
-                    media: mediaList
-                });
-
-                await newReview.save();
-
-                return res.json({
-                    status: true,
-                    message: 'Penilaian produk berhasil dikirim!',
-                    data: newReview
-                });
-            }
-
-        } catch (error) {
-            console.error("Error submit review:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menyimpan ulasan.' });
-        }
-    });
-});
-
-// ----------------------------------------------------
-// 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
-// ----------------------------------------------------
-app.get('/api/reviews/:productId', async (req, res) => {
-    try {
-        const { productId } = req.params;
-        const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
-
-        let averageRating = 0;
-        if (reviews.length > 0) {
-            const totalRating = reviews.reduce((sum, item) => sum + item.rating, 0);
-            averageRating = Number((totalRating / reviews.length).toFixed(1));
-        }
-
-        return res.json({
-            status: true,
-            totalReviews: reviews.length,
-            averageRating: averageRating,
-            reviews: reviews
-        });
-    } catch (error) {
-        console.error("Error fetch reviews:", error);
-        return res.status(500).json({ status: false, message: 'Gagal mengambil ulasan produk.' });
-    }
-});
-
-const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
-const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
-const PAYWUZ_HEADERS = {
-    "Authorization": `Bearer ${PAYWUZ_API_KEY}`,
-    "Content-Type": "application/json"
-};
-
-async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            return await axios(config);
-        } catch (error) {
-            const isRateLimited = error.response && error.response.status === 429;
-            const isLastAttempt = i === maxRetries - 1;
-
-            if (isRateLimited && !isLastAttempt) {
-                console.warn(`⚠️ Menerima 429 dari PayWuz. Retry ke-${i + 1} dalam ${delayMs}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delayMs));
-                delayMs *= 1.5; // Backoff bertambah
-            } else {
-                throw error;
-            }
-        }
-    }
-}
-
-const cacheSchema = new mongoose.Schema({
-    key: { type: String, required: true, unique: true },
-    data: { type: mongoose.Schema.Types.Mixed, required: true },
-    createdAt: { type: Date, default: Date.now, expires: 60 } // Hapus otomatis setelah 60 detik
-});
-
-const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
-
-const voucherSchema = new mongoose.Schema({
-    code: { type: String, required: true, unique: true, uppercase: true },
-    discount: { type: Number, required: true },
-    type: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
-    expiredAt: { type: Date, required: true },
-    usageLimit: { type: Number, default: 20 },
-    usedCount: { type: Number, default: 0 },
-    usedBy: [{ type: String }], // Array penyimpan identifier (username/email/userId) agar 1 user hanya bisa 1x klaim
-    createdAt: { type: Date, default: Date.now }
-});
-
-const Voucher = mongoose.models.Voucher || mongoose.model('Voucher', voucherSchema);
-
-const productSchema = new mongoose.Schema({
-    Id: { type: String, required: true, unique: true, trim: true },
-    nama: { type: String, required: true, trim: true },
-    harga: { type: Number, required: true },
-    harga_diskon: { type: Number, default: null },
-    kategori: { type: String, required: true },
-    badge: { type: String, default: "" },
-    terjual: { type: Number, default: 0 },
-    stok: { type: Number, default: 0 },
-    gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
-    deskripsi: { type: String, default: "" },
-    link: { type: String, required: true },
-    purchasedBy: [{ type: String }], // Array ID/Username/Email pembeli yang pernah sukses membeli
-    createdAt: { type: Date, default: Date.now }
-});
-
-const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
-
-// Helper function untuk mengambil identifier user unik
-function getUserIdentifier(req) {
-    if (req.user) {
-        return (req.user.email || req.user.username || req.user._id || "").toString().toLowerCase().trim();
-    }
-    const bodyIdentifier = req.body?.username || req.body?.email || req.body?.userIdentifier;
-    if (bodyIdentifier) {
-        return bodyIdentifier.toString().toLowerCase().trim();
-    }
-    return req.ip; // Fallback ke IP address jika guest/tanpa login
-}
-
-app.post('/api/vouchers/claim', async (req, res) => {
-    try {
-        const code = req.body.code;
-        if (!code) {
-            return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
-        }
-
-        const cleanCode = code.trim().toUpperCase();
-        const userIdentifier = getUserIdentifier(req);
-
-        // Mengambil HANYA dari koleksi Voucher Mongoose
-        const voucher = await Voucher.findOne({ code: cleanCode });
-
-        if (!voucher) {
-            return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
-        }
-
-        // 1. Cek Kuota Penggunaan (Jika usageLimit <= 0 maka kuota habis & tidak bisa digunakan lagi)
-        if (voucher.usageLimit <= 0) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'limit_reached',
-                message: 'Kuota penggunaan voucher ini sudah habis!' 
-            });
-        }
-
-        // 2. Cek apakah User sudah pernah menggunakan voucher ini
-        if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
-            return res.status(400).json({
-                status: false,
-                reason: 'already_used',
-                message: 'Anda sudah pernah menggunakan voucher ini sebelumnya!'
-            });
-        }
-
-        // 3. Cek Kedaluwarsa
-        if (new Date() > new Date(voucher.expiredAt)) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'expired',
-                message: 'Voucher telah kedaluwarsa!' 
-            });
-        }
-
-        // Update kuota & batasi limit
-        voucher.usedCount += 1;
-        voucher.usageLimit = Math.max(0, voucher.usageLimit - 1); // Pengurangan batas limit hingga mencapai minimal 0
-
-        if (!voucher.usedBy) voucher.usedBy = [];
-        voucher.usedBy.push(userIdentifier);
-
-        await voucher.save();
-
-        // Response konsisten dengan properti 'voucher' & 'data'
-        return res.json({
-            status: true,
-            message: 'Voucher berhasil diklaim!',
-            voucher: {
-                code: voucher.code,
-                discount: voucher.discount,
-                type: voucher.type
-            },
-            data: {
-                code: voucher.code,
-                discount: voucher.discount,
-                type: voucher.type
-            }
-        });
-    } catch (err) {
-        console.error("Error Claim Voucher:", err);
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server.' });
-    }
-});
-
-// Endpoint GET untuk mendukung pencarian langsung berdasarkan URL parameter
-app.get('/api/vouchers/:code', async (req, res) => {
-    try {
-        const code = req.query.code || req.params.code;
-        if (!code) {
-            return res.status(400).json({ status: false, message: 'Kode voucher wajib diisi!' });
-        }
-
-        const userIdentifier = getUserIdentifier(req);
-        const voucher = await Voucher.findOne({ code: code.trim().toUpperCase() });
-        if (!voucher) {
-            return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
-        }
-
-        // Cek Kuota Penggunaan
-        if (voucher.usageLimit <= 0) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'limit_reached',
-                message: 'Kuota penggunaan voucher ini sudah habis!' 
-            });
-        }
-
-        if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
-            return res.status(400).json({
-                status: false,
-                reason: 'already_used',
-                message: 'Anda sudah pernah menggunakan voucher ini sebelumnya!'
-            });
-        }
-
-        if (new Date() > new Date(voucher.expiredAt)) {
-            return res.status(400).json({ 
-                status: false, 
-                reason: 'expired',
-                message: 'Voucher telah kedaluwarsa!' 
-            });
-        }
-
-        return res.json({
-            status: true,
-            message: 'Voucher berhasil ditemukan!',
-            data: {
-                code: voucher.code,
-                discount: voucher.discount,
-                type: voucher.type
-            }
-        });
-    } catch (err) {
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server.' });
-    }
-});
-
-async function recordProductBuyer(productName, userIdentifier) {
-    if (!productName || !userIdentifier) return;
-    try {
-        await Product.findOneAndUpdate(
-            { nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } },
-            { $addToSet: { purchasedBy: userIdentifier.toString().toLowerCase().trim() } }
-        );
-    } catch (err) {
-        console.error("❌ Gagal mencatat pembeli produk:", err.message);
-    }
-}
-
-async function updateProductStockAndSold(productName, qtyChange = 1, isRollback = false) {
-    try {
-        if (!productName) return null;
-
-        const product = await Product.findOne({ 
-            nama: { $regex: new RegExp(`^${productName.trim()}$`, 'i') } 
-        });
-
-        if (product) {
-            if (isRollback) {
-                // Pemulihan stok ketika dibatalkan
-                product.stok = (product.stok || 0) + qtyChange;
-                product.terjual = Math.max(0, (product.terjual || 0) - qtyChange);
-                console.log(`🔄 [STOK RESTORED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
-            } else {
-                // Pengurangan stok saat sukses
-                product.stok = Math.max(0, (product.stok || 0) - qtyChange);
-                product.terjual = (product.terjual || 0) + qtyChange;
-                console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
-            }
-
-            await product.save();
-            return product;
-        }
-    } catch (err) {
-        console.error("❌ Gagal meng-update stok produk:", err.message);
-    }
-    return null;
-}
-
-async function setCache(key, data) {
-    try {
-        await CacheModel.findOneAndUpdate(
-            { key },
-            { data, createdAt: new Date() },
-            { upsert: true, new: true }
-        );
-    } catch (e) {
-        console.error("Gagal simpan cache MongoDB:", e.message);
-    }
-}
-
-async function deleteCache(key) {
-    try {
-        await CacheModel.deleteOne({ key });
-    } catch (e) {}
-}
-
-function scheduleTransactionDeletion(orderId) {
-    setTimeout(async () => {
-        try {
-            await Transaction.deleteOne({ orderId });
-            await deleteCache(`trx_${orderId}`);
-            console.log(`🗑️ Transaksi ${orderId} berhasil dihapus dari database.`);
-        } catch (err) {
-            console.error(`❌ Gagal menghapus transaksi ${orderId}:`, err.message);
-        }
-    }, 60 * 1000);
-}
-
-mongoose.connection.once('open', async () => {
-    try {
-        await mongoose.connection.db.collection('transactions').dropIndex('transactionId_1');
-        console.log('🧹 Berhasil menghapus index lama transactionId_1');
-    } catch (e) {}
-});
-
-const transactionSchema = new mongoose.Schema({
-    orderId: { type: String, required: true, unique: true },
-    amount: { type: Number, required: true },
-    paymentNumber: { type: String, default: null }, // QRIS String / URL
-    paymentMethod: { type: String, default: "QRIS" },
-    status: { type: String, default: "pending" }, // pending, settlement, paid, success, failed, cancelled
-    itemDetails: {
-        nama: String,
-        harga: Number,
-        harga_diskon: Number,
-        kategori: String,
-        gambar: String,
-        link: String
+const i18n = {
+    id: {
+        searchPlaceholder: "Cari endpoint berdasarkan nama, path, atau kategori...",
+        noResultsTitle: "Endpoint tidak ditemukan",
+        noResultsDesc: "Coba gunakan kata kunci lain",
+        endpointsTitle: "Total Endpoint",
+        categoriesTitle: "Total Kategori",
+        endpointsCount: "endpoints",
+        btnExecute: "Eksekusi",
+        btnClear: "Bersihkan",
+        toastMediaCopy: "Media URL disalin ke papan klip!",
+        toastMediaFail: "Gagal menyalin URL",
+        endpointNotAvailable: "⚠️ Endpoint ini tidak tersedia untuk pengujian",
+        toastRequestWait: "Harap tunggu permintaan saat ini selesai",
+        toastRequestSuccess: "Permintaan berhasil diselesaikan!",
+        toastRequestFailed: "Permintaan gagal!"
     },
-    productLink: { type: String, default: null },
-    createdAt: { type: Date, default: Date.now },
-    expiredAt: { type: Date, required: true },
-    updatedAt: { type: Date, default: Date.now }
-});
+    en: {
+        searchPlaceholder: "Search endpoints by name, path, or category...",
+        noResultsTitle: "No endpoints found",
+        noResultsDesc: "Try a different search term",
+        endpointsTitle: "Total Endpoints",
+        categoriesTitle: "Total Categories",
+        endpointsCount: "endpoints",
+        btnExecute: "Execute",
+        btnClear: "Clear",
+        toastMediaCopy: "Media URL copied to clipboard!",
+        toastMediaFail: "Failed to copy URL",
+        endpointNotAvailable: "⚠️ This endpoint is not available for testing",
+        toastRequestWait: "Please wait for current request",
+        toastRequestSuccess: "Request completed successfully!",
+        toastRequestFailed: "Request failed!"
+    }
+};
 
-const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+/* =========================================================================
+   ADDITIONAL / MISSING CORE FUNCTIONS & MEDIA PREVIEW DEFINITION
+   ========================================================================= */
 
-function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
-    if (!receivedSignature) return false;
-
-    const computedSignature = "sha256=" + crypto
-        .createHmac("sha256", apikey)
-        .update(typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody))
-        .digest("hex");
-
-    try {
-        return crypto.timingSafeEqual(
-            Buffer.from(receivedSignature),
-            Buffer.from(computedSignature)
-        );
-    } catch (err) {
-        return false;
+function toggleCategory(catIdx) {
+    const catDiv = document.getElementById(`cat-${catIdx}`);
+    const catIcon = document.getElementById(`cat-icon-${catIdx}`);
+    if (catDiv && catIcon) {
+        const isHidden = catDiv.classList.contains('hidden');
+        if (isHidden) {
+            catDiv.classList.remove('hidden');
+            catIcon.style.transform = 'rotate(180deg)';
+        } else {
+            catDiv.classList.add('hidden');
+            catIcon.style.transform = 'rotate(0deg)';
+        }
     }
 }
 
-// ==========================================
-// 1. POST /transactions (CREATE TRANSACTION)
-// ==========================================
-app.post('/transactions', async (req, res) => {
+const SVG_PLUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>`;
+const SVG_MINUS = `<svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>`;
+
+function toggleEndpoint(catIdx, epIdx) {
+    const epDiv = document.getElementById(`ep-${catIdx}-${epIdx}`);
+    const epIcon = document.getElementById(`ep-icon-${catIdx}-${epIdx}`);
+    if (epDiv && epIcon) {
+        const isHidden = epDiv.classList.contains('hidden');
+        if (isHidden) {
+            epDiv.classList.remove('hidden');
+            epIcon.innerHTML = SVG_MINUS;
+        } else {
+            epDiv.classList.add('hidden');
+            epIcon.innerHTML = SVG_PLUS;
+        }
+    }
+}
+
+function closeSidebarMenu() {
+    const bioDropdown = document.getElementById('bioDropdown');
+    const menuOverlay = document.getElementById('menuOverlay');
+    if (bioDropdown && menuOverlay) {
+        bioDropdown.style.transform = 'translateX(100%)';
+        menuOverlay.classList.add('hidden');
+    }
+}
+
+// Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi (Updated)
+function createMediaPreview(url, contentType, fullPath) {
+    const type = contentType || '';
+    if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
+        return `
+            <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
+                <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
+            </div>`;
+    } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
+        return `
+            <div class="w-full bg-black/40 p-2 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                <video src="${url}" 
+                       controls
+                       autoplay
+                       loop 
+                       playsinline
+                       class="w-full h-auto max-h-[85vh] rounded-lg object-contain bg-black">
+                </video>
+            </div>`;
+    } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
+        return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
+    } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
+        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
+    }
+    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
+}
+
+/* =========================================================================
+   THEME & APPLICATION FUNCTIONS
+   ========================================================================= */
+
+function updateThemeBackground(theme) {
+    if (themeBg) {
+        themeBg.className = "fixed inset-0 -z-50 transition-all duration-300";
+        if (theme === 'light') {
+            document.body.style.backgroundColor = "#ffffff";
+            themeBg.style.backgroundColor = "#ffffff";
+            themeBg.style.backgroundImage = "radial-gradient(#cbd5e1 1.5px, transparent 1.5px)";
+            themeBg.style.backgroundSize = "24px 24px";
+        } else {
+            document.body.style.backgroundColor = "#030712";
+            themeBg.style.backgroundColor = "#030712";
+            themeBg.style.backgroundImage = "radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)";
+            themeBg.style.backgroundSize = "24px 24px";
+        }
+    }
+}
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    currentTheme = savedTheme;
+
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    if (savedTheme === 'light') {
+        body.classList.add('light-mode');
+        body.classList.remove('text-slate-100');
+        body.classList.add('text-slate-900');
+        themeToggleDarkIcon?.classList.add('hidden');
+        themeToggleLightIcon?.classList.remove('hidden');
+    } else {
+        body.classList.remove('light-mode');
+        body.classList.remove('text-slate-900');
+        body.classList.add('text-slate-100');
+        themeToggleDarkIcon?.classList.remove('hidden');
+        themeToggleLightIcon?.classList.add('hidden');
+    }
+    updateThemeBackground(currentTheme);
+    updateSocialBadges();
+}
+
+function toggleTheme() {
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    if (body.classList.contains('light-mode')) {
+        body.classList.remove('light-mode');
+        body.classList.remove('text-slate-900');
+        body.classList.add('text-slate-100');
+        themeToggleDarkIcon?.classList.remove('hidden');
+        themeToggleLightIcon?.classList.add('hidden');
+        currentTheme = 'dark';
+    } else {
+        body.classList.add('light-mode');
+        body.classList.remove('text-slate-100');
+        body.classList.add('text-slate-900');
+        themeToggleDarkIcon?.classList.add('hidden');
+        themeToggleLightIcon?.classList.remove('hidden');
+        currentTheme = 'light';
+    }
+
+    localStorage.setItem('theme', currentTheme);
+    updateThemeBackground(currentTheme);
+    updateSocialBadges();
+    if (apiData) loadApis();
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+
+    document.getElementById('lang-id').classList.toggle('active', lang === 'id');
+    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+    document.getElementById('searchInput').placeholder = i18n[lang].searchPlaceholder;
+    document.getElementById('no-results-title').textContent = i18n[lang].noResultsTitle;
+    document.getElementById('no-results-desc').textContent = i18n[lang].noResultsDesc;
+    document.getElementById('stat-endpoints-title').textContent = i18n[lang].endpointsTitle;
+    document.getElementById('stat-categories-title').textContent = i18n[lang].categoriesTitle;
+
+    const dateElement = document.getElementById('liveDate');
+    if (dateElement && typeof moment !== 'undefined') {
+        const now = moment().tz("Asia/Jakarta");
+        const formatLang = lang === 'id' ? 'id' : 'en';
+        dateElement.textContent = now.locale(formatLang).format('dddd, D MMMM YYYY');
+    }
+
+    if (apiData) loadApis();
+}
+
+function updateSocialBadges() {
+    const isLightMode = body.classList.contains('light-mode');
+    const socialBadges = document.querySelectorAll('.social-badge > div');
+
+    socialBadges.forEach(badge => {
+        if (isLightMode) {
+            badge.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-colors text-center border bg-white/80 text-slate-900 hover:bg-slate-100 border-black/10 shadow-sm';
+        } else {
+            badge.className = 'px-4 py-2 rounded-xl text-xs font-bold transition-colors text-center border bg-slate-900/40 text-slate-200 hover:bg-slate-800/60 border-white/10';
+        }
+    });
+}
+
+function initDigitalClock() {
+    const clockElement = document.getElementById('liveClock');
+    const dateElement = document.getElementById('liveDate');
+    if (!clockElement || !dateElement) return;
+
+    function updateClock() {
+        if (typeof moment !== 'undefined') {
+            const now = moment().tz("Asia/Jakarta");
+            clockElement.textContent = now.format('HH:mm:ss');
+            if (currentLang === 'id') dateElement.textContent = now.locale('id').format('dddd, D MMMM YYYY');
+            else dateElement.textContent = now.locale('en').format('dddd, MMMM D, YYYY');
+        }
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+function updateTotalEndpoints() { document.getElementById('totalEndpoints').textContent = totalEndpoints; }
+function updateTotalCategories() { document.getElementById('totalCategories').textContent = totalCategories; }
+
+function showToast(message, isError = false) {
+    const container = document.getElementById('toast');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = "flex items-center gap-3.5 px-5 py-3.5 rounded-xl border backdrop-blur-xl min-w-[300px] max-w-[420px] transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] opacity-0 translate-y-[-20px] scale-95 pointer-events-auto will-change-[transform,opacity] select-none";
+
+    let iconHTML = '';
+    let iconColor = '';
+
+    if (isError) {
+        iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
+        iconColor = '#ff2a74';
+        toast.classList.add('border-pink-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(255,42,116,0.15)]');
+    } else {
+        iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>';
+        iconColor = '#00f0ff';
+        toast.classList.add('border-cyan-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(0,240,255,0.15)]');
+    }
+
+    toast.innerHTML = `
+        <div class="flex-shrink-0 p-1.5 rounded-lg bg-white/5">
+            <svg class="w-6 h-6 flex-shrink-0 transition-all duration-500 scale-100" viewBox="0 0 20 20" fill="currentColor" style="color: ${iconColor};">
+                ${iconHTML}
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-sans font-semibold tracking-wider leading-relaxed break-words text-slate-100 dark:text-slate-100 light-mode:text-slate-900 uppercase">
+                ${message}
+            </p>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'scale-95');
+        toast.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+        toast.classList.add('opacity-0', 'scale-90', 'translate-x-[20px]');
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }, 4000);
+}
+
+function copyText(text, type = 'path') {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(`${type} berhasil disalin ke papan klip!`);
+    }).catch(() => {
+        showToast('Gagal menyalin text', true);
+    });
+}
+
+function copyFromElement(elementId, type) {
+    const el = document.getElementById(elementId);
+    if (el) copyText(el.innerText || el.textContent, type);
+}
+
+function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
+    const form = document.getElementById(`form-${catIdx}-${epIdx}`);
+    if (!form) return;
+
+    const formData = new FormData(form);
+    
+    let formHasFile = false;
+    form.querySelectorAll('input[type="file"]').forEach(fileInput => {
+        if (fileInput.files && fileInput.files.length > 0) {
+            formHasFile = true;
+        }
+    });
+
+    let finalMethod = method.toUpperCase();
+    if (formHasFile) {
+        finalMethod = 'POST';
+    }
+
+    const params = new URLSearchParams();
+    if (finalMethod === 'GET' || finalMethod === 'DELETE') {
+        for (const [key, value] of formData.entries()) {
+            if (value && typeof value === 'string') {
+                params.append(key, value);
+            }
+        }
+    }
+
+    const queryStr = params.toString();
+    const finalUrl = queryStr ? `${BASE_URL}${basePath}?${queryStr}` : `${BASE_URL}${basePath}`;
+
+    const urlContainer = document.getElementById(`live-url-${catIdx}-${epIdx}`);
+    const curlContainer = document.getElementById(`live-curl-${catIdx}-${epIdx}`);
+
+    if (urlContainer) urlContainer.textContent = finalUrl;
+    
+    if (curlContainer) {
+        if (finalMethod === 'GET' || finalMethod === 'DELETE') {
+            curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"`;
+        } else if (formHasFile) {
+            const bodyParams = [];
+            for (const [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    const fileName = value.name ? value.name : 'file.bin';
+                    bodyParams.push(`-F "${key}=@${fileName}"`);
+                } else if (value) {
+                    bodyParams.push(`-F "${key}=${value}"`);
+                }
+            }
+            const dataString = bodyParams.length ? ` ${bodyParams.join(' ')}` : '';
+            curlContainer.textContent = `curl -X POST "${finalUrl}"${dataString}`;
+        } else {
+            const bodyParams = [];
+            for (const [key, value] of formData.entries()) {
+                if (value && typeof value === 'string') {
+                    bodyParams.push(`"${key}": "${value}"`);
+                }
+            }
+            const dataString = bodyParams.length ? ` -H "Content-Type: application/json" -d '{${bodyParams.join(', ')}}'` : '';
+            curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"${dataString}`;
+        }
+    }
+}
+
+async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
+    e.preventDefault();
+    if (isRequestInProgress) {
+        showToast(i18n[currentLang].toastRequestWait, true);
+        return;
+    }
+
+    const form = document.getElementById(`form-${catIdx}-${epIdx}`);
+    const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
+    const responseContent = document.getElementById(`response-content-${catIdx}-${epIdx}`);
+    const executeBtn = form.querySelector('button[type="submit"]');
+
+    let spinner = executeBtn.querySelector('.local-spinner');
+    if (!spinner) {
+        spinner = document.createElement('span');
+        spinner.className = 'local-spinner ml-2';
+        executeBtn.appendChild(spinner);
+    }
+
+    isRequestInProgress = true;
+    executeBtn.disabled = true;
+    executeBtn.classList.add('btn-loading');
+
+    spinner.style.setProperty('display', 'none', 'important');
+    spinner.classList.remove('active');
+
+    responseDiv.classList.remove('hidden');
+
+    responseContent.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-12 text-sm font-mono tracking-wider text-cyan-400 gap-3">
+            <div class="relative flex h-4 w-4">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-4 w-4 bg-cyan-500"></span>
+            </div>
+            <span class="animate-pulse text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-400 light-mode:text-slate-500">Fetching Response...</span>
+        </div>
+    `;
+
+    const originalBtnHtml = executeBtn.innerHTML;
+
+    executeBtn.innerHTML = `
+        <div class="flex items-center justify-center gap-1">
+            <span class="tracking-wide">LOADING</span>
+            <span class="flex gap-0.5 ml-0.5">
+                <span class="w-1 h-1 bg-current rounded-full animate-[bounce_1s_infinite_100ms]"></span>
+                <span class="w-1 h-1 bg-current rounded-full animate-[bounce_1s_infinite_200ms]"></span>
+                <span class="w-1 h-1 bg-current rounded-full animate-[bounce_1s_infinite_300ms]"></span>
+            </span>
+        </div>
+    `;
+
+    const rawFormData = new FormData(form);
+    const queryParams = new URLSearchParams();
+
+    let formHasFile = false;
+    form.querySelectorAll('input[type="file"]').forEach(fileInput => {
+        if (fileInput.files.length > 0) {
+            formHasFile = true;
+        }
+    });
+
+    let finalMethod = method.toUpperCase();
+    if (formHasFile) {
+        finalMethod = 'POST';
+    }
+
+    let fetchOptions = { method: finalMethod };
+    let fullPath = `${BASE_URL}${path.split('?')[0]}`;
+    let isMedia = false;
+
     try {
-        const { orderId, amount, itemDetails, qty } = req.body;
-        const buyQty = Number(qty) || 1;
-
-        if (!orderId || !amount) {
-            return res.status(400).json({ 
-                status: false,
-                error: "INVALID_PAYLOAD", 
-                message: "orderId dan amount wajib diisi!" 
-            });
+        if (finalMethod === 'GET' || finalMethod === 'DELETE') {
+            for (const [key, value] of rawFormData.entries()) {
+                if (value && typeof value === 'string') {
+                    queryParams.append(key, value);
+                }
+            }
+            const qStr = queryParams.toString();
+            if (qStr) fullPath += '?' + qStr;
+        } else {
+            if (formHasFile) {
+                fetchOptions.body = rawFormData;
+            } else {
+                fetchOptions.headers = { 'Content-Type': 'application/json' };
+                const jsonBody = {};
+                for (const [key, value] of rawFormData.entries()) {
+                    if (value) jsonBody[key] = value;
+                }
+                fetchOptions.body = JSON.stringify(jsonBody);
+            }
         }
 
-        const existingTrx = await Transaction.findOne({ orderId });
-        if (existingTrx) {
-            return res.json({ status: true, data: existingTrx });
+        const startTime = performance.now();
+        const response = await fetch(fullPath, fetchOptions);
+        const endTime = performance.now();
+        const duration = Math.round(endTime - startTime);
+
+        if (response.status === 403 || response.status === 429 || response.status === 503) {
+            const data = await response.json().catch(() => ({ message: "Akses Ditolak" }));
+            const rawErrText = JSON.stringify(data, null, 2);
+            responseContent.innerHTML = `
+                <div class="rounded-xl overflow-hidden border-2 border-red-500 bg-slate-950/50 backdrop-blur-md shadow-2xl">
+                    <div class="flex items-center justify-between px-4 py-3 bg-red-950/20 border-b-2 border-red-500">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider uppercase border border-red-500 bg-red-500/10 text-red-400">
+                            STATUS: ${response.status}
+                        </span>
+                        <button type="button" onclick="copyText(\`${rawErrText.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, 'Error Response')" class="p-1.5 text-slate-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-red-400 max-h-96 scrollbar-thin bg-black/20 shadow-inner"><code>${escapeHtml(rawErrText)}</code></pre>
+                </div>
+            `;
+            showToast(data.message || "Akses Ditolak!", true);
+            
+            if (typeof fetchAndUpdateUserLimit === 'function') {
+                fetchAndUpdateUserLimit();
+            }
+            return;
         }
 
-        const inputAmount = Number(amount);
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
 
-        const paywuzRes = await axiosPaywuzWithRetry({
-            method: 'post',
-            url: `${PAYWUZ_BASE_URL}/transactions`,
-            data: {
-                orderId,
-                amount: inputAmount,
-                paymentMethod: "QRIS",
-                feeByMerchant: false
-            },
-            headers: PAYWUZ_HEADERS
-        });
+        const contentType = response.headers.get("content-type") || "application/octet-stream";
+        const cleanContentType = contentType.split(';')[0].trim();
+        const contentLength = response.headers.get("content-length");
 
-        const transactionData = paywuzRes.data?.data || paywuzRes.data;
-        const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
+        let sizeText = "0 B";
+        let bytes = contentLength ? parseInt(contentLength, 10) : 0;
+        let rawResponseText = "";
+        let finalInnerContent = "";
+        let mediaBlobObject = null;
+        let hintText = ""; 
 
-        const safeNum = (val) => {
-            const num = Number(val);
-            return (!isNaN(num) && num > 0) ? num : null;
+        function getMediaHint(urlOrMime) {
+            const str = urlOrMime.toLowerCase();
+            if (str.includes('image/') || str.match(/\.(jpeg|jpg|gif|png|webp)/i)) return "Klik gambar untuk memperbesar gambar";
+            if (str.includes('audio/') || str.match(/\.(mp3|wav|ogg|mpeg)/i)) return "Gunakan pemutar audio di bawah";
+            if (str.includes('video/') || str.match(/\.(mp4|webm|mov)/i)) return "Video otomatis diputar";
+            if (str.includes('application/pdf') || str.match(/\.pdf/i)) return "Klik untuk membuka dokumen PDF";
+            return "Berkas media terdeteksi";
+        }
+
+        const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
+        const epName = currentEndpoint?.name || 'video';
+        const epDesc = currentEndpoint?.desc || '';
+
+        if (cleanContentType.includes("application/json")) {
+            const data = await response.json();
+            rawResponseText = JSON.stringify(data, null, 2);
+
+            if (!bytes) bytes = new Blob([rawResponseText]).size;
+
+            let detectedMediaUrl = null;
+            if (data.url && typeof data.url === 'string' && data.url.startsWith('http')) detectedMediaUrl = data.url;
+            else if (data.result && data.result.url && typeof data.result.url === 'string') detectedMediaUrl = data.result.url;
+
+            // Jika berupa response JSON yang mengandung URL Video/Gambar
+if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
+    hintText = getMediaHint(detectedMediaUrl);
+    
+    let mediaMarkup = '';
+    const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
+
+    if (isAudioUrl) {
+        mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
+    } else {
+        mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
+    }
+
+    finalInnerContent = `
+       <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+           <div class="w-full flex justify-center items-center">
+               ${mediaMarkup}
+           </div>
+       </div>
+       <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+       <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+    `;
+    isMedia = true;
+} else {
+                 finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
+            }
+        } else if (cleanContentType.startsWith("image/") || cleanContentType.startsWith("video/") || cleanContentType.startsWith("audio/") || cleanContentType.includes("application/pdf")) {
+    isMedia = true;
+    hintText = getMediaHint(cleanContentType);
+    mediaBlobObject = await response.blob(); 
+    if (!bytes) bytes = mediaBlobObject.size;
+    const blobUrl = URL.createObjectURL(mediaBlobObject);
+    
+    if (cleanContentType.startsWith("audio/")) {
+        finalInnerContent = `
+            <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
+                <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
+                    Browser Anda tidak mendukung pemutar audio.
+                </audio>
+            </div>
+        `;
+    } else {
+        finalInnerContent = `
+            <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
+                <div class="w-full flex justify-center items-center">
+                    ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
+                </div>
+            </div>
+        `;
+    }
+} else {
+            rawResponseText = await response.text();
+            if (!bytes) bytes = new Blob([rawResponseText]).size;
+            hintText = "Klik teks untuk memperbesar";
+            finalInnerContent = `
+                <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW TEXT DATA</div>
+                <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-slate-300 dark:text-slate-300 light-mode:text-slate-700 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner cursor-zoom-in" onclick="if(typeof zoomText==='function'){zoomText(this.innerText)}else{showToast('Klik terdeteksi')}"><code>${escapeHtml(rawResponseText)}</code></pre>
+            `;
+        }
+
+        if (bytes >= 1048576) sizeText = `${(bytes / 1048576).toFixed(1)} MB`;
+        else if (bytes >= 1024) sizeText = `${(bytes / 1024).toFixed(1)} KB`;
+        else sizeText = `${bytes} B`;
+
+        const statusColor = response.ok 
+            ? 'text-emerald-400 bg-emerald-500/10 border-2 border-emerald-500/50 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-2 dark:border-emerald-500/50 light-mode:text-emerald-700 light-mode:bg-emerald-500/5 light-mode:border-2 light-mode:border-emerald-500/60' 
+            : 'text-red-400 bg-red-500/10 border-2 border-red-500/50 dark:text-red-400 dark:bg-red-500/10 dark:border-2 dark:border-red-500/50 light-mode:text-red-700 light-mode:bg-red-500/5 light-mode:border-2 light-mode:border-red-500/60';
+
+        let downloadButtonHtml = `
+            <button type="button" id="download-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-2 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Download ${isMedia ? 'Media' : 'Response'}</span>
+            </button>
+        `;
+
+        responseContent.innerHTML = `
+            <div class="rounded-xl overflow-hidden border-2 border-cyan-500/40 dark:border-2 dark:border-cyan-500/40 light-mode:border-2 light-mode:border-slate-400 bg-slate-950/40 dark:bg-slate-950/40 light-mode:bg-white shadow-2xl transition-all duration-300">
+                <div class="px-4 py-2.5 bg-black/60 dark:bg-black/60 light-mode:bg-slate-100 border-b-2 border-white/20 light-mode:border-slate-300 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span class="text-xs font-bold tracking-wider font-mono text-slate-300 dark:text-slate-300 light-mode:text-slate-700 uppercase">Server Response</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-black/30 dark:bg-black/30 light-mode:bg-slate-50 border-b-2 border-white/20 light-mode:border-slate-300 text-center text-xs font-mono">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                        <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Status</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-black ${statusColor}">${response.status}</span>
+                    </div>
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                        <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Time</span>
+                        <span class="text-[11px] text-amber-400 dark:text-amber-400 light-mode:text-amber-600 font-bold">${duration} ms</span>
+                    </div>
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                        <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Size</span>
+                        <span class="text-[11px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-bold">${sizeText}</span>
+                    </div>
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white col-span-2 sm:col-span-2 text-left px-3">
+                        <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Content Type</span>
+                        <span class="text-[11px] text-slate-300 dark:text-slate-300 light-mode:text-slate-600 truncate max-w-full font-semibold" title="${cleanContentType}">${cleanContentType}</span>
+                    </div>
+                    ${hintText ? `
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-500/30 bg-cyan-950/20 col-span-2 sm:col-span-1">
+                        <span class="text-[9px] text-cyan-500 uppercase font-bold tracking-wider mb-0.5">Action Hint</span>
+                        <span class="text-[10px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-black tracking-tight uppercase text-center">${hintText}</span>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="relative group w-full overflow-hidden">
+                    ${finalInnerContent}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 px-4 py-3 bg-black/40 dark:bg-black/40 light-mode:bg-slate-50 border-t-2 border-white/20 light-mode:border-slate-300">
+                    <button type="button" id="copy-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        <span>Copy Response</span>
+                    </button>
+                    ${downloadButtonHtml}
+                </div>
+            </div>
+        `;
+
+        document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
+            copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
         };
 
-        const feeFlatIdr = Number(transactionData.feeFlatIdr) || 290;
-        const feePercentBps = Number(transactionData.feePercentBps) || 70;
-        const calculatedFee = feeFlatIdr + Math.ceil((inputAmount * feePercentBps) / 10000);
-
-        let finalAmount = safeNum(transactionData.grossAmount) || 
-                          safeNum(transactionData.totalAmount) || 
-                          safeNum(transactionData.total);
-
-        if (!finalAmount) {
-            const feeVal = safeNum(transactionData.fee) || safeNum(transactionData.feeAdmin) || calculatedFee;
-            finalAmount = inputAmount + feeVal;
-        }
-
-        // Ambil link produk dari Mongo DB
-        let pLink = itemDetails?.link || null;
-        if (!pLink && itemDetails?.nama) {
-            const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') }
-            }).lean();
-            if (dbProduct) pLink = dbProduct.link;
-        }
-
-        const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
-
-        const newTransaction = new Transaction({
-            orderId,
-            amount: finalAmount,
-            paymentNumber: qrisNumber,
-            paymentMethod: "QRIS",
-            status: (transactionData.status || "pending").toLowerCase(),
-            itemDetails: {
-                ...itemDetails,
-                qty: buyQty
-            },
-            productLink: pLink,
-            expiredAt: expiredAt
-        });
-
-        await newTransaction.save();
-
-        return res.json({
-            status: true,
-            data: newTransaction
-        });
-
-    } catch (error) {
-        console.error("Error Create TRX:", error.response?.data || error.message);
-        return res.status(500).json({
-            status: false,
-            error: "CREATE_TRANSACTION_FAILED",
-            message: error.response?.data?.message || error.message || "Gagal membuat transaksi QRIS"
-        });
-    }
-});
-
-// ==========================================
-// 2. GET /transactions/:orderId (CHECK STATUS WITH CACHE)
-// ==========================================
-app.get('/transactions/:orderId', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    try {
-        const { orderId } = req.params;
-
-        // 1. Ambil dari MongoDB Cache terlebih dahulu (Cache-First Pattern)
-        const cachedData = await getCache(`trx_${orderId}`);
-        if (cachedData) {
-            return res.json({ data: cachedData });
-        }
-
-        // 2. Jika tidak ada di Cache, baca dari MongoDB Database
-        let localTrx = await Transaction.findOne({ orderId });
-
-        if (!localTrx) {
-            return res.status(404).json({ 
-                error: "TRANSACTION_NOT_FOUND", 
-                message: "Transaksi tidak ditemukan" 
-            });
-        }
-
-        // Cek kedaluwarsa waktu transaksi
-        if (localTrx.status.toLowerCase() === "pending" && new Date() > new Date(localTrx.expiredAt)) {
-            localTrx.status = "cancelled";
-            localTrx.updatedAt = new Date();
-            await localTrx.save();
-            scheduleTransactionDeletion(orderId);
-
-            const resultData = {
-                orderId: localTrx.orderId,
-                status: "cancelled",
-                amount: localTrx.amount,
-                paymentNumber: localTrx.paymentNumber,
-                expiredAt: localTrx.expiredAt,
-                productLink: null
+        const downloadBtn = document.getElementById(`download-btn-${catIdx}-${epIdx}`);
+        if (!isMedia) {
+            downloadBtn.onclick = () => {
+                const blob = new Blob([rawResponseText], { type: cleanContentType });
+                const extension = cleanContentType.includes('json') ? 'json' : (cleanContentType.includes('html') ? 'html' : 'txt');
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `response-${Date.now()}.${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
             };
-
-            await setCache(`trx_${orderId}`, resultData);
-            return res.json({ data: resultData });
-        }
-
-        const currentStatus = localTrx.status.toLowerCase();
-        const isSuccess = ["settlement", "success", "paid", "settled"].includes(currentStatus);
-
-        // Pencocokan Link Produk
-        if (isSuccess && !localTrx.productLink && localTrx.itemDetails?.nama) {
-            const pathProduk = path.join(__dirname, 'database', 'produk.json');
-            if (fs.existsSync(pathProduk)) {
+        } else {
+            downloadBtn.onclick = async () => {
                 try {
-                    const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                    const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
-                    const matchedProduct = products.find(p => p.nama && p.nama.trim().toLowerCase() === targetNama);
-                    if (matchedProduct && matchedProduct.link) {
-                        localTrx.productLink = matchedProduct.link;
-                        await localTrx.save();
+                    let finalBlob = mediaBlobObject;
+                    if (!finalBlob) {
+                        const mediaRes = await fetch(fullPath);
+                        finalBlob = await mediaRes.blob();
                     }
-                } catch (parseErr) {}
-            }
+                    const downloadUrl = URL.createObjectURL(finalBlob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    const ext = cleanContentType.split('/')[1] || 'bin';
+                    a.download = `media-${Date.now()}.${ext}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(downloadUrl);
+                } catch (err) {
+                    showToast('Gagal mengunduh file media', true);
+                }
+            };
         }
 
-        const responseData = {
-            orderId: localTrx.orderId,
-            status: currentStatus,
-            amount: localTrx.amount,
-            paymentNumber: localTrx.paymentNumber,
-            expiredAt: localTrx.expiredAt,
-            productLink: isSuccess ? localTrx.productLink : null
-        };
+        showToast(i18n[currentLang].toastRequestSuccess);
 
-        // Simpan hasil ke Cache MongoDB
-        await setCache(`trx_${orderId}`, responseData);
-
-        // Standard Success Response Envelope
-        res.json({
-            data: responseData
-        });
+        if (typeof fetchAndUpdateUserLimit === 'function') {
+            fetchAndUpdateUserLimit();
+        }
 
     } catch (error) {
-        console.error("Error Status TRX:", error.message);
-        const localTrx = await Transaction.findOne({ orderId: req.params.orderId });
-        if (localTrx) {
-            return res.json({ data: localTrx });
-        }
-        res.status(500).json({ 
-            error: "TRANSACTION_FETCH_FAILED", 
-            message: "Gagal mengambil status transaksi" 
-        });
+        responseContent.innerHTML = `
+            <div class="p-4 rounded-xl border-2 border-red-500 bg-red-500/5 text-red-400 text-xs font-mono break-all flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>Error: ${error.message}</span>
+            </div>
+        `;
+        showToast(i18n[currentLang].toastRequestFailed, true);
+    } finally {
+        isRequestInProgress = false;
+        executeBtn.disabled = false;
+        executeBtn.classList.remove('btn-loading');
+        spinner.style.display = ''; 
+        spinner.classList.remove('active');
+        executeBtn.innerHTML = originalBtnHtml;
+        fetchAndUpdateUserLimit();
     }
-});
+}
 
-// ==========================================
-// 3. POST /transactions/:orderId/cancel (CANCEL TRANSACTION)
-// ==========================================
-app.post('/transactions/:orderId/cancel', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const localTrx = await Transaction.findOne({ orderId });
+function escapeHtml(text) {
+    if (typeof text !== 'string') return text;
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-        if (!localTrx) {
-            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
+function clearResponse(catIdx, epIdx, endpointType) {
+    const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
+    
+    if (responseDiv) {
+        // Hanya hentikan audio/video di dalam card response endpoint tersebut
+        const mediaElements = responseDiv.querySelectorAll('video, audio');
+        mediaElements.forEach(media => {
+            media.pause();
+            media.currentTime = 0;
+            media.src = '';
+            media.load();
+        });
+
+        responseDiv.classList.add('hidden');
+    }
+
+    const form = document.getElementById(`form-${catIdx}-${epIdx}`);
+    if (form) {
+        form.reset(); 
+        const urlContainer = document.getElementById(`live-url-${catIdx}-${epIdx}`);
+        if (urlContainer) {
+            const basePath = urlContainer.textContent.split('?')[0];
+            urlContainer.textContent = basePath;
         }
 
-        const prevStatus = localTrx.status.toLowerCase();
-
-        // Panggil PayWuz Cancel API
-        try {
-            await axiosPaywuzWithRetry({
-                method: 'post',
-                url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
-                headers: PAYWUZ_HEADERS
-            });
-        } catch (err) {
-            console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
+        const curlContainer = document.getElementById(`live-curl-${catIdx}-${epIdx}`);
+        if (curlContainer) {
+            const method = curlContainer.textContent.split(' ')[1] || 'GET';
+            const baseUrl = curlContainer.textContent.split('"')[1] || '';
+            curlContainer.textContent = `curl -X ${method} "${baseUrl.split('?')[0]}"`;
         }
+    }
+}
 
-        // Jika sebelumnya berstatus Lunas/Success dan dibatalkan, kembalikan stok & terjual
-        if (["paid", "settlement", "success"].includes(prevStatus)) {
-            if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                const qtyPurchased = localTrx.itemDetails.qty || 1;
-                await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
+function renderCategoryFilters() {
+    const container = document.getElementById('categoryFilters');
+    if (!container || !apiData || !apiData.categories) return;
+
+    let html = `<button class="filter-btn active" data-filter="all" onclick="filterByCategory('all')">semua (${totalEndpoints})</button>`;
+    apiData.categories.forEach(category => {
+        const catName = category.name.toLowerCase();
+        html += `<button class="filter-btn" data-filter="${catName}" onclick="filterByCategory('${catName}')">${catName} (${category.items.length})</button>`;
+    });
+    container.innerHTML = html;
+}
+
+function filterByCategory(catName) {
+    activeCategory = catName;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.filter === catName) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    performSearch();
+}
+
+function performSearch() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+    const noResults = document.getElementById('noResults');
+    let hasVisibleItems = false;
+
+    requestAnimationFrame(() => {
+        document.querySelectorAll('.category-group').forEach(category => {
+            const catName = category.dataset.category;
+            if (activeCategory !== 'all' && catName !== activeCategory) {
+                category.classList.add('hidden');
+                return;
             }
-        }
 
-        localTrx.status = "cancelled";
-        localTrx.updatedAt = new Date();
-        await localTrx.save();
+            let categoryHasVisibleItems = false;
+            const items = category.querySelectorAll('.api-item');
 
-        await deleteCache(`trx_${orderId}`);
-        scheduleTransactionDeletion(orderId);
-
-        return res.json({
-            status: true,
-            data: { orderId, status: "cancelled" }
-        });
-
-    } catch (error) {
-        console.error("Error Cancel TRX:", error.message);
-        res.status(500).json({
-            error: "CANCEL_TRANSACTION_FAILED",
-            message: error.message || "Gagal membatalkan transaksi"
-        });
-    }
-});
-
-// ==========================================
-// 4. POST /webhook (RECEIVE PAYWUZ EVENT)
-// ==========================================
-app.post('/webhook', async (req, res) => {
-    try {
-        const signature = req.headers['x-paywuz-signature'];
-        const payloadToVerify = req.rawBody || req.body;
-
-        const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
-
-        if (!isValid && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({ 
-                error: "INVALID_SIGNATURE", 
-                message: "Signature webhook tidak valid!" 
-            });
-        }
-
-        const payload = req.body;
-        const eventName = payload?.event || payload?.type; 
-        const payloadData = payload?.data || payload;
-        const orderId = payloadData?.orderId;
-        const status = payloadData?.status ? payloadData.status.toLowerCase() : null;
-
-        if (!orderId) {
-            return res.status(400).json({ error: "MISSING_ORDER_ID", message: "orderId tidak ada!" });
-        }
-
-        if (orderId && status) {
-            let localTrx = await Transaction.findOne({ orderId });
-
-            if (localTrx) {
-                const prevStatus = localTrx.status.toLowerCase();
-                localTrx.status = status;
-                localTrx.updatedAt = new Date();
-
-                const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
-                const isCancelEvent = ["cancelled", "failed", "expire"].includes(status);
-
-                if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
-                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
-
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
-
-                        // Simpan user pembeli di productSchema jika user terautentikasi / terdeteksi
-                        const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
-                        await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
-                    }
-
-                    if (!localTrx.productLink && localTrx.itemDetails?.nama) {
-                        const dbProduct = await Product.findOne({ 
-                            nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
-                        }).lean();
-                        if (dbProduct) localTrx.productLink = dbProduct.link;
-                    }
-                } 
-                // KONDISI BATAL/FAILED: Kembalikan Stok & Terjual
-                else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
-                    }
-                }
-
-                await localTrx.save();
-                await deleteCache(`trx_${orderId}`);
-
-                if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
-                    scheduleTransactionDeletion(orderId);
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const matches = item.dataset.path.includes(searchTerm) || 
+                                item.dataset.alias.includes(searchTerm) || 
+                                item.dataset.description.includes(searchTerm) ||
+                                item.dataset.category.includes(searchTerm);
+                if (matches) {
+                    item.classList.remove('hidden');
+                    categoryHasVisibleItems = true;
+                    hasVisibleItems = true;
+                } else {
+                    item.classList.add('hidden');
                 }
             }
-        }
-
-        return res.status(200).json({ data: { message: "Webhook diproses dengan sukses", orderId } });
-
-    } catch (err) {
-        console.error("Webhook Error:", err);
-        return res.status(500).json({ error: "WEBHOOK_PROCESSING_ERROR", message: "Error internal webhook" });
-    }
-});
-
-app.post('/api/store/manual-order', async (req, res) => {
-    try {
-        const productName = req.body.productName;
-        const qty = req.body.qty;
-        const buyQty = Number(qty) || 1;
-
-        if (!productName) {
-            return res.status(400).json({ status: false, message: "Nama produk wajib diisi!" });
-        }
-
-        // Potong stok & tambah jumlah terjual secara otomatis untuk order manual WhatsApp
-        const updatedProduct = await updateProductStockAndSold(productName, buyQty);
-
-        if (!updatedProduct) {
-            return res.status(404).json({ status: false, message: "Produk tidak ditemukan di database." });
-        }
-
-        return res.json({
-            status: true,
-            message: "Stok dan jumlah terjual berhasil diperbarui secara otomatis!",
-            data: updatedProduct
+            category.classList.toggle('hidden', !categoryHasVisibleItems);
         });
-    } catch (err) {
-        console.error("Manual Order Error:", err);
-        return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
+        noResults.classList.toggle('hidden', hasVisibleItems);
+    });
+}
+
+function openCustomSelectModal(uniqueId) {
+    const overlay = document.getElementById(`${uniqueId}-overlay`);
+    const modal = document.getElementById(`${uniqueId}-modal`);
+    if (overlay && modal) {
+        if (overlay.parentElement !== document.body) {
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+        }
+
+        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
+
+        setTimeout(() => {
+            overlay.classList.add('active');
+            modal.classList.add('active');
+        }, 10);
+
+        document.body.classList.add('overflow-hidden');
     }
-});
+}
 
-app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
-app.use(passport.session());
+function closeCustomSelectModal(uniqueId) {
+    const overlay = document.getElementById(`${uniqueId}-overlay`);
+    const modal = document.getElementById(`${uniqueId}-modal`);
+    if (overlay && modal) {
+        overlay.classList.remove('active');
+        modal.classList.remove('active');
+        document.body.classList.remove('overflow-hidden');
 
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (err) {
-        done(err, null);
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            modal.classList.add('hidden');
+        }, 300);
     }
-});
+}
 
-passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
-    async (usernameOrEmail, password, done) => {
-        try {
-            const user = await User.findOne({
-                $or: [
-                    { username: usernameOrEmail }, 
-                    { email: usernameOrEmail.toLowerCase() }
+function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType) {
+    const input = document.getElementById(`${uniqueId}-input`);
+    const label = document.getElementById(`${uniqueId}-label`);
+    if (input) input.value = value;
+    if (label) label.textContent = value;
+
+    const modal = document.getElementById(`${uniqueId}-modal`);
+    if (modal) {
+        modal.querySelectorAll('.select-modal-item').forEach(item => {
+            if (item.textContent.trim() === value) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    closeCustomSelectModal(uniqueId);
+
+    if (typeof updateLivePreview === 'function') {
+        updateLivePreview(catIdx, epIdx, method, path, epType);
+    }
+}
+
+function loadApis() {
+    const apiList = document.getElementById('apiList');
+    if (!apiData || !apiData.categories) {
+        apiList.innerHTML = '<p class="text-center">No API data loaded.</p>';
+        return;
+    }
+
+    totalEndpoints = 0;
+    totalCategories = apiData.categories.length;
+    apiData.categories.forEach(category => { totalEndpoints += category.items.length; });
+
+    updateTotalEndpoints();
+    updateTotalCategories();
+    renderCategoryFilters();
+
+    const isLightMode = body.classList.contains('light-mode');
+    const pathColorClass = isLightMode ? 'text-cyan-700' : 'text-cyan-200';
+    const subTextColorClass = isLightMode ? 'text-slate-600' : 'opacity-70';
+
+    let html = '';
+    apiData.categories.forEach((category, catIdx) => {
+        const catNameLower = category.name.toLowerCase();
+        let iconSvg = categoryIcons.default;
+        for (const [key, svg] of Object.entries(categoryIcons)) {
+            if (catNameLower.includes(key)) { iconSvg = svg; break; }
+        }
+
+        html += `
+        <div class="category-group" data-category="${catNameLower}">
+            <div class="glass-panel border rounded-xl overflow-hidden shadow-lg mb-4">
+                <button onclick="toggleCategory(${catIdx})" class="w-full px-4 py-4 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 flex items-center justify-center bg-slate-950/40 light-mode:bg-slate-200/50 rounded-xl border border-white/10 light-mode:border-slate-300 shadow-inner flex-shrink-0">
+                            ${iconSvg}
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-sm tracking-widest text-cyan-400 light-mode:text-cyan-600 uppercase font-['Space_Grotesk']">${category.name}</h3>
+                            <p class="text-[11px] code-font ${subTextColorClass}">${category.items.length} ${i18n[currentLang].endpointsCount}</p>
+                        </div>
+                    </div>
+                    <svg id="cat-icon-${catIdx}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="cat-${catIdx}" class="hidden">`;
+
+        category.items.forEach((item, epIdx) => {
+            const method = item.methods && item.methods.length ? item.methods[0] : 'GET';
+            const pathParts = item.path.split('?');
+            const path = pathParts[0];
+            const epType = item.type || 'free';
+
+            let statusClass = "status-ready";
+            let statusText = "READY"; 
+            if (item.status === 'update') { statusClass = 'status-update'; statusText = "UPDATE"; }
+            else if (item.status === 'error' || item.status === 'perbaikan') { statusClass = 'status-error'; statusText = "MAINTENANCE"; }
+
+            let badgeTypeHtml = '';
+            if (epType === 'vip') {
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold uppercase tracking-wider animate-pulse">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8.25l-7 11.5-7-11.5L9.25 3h5.5L19 8.25z"/></svg> VIP
+                </span>`;
+            } else if (epType === 'premium') {
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold uppercase tracking-wider animate-pulse">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg> PREMIUM
+                </span>`;
+            } else {
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> FREE
+                </span>`;
+            }
+
+            html += `
+            <div class="api-item border-t border-white/10 light-mode:border-slate-200" 
+                data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
+                <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
+                        <div class="text-left flex-1 min-w-0">
+                            <p class="code-font font-semibold text-[13px] ${pathColorClass} truncate">${path}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <p class="text-xs ${subTextColorClass} truncate">${item.name}</p>
+                                <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
+                                ${badgeTypeHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
+                   ${SVG_PLUS}
+                 </span>
+                </button>
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
+    
+    <!-- BOX DESKRIPSI BARU -->
+    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+        <div class="flex items-center gap-2 mb-1.5">
+            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
+            </svg>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+        </div>
+        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+            ${item.desc}
+        </p>
+    </div>
+
+    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
+                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
+                        </div>
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">cURL Command</h4>
+                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy cURL</button>
+                        </div>
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-300 light-mode:text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
+                        </div>
+                    </div>`;
+
+            if (item.status === 'ready' || item.status === 'update') {
+                html += `
+                    <div>
+                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 mb-3">Parameter</h4>
+                        <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                            <div class="space-y-4 mb-4">`;
+
+                if (item.params) {
+                    Object.keys(item.params).forEach(paramName => {
+                        const pType = item.params[paramName];
+                        const isRequired = true; 
+                        let paramDesc = (pType && pType.type) ? pType.type : (pType || paramName);
+
+                        let inputValue = '';
+                        let inputPlaceholder = `Masukkan ${paramName}`;
+
+                        if (paramName.toLowerCase() === 'apikey') {
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                            
+                            if (epType === 'vip') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
+
+                        html += `
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
+                                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
+                                </label>
+                                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
+                            </div>`;
+
+                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+                            const defaultVal = pType.options[0] || '';
+                            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
+                            
+                            html += `
+                            <div class="relative w-full">
+                                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
+                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                <div id="${uniqueId}-modal" class="select-modal-container hidden">
+                                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
+                                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                                        </div>
+                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul class="select-modal-list">`;
+                                    
+                            pType.options.forEach(opt => {
+                                const isSelected = opt === defaultVal ? 'selected' : '';
+                                html += `
+                                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                                        <span>${opt}</span>
+                                    </li>`;
+                            });
+
+                            html += `
+                                    </ul>
+                                </div>
+                            </div>`;
+                        } else {
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                        }
+                        html += `</div>`;
+                    });
+                }
+
+                html += `
+                            </div>
+                            <div class="flex gap-3">
+                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                            </div>
+                        </form>
+
+                        <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
+                            <div>
+                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-500">Response</h5>
+                                <div class="bg-slate-950/80 light-mode:bg-slate-100 border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                html += `<div class="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-medium">${i18n[currentLang].endpointNotAvailable}</div>`;
+            }
+            html += `</div></div>`;
+        });
+        html += `</div></div></div>`;
+    });
+    apiList.innerHTML = html;
+    allApiElements = Array.from(document.querySelectorAll('.api-item'));
+}
+
+function initMultiMusicPlayer() {
+    const playlist = window.musicPlaylist || [];
+    if (!playlist.length) {
+        console.warn("Playlist kosong atau tidak ditemukan.");
+        return;
+    }
+
+    let currentTrackIdx = 0;
+    const audio = document.getElementById('audioElement');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalDurationEl = document.getElementById('totalDuration');
+    const coverImg = document.getElementById('musicCoverImg');
+    const titleEl = document.getElementById('musicTitle');
+    const artistEl = document.getElementById('musicArtist');
+    const playlistPanel = document.getElementById('playlistPanel');
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function formatTime(secs) {
+        if (isNaN(secs)) return "0:00";
+        const mins = Math.floor(secs / 60);
+        const remainingSecs = Math.floor(secs % 60);
+        return `${mins}:${remainingSecs < 10 ? '0' : ''}${remainingSecs}`;
+    }
+
+    function updateMediaSessionPosition() {
+        if ('mediaSession' in navigator && audio && !isNaN(audio.duration) && audio.duration > 0) {
+            try {
+                navigator.mediaSession.setPositionState({
+                    duration: audio.duration,
+                    playbackRate: audio.playbackRate || 1.0,
+                    position: audio.currentTime
+                });
+            } catch (error) {
+                console.error("Gagal memperbarui posisi MediaSession:", error);
+            }
+        }
+    }
+
+    function loadTrack(index) {
+        currentTrackIdx = index;
+        const track = playlist[index];
+        
+        if (audio) audio.src = track.url || '';
+        if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
+        if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
+        if (coverImg) coverImg.src = track.cover || 'default-cover.png';
+        
+        if (progressBar) progressBar.style.width = '0%';
+        if (currentTimeEl) currentTimeEl.textContent = '0:00';
+        
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: track.title || 'Unknown Title',
+                artist: track.artist || 'Unknown Artist',
+                album: 'Web Player',
+                artwork: [
+                    { src: track.cover || 'default-cover.png', sizes: '96x96',   type: 'image/png' },
+                    { src: track.cover || 'default-cover.png', sizes: '128x128', type: 'image/png' },
+                    { src: track.cover || 'default-cover.png', sizes: '192x192', type: 'image/png' },
+                    { src: track.cover || 'default-cover.png', sizes: '256x256', type: 'image/png' },
+                    { src: track.cover || 'default-cover.png', sizes: '384x384', type: 'image/png' },
+                    { src: track.cover || 'default-cover.png', sizes: '512x512', type: 'image/png' },
                 ]
             });
 
-            if (!user) return done(null, false, { message: 'Username atau Email tidak ditemukan.' });
-
-            if (!user.password || user.provider !== 'local') {
-                return done(null, false, { 
-                    message: `Akun ini terdaftar via ${user.provider.toUpperCase()}. Silakan masuk dengan tombol ${user.provider.toUpperCase()}.` 
+            if ('setPositionState' in navigator.mediaSession) {
+                navigator.mediaSession.setPositionState({
+                    duration: 0,
+                    playbackRate: 1.0,
+                    position: 0
                 });
             }
 
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) return done(null, false, { message: 'Kata sandi salah.' });
-
-            return done(null, user);
-        } catch (err) {
-            return done(err);
-        }
-    }
-));
-
-function sendSweetAlert(res, icon, title, text, redirectUrl) {
-    return res.send(`
-        <!DOCTYPE html>
-        <html lang="id">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Notification</title>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-            <style>
-                body {
-                    background-color: #0b0f19;
-                    font-family: 'Plus Jakarta Sans', sans-serif;
-                }
-                .swal2-popup {
-                    background: #111827 !important;
-                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-                    border-radius: 16px !important;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-                }
-                .swal2-title {
-                    color: #ffffff !important;
-                    font-weight: 700 !important;
-                }
-                .swal2-html-container {
-                    color: #9ca3af !important;
-                }
-                .swal2-confirm {
-                    background: linear-gradient(to right, #0891b2, #06b6d4) !important;
-                    color: #0f172a !important;
-                    font-weight: 700 !important;
-                    border-radius: 12px !important;
-                    padding: 10px 24px !important;
-                }
-            </style>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: '${icon}',
-                    title: '${title}',
-                    text: '${text}',
-                    confirmButtonText: 'OKE',
-                    scrollbarPadding: false
-                }).then(() => {
-                    window.location = '${redirectUrl}';
-                });
-            </script>
-        </body>
-        </html>
-    `);
-}
-
-// --- ROUTE-ROUTE ---
-app.post('/auth/login', (req, res, next) => {
-    passport.authenticate('local', async (err, user, info) => { 
-        if (err) return next(err);
-
-        if (!user) {
-            const pesanGagal = info && info.message ? info.message : 'Username atau password salah.';
-            return sendSweetAlert(res, 'error', 'Gagal Masuk', pesanGagal, '/login');
-        }
-
-        req.logIn(user, async (err) => { 
-            if (err) return next(err);
-
-            try {
-                const emailOrLogin = (user.email || user.username || "").toLowerCase().trim();
-                const currentUsername = (user.username || "").toLowerCase().trim();
-
-                let updatedRole = user.role || 'Free User';
-                let updatedApiKey = user.apikey;
-
-                const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-                const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
-
-                if (vipKeysLower.includes(emailOrLogin) || vipKeysLower.includes(currentUsername)) {
-                    updatedRole = 'VIP User';
-                    const exactKey = Object.keys(VIP_USERS).find(k => k.toLowerCase().trim() === emailOrLogin || k.toLowerCase().trim() === currentUsername);
-                    updatedApiKey = VIP_USERS[exactKey];
-                } 
-                else if (premiumListLower.includes(emailOrLogin) || premiumListLower.includes(currentUsername)) {
-                    if (updatedRole !== 'Premium User' || !updatedApiKey.startsWith('arulz-')) {
-                        updatedRole = 'Premium User';
-                        const randomHex = crypto.randomBytes(2).toString('hex'); 
-                        updatedApiKey = `arulz-${currentUsername}-${randomHex}`;
-                    }
-                }
-
-                if (user.role !== updatedRole || user.apikey !== updatedApiKey) {
-                    await User.findByIdAndUpdate(user._id, {
-                        role: updatedRole,
-                        apikey: updatedApiKey
-                    });
-                    user.role = updatedRole;
-                    user.apikey = updatedApiKey;
-                }
-
-                const userPayload = {
-                    id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    name: user.username,
-                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
-                    role: updatedRole,     
-                    apikey: updatedApiKey   
-                };
-
-                const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-
-                res.cookie('auth_session', token, {
-                    maxAge: 7 * 24 * 60 * 60 * 1000, 
-                    httpOnly: true,
-                    secure: true, 
-                    sameSite: 'lax'
-                });
-
-                return res.redirect('/docs');
-
-            } catch (error) {
-                console.error("Gagal sinkronisasi data premium saat login:", error);
-                return next(error);
-            }
-        });
-    })(req, res, next);
-});
-
-app.post('/auth/register', async (req, res) => {
-    try {
-        const username = req.body.username;
-        const email = req.body.email;
-        const password = req.body.password;
-
-        if (!username || !email || !password) {
-            return sendSweetAlert(res, 'error', 'Pendaftaran Gagal', 'Semua data wajib diisi!', '/login');
-        }
-
-        const cleanUsername = username.trim();
-        const cleanEmail = email.toLowerCase().trim();
-
-        const existingUser = await User.findOne({ 
-            $or: [{ username: cleanUsername }, { email: cleanEmail }] 
-        });
-
-        if (existingUser) {
-            return sendSweetAlert(res, 'warning', 'Sudah Terdaftar', 'Username atau Email sudah terdaftar!', '/login');
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        let userRole = 'Free User';
-        let userApiKey = generateRandomApiKey(); 
-
-        const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-        const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
-
-        if (vipKeysLower.includes(cleanEmail) || vipKeysLower.includes(cleanUsername.toLowerCase())) {
-            userRole = 'VIP User';
-            const exactKey = Object.keys(VIP_USERS).find(k => k.toLowerCase().trim() === cleanEmail || k.toLowerCase().trim() === cleanUsername.toLowerCase());
-            userApiKey = VIP_USERS[exactKey];
-        } 
-        else if (premiumListLower.includes(cleanEmail) || premiumListLower.includes(cleanUsername.toLowerCase())) {
-            userRole = 'Premium User';
-            const randomHex = crypto.randomBytes(2).toString('hex'); 
-            userApiKey = `arulz-${cleanUsername.toLowerCase()}-${randomHex}`;
-        }
-
-        const defaultAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
-
-        const newUser = new User({
-            username: cleanUsername,
-            email: cleanEmail,
-            password: hashedPassword,
-            provider: 'local',
-            role: userRole,
-            apikey: userApiKey,
-            avatar: defaultAvatar
-        });
-        await newUser.save();
-
-        const userPayload = {
-            id: newUser._id,
-            username: newUser.username,
-            name: newUser.username,
-            avatar: defaultAvatar,
-            role: newUser.role,
-            apikey: newUser.apikey
-        };
-
-        const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-
-        res.cookie('auth_session', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000, 
-            httpOnly: true,
-            secure: true, 
-            sameSite: 'lax'
-        });
-
-        req.logIn(newUser, (err) => {
-            if (err) return res.redirect('/login');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Terjadi error internal saat pendaftaran.');
-    }
-});
-
-app.post('/auth/forgot-password', async (req, res) => {
-    try {
-        const email = req.body.email;
-        if (!email) {
-            return sendSweetAlert(res, 'error', 'Wajib Diisi', 'Email wajib diisi!', '/login');
-        }
-
-        const user = await User.findOne({ email: email.toLowerCase().trim() });
-        if (!user) {
-            return sendSweetAlert(res, 'error', 'Tidak Ditemukan', 'Email tersebut tidak terdaftar di sistem kami.', '/login');
-        }
-
-        if (user.provider !== 'local') {
-            return sendSweetAlert(res, 'error', 'Metode Login OAuth', `Akun ini mendaftar via ${user.provider.toUpperCase()}, tidak memerlukan reset password.`, '/login');
-        }
-
-        const resetToken = crypto.randomBytes(20).toString('hex');
-
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000; 
-        await user.save();
-
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, 
-            auth: {
-                user: 'supportarulzxd@gmail.com',
-                pass: 'matsgyapivykobdv'
-            },
-            tls: { rejectUnauthorized: false }
-        });
-
-        const host = req.get('host');
-        const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-        const resetUrl = `${protocol}://${host}/reset-password/${resetToken}`;
-
-        const mailOptions = {
-            from: '"Support ArulzXD" <supportarulzxd@gmail.com>',
-            to: user.email,
-            subject: 'Permintaan Reset Kata Sandi',
-            html: `
-<div style="background-color: #0b0f19; padding: 40px 20px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100%;">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #111827; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
-        <tr>
-            <td style="padding: 32px 32px 24px 32px; text-align: center;">
-                <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; tracking-tight: -0.025em;">
-                    Arulz<span style="color: #22d3ee;">XD</span> API
-                </h1>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 0 32px 24px 32px;">
-                <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.2), transparent);"></div>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 0 32px 32px 32px; color: #9ca3af; font-size: 14px; line-height: 24px;">
-                <p style="margin: 0 0 16px 0; color: #ffffff; font-size: 16px; font-weight: 600;">Halo ${user.username},</p>
-                <p style="margin: 0 0 16px 0;">Kami menerima permintaan untuk mengatur ulang kata sandi akun ArulzXD API Anda.</p>
-                <p style="margin: 0 0 24px 0;">Silakan klik tombol di bawah ini untuk membuat kata sandi baru:</p>
-                
-                <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-                    <tr>
-                        <td align="center" bgcolor="#06b6d4" style="border-radius: 12px;">
-                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #0f172a; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 0 32px 32px 32px; color: #6b7280; font-size: 12px; line-height: 20px;">
-                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                    <strong style="color: #ef4444;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #9ca3af; font-weight: 600;">1 jam</span> demi keamanan akun Anda.
-                </p>
-                <p style="margin: 0;">Jika Anda tidak merasa meminta reset password ini, Anda dapat mengabaikan email ini dengan aman.</p>
-            </td>
-        </tr>
-    </table>
-</div>
-`
-        };
-
-        await transporter.sendMail(mailOptions);
-        return sendSweetAlert(res, 'success', 'Sukses!', 'Link reset password telah dikirim ke email Anda.', '/login');
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Gagal memproses lupa password.');
-    }
-});
-
-app.get('/reset-password/:token', async (req, res) => {
-    try {
-        const user = await User.findOne({ 
-            resetPasswordToken: req.params.token, 
-            resetPasswordExpires: { $gt: Date.now() } 
-        });
-
-        if (!user) {
-            return sendSweetAlert(res, 'error', 'Link Kadaluwarsa', 'Link reset password tidak valid atau sudah kedaluwarsa. Silakan minta link baru.', '/login');
-        }
-
-        res.send(`
-    <!DOCTYPE html>
-    <html lang="id">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Buat Password Baru - ArulzXD REST API</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-        <style>
-            body { background-color: #0b0f19; }
-            .solid-card { background: #111827; border: 1px solid rgba(255, 255, 255, 0.08); }
-        </style>
-    </head>
-    <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-gray-200">
-        <div class="solid-card p-8 rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden">
-            <div class="text-center mb-6 relative z-10">
-                <h1 class="text-xl font-extrabold tracking-tight text-white mb-1">
-                    Atur Ulang <span class="text-cyan-400">Kata Sandi</span>
-                </h1>
-                <p class="text-xs text-gray-400">Silakan masukkan kata sandi baru Anda yang aman.</p>
-            </div>
-
-            <form action="/reset-password/${req.params.token}" method="POST" class="space-y-4 relative z-10">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Password Baru</label>
-                    <input id="new-password" type="password" name="password" required placeholder="••••••••" 
-                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Konfirmasi Password Baru</label>
-                    <input id="confirm-password" type="password" name="confirmPassword" required placeholder="••••••••" 
-                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
-                </div>
-
-                <button type="submit" class="w-full mt-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-slate-950 font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Simpan Password Baru</button>
-            </form>
-        </div>
-    </body>
-    </html>
-`);
-
-    } catch (err) {
-        res.status(500).send("Error server.");
-    }
-});
-
-app.post('/reset-password/:token', async (req, res) => {
-    try {
-        const { password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            return sendSweetAlert(res, 'warning', 'Tidak Cocok', 'Password dan konfirmasi password tidak cocok!', '/login');
-        }
-
-        const user = await User.findOne({ 
-            resetPasswordToken: req.params.token, 
-            resetPasswordExpires: { $gt: Date.now() } 
-        });
-
-        if (!user) {
-            return sendSweetAlert(res, 'error', 'Gagal', 'Link reset password tidak valid atau sudah kedaluwarsa.', '/login');
-        }
-
-        user.password = await bcrypt.hash(password, 10);
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
-
-        return sendSweetAlert(res, 'success', 'Berhasil!', 'Password berhasil diubah! Silakan login dengan password baru Anda.', '/login');
-    } catch (err) {
-        res.status(500).send("Gagal menyimpan password baru.");
-    }
-});
-
-app.get('/login', (req, res) => {
-    if (req.user) {
-        return res.redirect('/docs'); 
-    }
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-
-const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
-const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
-const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://arulz-xd.my.id/auth/github/callback";
-
-const d = "613783942158";
-const e = "-63q31341ivgrlulq8";
-const f = "ha0m4uqmnoa6kq0";
-const cl = ".apps.";
-const id = "googleusercontent.com";
-
-const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
-const GOOGLE_CLIENT_SECRET = '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';
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
-
-function generateRandomApiKey() {
-    return 'arulzfree-' + crypto.randomBytes(4).toString('hex');
-}
-
-/* ==================== ENDPOINT AUTH GITHUB ==================== */
-app.get('/auth/github', (req, res) => {
-    const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_CALLBACK_URL}&scope=user:email`;
-    res.redirect(url);
-});
-
-app.get('/auth/github/callback', async (req, res) => {
-    const { code } = req.query;
-    if (!code) return res.send('Authentication failed: No code provided');
-
-    try {
-        const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
-            client_id: GITHUB_CLIENT_ID,
-            client_secret: GITHUB_CLIENT_SECRET,
-            code: code
-        }, { headers: { accept: 'application/json' } });
-
-        const accessToken = tokenResponse.data.access_token;
-        if (!accessToken) return res.send('Authentication failed: Invalid access token');
-
-        const userResponse = await axios.get('https://api.github.com/user', {
-            headers: { Authorization: `token ${accessToken}` }
-        });
-
-        const userData = userResponse.data;
-        let userEmail = userData.email;
-
-        if (!userEmail) {
-            try {
-                const emailsResponse = await axios.get('https://api.github.com/user/emails', {
-                    headers: { Authorization: `token ${accessToken}` }
-                });
-                const primaryEmailObj = emailsResponse.data.find(e => e.primary && e.verified) || emailsResponse.data[0];
-                if (primaryEmailObj) {
-                    userEmail = primaryEmailObj.email;
-                }
-            } catch (emailErr) {
-                console.error('Gagal mengambil private email:', emailErr.message);
-            }
-        }
-
-        const finalEmail = (userEmail || `${userData.login}@github.com`).toLowerCase().trim();
-        const currentUsername = (userData.login || finalEmail.split('@')[0]).toLowerCase().trim();
-
-        let dbUser = await User.findOne({ email: finalEmail });
-
-        if (!dbUser) {
-            let userRole = 'Free User';
-            let userApiKey = generateRandomApiKey(); 
-
-            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
-
-            if (vipKeysLower.includes(finalEmail) || vipKeysLower.includes(currentUsername)) {
-                userRole = 'VIP User';
-                const exactKey = Object.keys(VIP_USERS).find(k => k.toLowerCase().trim() === finalEmail || k.toLowerCase().trim() === currentUsername);
-                userApiKey = VIP_USERS[exactKey];
-            } 
-            else if (premiumListLower.includes(finalEmail) || premiumListLower.includes(currentUsername)) {
-                userRole = 'Premium User';
-                const randomHex = crypto.randomBytes(2).toString('hex'); 
-                userApiKey = `arulz-${userData.login.toLowerCase()}-${randomHex}`;
-            }
-
-            dbUser = new User({
-                username: currentUsername,
-                email: finalEmail,
-                provider: 'github',
-                providerId: String(userData.id),
-                apikey: userApiKey,
-                role: userRole,
-                avatar: userData.avatar_url || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                if (prevBtn) prevBtn.click();
             });
-
-            await dbUser.save();
-        } else {
-            if (userData.avatar_url && dbUser.avatar !== userData.avatar_url) {
-                dbUser.avatar = userData.avatar_url;
-                await dbUser.save();
-            }
-        }
-
-        const userPayload = {
-            id: dbUser._id,
-            username: dbUser.username,
-            email: dbUser.email,
-            name: userData.name || dbUser.username,
-            avatar: dbUser.avatar,
-            role: dbUser.role,
-            apikey: dbUser.apikey
-        };
-
-        const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-
-        res.cookie('auth_session', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000, 
-            httpOnly: true,
-            secure: true, 
-            sameSite: 'lax'
-        });
-
-        res.redirect('/docs?showProfile=true');
-    } catch (error) {
-        console.error(error);
-        res.send('Login Error: ' + error.message);
-    }
-});
-
-/* ==================== ENDPOINT AUTH GOOGLE ==================== */
-app.get('/auth/google', (req, res) => {
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URL}&response_type=code&scope=profile email`;
-    res.redirect(url);
-});
-
-app.get('/auth/google/callback', async (req, res) => {
-    const { code } = req.query;
-    if (!code) return res.send('Authentication failed: No code provided');
-
-    try {
-        const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
-            client_id: GOOGLE_CLIENT_ID,
-            client_secret: GOOGLE_CLIENT_SECRET,
-            code: code,
-            grant_type: 'authorization_code',
-            redirect_uri: GOOGLE_CALLBACK_URL
-        });
-
-        const accessToken = tokenResponse.data.access_token;
-        const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
-            headers: { Authorization: `Bearer ${accessToken}` }
-        });
-
-        const userData = userResponse.data;
-        const email = userData.email.toLowerCase().trim();
-        const currentUsername = (userData.login || email.split('@')[0]).toLowerCase().trim();
-
-        let dbUser = await User.findOne({ email: email });
-
-        if (!dbUser) {
-            let userRole = 'Free User';
-            let userApiKey = generateRandomApiKey(); 
-
-            const premiumListLower = PREMIUM_USERS.map(u => u.toLowerCase().trim());
-            const vipKeysLower = Object.keys(VIP_USERS).map(k => k.toLowerCase().trim());
-
-            if (vipKeysLower.includes(email) || vipKeysLower.includes(currentUsername)) {
-                userRole = 'VIP User';
-                const exactKey = Object.keys(VIP_USERS).find(k => k.toLowerCase().trim() === email || k.toLowerCase().trim() === currentUsername);
-                userApiKey = VIP_USERS[exactKey];
-            } 
-            else if (premiumListLower.includes(email) || premiumListLower.includes(currentUsername)) {
-                userRole = 'Premium User';
-                const randomHex = crypto.randomBytes(2).toString('hex'); 
-                userApiKey = `arulz-${currentUsername}-${randomHex}`;
-            }
-
-            dbUser = new User({
-                username: currentUsername,
-                email: email,
-                provider: 'google',
-                providerId: String(userData.id),
-                apikey: userApiKey,
-                role: userRole,
-                avatar: userData.picture || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+            navigator.mediaSession.setActionHandler('nexttrack', () => {
+                if (nextBtn) nextBtn.click();
             });
-
-            await dbUser.save();
-        } else {
-            if (userData.picture && dbUser.avatar !== userData.picture) {
-                dbUser.avatar = userData.picture;
-                await dbUser.save();
-            }
-        }
-
-        const userPayload = {
-            id: dbUser._id,
-            username: dbUser.username,
-            email: dbUser.email,
-            name: userData.name || dbUser.username,
-            avatar: dbUser.avatar,
-            role: dbUser.role,
-            apikey: dbUser.apikey
-        };
-
-        const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-
-        res.cookie('auth_session', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax'
-        });
-
-        res.redirect('/docs?showProfile=true');
-    } catch (error) {
-        console.error(error);
-        res.send('Login Error: ' + error.message);
-    }
-});
-
-app.get('/api/user-status', async (req, res) => {
-    if (req.user) {
-        try {
-            // Ambil data user paling baru dari MongoDB agar avatar terbaru selalu terbaca
-            const freshUser = await User.findById(req.user.id || req.user._id);
-            const activeUser = freshUser || req.user;
-
-            res.json({
-                loggedIn: true,
-                user: {
-                    name: activeUser.username,
-                    username: activeUser.username,
-                    email: activeUser.email,
-                    avatar: activeUser.avatar,
-                    apikey: activeUser.apikey || activeUser.apikey,
-                    role: activeUser.role
-                }
+            navigator.mediaSession.setActionHandler('play', () => {
+                if (audio) audio.play().catch(e => console.log(e));
             });
-        } catch (err) {
-            res.json({
-                loggedIn: true,
-                user: {
-                    name: req.user.name || req.user.username,
-                    username: req.user.username,
-                    email: req.user.email,
-                    avatar: req.user.avatar,
-                    apikey: req.user.apikey,
-                    role: req.user.role
+            navigator.mediaSession.setActionHandler('pause', () => {
+                if (audio) audio.pause();
+            });
+            
+            navigator.mediaSession.setActionHandler('seekto', (details) => {
+                if (audio && details.seekTime) {
+                    audio.currentTime = details.seekTime;
+                    updateMediaSessionPosition();
                 }
             });
         }
-    } else {
-        res.json({ loggedIn: false });
-    }
-});
-
-app.get('/auth/logout', (req, res, next) => {
-    res.clearCookie('auth_session');
-    req.logout((err) => {
-        if (err) return next(err);
-        res.redirect('/docs');
-    });
-});
-
-const playlist = require('./database/playlist');
-const PREMIUM_USERS = require('./database/PREMIUM_USERS');
-const VIP_USERS = require('./database/VIP_USERS');
-
-const localFileUploader = fileUpload({
-    createParentPath: true,
-    limits: { fileSize: 100 * 1024 * 1024 }, 
-});
-
-const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
-const a = 'g';
-const b = 'h';
-const c = 'p';
-const to = '_WaSUBUjo7g3YcCcyo'; 
-const ken = 'OgBEWRKS16qYr1C8Gyg'; 
-const githubToken = `${a}${b}${c}${to}${ken}`;
-const owner = 'arulzzzxd'; 
-const branch = 'main';
-
-const getRandomRepo = () => repoList[Math.floor(Math.random() * repoList.length)];
-
-function isVipAuthorized(identifierObj, providedKey) {
-    if (!identifierObj) return false;
-
-    const userEmail = (identifierObj.email || "").toLowerCase().trim();
-    const username = (identifierObj.username || "").toLowerCase().trim();
-
-    const exactVipKey = Object.keys(VIP_USERS).find(k => {
-        const cleanK = k.toLowerCase().trim();
-        return (cleanK && (cleanK === userEmail || cleanK === username));
-    });
-
-    if (!exactVipKey) return false;
-    return VIP_USERS[exactVipKey] === providedKey;
-}
-
-function getApiKeyType(userKey, user = null) {
-    if (user && user.role) {
-        const role = user.role.toLowerCase();
-        if (role.includes('vip')) return 'vip';
-        if (role.includes('premium')) return 'premium';
-    }
-
-    if (!userKey) return 'free';
-
-    const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
-    if (isVipKeyString) {
-        if (user && isVipAuthorized(user, userKey)) {
-            return 'vip';
-        }
-        return 'free'; 
-    }
-
-    if (userKey.startsWith('arulz-') && userKey.split('-').length >= 3) {
-        return 'premium';
-    }
-
-    return 'free';
-}
-
-function getUserMaxLimit(keyType) {
-    if (keyType === 'vip') return Infinity;
-    if (keyType === 'premium') return 1000;
-    return 100;
-}
-
-async function getOrResetUserLimit(user) {
-    if (!user) return { limitUsed: 0, maxLimit: 100 };
-
-    const apikey = user.apikey;
-    const keyType = getApiKeyType(apikey, user);
-    const maxLimit = getUserMaxLimit(keyType);
-
-    if (keyType === 'vip') {
-        return { limitUsed: 0, maxLimit: "Unlimited", keyType };
-    }
-
-    const now = new Date();
-    const lastReset = user.lastLimitReset ? new Date(user.lastLimitReset) : new Date(0);
-
-    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-    const lastResetStr = lastReset.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-
-    if (todayStr !== lastResetStr) {
-        user.limit = 0;
-        user.lastLimitReset = now;
         
-        await User.findByIdAndUpdate(user._id, { 
-            $set: { 
-                limit: 0, 
-                lastLimitReset: now 
-            } 
-        });
+        renderPlaylistItems();
     }
 
-    return { limitUsed: user.limit || 0, maxLimit, keyType };
-}
-
-app.get('/api/user-limit', checkAuthSession, async (req, res) => {
-    let userKey = req.query.apikey || req.headers['x-api-key'];
-
-    if (!userKey && req.user) {
-        userKey = req.user.apikey;
-    }
-
-    if (!userKey) {
-        return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
-    }
-
-    try {
-        const user = await User.findOne({ apikey: userKey });
-        if (!user) {
-            return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
-        }
-
-        const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
-
-        return res.json({
-            loggedIn: !!req.user,
-            limitUsed: limitUsed,
-            maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit,
-            type: keyType
-        });
-    } catch (err) {
-        console.error("Error fetching user limit:", err);
-        return res.status(500).json({ status: false, message: "Server Error" });
-    }
-});
-
-const getLimitMessage = (keyType, limitCount) => {
-    if (keyType === 'premium') {
-        return `Limit API Key Premium Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket VIP untuk menikmati akses Unlimited tanpa batasan limit!`;
-    }
-
-    return `Limit API Key Free Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket Premium (1.000 req/hari) atau VIP (Unlimited) untuk melanjutkan!`;
-};
-
-const apiKeyUserCache = new Map();
-const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist') return next();
-
-    let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
-
-    if (!userKey && req.user && req.user.apikey) {
-        userKey = req.user.apikey;
-    }
-
-    if (!userKey) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulz-XD",
-            message: "API Key mana? masukkan parameter ?apikey=MasukkanApiKey"
-        });
-    }
-
-    const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
-    let callerUser = req.user || null;
-
-    // Gunakan In-Memory Cache untuk menghindari query MongoDB berulang
-    if (!callerUser) {
-        const cachedUser = apiKeyUserCache.get(userKey);
-        if (cachedUser && (Date.now() - cachedUser.timestamp < 300000)) { // 5 menit
-            callerUser = cachedUser.data;
-        } else {
-            try {
-                callerUser = await User.findOne({ apikey: userKey }).lean();
-                if (callerUser) {
-                    apiKeyUserCache.set(userKey, { data: callerUser, timestamp: Date.now() });
-                }
-            } catch (dbErr) {
-                return res.status(500).json({ status: false, message: "Internal server error." });
-            }
-        }
-    }
-
-    if (!callerUser) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulz-XD",
-            message: "API Key salah atau tidak terdaftar!"
-        });
-    }
-
-    if (isVipKeyString && !isVipAuthorized(callerUser, userKey)) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulz-XD",
-            message: "Akses Ditolak! API Key VIP ini terproteksi."
-        });
-    }
-
-    req.user = callerUser;
-    req.activeApiKey = userKey;
-
-    let finalRole = (callerUser.role || 'Free User').toLowerCase();
-
-    // Mengambil modul dari memory cache (instant look-up O(1))
-    const pathParts = req.path.split('/');
-    const routeKey = `${pathParts[1]}/${pathParts[2]}`;
-    const routeModule = routeModuleCache.get(routeKey);
-
-    if (routeModule) {
-        if (routeModule.status === "error" || routeModule.status === "perbaikan") {
-            return res.status(503).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Fitur ini sedang dalam perbaikan / maintenance!"
-            });
-        }
-
-        if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
-            return res.status(403).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Endpoint ini khusus pengguna Premium!"
-            });
-        }
-
-        if (routeModule.type === "vip" && !finalRole.includes("vip")) {
-            return res.status(403).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Endpoint eksklusif ini khusus pengguna VIP!"
-            });
-        }
-    }
-
-    next();
-};
-
-const trackAndEnforceLimit = async (req, res, next) => {
-    if (req.path === '/apilist') return next();
-
-    const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
-    if (!userKey) return next();
-
-    try {
-        const user = await User.findOne({ apikey: userKey });
-        if (!user) return next();
-
-        const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
-
-        // Abaikan pengecekan pembatasan untuk VIP
-        if (keyType === 'vip') return next();
-
-        // Blokir jika limit pengguna sudah melebihi batas role
-        if (limitUsed >= maxLimit) {
-            return res.status(429).json({
-                status: false,
-                creator: "ArulzXD",
-                message: getLimitMessage(keyType, maxLimit)
-            });
-        }
-
-        // Tambahkan limit terpakai (+1) di MongoDB secara langsung
-        await User.findByIdAndUpdate(user._id, { $inc: { limit: 1 } });
-
-        next();
-    } catch (err) {
-        console.error("Error tracking limit:", err);
-        next();
-    }
-};
-
-const apiKeyLimiter = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, 
-    keyGenerator: (req) => {
-        return req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip; 
-    },
-    validate: {
-        keyGeneratorIpFallback: false
-    },
-    skip: (req, res) => {
-        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
-        return getApiKeyType(userKey, req.user) === 'vip';
-    },
-    max: (req, res) => {
-        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
-        if (getApiKeyType(userKey, req.user) === 'premium') return 1000;
-        return 100; 
-    },
-    handler: (req, res) => {
-        const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
-        const keyType = getApiKeyType(userKey, req.user);
-        const limitCount = keyType === 'premium' ? 1000 : 100;
-
-        res.status(429).json({
-            status: false,
-            creator: "ArulzXD",
-            message: getLimitMessage(keyType, limitCount)
-        });
-    },
-    standardHeaders: true, 
-    legacyHeaders: false,
-});
-
-app.post('/api/feedback', async (req, res) => {
-    const email = req.body.email;     
-    const type = req.body.type;       
-    const message = req.body.message;   
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ status: false, message: "Format email tidak valid!" });
-    }
-
-    if (!type) {
-        return res.status(400).json({ status: false, message: "Tipe laporan wajib dipilih!" });
-    }
-
-    if (!message) {
-        return res.status(400).json({ status: false, message: "Isi pesan tidak boleh kosong!" });
-    }
-
-    try {
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, 
-            auth: {
-                user: 'supportarulzxd@gmail.com',
-                pass: 'matsgyapivykobdv' 
-            },
-            tls: {
-                rejectUnauthorized: false 
-            }
-        });
-
-        let kategoriTeks = 'Laporan Bug';
-        let categoryColor = '#ef4444';
-
-        switch (type) {
-            case 'suggestion':
-                kategoriTeks = 'Saran / Fitur Baru';
-                categoryColor = '#f59e0b';
-                break;
-            case 'question':
-                kategoriTeks = 'Pertanyaan Umum';
-                categoryColor = '#06b6d4';
-                break;
-            case 'other':
-                kategoriTeks = 'Lainnya';
-                categoryColor = '#8b5cf6';
-                break;
-            default:
-                kategoriTeks = 'Laporan Bug / Error';
-                categoryColor = '#ef4444';
-        }
-
-        const adminMailOptions = {
-            from: `"${email}" <supportarulzxd@gmail.com>`, 
-            to: 'supportarulzxd@gmail.com', 
-            replyTo: email, 
-            subject: `[${type.toUpperCase()}] Feedback Baru dari Dashboard API`,
-            html: `
-            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, sans-serif; color: #f3f4f6;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
-                    <tr>
-                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff;">
-                                ARULZ<span style="color: #22d3ee;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b;">v2.0</span>
-                            </h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 30px;">
-                            <div style="text-align: center; margin-bottom: 25px;">
-                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 50px;">
-                                    <span style="color: #22d3ee; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
-                                        ⚡ NEW FEEDBACK TRANSMISSION
-                                    </span>
-                                </div>
-                            </div>
-                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px 0;">
-                                Halo Admin <strong style="color: #ffffff;">ArulzXD</strong>, sistem menerima laporan baru dari pengguna:
-                            </p>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin-bottom: 20px;">
-                                <tr>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #22d3ee; font-family: monospace; text-align: right; font-weight: 600;">${email}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
-                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
-                                        <span style="color: ${categoryColor}; background-color: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">${kategoriTeks}</span>
-                                    </td>
-                                </tr>
-                            </table>
-                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 20px;">
-                                <div style="font-size: 10px; font-family: monospace; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">// LOG_MESSAGE_PAYLOAD</div>
-                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
-                            </div>
-                            <div style="text-align: center; margin-top: 30px;">
-                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;">Balas Email Pengguna</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">© 2026 Api ArulzXD. All rights reserved.</p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            `
-        };
-
-        const userMailOptions = {
-            from: '"Support ArulzXD" <supportarulzxd@gmail.com>', 
-            to: email, 
-            subject: `[Received] Terima Kasih atas Feedback Anda - API-ARULZXD`,
-            html: `
-            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #f3f4f6;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
-                    <tr>
-                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">
-                                ARULZ<span style="color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">API</span>
-                            </h1>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 30px;">
-                            <div style="text-align: center; margin-bottom: 25px;">
-                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 50px;">
-                                    <span style="color: #34d399; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
-                                        ✔ TRANSMISSION CONFIRMED
-                                    </span>
-                                </div>
-                            </div>
-                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #ffffff; text-align: center;">
-                                Halo, Agen Developer! 👋
-                            </h2>
-                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.7; text-align: center; margin: 0 0 25px 0;">
-                                Terima kasih telah menghubungi kami. Laporan/masukan Anda telah <strong style="color: #22d3ee;">berhasil diterima</strong> oleh server dan telah diteruskan ke tim pengembang kami untuk segera ditinjau.
-                            </p>
-                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 14px; padding: 20px; margin-bottom: 25px;">
-                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; margin-bottom: 12px; font-size: 12px;">
-                                    <span style="color: #64748b; font-family: monospace;">TIPE TRANSMISI:</span>
-                                    <span style="color: ${categoryColor}; font-weight: 700; font-family: monospace;">${kategoriTeks.toUpperCase()}</span>
-                                </div>
-                                <div style="font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">// SALINAN_PESAN_ANDA</div>
-                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.6;">${message}</p>
-                            </div>
-                            <div style="background-color: rgba(6, 182, 212, 0.05); border-left: 3px solid #06b6d4; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 30px;">
-                                <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                                    📌 <strong style="color: #ffffff;">Catatan:</strong> Tim kami biasanya memproses dan membalas masukan dalam kurun waktu <span style="color: #22d3ee;">1x24 jam</span>. Pengguna paket Premium/VIP akan diprioritaskan.
-                                </p>
-                            </div>
-                            <div style="text-align: center;">
-                                <a href="https://arulz-xd.my.id/doc" style="display: inline-block; padding: 12px 24px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
-                                    Lihat Dokumentasi
-                                </a>
-                                <a href="https://arulz-xd.my.id" style="display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);">
-                                    Kembali ke Dashboard
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                            <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; font-family: monospace;">
-                                EMAIL AUTOMATED RESPONSE | DO NOT REPLY DIRECTLY TO THIS EMAIL
-                            </p>
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">
-                                © 2026 <a href="https://arulz-xd.my.id" style="color: #22d3ee; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            `
-        };
-
-        await Promise.all([
-            transporter.sendMail(adminMailOptions),
-            transporter.sendMail(userMailOptions)
-        ]);
-
-        res.json({ 
-            status: true, 
-            message: "Feedback berhasil dikirim ke admin & email konfirmasi balasan telah dikirim ke pengguna!" 
-        });
-
-    } catch (error) {
-        console.error("Gagal mengirim email feedback:", error);
-        res.status(500).json({ 
-            status: false, 
-            message: "Terjadi kesalahan pada sistem pengiriman email." 
-        });
-    }
-});
-
-app.get('/database/download', async (req, res) => {
-    const imageUrl = req.query.url || "https://arulz-uploader.vercel.app/files/CVmlrD.jpg";
-
-    try {
-        const response = await axios({
-            method: 'get',
-            url: imageUrl,
-            responseType: 'stream' 
-        });
-
-        res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
-        res.setHeader('Content-Disposition', 'attachment; filename="QRIS_Arulz_XD.jpg"');
-        res.setHeader('Access-Control-Allow-Origin', '*'); 
-
-        response.data.pipe(res);
-    } catch (error) {
-        console.error('Gagal memproses unduhan QRIS:', error.message);
-        res.status(500).json({ error: "Gagal memproses unduhan otomatis di tingkat backend." });
-    }
-});
-
-app.get('/uploader', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'uploader.html'));
-});
-
-app.get('/feedback', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'feedback.html'));
-});
-
-app.get('/pastecode', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'pastecode.html'));
-});
-
-app.get('/privacy', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
-});
-
-app.get('/support', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'support.html'));
-});
-
-function getRequestProtocol(req) {
-  const forwarded = req.headers['x-forwarded-proto'];
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return req.secure ? 'https' : 'http';
-}
-
-function generateId(length = 6) {
-  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const bytes = crypto.randomBytes(length);
-  let id = '';
-  for (let i = 0; i < length; i++) {
-    id += alphabet[bytes[i] % alphabet.length];
-  }
-  return id;
-}
-
-app.get('/files/*', async (req, res) => {
-  const requestedPath = req.params[0]; 
-  if (!requestedPath) return res.status(400).send('Missing file path');
-
-  const gitPath = requestedPath.startsWith('uploads/') ? requestedPath : `uploads/${requestedPath}`;
-  const shuffledRepos = [...repoList].sort(() => Math.random() - 0.5);
-
-  for (const targetRepo of shuffledRepos) {
-    try {
-      const resp = await axios.get(`https://api.github.com/repos/${owner}/${targetRepo}/contents/${gitPath}?ref=${branch}`, {
-        headers: {
-          Authorization: `Bearer ${githubToken}`,
-          Accept: 'application/vnd.github.v3.raw'
-        },
-        responseType: 'arraybuffer',
-        validateStatus: status => status < 500
-      });
-
-      if (resp.status === 200) {
-        const contentType = mime.lookup(requestedPath) || 'application/octet-stream';
-        res.set('Content-Type', contentType);
-        res.set('Cache-Control', 'public, max-age=3600');
-        return res.send(Buffer.from(resp.data));
-      }
-    } catch (error) {
-      console.error(`Gagal cek di repo ${targetRepo}:`, error.message);
-    }
-  }
-
-  return res.status(404).send('File tidak ditemukan di seluruh GitHub Repository');
-});
-
-app.post('/uploadfile', localFileUploader, async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send('Tidak ada file yang diunggah.');
-  }
-
-  let uploadedFile = req.files.file;
-  const originalName = uploadedFile.name || 'file';
-  const origExt = path.extname(originalName);
-
-  let extension = origExt ? origExt.replace(/^\./, '') : (mime.extension(uploadedFile.mimetype) || 'bin');
-  let id = generateId(6);
-  let fileName = origExt ? `${id}${origExt}` : `${id}.${extension}`;
-  let gitPath = `uploads/${fileName}`;
-  let base64Content = Buffer.from(uploadedFile.data).toString('base64');
-
-  const selectedRepo = getRandomRepo(); 
-
-  try {
-    await axios.put(`https://api.github.com/repos/${owner}/${selectedRepo}/contents/${gitPath}`, {
-      message: `Upload file ${fileName} to ${selectedRepo}`,
-      content: base64Content,
-      branch: branch,
-    }, {
-      headers: {
-        Authorization: `Bearer ${githubToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const protocol = getRequestProtocol(req);
-    const baseWebUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
-    const rawUrl = `${baseWebUrl}/files/${fileName}`;
-
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="id" class="dark">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Unggahan Berhasil</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-          <script>
-              tailwind.config = {
-                  darkMode: 'class',
-                  theme: { 
-                      extend: {
-                          fontFamily: {
-                              sans: ['Plus Jakarta Sans', 'sans-serif'],
-                          }
-                      } 
-                  }
-              }
-          </script>
-          <style>
-              body { 
-                  background-color: #0b0f19; 
-                  color: #f3f4f6;
-              }
-              .solid-card {
-                  background: #111827;
-                  border: 1px solid rgba(255, 255, 255, 0.07);
-              }
-              .url-box {
-                  background: rgba(0, 0, 0, 0.25);
-                  border: 1px solid rgba(255, 255, 255, 0.05);
-              }
-              .checkmark-circle {
-                  background: rgba(16, 185, 129, 0.06);
-                  border: 1px solid rgba(16, 185, 129, 0.2);
-              }
-          </style>
-      </head>
-      <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
-          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
-              <div class="mb-5 flex justify-center">
-                  <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-400">
-                      <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                  </div>
-              </div>
-              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-white">Unggahan Berhasil!</h1>
-              <p class="mb-5 text-xs text-gray-400">Berkas Anda telah aktif di cloud server:</p>
-              <div class="url-box p-3.5 rounded-xl break-all mb-6">
-                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
-              </div>
-              <div class="flex space-x-3">
-                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5">
-                      Salin URL
-                  </button>
-                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 block text-center">
-                      Kembali
-                  </a>
-              </div>
-          </div>
-          <div id="toast" class="fixed bottom-5 bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide">
-              URL Berhasil disalin ke papan klip!
-          </div>
-          <script>
-              function copyToClipboard() {
-                  const urlText = document.getElementById('rawUrl').href;
-                  navigator.clipboard.writeText(urlText).then(() => {
-                      const toast = document.getElementById('toast');
-                      toast.classList.remove('opacity-0', 'invisible');
-                      toast.classList.add('opacity-100', 'visible');
-                      setTimeout(() => {
-                          toast.classList.remove('opacity-100', 'visible');
-                          toast.classList.add('opacity-0', 'invisible');
-                      }, 2500);
-                  });
-              }
-          </script>
-      </body>
-      </html>
-    `);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error uploading file.');
-  }
-});
-const routeModuleCache = new Map();
-const router = express.Router();
-const apiPath = path.join(__dirname, 'api');
-
-router.use(validateApiKey);
-
-const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
-
-for (const category of endpointDirs) {
-  const categoryPath = path.join(apiPath, category);
-  const files = fs.readdirSync(categoryPath).filter(f => f.endsWith('.js'));
-  for (const file of files) {
-    const routeName = path.basename(file, '.js');
-    const routeFilePath = path.join(categoryPath, file);
-
-    // Require sekali di awal dan simpan di memory
-    const route = require(routeFilePath);
-    const routeKey = `${category}/${routeName}`;
-    routeModuleCache.set(routeKey, route);
-
-    router.use(`/${category}/${routeName}`, route);
-  }
-}
-
-function getEndpointsFromRouter(category, file) {
-  const endpoints = [];
-  const routePath = path.join(apiPath, category, file);
-
-  let route;
-  try {
-    route = require(routePath);
-  } catch (e) {
-    console.error(`Gagal memuat berkas rute: ${routePath}`, e);
-    return endpoints;
-  }
-
-  const subRouter = route.stack ? route : route.router || route;
-  if (!subRouter || !subRouter.stack) return endpoints;
-
-  // Mengambil deskripsi dari berkas endpoint jika ada
-  const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
-
-  subRouter.stack.forEach(layer => {
-    if (layer.route) {
-      const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
-
-      let params = { apikey: "" }; 
-
-      if (route.paramsConfig) {
-        params = { apikey: "", ...route.paramsConfig };
-      } 
-      // 2. Jika tidak ada paramsConfig, gunakan regex matcher
-      else if (layer.route.stack && layer.route.stack.length) {
-        layer.route.stack.forEach(mw => {
-          if (!mw.handle) return;
-          const fnString = mw.handle.toString();
-
-          // Ekstraksi req.query
-          [...fnString.matchAll(/req\.query\.([a-zA-Z0-9_]+)/g)].forEach(match => {
-            params[match[1]] = "";
-          });
-
-          // Ekstraksi req.body
-          [...fnString.matchAll(/req\.body\.([a-zA-Z0-9_]+)/g)].forEach(match => {
-            params[match[1]] = "";
-          });
-        });
-      }
-
-      // Auto-fallback jika method POST/PUT/PATCH tidak mendeteksi parameter lain
-      if (methods.some(m => ["POST", "PUT", "PATCH"].includes(m)) && Object.keys(params).length <= 1) {
-        params.fileToUpload = "file";
-      }
-
-      endpoints.push({
-        name: `/${category}/${file.replace(/\.js$/, "")}`,
-        path: `/api/${category}/${file.replace(/\.js$/, "")}`,
-        desc: routeDesc, // Menggunakan deskripsi dinamis yang diambil dari file
-        status: route.status || "ready",
-        type: route.type || "free",
-        params,
-        methods
-      });
-    }
-  });
-  return endpoints;
-}
-
-router.get('/apilist', (req, res) => {
-  const categories = [];
-
-  for (const category of endpointDirs) {
-    const files = fs.readdirSync(path.join(apiPath, category)).filter(f => f.endsWith('.js'));
-    const endpoints = [];
-    for (const file of files) {
-      endpoints.push(...getEndpointsFromRouter(category, file));
-    }
-    if (endpoints.length) {
-      categories.push({
-        name: `${category.toUpperCase()}`,
-        items: endpoints
-      });
-    }
-  }
-
-  categories.push({
-    name: "OTHER",
-    items: [
-      {
-        name: "/apilist",
-        path: "/api/apilist",
-        desc: "/apilist",
-        status: "ready",
-        type: "free",
-        params: { apikey: "" },
-        methods: ["GET"]
-      }
-    ]
-  });
-
-  res.json({ categories });
-});
-
-app.get('/api/server-status', (req, res) => {
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
-    const memUsagePercent = ((usedMem / totalMem) * 100).toFixed(2);
-
-    const cpus = os.cpus();
-    const loadAvg = os.loadavg(); 
-
-    res.json({
-        platform: os.platform(),
-        architecture: os.arch(),
-        uptime: os.uptime(), 
-        totalMemory: (totalMem / (1024 * 1024 * 1024)).toFixed(2) + " GB",
-        usedMemory: (usedMem / (1024 * 1024 * 1024)).toFixed(2) + " GB",
-        freeMemory: (freeMem / (1024 * 1024 * 1024)).toFixed(2) + " GB",
-        memoryUsagePercent: memUsagePercent,
-        cpuModel: cpus[0].model,
-        cpuSpeed: cpus[0].speed + " MHz",
-        cpuCores: cpus.length,
-        loadAverage: loadAvg
-    });
-});
-
-const apiLogSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-    apikey: { type: String, required: true },
-    username: { type: String, required: true },
-    email: { type: String, required: true },
-    log: [{
-        method: { type: String, required: true },
-        endpoint: { type: String, required: true },
-        status_code: { type: Number, required: true },
-        createdAt: { type: Date, default: Date.now }
-    }],
-    createdAt: { type: Date, default: Date.now, expires: '7d' } // Auto clean 7 hari
-});
-
-const ApiLog = mongoose.models.ApiLog || mongoose.model('ApiLog', apiLogSchema);
-
-const logApiActivity = async (req, res, next) => {
-    res.on('finish', async () => {
-        const userKey = req.activeApiKey 
-                     || req.query?.apikey 
-                     || req.body?.apikey 
-                     || req.headers['x-api-key'] 
-                     || (req.user ? (req.user.apikey) : null);
-
-        const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
-
-        // Cek jika ini endpoint API & bukan endpoint internal UI
-        if (
-            userKey && 
-            fullEndpoint.startsWith('/api/') && 
-            fullEndpoint !== '/api/user-activity' && 
-            fullEndpoint !== '/api/user-limit' && 
-            fullEndpoint !== '/api/apilist'
-        ) {
-            try {
-                let targetUser = req.user;
-
-                if (!targetUser) {
-                    targetUser = await User.findOne({ apikey: userKey.trim() }).lean();
-                }
-
-                if (!targetUser) return;
-
-                const userId = targetUser._id || targetUser.id;
-                const username = targetUser.username || 'User';
-                const email = targetUser.email || '';
-
-                const newLogItem = {
-                    method: req.method,
-                    endpoint: fullEndpoint,
-                    status_code: res.statusCode,
-                    createdAt: new Date()
-                };
-
-                // Push log ke array milik user tersebut di MongoDB
-                await ApiLog.findOneAndUpdate(
-                    { userId: userId },
-                    { 
-                        $set: { 
-                            apikey: userKey.trim(),
-                            username: username,
-                            email: email
-                        },
-                        $push: { 
-                            log: { 
-                                $each: [newLogItem], 
-                                $position: 0, // Ditaruh di urutan teratas
-                                $slice: 20    // Simpan maks 20 log
-                            } 
-                        }
-                    },
-                    { upsert: true, new: true }
-                );
-
-                console.log(`✅ [LOG MONGO] Local/Session User: ${username} | Path: ${fullEndpoint}`);
-            } catch (err) {
-                console.error("❌ Gagal simpan log ke MongoDB:", err.message);
-            }
-        }
-    });
-    next();
-};
-
-app.get('/api/user-activity', async (req, res) => {
-    try {
-        let userId = null;
-
-        if (req.user) {
-            userId = req.user._id || req.user.id;
-        } else {
+    function renderPlaylistItems() {
+        if (!playlistPanel) return;
+        playlistPanel.innerHTML = '';
         
-            const userKey = req.query?.apikey || req.headers['x-api-key'];
-            if (userKey) {
-                const foundUser = await User.findOne({ apikey: userKey.trim() }).lean();
-                if (foundUser) userId = foundUser._id;
-            }
-        }
-
-        if (!userId) {
-            return res.json({ status: true, data: [] });
-        }
-
-        // Cari dokumen log khusus user ini di MongoDB
-        const userLogDoc = await ApiLog.findOne({ userId: userId }).lean();
-
-        if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) {
-            return res.json({ status: true, data: [] });
-        }
-
-        // Ambil 10 log terbaru
-        const filteredLogs = userLogDoc.log
-            .filter(item => item.endpoint !== '/api/apilist')
-            .slice(0, 10);
-
-        const formattedLogs = filteredLogs.map(item => {
-            const date = new Date(item.createdAt || Date.now());
-            const timeStr = date.toLocaleTimeString('id-ID', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: false,
-                timeZone: 'Asia/Jakarta'
-            });
-            const statusStr = item.status_code >= 200 && item.status_code < 300 ? 'OK' : 'ERR';
-
-            // Format UI: [Jam] [Status] [Method] : Endpoint
-            return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
-        });
-
-        return res.json({ status: true, data: formattedLogs });
-    } catch (err) {
-        console.error("Error fetching logs from MongoDB:", err.message);
-        return res.status(500).json({ status: false, data: [] });
-    }
-});
-
-app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
-
-app.get('/script.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'script.js'));
-});
-
-app.get('/styles.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'styles.css'));
-});
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'home.html')); 
-});
-
-app.get('/upgrade-apikey', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'upgrade-apikey.html')); 
-});
-
-app.get('/status', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'status.html'));
-});
-
-app.get('/database/produk', async (req, res) => {
-    try {
-        const produk = await Product.find({}).sort({ createdAt: -1 });
-        res.json(produk);
-    } catch (err) {
-        console.error("Gagal mengambil data produk dari MongoDB:", err);
-        res.status(500).json({ error: "Gagal memuat data produk" });
-    }
-});
-
-app.get('/store', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'store.html'));
-});
-
-// Route untuk halaman detail produk / shareable link
-app.get('/store/:productId', async (req, res) => {
-    try {
-        // Ambil productId dari URL params (:productId)
-        const productId = req.params.productId;
-
-        // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
-        const product = await Product.findOne({ Id: productId });
-
-        // Baca file store.html
-        const storePath = path.join(__dirname, 'public', 'store.html');
-        let htmlContent = fs.readFileSync(storePath, 'utf8');
-
-        if (product) {
-            // Format harga untuk Open Graph Description
-            const hargaFormatted = product.harga_diskon 
-                ? `Rp ${product.harga_diskon.toLocaleString('id-ID')}` 
-                : `Rp ${product.harga.toLocaleString('id-ID')}`;
-
-            // Safe slice untuk deskripsi agar tidak error jika deskripsi kosong
-            const deskripsiClean = product.deskripsi ? product.deskripsi.slice(0, 150) : '';
-
-            // Inject Open Graph Meta Tags dinamis untuk WhatsApp / Medsos Preview
-            const metaTags = `
-    <!-- Open Graph / Meta Tags Dinamis -->
-    <meta property="og:title" content="${product.nama} - ArulzXD Store" />
-    <meta property="og:description" content="${deskripsiClean}... | Harga: ${hargaFormatted}" />
-    <meta property="og:image" content="${product.gambar}" />
-    <meta property="og:url" content="https://arulz-xd.my.id/store/${product.Id}" />
-    <meta property="og:type" content="product" />
-    <meta name="twitter:card" content="summary_large_image" />
+        playlist.forEach((track, idx) => {
+            const isActive = idx === currentTrackIdx;
+            const itemBtn = document.createElement('button');
+            itemBtn.className = `w-full text-left px-3 py-2 text-xs rounded-xl flex items-center justify-between transition-all ${
+                isActive 
+                ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-500 light-mode:text-cyan-700 font-bold' 
+                : 'hover:bg-white/5 light-mode:hover:bg-black/5 text-slate-400 light-mode:text-slate-600'
+            }`;
+            
+            itemBtn.innerHTML = `
+                <div class="flex items-center gap-2 truncate">
+                    <span class="opacity-50 text-[10px] code-font">${String(idx + 1).padStart(2, '0')}</span>
+                    <span class="truncate">${track.title} <span class="opacity-60 font-normal">- ${track.artist}</span></span>
+                </div>
+                ${isActive ? '<span class="text-[9px] tracking-wider text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded animate-pulse font-bold">PLAYING</span>' : ''}
             `;
-
-            // Sisipkan meta tags di bawah tag <head>
-            htmlContent = htmlContent.replace('<head>', `<head>${metaTags}`);
-        }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('Error serving product page:', error);
-        res.sendFile(path.join(__dirname, 'public', 'store.html'));
+            
+            itemBtn.addEventListener('click', () => {
+                loadTrack(idx);
+                audio.play().catch(e => console.log("Playback dicegah oleh browser:", e));
+            });
+            playlistPanel.appendChild(itemBtn);
+        });
     }
-});
 
-// Endpoint untuk menyajikan halaman HTML Changelog
-app.get('/changelog', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'changelog.html'));
-});
+    if (playBtn && audio) {
+        playBtn.addEventListener('click', () => { 
+            audio.paused ? audio.play().catch(e => console.log(e)) : audio.pause(); 
+        });
+    }
 
-// Endpoint untuk mengambil JSON data Changelog
-app.get('/database/changelog', (req, res) => {
-    const pathChangelog = path.join(__dirname, 'database', 'changelog.json'); 
+    if (audio) {
+        audio.addEventListener('play', () => {
+            if (playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            if (coverImg) coverImg.classList.add('scale-105', 'rotate-3');
+            
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "playing";
+            }
+            updateMediaSessionPosition();
+        });
 
-    fs.readFile(pathChangelog, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Gagal membaca database changelog:", err);
-            return res.status(500).json({ error: "Gagal memuat data changelog" });
-        }
-        try {
-            const changelogData = JSON.parse(data);
-            res.json(changelogData);
-        } catch (parseError) {
-            res.status(500).json({ error: "Format database changelog rusak" });
+        audio.addEventListener('pause', () => {
+            if (playIcon) playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            if (coverImg) coverImg.classList.remove('scale-105', 'rotate-3');
+            
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "paused";
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration && progressBar && currentTimeEl) {
+                progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+            updateMediaSessionPosition();
+        });
+
+        audio.addEventListener('loadedmetadata', () => { 
+            if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration); 
+            setTimeout(() => {
+                updateMediaSessionPosition();
+            }, 250);
+        });
+
+        audio.addEventListener('ended', () => { 
+            loadTrack(currentTrackIdx + 1 >= playlist.length ? 0 : currentTrackIdx + 1); 
+            audio.play().catch(e => console.log(e)); 
+        });
+    }
+
+    if (progressContainer && audio) {
+        progressContainer.addEventListener('click', (e) => { 
+            if (audio.duration) {
+                audio.currentTime = (e.offsetX / progressContainer.clientWidth) * audio.duration; 
+                updateMediaSessionPosition();
+            }
+        });
+    }
+
+    if (prevBtn && audio) {
+        prevBtn.addEventListener('click', () => { 
+            loadTrack(currentTrackIdx - 1 < 0 ? playlist.length - 1 : currentTrackIdx - 1); 
+            audio.play().catch(e => console.log(e)); 
+        });
+    }
+
+    if (nextBtn && audio) {
+        nextBtn.addEventListener('click', () => { 
+            loadTrack(currentTrackIdx + 1 >= playlist.length ? 0 : currentTrackIdx + 1); 
+            audio.play().catch(e => console.log(e)); 
+        });
+    }
+
+    const playlistToggleBtn = document.getElementById('playlistToggleBtn');
+    if (playlistToggleBtn && playlistPanel) {
+        playlistToggleBtn.addEventListener('click', () => { 
+            playlistPanel.classList.toggle('hidden'); 
+        });
+    }
+
+    loadTrack(0);
+}
+
+function initImageLightbox() {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImg = document.getElementById('lightboxImage');
+    const closeBtn = document.getElementById('closeLightbox');
+
+    if (!lightbox || !lightboxImg) return;
+
+    document.getElementById('apiList').addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && e.target.classList.contains('media-image')) {
+            e.preventDefault();
+            lightboxImg.src = e.target.src;
+            lightbox.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                lightbox.classList.remove('opacity-0');
+                lightbox.classList.add('opacity-100');
+                lightboxImg.classList.remove('scale-95');
+                lightboxImg.classList.add('scale-100');
+            });
         }
     });
-});
 
-app.get('/docs', (req, res) => {
-    res.send(`<!DOCTYPE html>
-<html lang="id" class="notranslate" translate="no">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="google" content="notranslate" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>API-ARULZXD - REST</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/UBkDZZ.png" type="image/png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css" />
-    
-    <style>
-    :root {
-        --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.4);
-        --bg-dark: #030712;
-        --bg-card: rgba(15, 23, 42, 0.75);
-        --border-color: rgba(0, 243, 255, 0.2);
+    function hideLightbox() {
+        lightbox.classList.remove('opacity-100');
+        lightbox.classList.add('opacity-0');
+        lightboxImg.classList.remove('scale-100');
+        lightboxImg.classList.add('scale-95');
+        setTimeout(() => {
+            lightbox.classList.add('hidden');
+            lightboxImg.src = '';
+        }, 300);
     }
 
-    html.light {
-        --neon-cyan: #008b9b;
-        --neon-glow: rgba(0, 139, 155, 0.25);
-        --bg-dark: #f0fdfa;
-        --bg-card: rgba(255, 255, 255, 0.85);
-        --border-color: rgba(0, 139, 155, 0.3);
-    }
+    if (closeBtn) closeBtn.addEventListener('click', hideLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox || e.target.id === 'closeLightbox') {
+            hideLightbox();
+        }
+    });
 
-    html {
-        scroll-behavior: smooth;
-    }
-    .bg-dots-light {
-        background-color: #ffffff;
-        background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
-        background-size: 24px 24px;
-    }
-
-    .bg-dots-dark {
-        background-color: #0f172a;
-        background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px);
-        background-size: 24px 24px;
-    }
-    #themeBg {
-        transition: background-color 0.3s ease, background-image 0.3s ease;
-    }
-    body {
-        transition: background 0.25s ease, color 0.25s ease;
-    }
-    
-    .glass-panel {
-        background: #0b1329;
-        border: 1px solid rgba(6, 182, 212, 0.08);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    .light-mode .glass-panel {
-        background: #ffffff;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-    }
-
-    .light-mode {
-        color: #0f172a !important;
-    }
-    .light-mode #mainTitle { color: #0f172a !important; }
-    .light-mode #mainDescription { color: #334155 !important; }
-    .light-mode #stat-battery-title,
-    .light-mode #stat-endpoints-title,
-    .light-mode #stat-categories-title { color: #475569 !important; }
-    .light-mode #siteFooter { color: #64748b !important; border-color: rgba(0,0,0,0.06); }
-    .light-mode #no-results-title { color: #0f172a !important; }
-
-    .light-mode .music-player-card {
-        background: #ffffff !important;
-        border-color: rgba(0, 0, 0, 0.08) !important;
-    }
-    .light-mode .music-text-title { color: #0f172a !important; }
-    .light-mode .music-text-artist { color: #475569 !important; }
-    .light-mode .music-progress-bar-bg { background-color: rgba(0,0,0,0.06) !important; }
-    
-    .light-mode .music-btn-nav {
-        background-color: #ffffff !important;
-        border-color: rgba(0,0,0,0.08) !important;
-        color: #1e293b !important;
-    }
-    .light-mode .music-btn-nav:hover {
-        background-color: #f1f5f9 !important;
-        color: #0f172a !important;
-    }
-    
-    .lang-btn {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        font-weight: bold;
-        padding: 4px 12px;
-        border: 1px solid #1e293b;
-        background-color: #0f172a;
-        color: #94a3b8;
-        transition: all 0.2s ease;
-    }
-    .lang-btn.active {
-        background-color: #06b6d4;
-        color: #020617;
-        border-color: #06b6d4;
-    }
-
-    .filter-btn {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        padding: 8px 14px;
-        border: 1px solid rgba(6, 182, 212, 0.15);
-        background: rgba(6, 182, 212, 0.03);
-        color: #94a3b8;
-        transition: all 0.2s ease;
-        border-radius: 10px;
-        white-space: nowrap;
-        cursor: pointer;
-    }
-    .filter-btn:hover {
-        background: rgba(6, 182, 212, 0.08);
-        color: #e2e8f0;
-    }
-    .filter-btn.active {
-        background-color: #06b6d4 !important;
-        color: #020617 !important;
-        border-color: #06b6d4 !important;
-        font-weight: bold;
-    }
-    .light-mode .filter-btn {
-        border-color: rgba(15, 23, 42, 0.08);
-        background: rgba(15, 23, 42, 0.03);
-        color: #475569;
-    }
-    .light-mode .filter-btn:hover {
-        background: rgba(15, 23, 42, 0.06);
-    }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    .border-3d-free {
-        background: linear-gradient(135deg, #059669 0%, #34d399 50%, #065f46 100%);
-        box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 4px 12px rgba(0,0,0,0.5);
-    }
-    .border-3d-premium {
-        background: linear-gradient(135deg, #b45309 0%, #fbbf24 30%, #ffffff 50%, #f59e0b 70%, #78350f 100%);
-        box-shadow: inset 0 3px 5px rgba(255,255,255,0.6), 0 0 20px rgba(251,191,36,0.5), 0 6px 14px rgba(0,0,0,0.6);
-    }
-    .border-3d-vip {
-        background: linear-gradient(135deg, #6b21a8 0%, #c084fc 30%, #ffffff 50%, #a855f7 70%, #4c1d95 100%);
-        box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 0 25px rgba(168,85,247,0.6), 0 8px 18px rgba(0,0,0,0.6);
-    }
-
-    #cyber-loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background-color: var(--bg-dark);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
-    }
-
-    #cyber-loader-overlay.fade-out {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    .scanner-beam {
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 300%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-        animation: scanAnimation 4s infinite linear;
-    }
-    @keyframes scanAnimation {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-    }
-
-    .hud-ring {
-        position: relative;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .ring-outer {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2px dashed var(--neon-cyan);
-        opacity: 0.6;
-        animation: spinClockwise 10s linear infinite;
-        box-shadow: 0 0 15px var(--neon-glow);
-    }
-
-    .ring-middle {
-        position: absolute;
-        inset: 10px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: var(--neon-cyan);
-        border-bottom-color: var(--neon-cyan);
-        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
-
-    .ring-inner {
-        position: absolute;
-        inset: 20px;
-        border-radius: 50%;
-        border: 1px dotted var(--neon-cyan);
-        opacity: 0.8;
-        animation: spinClockwise 6s linear infinite;
-    }
-
-    .hud-avatar {
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--neon-cyan);
-        box-shadow: 0 0 20px var(--neon-cyan);
-        z-index: 10;
-    }
-
-    @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-    @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
-
-    .animated-dots::after {
-        content: '';
-        display: inline-block;
-        width: 1.5em;
-        text-align: left;
-        animation: dotsAnimation 1.5s steps(4, end) infinite;
-    }
-    @keyframes dotsAnimation {
-        0% { content: ''; }
-        25% { content: '.'; }
-        50% { content: '..'; }
-        75% { content: '...'; }
-    }
-
-    .neon-progress-bar {
-        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-        box-shadow: 0 0 12px var(--neon-cyan);
-        transition: width 0.15s ease-out;
-    }
-    /* Styling Khusus Tema Cyberpunk Neon */
-.cyber-card-bg {
-  background-color: #030a12;
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.08), transparent 70%),
-    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 20px 20px, 20px 20px;
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+            hideLightbox();
+        }
+    });
 }
 
-.gold-btn-gradient {
-  background: linear-gradient(180deg, #fef08a 0%, #d97706 40%, #b45309 70%, #78350f 100%);
-  border: 1px solid #fef08a;
-  text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.gold-btn-gradient:hover {
-  filter: brightness(1.15);
-}
-
-.cyan-pill-header {
-  background: #00f3ff;
-  color: #020d18;
-  box-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
-}
-
-/* Custom Scrollbar tipis untuk Log */
-.cyber-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.cyber-scrollbar::-webkit-scrollbar-track {
-  background: rgba(2, 13, 24, 0.5);
-}
-.cyber-scrollbar::-webkit-scrollbar-thumb {
-  background: #00f3ff;
-  border-radius: 4px;
-}
-/* Custom Border Capsule Stadium (Sudut Kapsul Ganda) */
-.capsule-border-cyan {
-    background: #020f1c;
-    border: 2px solid #00f3ff;
-    border-radius: 9999px;
-    box-shadow: inset 0 0 8px rgba(0, 243, 255, 0.4), 0 0 10px rgba(0, 243, 255, 0.3);
-}
-
-/* Modal Frame Outer Glow */
-.cyber-modal-container {
-    background: #020a13;
-    border: 2.5px solid #00f3ff;
-    border-radius: 28px;
-    box-shadow: 0 0 35px rgba(0, 243, 255, 0.5), inset 0 0 15px rgba(0, 243, 255, 0.2);
-}
-
-/* Outer Section Boxes */
-.cyber-section-box {
-    background: #011220;
-    border: 1.5px solid #00f3ff;
-    border-radius: 18px;
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.25);
-}
-
-/* Gold Gradient Metallic Buttons */
-.gold-metallic-btn {
-    background: linear-gradient(180deg, #fef08a 0%, #eab308 30%, #ca8a04 70%, #854d0e 100%);
-    border: 1px solid #fef08a;
-    color: #020a13;
-    font-weight: 900;
-    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4);
-    box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
-}
-
-.gold-metallic-btn:hover {
-    filter: brightness(1.15);
-}
-
-/* Cyan Header Pill */
-.cyan-header-pill {
-    background: #00f3ff;
-    color: #020a13;
-    font-weight: 900;
-    box-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
-}
-/* Custom Style untuk 100% Replikasi Desain Cyberpunk Target */
-.cyber-popup-bg {
-  background-color: #010811;
-  background-image: radial-gradient(circle at 50% 30%, #031e36 0%, #010811 80%);
-}
-
-/* Double Cyan Glow Border */
-.double-border-cyan {
-  background: #010d18;
-  border: 1.5px solid #00f3ff;
-  outline: 1.5px solid #00f3ff;
-  outline-offset: 2.5px;
-  box-shadow: 0 0 12px rgba(0, 243, 255, 0.35);
-}
-
-/* Double Pill Capsule (Username, Email, Log Items) */
-.cyber-pill-capsule {
-  background: #010a14;
-  border: 1.5px solid #00f3ff;
-  outline: 1.5px solid #00f3ff;
-  outline-offset: 2px;
-  border-radius: 9999px;
-  box-shadow: inset 0 0 6px rgba(0, 243, 255, 0.3);
-}
-
-/* Metallic Gold Gradient Buttons */
-.gold-metallic-button {
-  background: linear-gradient(180deg, #fef08a 0%, #f59e0b 35%, #b45309 70%, #78350f 100%);
-  border: 1px solid #fef08a;
-  color: #000000;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
-}
-
-.gold-metallic-button:hover {
-  filter: brightness(1.15);
-}
-
-/* Cyan Header Fill */
-.cyan-solid-header {
-  background-color: #00f3ff;
-  color: #010811;
-  font-weight: 900;
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.8);
-}
-
-</style>
-</head>
-<body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
-
-<div id="cyber-loader-overlay">
-    <div class="scanner-beam"></div>
-
-    <div class="hud-ring mb-6">
-        <div class="ring-outer"></div>
-        <div class="ring-middle"></div>
-        <div class="ring-inner"></div>
-        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
-    </div>
-
-    <div class="text-center px-4">
-        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-            Memuat Halaman<span class="animated-dots"></span>
-        </div>
-        <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-            SYSTEM INITIALIZING // CORE GATEWAY
-        </div>
-    </div>
-
-    <div class="w-64 sm:w-80 mt-6">
-        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-            <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
-        </div>
-        <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-        </div>
-    </div>
-
-    <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-        ARULZ-XD API v2.0
-    </div>
-</div>
-
-<div id="themeBg" class="fixed inset-0 -z-10"></div>
-
-    <!-- Welcome Popup -->
-    <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-      <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="bg-slate-900/90 border border-white/10 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md relative p-6 font-['Space_Grotesk'] text-slate-100 transition-all duration-300">
-          
-          <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5 focus:outline-none border border-white/5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-          
-          <div class="text-center mb-4">
-            <h1 class="text-xl sm:text-2xl font-extrabold text-white leading-tight tracking-wide">
-              Welcome to<br><span class="text-cyan-400">Arulz-XD API</span>
-            </h1>
-          </div>
-          
-          <div class="mb-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
-          </div>
-          
-          <div class="text-center text-slate-300 text-xs sm:text-sm mb-5 px-1 leading-relaxed">
-            <p>Halo! 👋 Selamat datang di Arulz-XD API. Terima kasih sudah berkunjung. API ini dibuat untuk membantu developer dengan berbagai fitur yang terus diperbarui. Silakan gunakan API Key di bawah ini.</p>
-          </div>
-          
-          <div class="mb-5 flex justify-center">
-            <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
-              <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span id="welcomeApiKey" class="font-mono text-cyan-400 select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
-              </span>
-            </div>
-          </div>
-          
-          <a href="/support" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all text-sm block text-center tracking-wider uppercase">
-            Donate Sekarang
-          </a>
-        </div>
-      </div>
-    </div>
-    
-<!-- User Profile Pop-up Modal (Fix Blank Page & Precision Cyberpunk) -->
-<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/85 backdrop-blur-md" onclick="closeProfilePopup()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    
-    <!-- Outer Frame Container -->
-    <div class="w-full max-w-[410px] cyber-popup-bg border-2 border-cyan-400 rounded-[32px] p-4 sm:p-5 shadow-[0_0_45px_rgba(0,243,255,0.4)] relative font-mono text-cyan-400 my-auto">
+async function fetchAndUpdateUserLimit() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
         
-        <!-- Header Profile Row -->
-        <div class="flex items-center justify-between mb-5 gap-2">
-            <!-- Avatar Circle with Camera Overlay -->
-            <div class="relative w-20 h-20 sm:w-22 sm:h-22 flex-shrink-0">
-                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-[3px] border-2 border-cyan-400 shadow-[0_0_18px_rgba(0,243,255,0.8)] overflow-hidden">
-                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
-                    </div>
-                    <!-- Camera Button Overlay -->
-                    <div class="absolute bottom-0 right-0 bg-[#010811] text-cyan-400 p-1.5 rounded-full border border-cyan-400 shadow-[0_0_10px_rgba(0,243,255,0.8)]">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
-                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
+        let apiKey = urlParams.get('apikey') 
+            || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
 
-            <!-- Username & Email Double-Border Capsules -->
-            <div class="flex-1 flex flex-col gap-3 min-w-0 px-2">
-                <div class="cyber-pill-capsule py-1.5 px-4 text-center truncate">
-                    <span id="userName" class="text-xs font-bold text-cyan-300 tracking-widest">loading...</span>
-                </div>
-                <div class="cyber-pill-capsule py-1.5 px-4 text-center truncate">
-                    <span id="userEmail" class="text-[11px] text-cyan-300 tracking-wider">loading_email@gmail.com</span>
-                </div>
-            </div>
-
-            <!-- User Plan Emblem Badge (100% Precision Match to Image) -->
-            <div id="planBoxContainer" class="relative w-20 h-28 flex flex-col items-center justify-center flex-shrink-0">
-                <svg class="w-full h-full filter drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <!-- Gradien Cyan ke Ungu untuk Wings & Shield Border -->
-                        <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#00f3ff" />
-                            <stop offset="50%" stop-color="#38bdf8" />
-                            <stop offset="100%" stop-color="#c084fc" />
-                        </linearGradient>
-
-                        <!-- Gradien Hijau Neon untuk Ikon Chevron -->
-                        <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#4ade80" />
-                            <stop offset="100%" stop-color="#16a34a" />
-                        </linearGradient>
-                    </defs>
-
-                    <!-- TULISAN: USER PLAN -->
-                    <text x="50" y="14" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">USER</text>
-                    <text x="50" y="24" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">PLAN</text>
-
-                    <!-- SAYAP KIRI (LEFT CYBER WING) -->
-                    <path d="M 20 31 L 8 47 L 18 80 L 25 68 L 20 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
-                    <path d="M 20 31 L 8 47 L 18 80" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round"/>
-
-                    <!-- SAYAP KANAN (RIGHT CYBER WING) -->
-                    <path d="M 80 31 L 92 47 L 82 80 L 75 68 L 80 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
-                    <path d="M 80 31 L 92 47 L 82 80" stroke="#c084fc" stroke-width="1.5" stroke-linejoin="round"/>
-
-                    <!-- PERISAI LUAR (OUTER SHIELD BORDER) -->
-                    <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5" stroke-linejoin="round"/>
-
-                    <!-- PERISAI DALAM (INNER SHIELD BORDER) -->
-                    <path d="M 50 46 L 71 53 L 73 79 L 50 104 L 27 79 L 29 53 Z" fill="#020d1a" stroke="url(#cyberGrad)" stroke-width="1.5" stroke-linejoin="round"/>
-
-                    <!-- IKON CHEVRON HIJAU NEON (TOP CENTER EMBLEM) -->
-                    <path d="M 42 41 L 50 48 L 58 41 L 58 46 L 50 53 L 42 46 Z" fill="url(#greenGrad)" stroke="#22c55e" stroke-width="0.8"/>
-
-                    <!-- TEKS: VIP / DYNAMIC ROLE -->
-                    <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="20" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="1">VIP</text>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Section 1: Api Key Kamu -->
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 relative">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold text-cyan-300 border border-cyan-400 bg-[#010811] px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
-                <!-- Circuit PCB Decorative Line SVG -->
-                <svg class="w-20 h-4 text-cyan-400 opacity-80" viewBox="0 0 100 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M0 10 L60 10 L75 2 L90 2" />
-                    <circle cx="92" cy="2" r="2" fill="currentColor"/>
-                    <circle cx="98" cy="2" r="1.5" fill="#fcd34d"/>
-                </svg>
-            </div>
-            
-            <div class="cyber-pill-capsule text-cyan-200 text-xs font-bold py-1.5 px-3 truncate mb-3 text-center tracking-wider">
-                <span id="userApiKey">arulz-vip-123</span>
-            </div>
-            
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-metallic-button text-xs py-2 rounded-xl uppercase tracking-widest active:scale-95 transition-all">
-                SALIN API KEY
-            </button>
-        </div>
-
-        <!-- Section 2: Limit User -->
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 text-center relative">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3">
-                LIMIT USER
-            </div>
-            
-            <!-- Circuit Line Right Accent -->
-            <div class="absolute right-3 top-2 pointer-events-none opacity-40">
-                <svg class="w-12 h-6 text-cyan-400" viewBox="0 0 50 30" fill="none" stroke="currentColor">
-                    <path d="M0 15 L25 15 L35 5 L45 5" stroke-width="1.5"/>
-                    <circle cx="47" cy="5" r="2" fill="currentColor"/>
-                </svg>
-            </div>
-
-            <div class="py-0.5">
-                <span class="inline-block cyber-pill-capsule text-cyan-300 px-6 py-1 text-sm font-bold tracking-widest">
-                    <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">Unlimited</span>
-                </span>
-            </div>
-        </div>
-
-        <!-- Section 3: Aktifitas Request API Terakhir -->
-        <div class="double-border-cyan rounded-2xl p-3 mb-4">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3 text-center">
-                AKTIFITAS REQUEST API TERAKHIR
-            </div>
-            
-            <div id="activityLogsContainer" class="space-y-2 max-h-44 overflow-y-auto pr-1">
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    belum ada request
-                </div>
-            </div>
-        </div>
-
-        <!-- Buttons Footer -->
-        <div class="space-y-2.5">
-            <a href="/upgrade-apikey" class="w-full gold-metallic-button text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all">
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                UPGRADE
-            </a>
-
-            <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-[#03203c] text-cyan-300 font-bold text-xs py-2 uppercase tracking-widest transition-all active:scale-95">
-                    TUTUP
-                </button>
-                <a href="/auth/logout" class="flex-1 border border-red-500/80 bg-[#140306] hover:bg-red-950 text-red-400 font-bold text-xs py-2 rounded-full flex items-center justify-center gap-1.5 uppercase tracking-widest transition-all active:scale-95">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    LOG OUT
-                </a>
-            </div>
-        </div>
-
-    </div>
-  </div>
-</div>
-
-
-<div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
-
-    <!-- Header Actions -->
-    <div class="fixed top-6 right-6 z-40 flex items-center gap-3">
-        <button id="bioMenuBtn" class="flex items-center justify-center w-10 h-10 rounded-xl glass-panel text-slate-300 hover:text-white shadow-lg transition-all active:scale-95 focus:outline-none light-mode:text-slate-700 light-mode:hover:text-slate-900 border border-white/5">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </button>
-    </div>
-
-    <!-- Sidebar Dropdown -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-[#060c18] border-l border-white/5 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-6 font-['Space_Grotesk'] light-mode:bg-white light-mode:border-slate-200">
-        <div class="flex items-center justify-between mb-5">
-            <div class="flex gap-0 border border-white/10 rounded-lg p-0.5 bg-black/40">
-                <button id="lang-id" class="lang-btn rounded-md active" onclick="setLanguage('id')">ID</button>
-                <button id="lang-en" class="lang-btn rounded-md" onclick="setLanguage('en')">EN</button>
-            </div>
-            
-            <div class="flex items-center gap-1.5">
-                <button id="themeToggle" class="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 focus:outline-none border border-white/10 bg-slate-900/50 text-white light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:text-slate-900">
-                    <svg id="theme-toggle-dark-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                    </svg>
-                    <svg id="theme-toggle-light-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-
-                <button id="closeMenuBtn" class="text-white hover:text-red-400 transition-colors p-1.5 border border-white/10 rounded bg-slate-900/40 light-mode:text-slate-700 light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:hover:text-red-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-                ${req.user ? `
-        <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
-            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
-                <div class="relative flex-shrink-0 z-10">
-                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
-                </div>
-                
-                <div class="flex flex-col text-left min-w-0 z-10">
-                    <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
-                </div>
-
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-            </button>
-        </div>
-        ` : `
-        <div class="mb-3 flex flex-col gap-2">
-            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200">
-                <span>Masuk ke Akun</span>
-            </a>
-        </div>
-        `}
-
-        <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
-    <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
-
-    <!-- Dashboard -->
-    <a href="/" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
-                <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
-                <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M7 13v6M9 13v6M7 16h2" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M12 5v3M10 8h4" stroke="#22d3ee" stroke-width="0.5" stroke-linecap="round" />
-                <circle cx="12" cy="5.5" r="0.5" fill="#22d3ee" />
-                <circle cx="9" cy="9" r="0.4" fill="#22d3ee" />
-                <circle cx="15" cy="9" r="0.4" fill="#22d3ee" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Dashboard</span>
-    </a>
-
-    <!-- Docs -->
-    <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
-                <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#22d3ee" stroke-width="1.2" stroke-linejoin="round"/>
-                <path d="M12 4v14.5" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round"/>
-                <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#22d3ee" stroke-width="0.9" fill="none"/>
-                <line x1="6.5" y1="10" x2="9" y2="10" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-                <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#22d3ee" stroke-width="0.7" stroke-linecap="round"/>
-                <text x="16.8" y="11" fill="#22d3ee" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle">DOCS</text>
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Docs</span>
-    </a>
-
-    <!-- Store -->
-    <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Store</span>
-    </a>
-
-    <!-- Changelog -->
-    <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Changelog</span>
-    </a>
-
-    <!-- Uploader -->
-    <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Uploader</span>
-    </a>
-
-    <!-- Pastecode -->
-    <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Pastecode</span>
-    </a>
-
-    <!-- Feedback -->
-    <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Feedback</span>
-    </a>
-
-    <!-- Stats / Status -->
-    <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
-                <circle cx="12" cy="20.5" r="1.5"/>
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Stats / Status</span>
-    </a>
-
-    <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
-
-    <!-- Privacy Policy -->
-    <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Privacy Policy</span>
-    </a>
-
-    <!-- Support -->
-    <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
-        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
-            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Support</span>
-      </a>
-     </nav>
-    </div>
-
-    <div id="menuOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden z-30 transition-opacity duration-300"></div>
-
-    <div class="max-w-5xl mx-auto px-4 py-8 relative z-10">
-        <header id="api" class="mb-10 text-center">
-            <div class="flex items-center justify-center gap-3 mb-3">
-                <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 light-mode:bg-cyan-100 light-mode:text-cyan-700">
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span> ONLINE
-                </span>
-            </div>
-            
-            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white"><img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" /></div>
-            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">
-  Jelajahi, uji, dan jalankan request secara langsung ke endpoint aktif.
-</p>
-
-            <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <div class="text-center font-['Space_Grotesk']">
-                        <div id="liveClock" class="text-xl md:text-2xl font-extrabold tracking-wider text-cyan-400 light-mode:text-cyan-600 font-mono">
-                            00:00:00
-                        </div>
-                        <div id="liveDate" class="text-[9px] font-bold opacity-60 tracking-wide mt-1 uppercase">
-                            Loading...
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Limit Terpakai</span>
-                    <div class="flex items-baseline gap-0.5 mt-0.5">
-                        <span id="userLimitUsed" class="text-2xl font-black text-cyan-400">0</span>
-                        <span class="text-slate-500 font-bold text-xs">/</span>
-                        <span id="userLimitMax" class="text-xs font-bold text-slate-400">100</span>
-                    </div>
-                    <span id="userLimitBadge" class="text-[8px] font-bold px-1.5 py-0.5 mt-1 rounded bg-slate-900 text-slate-400 uppercase tracking-widest border border-white/5">FREE</span>
-                </div>
-                
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span id="stat-endpoints-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Endpoint</span>
-                    <span id="totalEndpoints" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600">0</span>
-                </div>
-                
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span id="stat-categories-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Kategori</span>
-                    <span id="totalCategories" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600">0</span>
-                </div>
-            </div>
-
-            <div class="glass-panel max-w-4xl mx-auto mt-4 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/10">
-                <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                    <span class="underline break-all font-semibold">https://arulz-xd.my.id</span>
-                </div>
-                <a href="/feedback" 
-                   class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Request Feature
-                </a>
-            </div>
-
-            <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
-                <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" 
-                   target="_blank" 
-                   class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
-                   <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l.08-.08a2.25 2.25 0 013.182 0l.397.397m-1.397-1.398a2.25 2.25 0 00-3.182 0l-3.472 3.472a2.25 2.25 0 000 3.181l.08.08a2.25 2.25 0 003.181 0l3.472-3.472a2.25 2.25 0 000-3.181c-.074-.074-.154-.14-.237-.196zm7.708-.943a2.25 2.25 0 00-3.182 0l-.397.397m1.397-1.397a2.25 2.25 0 013.182 0l3.472 3.473a2.25 2.25 0 010 3.182l-.08.08a2.25 2.25 0 01-3.181 0l-3.472-3.472a2.25 2.25 0 010-3.181c.074-.074.154-.14.237-.196z" />
-                   </svg>
-                   Channel
-                </a>
-                <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" 
-                   target="_blank" 
-                   class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
-                   <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zm0 0l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0" />
-                   </svg>
-                   Group
-                </a>
-            </div>
-
-            <div class="music-player-card glass-panel mt-6 max-w-2xl mx-auto rounded-2xl p-4 shadow-xl relative overflow-hidden border border-white/5">
-                <audio id="audioElement"></audio>
-                <div class="flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 flex-1 min-w-0">
-                        <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-black/50 flex-shrink-0 border border-white/10 shadow-md">
-                            <img id="musicCoverImg" src="" alt="Cover" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1 min-w-0 text-left">
-                            <h3 id="musicTitle" class="music-text-title text-white font-bold text-[13px] tracking-wide truncate m-0 uppercase">Loading...</h3>
-                            <p id="musicArtist" class="music-text-artist text-slate-400 text-[11px] font-medium truncate mt-0.5">-</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span id="currentTime" class="text-[9px] text-slate-400 font-mono w-7 text-left">0:00</span>
-                                <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1 bg-white/10 rounded-full relative cursor-pointer">
-                                    <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-300"></div>
-                                </div>
-                                <span id="totalDuration" class="text-[9px] text-slate-400 font-mono w-7 text-right">0:00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button id="prevBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all active:scale-95 border border-white/5">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                        </button>
-                        <button id="playBtn" class="music-btn-nav w-10 h-10 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all active:scale-95 border border-white/5">
-                            <svg id="playIcon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </button>
-                        <button id="nextBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all active:scale-95 border border-white/5">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/></svg>
-                        </button>
-                        <button id="playlistToggleBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all active:scale-95 border border-white/5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                        </button>
-                    </div>
-                </div>
-                <div id="playlistPanel" class="music-playlist-border hidden mt-4 pt-4 border-t border-white/10 max-h-40 overflow-y-auto space-y-1 light-mode:border-slate-200"></div>
-            </div>
-            
-        </header>
-
-        <div class="mb-8">
-            <div class="relative max-w-4xl mx-auto">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    placeholder="Cari endpoint berdasarkan nama, path, atau kategori..."
-                    class="search-input w-full px-4 py-3.5 pl-11 text-xs rounded-xl focus:outline-none focus:border-cyan-500 transition-all font-mono glass-panel border border-white/5 text-white placeholder-slate-400 light-mode:text-slate-900 light-mode:placeholder-slate-500 light-mode:focus:border-cyan-600"
-                >
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </div>
-            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide max-w-4xl mx-auto"></div>
-        </div>
-
-        <div id="noResults" class="text-center py-12 hidden">
-            <div class="flex justify-center mb-3">
-                <svg class="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-            <h3 id="no-results-title" class="text-sm font-bold mb-1 text-white">Endpoint tidak ditemukan</h3>
-            <p id="no-results-desc" class="text-xs text-slate-400 light-mode:text-slate-500">Coba gunakan kata kunci lain</p>
-        </div>
-
-        <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
-
-        <footer id="siteFooter" class="mt-16 pt-6 border-t border-white/5 text-center text-[11px] text-slate-500">
-            © Arulz-XD
-        </footer>
-    </div>
-
-    <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-xs cursor-zoom-out">
-        <div class="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
-            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain scale-95 transition-transform duration-300" />
-            <button id="closeLightbox" class="absolute -top-12 right-0 text-white hover:text-cyan-400 transition-colors focus:outline-none flex items-center gap-1 bg-black/50 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-mono">
-                ✕ Close
-            </button>
-        </div>
-    </div>
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
-
-<script class="notranslate" translate="no">
-    window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
-</script>
-<script src="script.js"></script>
-
-<script>
-        function copyText(text, label) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert((label || 'Teks') + ' berhasil disalin!');
-                });
+        if (!apiKey) {
+            const userApiKeyEl = document.getElementById('userApiKey');
+            if (userApiKeyEl && userApiKeyEl.innerText !== 'loading-key') {
+                apiKey = userApiKeyEl.innerText;
             }
         }
 
-        function openProfilePopup() {
-            document.getElementById('profilePopup').classList.remove('hidden');
-            fetchUserProfile();
+        const response = await fetch('/api/user-limit?apikey=' + encodeURIComponent(apiKey), {
+            headers: { 'Cache-Control': 'no-cache' }
+        });
+
+        if (!response.ok) return;
+        
+        const data = await response.json();
+
+        const limitUsedEl = document.getElementById('userLimitUsed');
+        const limitMaxEl = document.getElementById('userLimitMax');
+        const limitBadgeEl = document.getElementById('userLimitBadge');
+
+        const popupLimitUsedEl = document.getElementById('popupLimitUsed');
+        const popupLimitMaxEl = document.getElementById('popupLimitMax');
+
+        const limitUsedValue = data.limitUsed !== undefined ? data.limitUsed : 0;
+        let limitMaxValue = data.maxLimit !== undefined ? data.maxLimit : 100;
+
+        if (data.type === 'vip' || limitMaxValue === Infinity || limitMaxValue === 'Unlimited') {
+            limitMaxValue = 'Unlimited';
         }
 
-        function closeProfilePopup() {
-            document.getElementById('profilePopup').classList.add('hidden');
-        }
+        if (limitUsedEl) limitUsedEl.textContent = limitUsedValue;
+        if (limitMaxEl) limitMaxEl.textContent = limitMaxValue;
 
-        function showWelcomePopup() {
-            const popup = document.getElementById('welcomePopup');
-            const closeBtn = document.getElementById('closePopupBtn');
-            if (popup) {
-                popup.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+        if (popupLimitUsedEl) popupLimitUsedEl.textContent = limitUsedValue;
+        if (popupLimitMaxEl) popupLimitMaxEl.textContent = limitMaxValue;
+
+        if (limitBadgeEl && data.type) {
+            limitBadgeEl.textContent = data.type.toUpperCase();
+            if (data.type === 'vip') {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
+            } else if (data.type === 'premium') {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest border border-amber-500/30";
+            } else {
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest border border-white/5";
             }
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    popup.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                };
-            }
         }
-
-        function setRoleTheme(roleName) {
-    const planText = document.getElementById('userPlanText');
-    if (!planText) return;
-
-    const role = (roleName || '').toLowerCase();
-
-    if (role.includes('vip')) {
-        planText.textContent = 'VIP';
-        planText.setAttribute('fill', '#00f3ff');
-    } else if (role.includes('premium')) {
-        planText.textContent = 'PREM';
-        planText.setAttribute('fill', '#fbbf24');
-    } else {
-        planText.textContent = 'FREE';
-        planText.setAttribute('fill', '#34d399');
+    } catch (error) {
+        console.error("Gagal memperbarui data limit di UI:", error);
     }
 }
 
-        async function uploadAvatarFile(input) {
-            if (!input.files || !input.files[0]) return;
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('lang') || 'id';
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    initTheme();
+    initDigitalClock();
+    initImageLightbox(); 
+    setLanguage(savedLang);
+    fetchAndUpdateUserLimit();
+    if (typeof initMultiMusicPlayer === 'function') {
+        initMultiMusicPlayer();
+    }
 
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('avatar', file);
+    const notifBtn = document.getElementById('notifMenuBtn');
+    const notifPopup = document.getElementById('notifPopup');
+    const closeNotifBtn = document.getElementById('closeNotifBtn');
+    const notifOverlay = document.getElementById('notifOverlay');
+    const notifBadge = document.getElementById('notifBadge');
 
-            const userAvatarImg = document.getElementById('userAvatar');
-            const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
-            const oldSrc = userAvatarImg ? userAvatarImg.src : '';
+    if (notifBtn && notifPopup) {
+        notifBtn.addEventListener('click', () => {
+            notifPopup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
 
-            if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
-            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
-
-            const showCyberAlert = (icon, title, text) => {
-                Swal.fire({
-                    icon: icon,
-                    title: title,
-                    text: text,
-                    background: '#0b1329',
-                    color: '#f8fafc',
-                    border: '1px solid rgba(6, 182, 212, 0.3)',
-                    confirmButtonText: 'OKE',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.25)] border border-cyan-500/30',
-                        title: 'text-cyan-400 font-extrabold tracking-wide font-["Space_Grotesk"]',
-                        htmlContainer: 'text-slate-300 text-xs font-["Space_Grotesk"]',
-                        confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl uppercase tracking-wider text-xs border-0 shadow-lg shadow-cyan-500/20'
-                    }
-                });
-            };
-
-            try {
-                const response = await fetch('/api/user/update-avatar', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.status) {
-                    const newAvatarUrl = result.avatar;
-
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                        img.src = newAvatarUrl;
-                    });
-
-                    showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
-                } else {
-                    showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
-                    if (userAvatarImg) userAvatarImg.src = oldSrc;
-                    if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-                }
-            } catch (error) {
-                console.error("Error uploading avatar:", error);
-                showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
-                if (userAvatarImg) userAvatarImg.src = oldSrc;
-                if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-            } finally {
-                if (userAvatarImg) userAvatarImg.style.opacity = '1';
-                if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
-                input.value = '';
+            if (notifBadge) {
+                notifBadge.classList.add('hidden');
             }
+        });
+
+        if (closeNotifBtn) {
+            closeNotifBtn.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
         }
 
-        function fetchUserProfile() {
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
-
-                        document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                            if (img) img.src = latestAvatar;
-                        });
-
-                        document.getElementById('userName').innerText = data.user.username || 'User';
-                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        
-                        const userKey = data.user.apikey || '';
-                        document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
-                                                
-                        setRoleTheme(data.user.role || 'Free User');
-
-                        fetchUserActivityLogs(userKey);
-                        if (typeof fetchAndUpdateUserLimit === 'function') {
-                            fetchAndUpdateUserLimit();
-                        }
-                    }
-                })
-                .catch((err) => {
-                    console.error("Gagal sinkronisasi profile:", err);
-                });
+        if (notifOverlay) {
+            notifOverlay.addEventListener('click', () => {
+                notifPopup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
         }
+    }
 
-        function fetchUserActivityLogs() {
-            const container = document.getElementById('activityLogsContainer');
-            if (!container) return;
+    if (urlParams.get('showProfile') === 'true') {
+        if (typeof openProfilePopup === "function") {
+            openProfilePopup();
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
-        fetch('/api/user-activity')
-          .then(res => res.json())
-          .then(resData => {
-              if (resData.status && resData.data && resData.data.length > 0) {
-                  container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
-                        logText +
-                    '</div>'
-                ).join('');
-            } else {
-                container.innerHTML = 
-                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
-                        'Belum ada aktivitas request' +
-                    '</div>';
-            }
+    const uploaderBtn = document.getElementById('uploaderMenuBtn'); 
+    const bioMenuBtn = document.getElementById('bioMenuBtn');
+    const bioDropdown = document.getElementById('bioDropdown');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const menuOverlay = document.getElementById('menuOverlay');
+
+    if (bioMenuBtn && bioDropdown && menuOverlay) {
+        bioMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            bioDropdown.style.transform = 'translateX(0)';
+            menuOverlay.classList.remove('hidden');
+        });
+        if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+        menuOverlay.addEventListener('click', closeSidebarMenu);
+        bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+    }
+
+    if (uploaderBtn) {
+        uploaderBtn.addEventListener('click', () => {
+            window.location.href = '/uploader'; 
+        });
+    }
+    
+    fetch('/api/apilist')
+        .then(res => res.json())
+        .then(data => {
+            apiData = data;
+            loadApis();
+            fetchAndUpdateUserLimit();
         })
         .catch(err => {
-            container.innerHTML = 
-                '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
-                    'Gagal memuat aktivitas' +
-                '</div>';
-          });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchUserProfile();
-        });
-
-        function getPageDisplayName() {
-            const path = window.location.pathname;
-            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-            const pageMap = {
-                'home': 'Home',
-                'docs': 'Dokumentasi',
-                'doc': 'Dokumentasi',
-                'status': 'Status Server',
-                'store': 'Store API',
-                'changelog': 'Changelog',
-                'uploader': 'Uploader File',
-                'pastecode': 'Pastecode',
-                'feedback': 'Feedback',
-                'privacy': 'Kebijakan Privasi',
-                'support': 'Dukungan Support',
-                'login': 'Halaman Login'
-            };
-
-            if (pageMap[fileName]) return pageMap[fileName];
-            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-        }
-
-        const pageName = getPageDisplayName();
-        const loaderTitleEl = document.getElementById('loader-title-text');
-        if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = 'Memuat ' + pageName + '<span class="animated-dots"></span>';
-        }
-
-        let currentProgress = 0;
-        let hasFinishedLoading = false;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
-        const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        function finishLoader() {
-            if (hasFinishedLoading) return;
-            hasFinishedLoading = true;
-            clearInterval(progressInterval);
-            updateProgress(100);
-
-            setTimeout(() => {
-                if (loaderOverlay) {
-                    loaderOverlay.classList.add('fade-out');
-                    setTimeout(() => {
-                        showWelcomePopup();
-                    }, 200);
-                }
-            }, 400);
-        }
-
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
+            const apiListEl = document.getElementById('apiList');
+            if(apiListEl) {
+               apiListEl.innerHTML = `<div class="text-center p-8 bg-red-900/20 border border-red-700 rounded-lg"><div class="text-4xl mb-4">⚠️</div><h3 class="font-bold text-lg mb-2">Failed to load API data</h3></div>`;
             }
-        }, 120);
-
-        window.addEventListener('load', finishLoader);
-
-        setTimeout(finishLoader, 1500);
-</script>
-
-</body>
-</html>
-    `);
+        });
 });
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', toggleTheme);
 }
 
-module.exports = app;
+let searchTimeout;
+const searchInputEl = document.getElementById('searchInput');
+if (searchInputEl) {
+    searchInputEl.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 150);
+    });
+}
