@@ -122,18 +122,11 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
     const type = contentType || '';
     
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
-        // Tampilan untuk Gambar
         return `
             <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
-        // --- TAMPILAN VIDEO STYLE TIKTOK YANG SUDAH DIPERBAIKI ---
-        // Penjelasan Perbaikan:
-        // 1. Menghapus gradien hitam tebal (bg-gradient-to-t from-black/90...) di overlay bawah.
-        // 2. Ikon dan teks sekarang diletakkan langsung di atas video agar tampilan presisi.
-        // 3. Menambahkan drop-shadow pada teks deskripsi agar tetap terbaca jelas tanpa overlay gelap.
-
         const cleanUsername = "@arulzxd";
         const displayTitle = endpointName || 'Random Video';
         const tiktokDesc = endpointDesc || displayTitle;
@@ -141,7 +134,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
         return `
             <div class="relative w-full max-w-[340px] mx-auto aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col justify-between select-none">
                 
-                <!-- Top Header Overlay (Kategori & Navigasi) -->
+                <!-- Top Header Overlay -->
                 <div class="absolute top-0 left-0 right-0 z-20 p-3 bg-gradient-to-b from-black/60 via-black/20 to-transparent flex items-center justify-between text-white text-xs font-semibold pointer-events-none">
                     <div class="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm">
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
@@ -156,21 +149,26 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </div>
                 </div>
 
-                <!-- Video Element (Klik untuk Pause/Play) -->
-                <video src="${url}" autoplay loop playsinline 
-                    onclick="this.paused ? this.play() : this.pause()" 
-                    class="w-full h-full object-cover bg-black cursor-pointer select-none">
+                <!-- Video Element (Dioptimalkan agar tidak lag/berhenti saat scroll/click) -->
+                <video src="${url}" 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    webkit-playsinline
+                    preload="auto"
+                    disablePictureInPicture
+                    onclick="event.stopPropagation(); this.paused ? this.play().catch(e=>{}) : this.pause()" 
+                    class="w-full h-full object-cover bg-black cursor-pointer select-none pointer-events-auto">
                 </video>
 
-                <!-- Right Action Bar (Ikon Interaksi di Samping) -->
+                <!-- Right Action Bar -->
                 <div class="absolute right-2.5 bottom-16 z-20 flex flex-col items-center gap-3.5 text-white pointer-events-none">
-                    <!-- Profile Icon -->
                     <div class="relative mb-0.5">
                         <div class="w-9 h-9 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center font-bold text-cyan-400 text-xs overflow-hidden shadow-md">AZ</div>
                         <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">+</div>
                     </div>
 
-                    <!-- Like -->
                     <div class="flex flex-col items-center gap-0.5">
                         <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -178,7 +176,6 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                         <span class="text-[10px] font-bold drop-shadow-md">24.5K</span>
                     </div>
 
-                    <!-- Comment -->
                     <div class="flex flex-col items-center gap-0.5">
                         <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
@@ -186,7 +183,6 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                         <span class="text-[10px] font-bold drop-shadow-md">821</span>
                     </div>
 
-                    <!-- Save / Bookmark -->
                     <div class="flex flex-col items-center gap-0.5">
                         <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
@@ -194,7 +190,6 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                         <span class="text-[10px] font-bold drop-shadow-md">3.1K</span>
                     </div>
 
-                    <!-- Share -->
                     <div class="flex flex-col items-center gap-0.5">
                         <div class="w-9 h-9 flex items-center justify-center bg-black/30 rounded-full backdrop-blur-md border border-white/10">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
@@ -203,7 +198,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </div>
                 </div>
 
-                <!-- Spinning Disc / Vinyl Icon -->
+                <!-- Vinyl Icon -->
                 <div class="absolute right-3 bottom-3 z-20 pointer-events-none">
                     <div class="w-10 h-10 rounded-full bg-slate-950 border-2 border-slate-700/80 p-1 flex items-center justify-center animate-spin [animation-duration:4s] shadow-2xl">
                         <div class="w-full h-full rounded-full bg-gradient-to-tr from-gray-950 via-gray-700 to-gray-950 flex items-center justify-center border border-white/20">
@@ -214,21 +209,15 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                     </div>
                 </div>
 
-                <!-- --- PERBAIKAN: Bottom Description Overlay --- -->
-                <!-- Overlay gradien tebal dihapus, ikon & teks sekarang langsung di atas video -->
+                <!-- Bottom Description Overlay -->
                 <div class="absolute bottom-0 left-0 right-16 z-20 p-4 flex flex-col gap-1.5 text-left pointer-events-none">
                     <div class="flex items-center gap-1.5">
                         <span class="font-bold text-sm text-white drop-shadow-lg">${cleanUsername}</span>
-                        <!-- Ikon Centang Biru Terverifikasi -->
                         <svg class="w-4 h-4 text-[#20D5EC] flex-shrink-0 drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
                     </div>
-                    <!-- Deskripsi Video -->
-                    <!-- Menambahkan 'drop-shadow-lg' agar teks putih mudah dibaca di atas video yang terang -->
                     <p class="text-xs text-white line-clamp-2 leading-relaxed font-sans drop-shadow-lg">${tiktokDesc}</p>
-                    
-                    <!-- Sound / Music Info -->
                     <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-200 drop-shadow-sm">
                         <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
                         <span class="truncate font-mono">Suara asli - ${cleanUsername}</span>
@@ -236,16 +225,12 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                 </div>
             </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
-        // Tampilan untuk Audio
         return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
     } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
-        // Tampilan untuk PDF
         return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
     }
-    // Fallback jika tipe media tidak dikenali
     return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
-
 /* =========================================================================
    THEME & APPLICATION FUNCTIONS
    ========================================================================= */
@@ -857,16 +842,15 @@ function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
     
     if (responseDiv) {
-        // --- PERBAIKAN: Hentikan pemutaran Audio/Video sebelum menyembunyikan response ---
+        // Hanya hentikan audio/video di dalam card response endpoint tersebut
         const mediaElements = responseDiv.querySelectorAll('video, audio');
         mediaElements.forEach(media => {
-            media.pause();        // Hentikan pemutaran (suara langsung mati)
-            media.currentTime = 0; // Kembalikan ke detik awal
-            media.src = '';        // Kosongkan sumber media dari memori
-            media.load();          // Reset elemen media
+            media.pause();
+            media.currentTime = 0;
+            media.src = '';
+            media.load();
         });
 
-        // Sembunyikan container response
         responseDiv.classList.add('hidden');
     }
 
