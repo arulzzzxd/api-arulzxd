@@ -3961,7 +3961,7 @@ app.get('/docs', (req, res) => {
                         document.getElementById('userName').innerText = data.user.username || 'User';
                         document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
                         
-                        const userKey = data.user.apikey'';
+                        const userKey = data.user.apikey || '';
                         document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
                         
                         setRoleTheme(data.user.role || 'Free User');
