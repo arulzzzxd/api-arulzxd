@@ -152,8 +152,7 @@ function createMediaPreview(url, contentType, fullPath, endpointName = 'video', 
                 <!-- Video Element (Dioptimalkan agar tidak lag/berhenti saat scroll/click) -->
                 <video src="${url}" 
                     autoplay 
-                    loop 
-                    muted 
+                    loop  
                     playsinline 
                     webkit-playsinline
                     preload="auto"
