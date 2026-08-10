@@ -69,7 +69,7 @@ const checkAuthSession = (req, res, next) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = {
             ...decoded,
-            apiKey: decoded.apiKey || decoded.apikey, // <--- Perbaikan di sini
+            apiKey: decoded.apiKey || decoded.apikey,
             apikey: decoded.apikey || decoded.apiKey
         }; 
         next();
@@ -99,7 +99,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 const uploadavatar = multer({ 
-    limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
+    limits: { fileSize: 4 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -125,13 +125,11 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
                 return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
             }
 
-            // Validasi Mime-Type melalui Multer Buffer & mime-types
             const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
             if (!mimeType.startsWith('image/')) {
                 return res.status(400).json({ status: false, message: 'File harus berupa gambar (JPG, PNG, GIF, WebP)!' });
             }
 
-            // Ubah buffer ke Base64 Data URI
             const base64 = req.file.buffer.toString("base64");
             const avatarDataUrl = `data:${mimeType};base64,${base64}`;
 
@@ -146,7 +144,6 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
                 return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
             }
 
-            // Perbarui cookie session jika menggunakan JWT
             const userPayload = {
                 id: updatedUser._id,
                 username: updatedUser.username,
@@ -178,9 +175,6 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
     });
 });
 
-// ----------------------------------------------------
-// 1. MONGOOSE SCHEMA & MODEL UNTUK REVIU / PENILAIAN
-// ----------------------------------------------------
 const reviewSchema = new mongoose.Schema({
     productId: { type: String, required: true, index: true },
     userId: { type: String, default: null, index: true },
@@ -196,16 +190,12 @@ const reviewSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Kombinasi indeks unik untuk memastikan 1 User hanya punya 1 review per produk
 reviewSchema.index({ productId: 1, userId: 1 }, { unique: true, sparse: true });
 
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
-// ----------------------------------------------------
-// 2. MULTER CONFIGURATION FOR REVIEW MEDIA (MAX 10MB)
-// ----------------------------------------------------
 const uploadReviewMedia = multer({
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit 10MB per file
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
             cb(null, true);
@@ -215,9 +205,6 @@ const uploadReviewMedia = multer({
     }
 });
 
-// ----------------------------------------------------
-// 3. ENDPOINT TAMBAH PENILAIAN PRODUK (POST /api/reviews)
-// ----------------------------------------------------
 app.post('/api/reviews', checkAuthSession, (req, res) => {
     uploadReviewMedia.array('mediaFiles', 5)(req, res, async (err) => {
         if (err) {
@@ -239,7 +226,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 return res.status(400).json({ status: false, message: 'Anda diwajibkan menuliskan ulasan/penilaian!' });
             }
 
-            // Identitas User
             let username = 'Anonim';
             let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
             let userId = getUserIdentifier(req);
@@ -250,7 +236,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 userId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
             }
 
-            // Cek apakah user pernah membeli produk ini
             const product = await Product.findOne({
                 $or: [{ Id: productId }, { _id: mongoose.Types.ObjectId.isValid(productId) ? productId : null }]
             });
@@ -267,7 +252,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 }
             }
 
-            // Upload Media jika ada
             const mediaList = [];
             if (req.files && req.files.length > 0) {
                 for (const file of req.files) {
@@ -283,15 +267,13 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                 }
             }
 
-            // CEK EDIT OR CREATE: Cari review sebelumnya oleh User ini di Produk ini
             let existingReview = await Review.findOne({ productId, userId });
 
             if (existingReview) {
-                // EDIT / UPDATE RATING LAMA
                 existingReview.rating = Number(rating);
                 existingReview.comment = comment.trim();
                 if (mediaList.length > 0) {
-                    existingReview.media = mediaList; // Perbarui media jika melampirkan baru
+                    existingReview.media = mediaList;
                 }
                 existingReview.updatedAt = new Date();
                 await existingReview.save();
@@ -302,7 +284,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
                     data: existingReview
                 });
             } else {
-                // BUAT RATING BARU (PERTAMA KALI)
                 const newReview = new Review({
                     productId,
                     userId,
@@ -329,9 +310,6 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
     });
 });
 
-// ----------------------------------------------------
-// 4. ENDPOINT AMBIL ULASAN & RATA-RATA RATING (GET /api/reviews/:productId)
-// ----------------------------------------------------
 app.get('/api/reviews/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
@@ -373,7 +351,7 @@ async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
             if (isRateLimited && !isLastAttempt) {
                 console.warn(`⚠️ Menerima 429 dari PayWuz. Retry ke-${i + 1} dalam ${delayMs}ms...`);
                 await new Promise(resolve => setTimeout(resolve, delayMs));
-                delayMs *= 1.5; // Backoff bertambah
+                delayMs *= 1.5;
             } else {
                 throw error;
             }
@@ -384,7 +362,7 @@ async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
 const cacheSchema = new mongoose.Schema({
     key: { type: String, required: true, unique: true },
     data: { type: mongoose.Schema.Types.Mixed, required: true },
-    createdAt: { type: Date, default: Date.now, expires: 60 } // Hapus otomatis setelah 60 detik
+    createdAt: { type: Date, default: Date.now, expires: 60 }
 });
 
 const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
@@ -396,7 +374,7 @@ const voucherSchema = new mongoose.Schema({
     expiredAt: { type: Date, required: true },
     usageLimit: { type: Number, default: 20 },
     usedCount: { type: Number, default: 0 },
-    usedBy: [{ type: String }], // Array penyimpan identifier (username/email/userId) agar 1 user hanya bisa 1x klaim
+    usedBy: [{ type: String }],
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -414,13 +392,12 @@ const productSchema = new mongoose.Schema({
     gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
     deskripsi: { type: String, default: "" },
     link: { type: String, required: true },
-    purchasedBy: [{ type: String }], // Array ID/Username/Email pembeli yang pernah sukses membeli
+    purchasedBy: [{ type: String }],
     createdAt: { type: Date, default: Date.now }
 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 
-// Helper function untuk mengambil identifier user unik
 function getUserIdentifier(req) {
     if (req.user) {
         return (req.user.email || req.user.username || req.user._id || "").toString().toLowerCase().trim();
@@ -429,7 +406,7 @@ function getUserIdentifier(req) {
     if (bodyIdentifier) {
         return bodyIdentifier.toString().toLowerCase().trim();
     }
-    return req.ip; // Fallback ke IP address jika guest/tanpa login
+    return req.ip;
 }
 
 app.post('/api/vouchers/claim', async (req, res) => {
@@ -442,14 +419,12 @@ app.post('/api/vouchers/claim', async (req, res) => {
         const cleanCode = code.trim().toUpperCase();
         const userIdentifier = getUserIdentifier(req);
 
-        // Mengambil HANYA dari koleksi Voucher Mongoose
         const voucher = await Voucher.findOne({ code: cleanCode });
 
         if (!voucher) {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
 
-        // 1. Cek Kuota Penggunaan (Jika usageLimit <= 0 maka kuota habis & tidak bisa digunakan lagi)
         if (voucher.usageLimit <= 0) {
             return res.status(400).json({ 
                 status: false, 
@@ -458,7 +433,6 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
-        // 2. Cek apakah User sudah pernah menggunakan voucher ini
         if (voucher.usedBy && voucher.usedBy.includes(userIdentifier)) {
             return res.status(400).json({
                 status: false,
@@ -467,7 +441,6 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
-        // 3. Cek Kedaluwarsa
         if (new Date() > new Date(voucher.expiredAt)) {
             return res.status(400).json({ 
                 status: false, 
@@ -476,16 +449,14 @@ app.post('/api/vouchers/claim', async (req, res) => {
             });
         }
 
-        // Update kuota & batasi limit
         voucher.usedCount += 1;
-        voucher.usageLimit = Math.max(0, voucher.usageLimit - 1); // Pengurangan batas limit hingga mencapai minimal 0
+        voucher.usageLimit = Math.max(0, voucher.usageLimit - 1);
 
         if (!voucher.usedBy) voucher.usedBy = [];
         voucher.usedBy.push(userIdentifier);
 
         await voucher.save();
 
-        // Response konsisten dengan properti 'voucher' & 'data'
         return res.json({
             status: true,
             message: 'Voucher berhasil diklaim!',
@@ -506,7 +477,6 @@ app.post('/api/vouchers/claim', async (req, res) => {
     }
 });
 
-// Endpoint GET untuk mendukung pencarian langsung berdasarkan URL parameter
 app.get('/api/vouchers/:code', async (req, res) => {
     try {
         const code = req.query.code || req.params.code;
@@ -520,7 +490,6 @@ app.get('/api/vouchers/:code', async (req, res) => {
             return res.status(404).json({ status: false, message: 'Kode voucher tidak ditemukan!' });
         }
 
-        // Cek Kuota Penggunaan
         if (voucher.usageLimit <= 0) {
             return res.status(400).json({ 
                 status: false, 
@@ -581,12 +550,10 @@ async function updateProductStockAndSold(productName, qtyChange = 1, isRollback 
 
         if (product) {
             if (isRollback) {
-                // Pemulihan stok ketika dibatalkan
                 product.stok = (product.stok || 0) + qtyChange;
                 product.terjual = Math.max(0, (product.terjual || 0) - qtyChange);
                 console.log(`🔄 [STOK RESTORED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
             } else {
-                // Pengurangan stok saat sukses
                 product.stok = Math.max(0, (product.stok || 0) - qtyChange);
                 product.terjual = (product.terjual || 0) + qtyChange;
                 console.log(`📦 [STOK UPDATED] Produk "${product.nama}": Stok (${product.stok}), Terjual (${product.terjual})`);
@@ -641,9 +608,9 @@ mongoose.connection.once('open', async () => {
 const transactionSchema = new mongoose.Schema({
     orderId: { type: String, required: true, unique: true },
     amount: { type: Number, required: true },
-    paymentNumber: { type: String, default: null }, // QRIS String / URL
+    paymentNumber: { type: String, default: null },
     paymentMethod: { type: String, default: "QRIS" },
-    status: { type: String, default: "pending" }, // pending, settlement, paid, success, failed, cancelled
+    status: { type: String, default: "pending" },
     itemDetails: {
         nama: String,
         harga: Number,
@@ -678,9 +645,6 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
     }
 }
 
-// ==========================================
-// 1. POST /transactions (CREATE TRANSACTION)
-// ==========================================
 app.post('/transactions', async (req, res) => {
     try {
         const { orderId, amount, itemDetails, qty } = req.body;
@@ -734,11 +698,10 @@ app.post('/transactions', async (req, res) => {
             finalAmount = inputAmount + feeVal;
         }
 
-        // Ambil link produk dari Mongo DB
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
             const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') }
+                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
             }).lean();
             if (dbProduct) pLink = dbProduct.link;
         }
@@ -776,9 +739,6 @@ app.post('/transactions', async (req, res) => {
     }
 });
 
-// ==========================================
-// 2. GET /transactions/:orderId (CHECK STATUS WITH CACHE)
-// ==========================================
 app.get('/transactions/:orderId', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -787,13 +747,11 @@ app.get('/transactions/:orderId', async (req, res) => {
     try {
         const { orderId } = req.params;
 
-        // 1. Ambil dari MongoDB Cache terlebih dahulu (Cache-First Pattern)
         const cachedData = await getCache(`trx_${orderId}`);
         if (cachedData) {
             return res.json({ data: cachedData });
         }
 
-        // 2. Jika tidak ada di Cache, baca dari MongoDB Database
         let localTrx = await Transaction.findOne({ orderId });
 
         if (!localTrx) {
@@ -803,7 +761,6 @@ app.get('/transactions/:orderId', async (req, res) => {
             });
         }
 
-        // Cek kedaluwarsa waktu transaksi
         if (localTrx.status.toLowerCase() === "pending" && new Date() > new Date(localTrx.expiredAt)) {
             localTrx.status = "cancelled";
             localTrx.updatedAt = new Date();
@@ -826,7 +783,6 @@ app.get('/transactions/:orderId', async (req, res) => {
         const currentStatus = localTrx.status.toLowerCase();
         const isSuccess = ["settlement", "success", "paid", "settled"].includes(currentStatus);
 
-        // Pencocokan Link Produk
         if (isSuccess && !localTrx.productLink && localTrx.itemDetails?.nama) {
             const pathProduk = path.join(__dirname, 'database', 'produk.json');
             if (fs.existsSync(pathProduk)) {
@@ -851,10 +807,8 @@ app.get('/transactions/:orderId', async (req, res) => {
             productLink: isSuccess ? localTrx.productLink : null
         };
 
-        // Simpan hasil ke Cache MongoDB
         await setCache(`trx_${orderId}`, responseData);
 
-        // Standard Success Response Envelope
         res.json({
             data: responseData
         });
@@ -872,9 +826,6 @@ app.get('/transactions/:orderId', async (req, res) => {
     }
 });
 
-// ==========================================
-// 3. POST /transactions/:orderId/cancel (CANCEL TRANSACTION)
-// ==========================================
 app.post('/transactions/:orderId/cancel', async (req, res) => {
     try {
         const { orderId } = req.params;
@@ -886,7 +837,6 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 
         const prevStatus = localTrx.status.toLowerCase();
 
-        // Panggil PayWuz Cancel API
         try {
             await axiosPaywuzWithRetry({
                 method: 'post',
@@ -897,7 +847,6 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
             console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
         }
 
-        // Jika sebelumnya berstatus Lunas/Success dan dibatalkan, kembalikan stok & terjual
         if (["paid", "settlement", "success"].includes(prevStatus)) {
             if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                 const qtyPurchased = localTrx.itemDetails.qty || 1;
@@ -926,9 +875,6 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
     }
 });
 
-// ==========================================
-// 4. POST /webhook (RECEIVE PAYWUZ EVENT)
-// ==========================================
 app.post('/webhook', async (req, res) => {
     try {
         const signature = req.headers['x-paywuz-signature'];
@@ -971,7 +917,6 @@ app.post('/webhook', async (req, res) => {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
                         await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
 
-                        // Simpan user pembeli di productSchema jika user terautentikasi / terdeteksi
                         const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
                         await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
                     }
@@ -983,7 +928,6 @@ app.post('/webhook', async (req, res) => {
                         if (dbProduct) localTrx.productLink = dbProduct.link;
                     }
                 } 
-                // KONDISI BATAL/FAILED: Kembalikan Stok & Terjual
                 else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
@@ -1018,7 +962,6 @@ app.post('/api/store/manual-order', async (req, res) => {
             return res.status(400).json({ status: false, message: "Nama produk wajib diisi!" });
         }
 
-        // Potong stok & tambah jumlah terjual secara otomatis untuk order manual WhatsApp
         const updatedProduct = await updateProductStockAndSold(productName, buyQty);
 
         if (!updatedProduct) {
@@ -1132,7 +1075,6 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
     `);
 }
 
-// --- ROUTE-ROUTE ---
 app.post('/auth/login', (req, res, next) => {
     passport.authenticate('local', async (err, user, info) => { 
         if (err) return next(err);
@@ -1475,7 +1417,6 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-
 const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
 const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
 const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://arulz-xd.my.id/auth/github/callback";
@@ -1494,7 +1435,6 @@ function generateRandomApiKey() {
     return 'arulzfree-' + crypto.randomBytes(4).toString('hex');
 }
 
-/* ==================== ENDPOINT AUTH GITHUB ==================== */
 app.get('/auth/github', (req, res) => {
     const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${GITHUB_CALLBACK_URL}&scope=user:email`;
     res.redirect(url);
@@ -1602,7 +1542,6 @@ app.get('/auth/github/callback', async (req, res) => {
     }
 });
 
-/* ==================== ENDPOINT AUTH GOOGLE ==================== */
 app.get('/auth/google', (req, res) => {
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_CALLBACK_URL}&response_type=code&scope=profile email`;
     res.redirect(url);
@@ -1697,7 +1636,6 @@ app.get('/auth/google/callback', async (req, res) => {
 app.get('/api/user-status', async (req, res) => {
     if (req.user) {
         try {
-            // Ambil data user paling baru dari MongoDB agar avatar terbaru selalu terbaca
             const freshUser = await User.findById(req.user.id || req.user._id);
             const activeUser = freshUser || req.user;
 
@@ -1853,10 +1791,9 @@ const validateApiKey = async (req, res, next) => {
     const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
     let callerUser = req.user || null;
 
-    // Gunakan In-Memory Cache untuk menghindari query MongoDB berulang
     if (!callerUser) {
         const cachedUser = apiKeyUserCache.get(userKey);
-        if (cachedUser && (Date.now() - cachedUser.timestamp < 300000)) { // 5 menit
+        if (cachedUser && (Date.now() - cachedUser.timestamp < 300000)) {
             callerUser = cachedUser.data;
         } else {
             try {
@@ -1891,7 +1828,6 @@ const validateApiKey = async (req, res, next) => {
 
     let finalRole = (callerUser.role || 'Free User').toLowerCase();
 
-    // Mengambil modul dari memory cache (instant look-up O(1))
     const pathParts = req.path.split('/');
     const routeKey = `${pathParts[1]}/${pathParts[2]}`;
     const routeModule = routeModuleCache.get(routeKey);
@@ -2409,7 +2345,6 @@ for (const category of endpointDirs) {
     const routeName = path.basename(file, '.js');
     const routeFilePath = path.join(categoryPath, file);
 
-    // Require sekali di awal dan simpan di memory
     const route = require(routeFilePath);
     const routeKey = `${category}/${routeName}`;
     routeModuleCache.set(routeKey, route);
@@ -2433,39 +2368,32 @@ function getEndpointsFromRouter(category, file) {
   const subRouter = route.stack ? route : route.router || route;
   if (!subRouter || !subRouter.stack) return endpoints;
 
-  // Mengambil deskripsi dari berkas endpoint jika ada
   const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
 
   subRouter.stack.forEach(layer => {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
 
-      // Default: Selalu sediakan apikey sebagai parameter pertama
       let params = { apikey: "" }; 
 
-      // 1. Jika router menyediakan konfigurasi khusus paramsConfig
       if (route.paramsConfig) {
         params = { apikey: "", ...route.paramsConfig };
       } 
-      // 2. Jika tidak ada paramsConfig, gunakan regex matcher
       else if (layer.route.stack && layer.route.stack.length) {
         layer.route.stack.forEach(mw => {
           if (!mw.handle) return;
           const fnString = mw.handle.toString();
 
-          // Ekstraksi req.query
           [...fnString.matchAll(/req\.query\.([a-zA-Z0-9_]+)/g)].forEach(match => {
             params[match[1]] = "";
           });
 
-          // Ekstraksi req.body
           [...fnString.matchAll(/req\.body\.([a-zA-Z0-9_]+)/g)].forEach(match => {
             params[match[1]] = "";
           });
         });
       }
 
-      // Auto-fallback jika method POST/PUT/PATCH tidak mendeteksi parameter lain
       if (methods.some(m => ["POST", "PUT", "PATCH"].includes(m)) && Object.keys(params).length <= 1) {
         params.fileToUpload = "file";
       }
@@ -2473,7 +2401,7 @@ function getEndpointsFromRouter(category, file) {
       endpoints.push({
         name: `/${category}/${file.replace(/\.js$/, "")}`,
         path: `/api/${category}/${file.replace(/\.js$/, "")}`,
-        desc: routeDesc, // Menggunakan deskripsi dinamis yang diambil dari file
+        desc: routeDesc,
         status: route.status || "ready",
         type: route.type || "free",
         params,
@@ -2544,19 +2472,15 @@ app.get('/api/server-status', (req, res) => {
 });
 
 const logApiActivity = async (req, res, next) => {
-    // Tangkap event finish response
     res.on('finish', async () => {
-        // Ambil key saat res selesai, saat req.activeApiKey sudah terisi oleh validateApiKey
         const userKey = req.activeApiKey 
                      || req.query?.apikey 
                      || req.body?.apikey 
                      || req.headers['x-api-key'] 
                      || (req.user ? (req.user.apiKey || req.user.apikey) : null);
 
-        // Ambil endpoint path
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-        // Pastikan hanya mencatat jika ada API Key dan status code berhasil/proses
         if (userKey && fullEndpoint.startsWith('/api/') && fullEndpoint !== '/api/user-activity' && fullEndpoint !== '/api/user-limit') {
             try {
                 const { error } = await supabase.from('api_logs').insert([{
@@ -2582,12 +2506,10 @@ const logApiActivity = async (req, res, next) => {
 app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    // Fallback jika tidak ada param query, ambil dari session/JWT user
     if (!userKey && req.user) {
         userKey = req.user.apiKey || req.user.apikey;
     }
 
-    // Jika masih tidak ada, coba cari di DB user berdasarkan req.user.id
     if (!userKey && req.user) {
         try {
             const dbUser = await User.findById(req.user.id || req.user._id);
@@ -2602,7 +2524,6 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     try {
         const cleanKey = userKey.trim();
 
-        // Cari log berdasarkan API key di Supabase
         const { data, error } = await supabase
             .from('api_logs')
             .select('method, endpoint, status_code, created_at')
@@ -2616,10 +2537,8 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
             return res.json({ status: true, data: [] });
         }
 
-        // Format data sesuai UI
         const formattedLogs = data.map(log => {
             const date = new Date(log.created_at);
-            // Format Jam (WIB)
             const timeStr = date.toLocaleTimeString('id-ID', { 
                 hour: '2-digit', 
                 minute: '2-digit', 
@@ -2673,29 +2592,22 @@ app.get('/store', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'store.html'));
 });
 
-// Route untuk halaman detail produk / shareable link
 app.get('/store/:productId', async (req, res) => {
     try {
-        // Ambil productId dari URL params (:productId)
         const productId = req.params.productId;
 
-        // Cari produk murni berdasarkan field 'Id' (misal: "ip4x98POlb")
         const product = await Product.findOne({ Id: productId });
 
-        // Baca file store.html
         const storePath = path.join(__dirname, 'public', 'store.html');
         let htmlContent = fs.readFileSync(storePath, 'utf8');
 
         if (product) {
-            // Format harga untuk Open Graph Description
             const hargaFormatted = product.harga_diskon 
                 ? `Rp ${product.harga_diskon.toLocaleString('id-ID')}` 
                 : `Rp ${product.harga.toLocaleString('id-ID')}`;
 
-            // Safe slice untuk deskripsi agar tidak error jika deskripsi kosong
             const deskripsiClean = product.deskripsi ? product.deskripsi.slice(0, 150) : '';
 
-            // Inject Open Graph Meta Tags dinamis untuk WhatsApp / Medsos Preview
             const metaTags = `
     <!-- Open Graph / Meta Tags Dinamis -->
     <meta property="og:title" content="${product.nama} - ArulzXD Store" />
@@ -2706,7 +2618,6 @@ app.get('/store/:productId', async (req, res) => {
     <meta name="twitter:card" content="summary_large_image" />
             `;
 
-            // Sisipkan meta tags di bawah tag <head>
             htmlContent = htmlContent.replace('<head>', `<head>${metaTags}`);
         }
 
@@ -2717,12 +2628,10 @@ app.get('/store/:productId', async (req, res) => {
     }
 });
 
-// Endpoint untuk menyajikan halaman HTML Changelog
 app.get('/changelog', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'changelog.html'));
 });
 
-// Endpoint untuk mengambil JSON data Changelog
 app.get('/database/changelog', (req, res) => {
     const pathChangelog = path.join(__dirname, 'database', 'changelog.json'); 
 
@@ -3068,7 +2977,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">\${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -3089,20 +2998,17 @@ app.get('/docs', (req, res) => {
         <!-- Header Profile -->
         <div class="flex items-center justify-between mb-6 gap-3 sm:gap-4">
             
-            <!-- Avatar 3D & Badge Crown (Ukuran Seimbang dengan User Plan) -->
+            <!-- Avatar 3D & Badge Crown -->
             <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 
-                <!-- Mahkota / Badge 3D (Berada di atas Lingkaran Profile) -->
                 <div id="avatarBadge" class="absolute -top-6 sm:-top-8 z-30 pointer-events-none"></div>
                 
-                <!-- Container Avatar + Kamera -->
                 <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
                     <div id="avatar3DBorder" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] z-10 flex items-center justify-center border-3d-free">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
                     </div>
                     
-                    <!-- Ikon Kamera di Bawah Kanan Avatar -->
                     <div class="absolute bottom-0 right-0 z-20 bg-cyan-400 text-slate-950 p-1.5 rounded-full border-2 border-slate-950 shadow-md">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
@@ -3122,7 +3028,7 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <!-- User Plan Box (Ukuran Seimbang dengan Avatar) -->
+            <!-- User Plan Box -->
             <div class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex flex-col items-center justify-between">
                 <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-2 py-0.5 rounded border border-cyan-400/40 w-full text-center truncate">USER PLAN</span>
                 <div id="planBoxContainer" class="w-full flex-1 mt-1 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
@@ -3231,17 +3137,17 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-                ${req.user ? `
+                \${req.user ? `
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
-                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <img id="sidebarUserAvatar" src="\${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
                 
                 <div class="flex flex-col text-left min-w-0 z-10">
                     <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">\${req.user.username}</span>
                 </div>
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
@@ -3260,7 +3166,6 @@ app.get('/docs', (req, res) => {
         <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
     <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
 
-    <!-- Dashboard -->
     <a href="/" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
@@ -3277,7 +3182,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Dashboard</span>
     </a>
 
-    <!-- Docs -->
     <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.8));">
@@ -3293,7 +3197,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Docs</span>
     </a>
 
-    <!-- Store -->
     <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3304,7 +3207,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Store</span>
     </a>
 
-    <!-- Changelog -->
     <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3314,7 +3216,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Changelog</span>
     </a>
 
-    <!-- Uploader -->
     <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3324,7 +3225,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Uploader</span>
     </a>
 
-    <!-- Pastecode -->
     <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3334,7 +3234,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Pastecode</span>
     </a>
 
-    <!-- Feedback -->
     <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -3346,7 +3245,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Feedback</span>
     </a>
 
-    <!-- Stats / Status -->
     <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -3361,7 +3259,6 @@ app.get('/docs', (req, res) => {
 
     <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
 
-    <!-- Privacy Policy -->
     <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3372,7 +3269,6 @@ app.get('/docs', (req, res) => {
         <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Privacy Policy</span>
     </a>
 
-    <!-- Support -->
     <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/30 transition-all duration-300">
         <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.2)] transition-all shrink-0">
             <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -3553,8 +3449,8 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
 <script class="notranslate" translate="no">
-    window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
+    window.musicPlaylist = \${JSON.stringify(playlist)};
+    const displayApiKey = "\${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 
@@ -3592,62 +3488,62 @@ app.get('/docs', (req, res) => {
         }
 
         function setRoleTheme(roleName) {
-    const avatar3DBorder = document.getElementById('avatar3DBorder');
-    const avatarBadge = document.getElementById('avatarBadge');
-    const planText = document.getElementById('userPlanText');
-    const planContainer = document.getElementById('planBoxContainer');
-    const role = (roleName || '').toLowerCase();
+            const avatar3DBorder = document.getElementById('avatar3DBorder');
+            const avatarBadge = document.getElementById('avatarBadge');
+            const planText = document.getElementById('userPlanText');
+            const planContainer = document.getElementById('planBoxContainer');
+            const role = (roleName || '').toLowerCase();
 
-    const buildCrownSVG = (gradId) => \`
-        <svg class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#fef08a" />
-                    <stop offset="40%" stop-color="#fbbf24" />
-                    <stop offset="70%" stop-color="#b45309" />
-                    <stop offset="100%" stop-color="#451a03" />
-                </linearGradient>
-                <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#f3e8ff" />
-                    <stop offset="35%" stop-color="#c084fc" />
-                    <stop offset="70%" stop-color="#7e22ce" />
-                    <stop offset="100%" stop-color="#2e1065" />
-                </linearGradient>
-            </defs>
-            <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
-            <circle cx="16" cy="39" r="2.5" fill="url(#^${gradId})" />
-            <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
-            <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
-            <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
-            <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
-            <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-            <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-            <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-        </svg>\`;
+            const buildCrownSVG = (gradId) => \`
+                <svg class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef08a" />
+                            <stop offset="40%" stop-color="#fbbf24" />
+                            <stop offset="70%" stop-color="#b45309" />
+                            <stop offset="100%" stop-color="#451a03" />
+                        </linearGradient>
+                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f3e8ff" />
+                            <stop offset="35%" stop-color="#c084fc" />
+                            <stop offset="70%" stop-color="#7e22ce" />
+                            <stop offset="100%" stop-color="#2e1065" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
+                    <circle cx="16" cy="39" r="2.5" fill="url(#\${gradId})" />
+                    <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
+                    <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
+                    <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
+                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
+                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
+                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
+                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                </svg>\`;
 
-    if (role.includes('vip')) {
-        if (planText) planText.innerText = 'VIP';
-        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
-        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-        if (avatarBadge) {
-            avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-            avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
+            if (role.includes('vip')) {
+                if (planText) planText.innerText = 'VIP';
+                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
+                    avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
+                }
+            } else if (role.includes('premium')) {
+                if (planText) planText.innerText = 'PREM';
+                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
+                    avatarBadge.innerHTML = buildCrownSVG('goldCrown');
+                }
+            } else {
+                if (planText) planText.innerText = 'FREE';
+                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
+                if (avatarBadge) avatarBadge.innerHTML = "";
+            }
         }
-    } else if (role.includes('premium')) {
-        if (planText) planText.innerText = 'PREM';
-        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
-        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-        if (avatarBadge) {
-            avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-            avatarBadge.innerHTML = buildCrownSVG('goldCrown');
-        }
-    } else {
-        if (planText) planText.innerText = 'FREE';
-        if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
-        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-        if (avatarBadge) avatarBadge.innerHTML = "";
-    }
-}
 
         async function uploadAvatarFile(input) {
             if (!input.files || !input.files[0]) return;
