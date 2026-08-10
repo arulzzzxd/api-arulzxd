@@ -2948,27 +2948,6 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 0 12px var(--neon-cyan);
         transition: width 0.15s ease-out;
     }
-    /* Style khusus Cyber / Neon Box untuk Profile Popup */
-.border-cyber-card {
-    background: rgba(10, 15, 29, 0.92);
-    border: 2px solid #00f3ff;
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), inset 0 0 15px rgba(0, 243, 255, 0.1);
-}
-
-.cyber-box {
-    background: rgba(5, 12, 24, 0.85);
-    border: 1.5px solid #00f3ff;
-    border-radius: 18px;
-    box-shadow: 0 0 12px rgba(0, 243, 255, 0.25), inset 0 0 8px rgba(0, 243, 255, 0.08);
-}
-
-.cyber-capsule {
-    background: rgba(2, 6, 23, 0.9);
-    border: 1.5px solid #00f3ff;
-    border-radius: 9999px;
-    box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
-}
-
 </style>
 </head>
 <body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
@@ -3050,105 +3029,93 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal Cyber Theme -->
+<!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/85 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-    <div class="w-full max-w-md bg-[#0a0f1d] border-2 border-cyan-400 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(34,211,238,0.4)] relative font-['Space_Grotesk'] text-white my-auto border-cyber-card">
+    <div class="w-full max-w-md bg-[#030813] border-2 border-cyan-400/90 rounded-3xl p-5 sm:p-6 shadow-[0_0_35px_rgba(0,243,255,0.35)] relative font-mono text-cyan-400 my-auto">
         
         <!-- Header Profile -->
         <div class="flex items-center justify-between mb-5 gap-3">
             
-            <!-- Avatar & Crown Badge -->
+            <!-- Avatar & Crown -->
             <div class="relative w-20 h-20 sm:w-22 sm:h-22 flex-shrink-0 flex items-center justify-center">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 
-                <div id="avatarBadge" class="absolute -top-7 z-30 pointer-events-none"></div>
+                <div id="avatarBadge" class="absolute -top-7 sm:-top-8 z-30 pointer-events-none"></div>
                 
                 <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div id="avatar3DBorder" class="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-[3px] z-10 flex items-center justify-center border-3d-vip">
+                    <div id="avatar3DBorder" class="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-[3px] z-10 flex items-center justify-center border-3d-free">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
-                    </div>
-                    
-                    <div class="absolute bottom-0 right-0 z-20 bg-cyan-400 text-slate-950 p-1 rounded-full border-2 border-slate-950 shadow-md">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
-                        </svg>
                     </div>
                 </div>
             </div>
 
             <!-- Username & Email -->
-            <div class="flex-1 flex flex-col gap-2 min-w-0">
-                <div class="cyber-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs sm:text-sm font-bold text-cyan-300 font-mono tracking-wider">arulzzzxd</span>
+            <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
+                <div class="bg-[#020612] border border-cyan-400/80 rounded-2xl py-2 px-3 text-center truncate shadow-[inset_0_0_10px_rgba(0,243,255,0.1)]">
+                    <span id="userName" class="text-xs sm:text-sm font-bold text-cyan-300 tracking-wider">LOADING USER...</span>
                 </div>
-                <div class="cyber-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] sm:text-xs font-mono text-cyan-300">user@gmail.com</span>
+                <div class="bg-[#020612] border border-cyan-400/80 rounded-2xl py-2 px-3 text-center truncate shadow-[inset_0_0_10px_rgba(0,243,255,0.1)]">
+                    <span id="userEmail" class="text-[10px] sm:text-xs font-mono text-cyan-300">user@mail.com</span>
                 </div>
             </div>
 
-            <!-- User Plan Box -->
-            <div class="w-16 sm:w-20 h-20 flex-shrink-0 flex flex-col items-center justify-between">
-                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-widest text-center">USER PLAN</span>
-                <div id="planBoxContainer" class="w-full flex-1 mt-1 rounded-2xl border-2 border-pink-500 bg-pink-950/40 flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.5)]">
-                    <span id="userPlanText" class="text-xs sm:text-sm font-black text-pink-400 uppercase tracking-widest font-mono">VIP</span>
+            <!-- User Plan Box (Hexagon Badge) -->
+            <div class="w-20 h-24 flex-shrink-0 border-2 border-cyan-400/90 rounded-2xl bg-[#020612] p-1.5 flex flex-col items-center justify-between shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest text-center mt-1">USER<br>PLAN</span>
+                <div id="planBoxContainer" class="w-full flex-1 mt-1 rounded-xl flex items-center justify-center">
+                    <span id="userPlanText" class="text-xs sm:text-sm font-black text-white uppercase tracking-wider">FREE</span>
                 </div>
             </div>
         </div>
 
-        <!-- Section: Api Key Kamu -->
-        <div class="cyber-box p-3 mb-3">
+        <!-- Box 1: API Key Kamu -->
+        <div class="bg-[#020612] border-2 border-cyan-400/80 rounded-2xl p-3.5 mb-3 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
             <div class="flex items-center justify-between mb-2 px-1">
-                <span class="text-[11px] font-bold text-white font-mono">Api Key Kamu :</span>
-                <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                <span class="text-[11px] font-bold text-slate-200">API Key Kamu :</span>
+                <span class="text-amber-400 text-xs">★</span>
             </div>
-            <div class="cyber-capsule py-2 px-3 text-center truncate mb-2">
-                <span id="userApiKey" class="text-xs font-mono font-bold text-cyan-300">arulz-vip-123</span>
+            <div class="bg-[#020612] border border-cyan-400/80 rounded-xl py-2 px-3 text-center truncate mb-3 shadow-[inset_0_0_8px_rgba(0,243,255,0.15)]">
+                <span id="userApiKey" class="text-xs font-mono font-bold text-cyan-300">loading-key</span>
             </div>
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full cyber-capsule hover:bg-cyan-500/20 text-amber-400 hover:text-amber-300 font-extrabold text-[10px] py-2 uppercase tracking-widest transition-all active:scale-95">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
-        <!-- Section: Limit User -->
-        <div class="cyber-box p-3 mb-3 text-center">
-            <div class="cyber-capsule py-1 text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-2">
-                LIMIT USER
+        <!-- Box 2: Limit User -->
+        <div class="bg-[#020612] border-2 border-cyan-400/80 rounded-2xl p-3 mb-3 text-center shadow-[0_0_15px_rgba(0,243,255,0.1)]">
+            <div class="bg-[#020612] border border-cyan-400/80 rounded-xl py-1.5 px-3 mb-3 max-w-xs mx-auto">
+                <span class="text-[11px] font-bold text-cyan-300 uppercase tracking-widest">LIMIT USER</span>
             </div>
-            <div class="cyber-capsule py-2 px-4 inline-block my-1 shadow-inner">
-                <span class="text-base sm:text-lg font-black text-amber-300 font-mono tracking-wide">
-                    <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">Unlimited</span>
-                </span>
+            <div class="py-1 text-base sm:text-lg font-black text-cyan-300 font-mono tracking-wide">
+                <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">Unlimited</span>
             </div>
         </div>
 
-        <!-- Section: Aktifitas Request API Terakhir -->
-        <div class="cyber-box p-3 mb-4">
-            <div class="cyber-capsule py-1 text-center text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-2.5">
-                AKTIFITAS REQUEST API TERAKHIR
+        <!-- Box 3: Aktifitas Request API Terakhir -->
+        <div class="bg-[#020612] border-2 border-cyan-400/80 rounded-2xl p-3.5 mb-4 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
+            <div class="bg-[#020612] border border-cyan-400/80 rounded-xl py-1.5 px-3 text-center mb-3">
+                <span class="text-[10px] font-bold text-cyan-300 uppercase tracking-widest">AKTIFITAS REQUEST API TERAKHIR</span>
             </div>
-            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 scrollbar-thin">
-                <div class="cyber-capsule py-1.5 px-2 text-center text-cyan-300 font-mono text-[10px]">
-                    [16.55] [OK] [GET] : /api/random/tobrut
-                </div>
+            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-center font-mono text-[10px] sm:text-[11px] text-cyan-300">
+                <div class="py-1">Belum ada aktivitas request</div>
             </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full cyber-capsule border-amber-400 text-amber-400 hover:bg-amber-400/10 font-black text-xs py-2.5 flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-[0_0_15px_rgba(251,191,36,0.2)] transition-all">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                UPGRADE
+        <div class="space-y-2.5">
+            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all">
+                ★ UPGRADE
             </a>
 
-            <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-capsule border-cyan-500 text-cyan-300 hover:bg-cyan-500/10 font-bold text-xs py-2.5 uppercase tracking-wider transition-all">
+            <div class="flex gap-2.5">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-[#020612] hover:bg-slate-900 text-cyan-300 border border-cyan-400/80 font-bold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-all">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 cyber-capsule border-pink-500 text-pink-400 hover:bg-pink-500/10 font-bold text-xs py-2.5 flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    LOG OUT
+                <a href="/auth/logout" class="flex-1 bg-[#020612] hover:bg-slate-900 text-cyan-300 border border-cyan-400/80 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all">
+                    ↳ LOG OUT
                 </a>
             </div>
         </div>
@@ -3521,62 +3488,55 @@ app.get('/docs', (req, res) => {
         }
 
         function setRoleTheme(roleName) {
-            const avatar3DBorder = document.getElementById('avatar3DBorder');
-            const avatarBadge = document.getElementById('avatarBadge');
-            const planText = document.getElementById('userPlanText');
-            const planContainer = document.getElementById('planBoxContainer');
-            const role = (roleName || '').toLowerCase();
+    const avatar3DBorder = document.getElementById('avatar3DBorder');
+    const avatarBadge = document.getElementById('avatarBadge');
+    const planText = document.getElementById('userPlanText');
+    const planContainer = document.getElementById('planBoxContainer');
+    const limitMaxEl = document.getElementById('popupLimitMax');
+    const role = (roleName || '').toLowerCase();
 
-            const buildCrownSVG = (gradId) => \`
-                <svg class="w-16 h-16 sm:w-20 sm:h-20 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="goldCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fef08a" />
-                            <stop offset="40%" stop-color="#fbbf24" />
-                            <stop offset="70%" stop-color="#b45309" />
-                            <stop offset="100%" stop-color="#451a03" />
-                        </linearGradient>
-                        <linearGradient id="purpleCrown" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#f3e8ff" />
-                            <stop offset="35%" stop-color="#c084fc" />
-                            <stop offset="70%" stop-color="#7e22ce" />
-                            <stop offset="100%" stop-color="#2e1065" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M50 15 L52 21 L58 21 L53 25 L55 31 L50 27 L45 31 L47 25 L42 21 L48 21 Z" fill="url(#\${gradId})" />
-                    <circle cx="16" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="34" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="66" cy="30" r="2.5" fill="url(#\${gradId})" />
-                    <circle cx="84" cy="39" r="2.5" fill="url(#\${gradId})" />
-                    <path d="M16 41 L27 63 L38 46 L50 29 L62 46 L73 63 L84 41 L92 56 C80 73, 20 73, 8 56 Z" fill="url(#\${gradId})" />
-                    <path d="M22 46 L27 57 L34 46 L43 38 L50 54 L57 38 L66 46 L73 57 L78 46" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" />
-                    <path d="M22 66 C35 72, 65 72, 78 66" stroke="url(#\${gradId})" stroke-width="2.5" fill="none" stroke-linecap="round" />
-                    <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
-                </svg>\`;
+    // SVG Crown & Shield VIP Style seperti pada gambar
+    const buildPurpleCrownSVG = () => \`
+        <svg class="w-12 h-12 filter drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="purpleCrownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f3e8ff" />
+                    <stop offset="40%" stop-color="#c084fc" />
+                    <stop offset="70%" stop-color="#9333ea" />
+                    <stop offset="100%" stop-color="#3b0764" />
+                </linearGradient>
+            </defs>
+            <path d="M50 10 L62 30 L85 15 L72 55 L28 55 L15 15 L38 30 Z" fill="url(#purpleCrownGrad)" stroke="#f3e8ff" stroke-width="2"/>
+            <circle cx="50" cy="10" r="4" fill="#fef08a"/>
+            <circle cx="85" cy="15" r="4" fill="#fef08a"/>
+            <circle cx="15" cy="15" r="4" fill="#fef08a"/>
+            <rect x="25" y="58" width="50" height="10" rx="4" fill="url(#purpleCrownGrad)"/>
+        </svg>\`;
 
-            if (role.includes('vip')) {
-                if (planText) planText.innerText = 'VIP';
-                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
-                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-                if (avatarBadge) {
-                    avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-                    avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
-                }
-            } else if (role.includes('premium')) {
-                if (planText) planText.innerText = 'PREM';
-                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
-                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-                if (avatarBadge) {
-                    avatarBadge.className = "absolute -top-6 sm:-top-8 z-30 scale-110 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-                    avatarBadge.innerHTML = buildCrownSVG('goldCrown');
-                }
-            } else {
-                if (planText) planText.innerText = 'FREE';
-                if (planContainer) planContainer.className = "w-full flex-1 mt-1 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
-                if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-                if (avatarBadge) avatarBadge.innerHTML = "";
-            }
+    if (role.includes('vip')) {
+        if (planText) planText.innerText = 'VIP';
+        if (planContainer) planContainer.className = "w-full h-full rounded-xl bg-gradient-to-b from-purple-600 via-purple-700 to-indigo-900 border border-purple-300/60 flex items-center justify-center shadow-[0_0_12px_rgba(168,85,247,0.8)]";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-22 sm:h-22 rounded-full p-[3px] z-10 flex items-center justify-center border-2 border-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.8)]";
+        if (avatarBadge) {
+            avatarBadge.className = "absolute -top-5 -left-3 z-30";
+            avatarBadge.innerHTML = buildPurpleCrownSVG();
         }
+        if (limitMaxEl) limitMaxEl.innerText = 'Unlimited';
+    } else if (role.includes('premium')) {
+        if (planText) planText.innerText = 'PREM';
+        if (planContainer) planContainer.className = "w-full h-full rounded-xl bg-gradient-to-b from-amber-500 to-amber-700 border border-amber-300 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.8)]";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-22 sm:h-22 rounded-full p-[3px] z-10 flex items-center justify-center border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.8)]";
+        if (avatarBadge) avatarBadge.innerHTML = "";
+        if (limitMaxEl) limitMaxEl.innerText = '1000';
+    } else {
+        if (planText) planText.innerText = 'FREE';
+        if (planContainer) planContainer.className = "w-full h-full rounded-xl bg-slate-800 border border-cyan-400/50 flex items-center justify-center";
+        if (avatar3DBorder) avatar3DBorder.className = "w-20 h-20 sm:w-22 sm:h-22 rounded-full p-[3px] z-10 flex items-center justify-center border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,243,255,0.4)]";
+        if (avatarBadge) avatarBadge.innerHTML = "";
+        if (limitMaxEl) limitMaxEl.innerText = '100';
+    }
+}
+
 
         async function uploadAvatarFile(input) {
             if (!input.files || !input.files[0]) return;
@@ -3674,33 +3634,32 @@ app.get('/docs', (req, res) => {
         }
 
         function fetchUserActivityLogs(apiKey) {
-    const container = document.getElementById('activityLogsContainer');
-    if (!container) return;
+            const container = document.getElementById('activityLogsContainer');
+            if (!container) return;
 
-    fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
-        .then(res => res.json())
-        .then(resData => {
-            if (resData.status && resData.data && resData.data.length > 0) {
-                container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-capsule py-1.5 px-3 text-center text-cyan-300 font-mono text-[10px] truncate">' +
-                        logText +
-                    '</div>'
-                ).join('');
-            } else {
-                container.innerHTML = 
-                    '<div class="cyber-capsule py-1.5 px-3 text-center text-cyan-300/70 font-mono text-[10px]">' +
-                        'Belum ada aktivitas request' +
-                    '</div>';
-            }
-        })
-        .catch(err => {
-            container.innerHTML = 
-                '<div class="cyber-capsule border-pink-500/50 py-1.5 px-3 text-center text-pink-400 font-mono text-[10px]">' +
-                    'Gagal memuat aktivitas' +
-                '</div>';
-        });
-}
-
+            fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData.status && resData.data && resData.data.length > 0) {
+                        container.innerHTML = resData.data.map(logText => 
+                            '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
+                                logText +
+                            '</div>'
+                        ).join('');
+                    } else {
+                        container.innerHTML = 
+                            '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                                'Belum ada aktivitas request' +
+                            '</div>';
+                    }
+                })
+                .catch(err => {
+                    container.innerHTML = 
+                        '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                            'Gagal memuat aktivitas' +
+                        '</div>';
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
