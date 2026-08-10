@@ -2544,22 +2544,18 @@ app.get('/api/server-status', (req, res) => {
 });
 
 const logApiActivity = async (req, res, next) => {
-    // Tangkap event finish response
     res.on('finish', async () => {
-        // Ambil key saat res selesai, saat req.activeApiKey sudah terisi oleh validateApiKey
         const userKey = req.activeApiKey 
                      || req.query?.apikey 
                      || req.body?.apikey 
                      || req.headers['x-api-key'] 
                      || (req.user ? (req.user.apiKey || req.user.apikey) : null);
 
-        // Ambil endpoint path
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-        // Ambil identifier nama user/email jika ada
+        // Ambil nama user dari session/JWT
         const userIdentifier = req.user ? (req.user.username || req.user.email) : 'Guest';
 
-        // Pastikan hanya mencatat jika ada API Key dan status code berhasil/proses
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
@@ -2570,7 +2566,7 @@ const logApiActivity = async (req, res, next) => {
             try {
                 const { error } = await supabase.from('api_logs').insert([{
                     apikey: userKey.trim(),
-                    username: userIdentifier, // <--- Menyimpan nama/username user per request
+                    username: userIdentifier, // <--- Kirim username ke Supabase
                     method: req.method,
                     endpoint: fullEndpoint,
                     status_code: res.statusCode
@@ -2589,16 +2585,13 @@ const logApiActivity = async (req, res, next) => {
     next();
 };
 
-
 app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    // Fallback jika tidak ada param query, ambil dari session/JWT user
     if (!userKey && req.user) {
         userKey = req.user.apiKey || req.user.apikey;
     }
 
-    // Jika masih tidak ada, coba cari di DB user berdasarkan req.user.id
     if (!userKey && req.user) {
         try {
             const dbUser = await User.findById(req.user.id || req.user._id);
@@ -2613,7 +2606,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     try {
         const cleanKey = userKey.trim();
 
-        // Cari log berdasarkan API key di Supabase
+        // Ambil kolom username dari Supabase
         const { data, error } = await supabase
             .from('api_logs')
             .select('username, method, endpoint, status_code, created_at')
@@ -2628,10 +2621,8 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
             return res.json({ status: true, data: [] });
         }
 
-        // Format data log agar menyertakan nama/username user di setiap request
         const formattedLogs = data.map(log => {
             const date = new Date(log.created_at);
-            // Format Jam (WIB)
             const timeStr = date.toLocaleTimeString('id-ID', { 
                 hour: '2-digit', 
                 minute: '2-digit', 
@@ -2639,10 +2630,10 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
                 timeZone: 'Asia/Jakarta'
             });
             const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
-            const usernameStr = log.username || (req.user ? req.user.username : 'User');
+            const userStr = log.username || (req.user ? req.user.username : 'User');
 
-            // Format UI: [Jam] [User] [Status] [Method] : Endpoint
-            return `[${timeStr}] [${usernameStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+            // Format UI: [Jam] [Nama User] [Status] [Method] : Endpoint
+            return `[${timeStr}] [${userStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
         });
 
         return res.json({ status: true, data: formattedLogs });
@@ -2651,7 +2642,6 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, data: [] });
     }
 });
-
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
