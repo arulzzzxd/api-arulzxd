@@ -1,8 +1,8 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
-const { createClient } = require('@supabase/supabase-js');
 const mongoose = require('mongoose');
+const cron = require('node-cron');
 const { MongoStore } = require('connect-mongo');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -65,8 +65,7 @@ const checkAuthSession = (req, res, next) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = {
             ...decoded,
-            apiKey: decoded.apiKey || decoded.apikey, // <--- Perbaikan di sini
-            apikey: decoded.apikey || decoded.apiKey
+            apikey: decoded.apikey
         }; 
         next();
     } catch (err) {
@@ -88,13 +87,25 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
     role: { type: String, default: 'Free User' },
-    limit: { type: Number, default: 0 }, // Field limit terpakai di MongoDB
-    lastLimitReset: { type: Date, default: Date.now }, // Penanda reset limit 24 jam
+    limit: { type: Number, default: 0 },
+    lastLimitReset: { type: Date, default: Date.now },
     avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
     createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+cron.schedule('0 0 * * *', async () => {
+    try {
+        await User.updateMany({}, { $set: { limit: 0, lastLimitReset: new Date() } });
+        console.log('🔄 [CRON] Semua limit user berhasil di-reset pada jam 12 malam!');
+    } catch (err) {
+        console.error('❌ [CRON] Gagal melakukan reset limit harian:', err.message);
+    }
+}, {
+    scheduled: true,
+    timezone: "Asia/Jakarta"
+});
 
 const uploadavatar = multer({ 
     limits: { fileSize: 4 * 1024 * 1024 }, // Limit 4MB
@@ -152,7 +163,7 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
                 name: updatedUser.username,
                 avatar: updatedUser.avatar,
                 role: updatedUser.role,
-                apiKey: updatedUser.apikey
+                apikey: updatedUser.apikey
             };
 
             const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -658,11 +669,11 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-function verifyPaywuzSignature(rawBody, receivedSignature, apiKey) {
+function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     if (!receivedSignature) return false;
 
     const computedSignature = "sha256=" + crypto
-        .createHmac("sha256", apiKey)
+        .createHmac("sha256", apikey)
         .update(typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody))
         .digest("hex");
 
@@ -1182,7 +1193,7 @@ app.post('/auth/login', (req, res, next) => {
                     name: user.username,
                     avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
                     role: updatedRole,     
-                    apiKey: updatedApiKey   
+                    apikey: updatedApiKey   
                 };
 
                 const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -1263,7 +1274,7 @@ app.post('/auth/register', async (req, res) => {
             name: newUser.username,
             avatar: defaultAvatar,
             role: newUser.role,
-            apiKey: newUser.apikey
+            apikey: newUser.apikey
         };
 
         const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -1581,7 +1592,7 @@ app.get('/auth/github/callback', async (req, res) => {
             name: userData.name || dbUser.username,
             avatar: dbUser.avatar,
             role: dbUser.role,
-            apiKey: dbUser.apikey
+            apikey: dbUser.apikey
         };
 
         const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -1673,7 +1684,7 @@ app.get('/auth/google/callback', async (req, res) => {
             name: userData.name || dbUser.username,
             avatar: dbUser.avatar,
             role: dbUser.role,
-            apiKey: dbUser.apikey
+            apikey: dbUser.apikey
         };
 
         const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
@@ -1706,7 +1717,7 @@ app.get('/api/user-status', async (req, res) => {
                     username: activeUser.username,
                     email: activeUser.email,
                     avatar: activeUser.avatar,
-                    apiKey: activeUser.apikey || activeUser.apiKey,
+                    apikey: activeUser.apikey || activeUser.apikey,
                     role: activeUser.role
                 }
             });
@@ -1718,7 +1729,7 @@ app.get('/api/user-status', async (req, res) => {
                     username: req.user.username,
                     email: req.user.email,
                     avatar: req.user.avatar,
-                    apiKey: req.user.apiKey || req.user.apikey,
+                    apikey: req.user.apikey,
                     role: req.user.role
                 }
             });
@@ -1772,37 +1783,13 @@ function isVipAuthorized(identifierObj, providedKey) {
     return VIP_USERS[exactVipKey] === providedKey;
 }
 
-function getUserMaxLimit(keyType) {
-    if (keyType === 'vip') return Infinity;
-    if (keyType === 'premium') return 1000;
-    return 100;
-}
-
-async function getOrResetUserLimit(user) {
-    if (!user) return { limitUsed: 0, maxLimit: 100 };
-
-    const keyType = getApiKeyType(user.apikey || user.apiKey, user);
-    const maxLimit = getUserMaxLimit(keyType);
-
-    if (keyType === 'vip') {
-        return { limitUsed: 0, maxLimit: "Unlimited", keyType };
-    }
-
-    const now = new Date();
-    const lastReset = user.lastLimitReset ? new Date(user.lastLimitReset) : new Date(0);
-    const oneDayInMs = 24 * 60 * 60 * 1000;
-
-    // Cek jika waktu sudah berlalu > 24 jam dari reset terakhir
-    if (now - lastReset >= oneDayInMs) {
-        user.limit = 0;
-        user.lastLimitReset = now;
-        await User.findByIdAndUpdate(user._id, { limit: 0, lastLimitReset: now });
-    }
-
-    return { limitUsed: user.limit || 0, maxLimit, keyType };
-}
-
 function getApiKeyType(userKey, user = null) {
+    if (user && user.role) {
+        const role = user.role.toLowerCase();
+        if (role.includes('vip')) return 'vip';
+        if (role.includes('premium')) return 'premium';
+    }
+
     if (!userKey) return 'free';
 
     const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
@@ -1816,14 +1803,53 @@ function getApiKeyType(userKey, user = null) {
     if (userKey.startsWith('arulz-') && userKey.split('-').length >= 3) {
         return 'premium';
     }
+
     return 'free';
+}
+
+function getUserMaxLimit(keyType) {
+    if (keyType === 'vip') return Infinity;
+    if (keyType === 'premium') return 1000;
+    return 100;
+}
+
+async function getOrResetUserLimit(user) {
+    if (!user) return { limitUsed: 0, maxLimit: 100 };
+
+    const apikey = user.apikey;
+    const keyType = getApiKeyType(apikey, user);
+    const maxLimit = getUserMaxLimit(keyType);
+
+    if (keyType === 'vip') {
+        return { limitUsed: 0, maxLimit: "Unlimited", keyType };
+    }
+
+    const now = new Date();
+    const lastReset = user.lastLimitReset ? new Date(user.lastLimitReset) : new Date(0);
+
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+    const lastResetStr = lastReset.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+
+    if (todayStr !== lastResetStr) {
+        user.limit = 0;
+        user.lastLimitReset = now;
+        
+        await User.findByIdAndUpdate(user._id, { 
+            $set: { 
+                limit: 0, 
+                lastLimitReset: now 
+            } 
+        });
+    }
+
+    return { limitUsed: user.limit || 0, maxLimit, keyType };
 }
 
 app.get('/api/user-limit', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
     if (!userKey && req.user) {
-        userKey = req.user.apiKey || req.user.apikey;
+        userKey = req.user.apikey;
     }
 
     if (!userKey) {
@@ -1864,8 +1890,8 @@ const validateApiKey = async (req, res, next) => {
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
 
-    if (!userKey && req.user && req.user.apiKey) {
-        userKey = req.user.apiKey;
+    if (!userKey && req.user && req.user.apikey) {
+        userKey = req.user.apikey;
     }
 
     if (!userKey) {
@@ -2472,10 +2498,8 @@ function getEndpointsFromRouter(category, file) {
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
 
-      // Default: Selalu sediakan apikey sebagai parameter pertama
       let params = { apikey: "" }; 
 
-      // 1. Jika router menyediakan konfigurasi khusus paramsConfig
       if (route.paramsConfig) {
         params = { apikey: "", ...route.paramsConfig };
       } 
@@ -2586,7 +2610,7 @@ const apiLogSchema = new mongoose.Schema({
         status_code: { type: Number, required: true },
         createdAt: { type: Date, default: Date.now }
     }],
-    createdAt: { type: Date, default: Date.now, expires: '7d' } // Otomatis terhapus dari MongoDB setelah 7 hari
+    createdAt: { type: Date, default: Date.now, expires: '7d' } // Auto clean 7 hari
 });
 
 const ApiLog = mongoose.models.ApiLog || mongoose.model('ApiLog', apiLogSchema);
@@ -2597,22 +2621,30 @@ const logApiActivity = async (req, res, next) => {
                      || req.query?.apikey 
                      || req.body?.apikey 
                      || req.headers['x-api-key'] 
-                     || (req.user ? (req.user.apiKey || req.user.apikey) : null);
+                     || (req.user ? (req.user.apikey) : null);
 
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
+        // Cek jika ini endpoint API & bukan endpoint internal UI
         if (
             userKey && 
-            req.user && 
             fullEndpoint.startsWith('/api/') && 
             fullEndpoint !== '/api/user-activity' && 
             fullEndpoint !== '/api/user-limit' && 
             fullEndpoint !== '/api/apilist'
         ) {
             try {
-                const userId = req.user._id || req.user.id;
-                const username = req.user.username || 'User';
-                const email = req.user.email || '';
+                let targetUser = req.user;
+
+                if (!targetUser) {
+                    targetUser = await User.findOne({ apikey: userKey.trim() }).lean();
+                }
+
+                if (!targetUser) return;
+
+                const userId = targetUser._id || targetUser.id;
+                const username = targetUser.username || 'User';
+                const email = targetUser.email || '';
 
                 const newLogItem = {
                     method: req.method,
@@ -2621,7 +2653,7 @@ const logApiActivity = async (req, res, next) => {
                     createdAt: new Date()
                 };
 
-                // Upsert log document berdasarkan userId
+                // Push log ke array milik user tersebut di MongoDB
                 await ApiLog.findOneAndUpdate(
                     { userId: userId },
                     { 
@@ -2633,15 +2665,15 @@ const logApiActivity = async (req, res, next) => {
                         $push: { 
                             log: { 
                                 $each: [newLogItem], 
-                                $position: 0, // Tambah ke paling depan
-                                $slice: 20    // Simpan maksimal 20 log terakhir
+                                $position: 0, // Ditaruh di urutan teratas
+                                $slice: 20    // Simpan maks 20 log
                             } 
                         }
                     },
                     { upsert: true, new: true }
                 );
 
-                console.log(`✅ [LOG MONGO] User: ${username} | Path: ${fullEndpoint}`);
+                console.log(`✅ [LOG MONGO] Local/Session User: ${username} | Path: ${fullEndpoint}`);
             } catch (err) {
                 console.error("❌ Gagal simpan log ke MongoDB:", err.message);
             }
@@ -2650,22 +2682,33 @@ const logApiActivity = async (req, res, next) => {
     next();
 };
 
-app.get('/api/user-activity', checkAuthSession, async (req, res) => {
-    if (!req.user) {
-        return res.status(401).json({ status: false, message: "Anda belum login!", data: [] });
-    }
-
+app.get('/api/user-activity', async (req, res) => {
     try {
-        const userId = req.user._id || req.user.id;
+        let userId = null;
 
-        // Cari dokumen log berdasarkan ID user yang sedang login
+        if (req.user) {
+            userId = req.user._id || req.user.id;
+        } else {
+        
+            const userKey = req.query?.apikey || req.headers['x-api-key'];
+            if (userKey) {
+                const foundUser = await User.findOne({ apikey: userKey.trim() }).lean();
+                if (foundUser) userId = foundUser._id;
+            }
+        }
+
+        if (!userId) {
+            return res.json({ status: true, data: [] });
+        }
+
+        // Cari dokumen log khusus user ini di MongoDB
         const userLogDoc = await ApiLog.findOne({ userId: userId }).lean();
 
         if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) {
             return res.json({ status: true, data: [] });
         }
 
-        // Filter log selain endpoint internal & ambil 10 teratas
+        // Ambil 10 log terbaru
         const filteredLogs = userLogDoc.log
             .filter(item => item.endpoint !== '/api/apilist')
             .slice(0, 10);
@@ -2680,7 +2723,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
             });
             const statusStr = item.status_code >= 200 && item.status_code < 300 ? 'OK' : 'ERR';
 
-            // Format UI tanpa username: [Jam] [Status] [Method] : Endpoint
+            // Format UI: [Jam] [Status] [Method] : Endpoint
             return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
         });
 
@@ -2690,7 +2733,6 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, data: [] });
     }
 });
-
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
@@ -3253,7 +3295,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">${req.user ? (req.user.apikey) : 'Silakan Login'}</span>
               </span>
             </div>
           </div>
@@ -3785,7 +3827,7 @@ app.get('/docs', (req, res) => {
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
+    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 
@@ -3919,7 +3961,7 @@ app.get('/docs', (req, res) => {
                         document.getElementById('userName').innerText = data.user.username || 'User';
                         document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
                         
-                        const userKey = data.user.apiKey || data.user.apikey || '';
+                        const userKey = data.user.apikey'';
                         document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
                         
                         setRoleTheme(data.user.role || 'Free User');
