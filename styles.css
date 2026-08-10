@@ -539,3 +539,30 @@
         opacity: 1;
     }
 }
+
+/* Styling transisi tema global */
+html.light {
+    --bg-dark: #f0fdfa;
+    --bg-card: rgba(255, 255, 255, 0.9);
+}
+
+body.light-mode {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+}
+
+/* Penyesuaian Komponen saat Light Mode */
+body.light-mode .glass-panel,
+body.light-mode .glass-card,
+body.light-mode .cyber-panel {
+    background: #ffffff !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode h1, 
+body.light-mode h2, 
+body.light-mode h3, 
+body.light-mode h4 {
+    color: #0f172a !important;
+}
