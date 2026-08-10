@@ -88,6 +88,8 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
     role: { type: String, default: 'Free User' },
+    limit: { type: Number, default: 0 }, // Field limit terpakai di MongoDB
+    lastLimitReset: { type: Date, default: Date.now }, // Penanda reset limit 24 jam
     avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
     createdAt: { type: Date, default: Date.now }
 });
@@ -1770,11 +1772,34 @@ function isVipAuthorized(identifierObj, providedKey) {
     return VIP_USERS[exactVipKey] === providedKey;
 }
 
-const USER_LIMIT_TRACKER = {};
 function getUserMaxLimit(keyType) {
     if (keyType === 'vip') return Infinity;
     if (keyType === 'premium') return 1000;
     return 100;
+}
+
+async function getOrResetUserLimit(user) {
+    if (!user) return { limitUsed: 0, maxLimit: 100 };
+
+    const keyType = getApiKeyType(user.apikey || user.apiKey, user);
+    const maxLimit = getUserMaxLimit(keyType);
+
+    if (keyType === 'vip') {
+        return { limitUsed: 0, maxLimit: "Unlimited", keyType };
+    }
+
+    const now = new Date();
+    const lastReset = user.lastLimitReset ? new Date(user.lastLimitReset) : new Date(0);
+    const oneDayInMs = 24 * 60 * 60 * 1000;
+
+    // Cek jika waktu sudah berlalu > 24 jam dari reset terakhir
+    if (now - lastReset >= oneDayInMs) {
+        user.limit = 0;
+        user.lastLimitReset = now;
+        await User.findByIdAndUpdate(user._id, { limit: 0, lastLimitReset: now });
+    }
+
+    return { limitUsed: user.limit || 0, maxLimit, keyType };
 }
 
 function getApiKeyType(userKey, user = null) {
@@ -1794,7 +1819,7 @@ function getApiKeyType(userKey, user = null) {
     return 'free';
 }
 
-app.get('/api/user-limit', checkAuthSession, (req, res) => {
+app.get('/api/user-limit', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
     if (!userKey && req.user) {
@@ -1805,19 +1830,24 @@ app.get('/api/user-limit', checkAuthSession, (req, res) => {
         return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
     }
 
-    const keyType = getApiKeyType(userKey, req.user);
-    const maxLimit = getUserMaxLimit(keyType);
+    try {
+        const user = await User.findOne({ apikey: userKey });
+        if (!user) {
+            return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
+        }
 
-    if (USER_LIMIT_TRACKER[userKey] === undefined) {
-        USER_LIMIT_TRACKER[userKey] = 0;
+        const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
+
+        return res.json({
+            loggedIn: !!req.user,
+            limitUsed: limitUsed,
+            maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit,
+            type: keyType
+        });
+    } catch (err) {
+        console.error("Error fetching user limit:", err);
+        return res.status(500).json({ status: false, message: "Server Error" });
     }
-
-    res.json({
-        loggedIn: !!req.user,
-        limitUsed: USER_LIMIT_TRACKER[userKey],
-        maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit,
-        type: keyType
-    });
 });
 
 const getLimitMessage = (keyType, limitCount) => {
@@ -1921,32 +1951,38 @@ const validateApiKey = async (req, res, next) => {
     next();
 };
 
-const trackAndEnforceLimit = (req, res, next) => {
+const trackAndEnforceLimit = async (req, res, next) => {
     if (req.path === '/apilist') return next();
 
     const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
     if (!userKey) return next();
 
-    const keyType = getApiKeyType(userKey, req.user);
-    const maxLimit = getUserMaxLimit(keyType);
+    try {
+        const user = await User.findOne({ apikey: userKey });
+        if (!user) return next();
 
-    if (USER_LIMIT_TRACKER[userKey] === undefined) {
-        USER_LIMIT_TRACKER[userKey] = 0;
+        const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
+
+        // Abaikan pengecekan pembatasan untuk VIP
+        if (keyType === 'vip') return next();
+
+        // Blokir jika limit pengguna sudah melebihi batas role
+        if (limitUsed >= maxLimit) {
+            return res.status(429).json({
+                status: false,
+                creator: "ArulzXD",
+                message: getLimitMessage(keyType, maxLimit)
+            });
+        }
+
+        // Tambahkan limit terpakai (+1) di MongoDB secara langsung
+        await User.findByIdAndUpdate(user._id, { $inc: { limit: 1 } });
+
+        next();
+    } catch (err) {
+        console.error("Error tracking limit:", err);
+        next();
     }
-
-    if (keyType !== 'vip' && USER_LIMIT_TRACKER[userKey] >= maxLimit) {
-        return res.status(429).json({
-            status: false,
-            creator: "ArulzXD",
-            message: getLimitMessage(keyType, maxLimit)
-        });
-    }
-
-    if (keyType !== 'vip') {
-        USER_LIMIT_TRACKER[userKey] += 1;
-    }
-
-    next();
 };
 
 const apiKeyLimiter = rateLimit({
@@ -2565,7 +2601,7 @@ const logApiActivity = async (req, res, next) => {
 
         if (
             userKey && 
-            req.user && // Memastikan user terautentikasi
+            req.user && 
             fullEndpoint.startsWith('/api/') && 
             fullEndpoint !== '/api/user-activity' && 
             fullEndpoint !== '/api/user-limit' && 
@@ -2574,18 +2610,36 @@ const logApiActivity = async (req, res, next) => {
             try {
                 const userId = req.user._id || req.user.id;
                 const username = req.user.username || 'User';
+                const email = req.user.email || '';
 
-                // Simpan Log ke MongoDB
-                await ApiLog.create({
-                    userId: userId,
-                    apikey: userKey.trim(),
-                    username: username,
+                const newLogItem = {
                     method: req.method,
                     endpoint: fullEndpoint,
-                    status_code: res.statusCode
-                });
+                    status_code: res.statusCode,
+                    createdAt: new Date()
+                };
 
-                console.log(`✅ [LOG MONGO] User: ${username} | Method: ${req.method} | Path: ${fullEndpoint}`);
+                // Upsert log document berdasarkan userId
+                await ApiLog.findOneAndUpdate(
+                    { userId: userId },
+                    { 
+                        $set: { 
+                            apikey: userKey.trim(),
+                            username: username,
+                            email: email
+                        },
+                        $push: { 
+                            log: { 
+                                $each: [newLogItem], 
+                                $position: 0, // Tambah ke paling depan
+                                $slice: 20    // Simpan maksimal 20 log terakhir
+                            } 
+                        }
+                    },
+                    { upsert: true, new: true }
+                );
+
+                console.log(`✅ [LOG MONGO] User: ${username} | Path: ${fullEndpoint}`);
             } catch (err) {
                 console.error("❌ Gagal simpan log ke MongoDB:", err.message);
             }
@@ -2602,31 +2656,30 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     try {
         const userId = req.user._id || req.user.id;
 
-        // Ambil 10 aktivitas API TERAKHIR milik user ini saja dari MongoDB
-        const logs = await ApiLog.find({ 
-            userId: userId,
-            endpoint: { $ne: '/api/apilist' }
-        })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .lean();
+        // Cari dokumen log berdasarkan ID user yang sedang login
+        const userLogDoc = await ApiLog.findOne({ userId: userId }).lean();
 
-        if (!logs || logs.length === 0) {
+        if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) {
             return res.json({ status: true, data: [] });
         }
 
-        const formattedLogs = logs.map(log => {
-            const date = new Date(log.createdAt);
+        // Filter log selain endpoint internal & ambil 10 teratas
+        const filteredLogs = userLogDoc.log
+            .filter(item => item.endpoint !== '/api/apilist')
+            .slice(0, 10);
+
+        const formattedLogs = filteredLogs.map(item => {
+            const date = new Date(item.createdAt || Date.now());
             const timeStr = date.toLocaleTimeString('id-ID', { 
                 hour: '2-digit', 
                 minute: '2-digit', 
                 hour12: false,
                 timeZone: 'Asia/Jakarta'
             });
-            const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
+            const statusStr = item.status_code >= 200 && item.status_code < 300 ? 'OK' : 'ERR';
 
-            // Format UI tanpa [username]: [Jam] [Status] [Method] : Endpoint
-            return `[${timeStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+            // Format UI tanpa username: [Jam] [Status] [Method] : Endpoint
+            return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
         });
 
         return res.json({ status: true, data: formattedLogs });
@@ -2635,6 +2688,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, data: [] });
     }
 });
+
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
@@ -3879,29 +3933,19 @@ app.get('/docs', (req, res) => {
                 });
         }
 
-        function fetchUserActivityLogs(apiKey) {
-    const container = document.getElementById('activityLogsContainer');
-    if (!container) return;
+        function fetchUserActivityLogs() {
+            const container = document.getElementById('activityLogsContainer');
+            if (!container) return;
 
-    fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
-        .then(res => res.json())
-        .then(resData => {
-            if (resData.status && resData.data && resData.data.length > 0) {
-                // Filter log agar tidak menyertakan endpoint /api/apilist
-                const filteredLogs = resData.data.filter(logText => !logText.includes('/api/apilist'));
-
-                if (filteredLogs.length > 0) {
-                    container.innerHTML = filteredLogs.map(logText => 
-                        '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
-                            logText +
-                        '</div>'
-                    ).join('');
-                } else {
-                    container.innerHTML = 
-                        '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
-                            'Belum ada aktivitas request' +
-                        '</div>';
-                }
+        fetch('/api/user-activity')
+          .then(res => res.json())
+          .then(resData => {
+              if (resData.status && resData.data && resData.data.length > 0) {
+                  container.innerHTML = resData.data.map(logText => 
+                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                        logText +
+                    '</div>'
+                ).join('');
             } else {
                 container.innerHTML = 
                     '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
@@ -3914,8 +3958,8 @@ app.get('/docs', (req, res) => {
                 '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
                     'Gagal memuat aktivitas' +
                 '</div>';
-        });
-}
+          });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
