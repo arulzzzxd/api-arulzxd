@@ -2575,19 +2575,21 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
-// Schema MongoDB untuk Log Aktivitas API per User
 const apiLogSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    apikey: { type: String, required: true, index: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    apikey: { type: String, required: true },
     username: { type: String, required: true },
-    method: { type: String, required: true },
-    endpoint: { type: String, required: true },
-    status_code: { type: Number, required: true },
-    createdAt: { type: Date, default: Date.now, expires: '7d' } // Otomatis terhapus setelah 7 hari
+    email: { type: String, required: true },
+    log: [{
+        method: { type: String, required: true },
+        endpoint: { type: String, required: true },
+        status_code: { type: Number, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    createdAt: { type: Date, default: Date.now, expires: '7d' } // Otomatis terhapus dari MongoDB setelah 7 hari
 });
 
 const ApiLog = mongoose.models.ApiLog || mongoose.model('ApiLog', apiLogSchema);
-
 
 const logApiActivity = async (req, res, next) => {
     res.on('finish', async () => {
