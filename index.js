@@ -1717,7 +1717,7 @@ app.get('/api/user-status', async (req, res) => {
                     username: activeUser.username,
                     email: activeUser.email,
                     avatar: activeUser.avatar,
-                    apikey: activeUser.apikey || activeUser.apikey,
+                    apikey: activeUser.apikey,
                     role: activeUser.role
                 }
             });
