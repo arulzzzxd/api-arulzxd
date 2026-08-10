@@ -3827,7 +3827,7 @@ app.get('/docs', (req, res) => {
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
-    const displayApiKey = "${(req.user && req.user.apikey && req.user.apikey !== 'undefined') ? req.user.apikey : 'Silakan Login'}";
+    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
 

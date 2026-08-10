@@ -1045,25 +1045,19 @@ function loadApis() {
                         let inputPlaceholder = `Masukkan ${paramName}`;
 
                         if (paramName.toLowerCase() === 'apikey') {
-    const isUserLoggedIn = (
-        typeof displayApiKey !== 'undefined' && 
-        displayApiKey !== 'Silakan Login' && 
-        displayApiKey !== 'undefined' && 
-        displayApiKey !== '' &&
-        displayApiKey !== null
-    );
-    
-    if (epType === 'vip') {
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey VIP';
-    } else if (epType === 'premium') {
-        inputValue = ''; 
-        inputPlaceholder = 'Masukkan apikey Premium';
-    } else {
-        inputValue = isUserLoggedIn ? displayApiKey : '';
-        inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-    }
-}
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                            
+                            if (epType === 'vip') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
 
                         html += `
                         <div>
