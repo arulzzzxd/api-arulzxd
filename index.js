@@ -580,6 +580,15 @@ async function setCache(key, data) {
     }
 }
 
+async function getCache(key) {
+    try {
+        const doc = await CacheModel.findOne({ key });
+        return doc ? doc.data : null;
+    } catch (e) {
+        return null;
+    }
+}
+
 async function deleteCache(key) {
     try {
         await CacheModel.deleteOne({ key });
@@ -2330,6 +2339,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
     res.status(500).send('Error uploading file.');
   }
 });
+
 const routeModuleCache = new Map();
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
@@ -2650,6 +2660,36 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
+    const userDisplayKey = req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login';
+    const userAvatar = req.user && req.user.avatar ? req.user.avatar : 'https://arulz-xd.my.id/files/X1F0Cn.png';
+    const username = req.user && req.user.username ? req.user.username : '';
+
+    const userAuthSection = req.user ? `
+        <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
+            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
+                <div class="relative flex-shrink-0 z-10">
+                    <img id="sidebarUserAvatar" src="${userAvatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
+                </div>
+                
+                <div class="flex flex-col text-left min-w-0 z-10">
+                    <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${username}</span>
+                </div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+            </button>
+        </div>
+    ` : `
+        <div class="mb-3 flex flex-col gap-2">
+            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200">
+                <span>Masuk ke Akun</span>
+            </a>
+        </div>
+    `;
+
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
@@ -2977,7 +3017,7 @@ app.get('/docs', (req, res) => {
           <div class="mb-5 flex justify-center">
             <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
               <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span class="font-mono text-cyan-400 select-all">\${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}</span>
+                apikey : <span class="font-mono text-cyan-400 select-all">${userDisplayKey}</span>
               </span>
             </div>
           </div>
@@ -3137,31 +3177,7 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-                \${req.user ? `
-        <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
-            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
-                <div class="relative flex-shrink-0 z-10">
-                    <img id="sidebarUserAvatar" src="\${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
-                </div>
-                
-                <div class="flex flex-col text-left min-w-0 z-10">
-                    <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">\${req.user.username}</span>
-                </div>
-
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-            </button>
-        </div>
-        ` : `
-        <div class="mb-3 flex flex-col gap-2">
-            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200">
-                <span>Masuk ke Akun</span>
-            </a>
-        </div>
-        `}
+        ${userAuthSection}
 
         <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
     <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
@@ -3449,8 +3465,8 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
 <script class="notranslate" translate="no">
-    window.musicPlaylist = \${JSON.stringify(playlist)};
-    const displayApiKey = "\${req.user ? (req.user.apiKey || req.user.apikey) : 'Silakan Login'}";
+    window.musicPlaylist = ${JSON.stringify(playlist)};
+    const displayApiKey = "${userDisplayKey}";
 </script>
 <script src="script.js"></script>
 
