@@ -1,6 +1,7 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
+const { createClient } = require('@supabase/supabase-js');
 const mongoose = require('mongoose');
 const { MongoStore } = require('connect-mongo');
 const passport = require('passport');
@@ -33,6 +34,10 @@ app.use(express.json({
 }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gwnccwopnxqtddeszsgm.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_6cySP-RH5iFZx5dLQRvHrA_4FonEkJ7';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0'; 
 
@@ -136,7 +141,7 @@ app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
                 { $set: { avatar: avatarDataUrl } },
                 { new: true, runValidators: true }
             );
-            
+
             if (!updatedUser) {
                 return res.status(404).json({ status: false, message: 'User tidak ditemukan.' });
             }
@@ -733,8 +738,8 @@ app.post('/transactions', async (req, res) => {
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
             const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') } 
-            });
+                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') }
+            }).lean();
             if (dbProduct) pLink = dbProduct.link;
         }
 
@@ -974,7 +979,7 @@ app.post('/webhook', async (req, res) => {
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
-                        });
+                        }).lean();
                         if (dbProduct) localTrx.productLink = dbProduct.link;
                     }
                 } 
@@ -1030,7 +1035,7 @@ app.post('/api/store/manual-order', async (req, res) => {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
- 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -1793,11 +1798,11 @@ function getApiKeyType(userKey, user = null) {
     return 'free';
 }
 
-app.get('/api/user-limit', (req, res) => {
+app.get('/api/user-limit', checkAuthSession, (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
 
-    if (!userKey && req.user && req.user.apiKey) {
-        userKey = req.user.apiKey;
+    if (!userKey && req.user) {
+        userKey = req.user.apiKey || req.user.apikey;
     }
 
     if (!userKey) {
@@ -1827,10 +1832,9 @@ const getLimitMessage = (keyType, limitCount) => {
     return `Limit API Key Free Anda telah habis (Maks ${limitCount} req/hari). Silakan upgrade ke paket Premium (1.000 req/hari) atau VIP (Unlimited) untuk melanjutkan!`;
 };
 
+const apiKeyUserCache = new Map();
 const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist') {
-        return next();
-    }
+    if (req.path === '/apilist') return next();
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
 
@@ -1849,34 +1853,20 @@ const validateApiKey = async (req, res, next) => {
     const isVipKeyString = Object.values(VIP_USERS).includes(userKey);
     let callerUser = req.user || null;
 
+    // Gunakan In-Memory Cache untuk menghindari query MongoDB berulang
     if (!callerUser) {
-        const callerIdentifier = req.query.username || req.body?.username || req.headers['x-username'] || 
-                                 req.query.email || req.body?.email || req.headers['x-email'];
-
-        if (callerIdentifier) {
-            const cleanIdentifier = callerIdentifier.toLowerCase().trim();
-            callerUser = await User.findOne({
-                $or: [{ username: cleanIdentifier }, { email: cleanIdentifier }]
-            });
-        }
-    }
-
-    if (isVipKeyString) {
-        if (!callerUser || !isVipAuthorized(callerUser, userKey)) {
-            return res.status(403).json({
-                status: false,
-                creator: "Arulz-XD",
-                message: "Akses Ditolak! API Key VIP ini terproteksi dan TIDAK BISA digunakan oleh pengguna publik."
-            });
-        }
-    }
-
-    if (!callerUser) {
-        try {
-            callerUser = await User.findOne({ apikey: userKey });
-        } catch (dbErr) {
-            console.error("Gagal verifikasi API Key di Database:", dbErr.message);
-            return res.status(500).json({ status: false, message: "Internal server error." });
+        const cachedUser = apiKeyUserCache.get(userKey);
+        if (cachedUser && (Date.now() - cachedUser.timestamp < 300000)) { // 5 menit
+            callerUser = cachedUser.data;
+        } else {
+            try {
+                callerUser = await User.findOne({ apikey: userKey }).lean();
+                if (callerUser) {
+                    apiKeyUserCache.set(userKey, { data: callerUser, timestamp: Date.now() });
+                }
+            } catch (dbErr) {
+                return res.status(500).json({ status: false, message: "Internal server error." });
+            }
         }
     }
 
@@ -1888,52 +1878,51 @@ const validateApiKey = async (req, res, next) => {
         });
     }
 
+    if (isVipKeyString && !isVipAuthorized(callerUser, userKey)) {
+        return res.status(403).json({
+            status: false,
+            creator: "Arulz-XD",
+            message: "Akses Ditolak! API Key VIP ini terproteksi."
+        });
+    }
+
     req.user = callerUser;
     req.activeApiKey = userKey;
 
     let finalRole = (callerUser.role || 'Free User').toLowerCase();
 
-    try {
-        const pathParts = req.path.split('/');
-        const currentCategory = pathParts[1]; 
-        const currentRouteName = pathParts[2];   
+    // Mengambil modul dari memory cache (instant look-up O(1))
+    const pathParts = req.path.split('/');
+    const routeKey = `${pathParts[1]}/${pathParts[2]}`;
+    const routeModule = routeModuleCache.get(routeKey);
 
-        if (currentCategory && currentRouteName) {
-            const routeFilePath = path.join(apiPath, currentCategory, `${currentRouteName}.js`);
-            if (fs.existsSync(routeFilePath)) {
-                const routeModule = require(routeFilePath);
-
-                if (routeModule.status === "error" || routeModule.status === "perbaikan") {
-                    return res.status(503).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Fitur ini sedang dalam perbaikan / maintenance!"
-                    });
-                }
-
-                if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint ini khusus pengguna Premium!"
-                    });
-                }
-
-                if (routeModule.type === "vip" && !finalRole.includes("vip")) {
-                    return res.status(403).json({
-                        status: false,
-                        creator: "Arulz-XD",
-                        message: "Endpoint eksklusif ini khusus pengguna VIP!"
-                    });
-                }
-            }
+    if (routeModule) {
+        if (routeModule.status === "error" || routeModule.status === "perbaikan") {
+            return res.status(503).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Fitur ini sedang dalam perbaikan / maintenance!"
+            });
         }
 
-        next();
-    } catch (e) {
-        console.error("Gagal memvalidasi status/type router:", e.message);
-        return res.status(500).json({ status: false, message: "Internal server error." });
+        if (routeModule.type === "premium" && !finalRole.includes("premium") && !finalRole.includes("vip")) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Endpoint ini khusus pengguna Premium!"
+            });
+        }
+
+        if (routeModule.type === "vip" && !finalRole.includes("vip")) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: "Endpoint eksklusif ini khusus pengguna VIP!"
+            });
+        }
     }
+
+    next();
 };
 
 const trackAndEnforceLimit = (req, res, next) => {
@@ -2405,7 +2394,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
     res.status(500).send('Error uploading file.');
   }
 });
-
+const routeModuleCache = new Map();
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
 
@@ -2418,7 +2407,13 @@ for (const category of endpointDirs) {
   const files = fs.readdirSync(categoryPath).filter(f => f.endsWith('.js'));
   for (const file of files) {
     const routeName = path.basename(file, '.js');
-    const route = require(path.join(categoryPath, file));
+    const routeFilePath = path.join(categoryPath, file);
+
+    // Require sekali di awal dan simpan di memory
+    const route = require(routeFilePath);
+    const routeKey = `${category}/${routeName}`;
+    routeModuleCache.set(routeKey, route);
+
     router.use(`/${category}/${routeName}`, route);
   }
 }
@@ -2548,7 +2543,101 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
-app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, router);
+const logApiActivity = async (req, res, next) => {
+    // Tangkap event finish response
+    res.on('finish', async () => {
+        // Ambil key saat res selesai, saat req.activeApiKey sudah terisi oleh validateApiKey
+        const userKey = req.activeApiKey 
+                     || req.query?.apikey 
+                     || req.body?.apikey 
+                     || req.headers['x-api-key'] 
+                     || (req.user ? (req.user.apiKey || req.user.apikey) : null);
+
+        // Ambil endpoint path
+        const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
+
+        // Pastikan hanya mencatat jika ada API Key dan status code berhasil/proses
+        if (userKey && fullEndpoint.startsWith('/api/') && fullEndpoint !== '/api/user-activity' && fullEndpoint !== '/api/user-limit') {
+            try {
+                const { error } = await supabase.from('api_logs').insert([{
+                    apikey: userKey.trim(),
+                    method: req.method,
+                    endpoint: fullEndpoint,
+                    status_code: res.statusCode
+                }]);
+
+                if (error) {
+                    console.error("❌ Supabase Insert Log Error:", error.message);
+                } else {
+                    console.log(`✅ [LOG SAVED] Key: ${userKey} | Method: ${req.method} | Path: ${fullEndpoint}`);
+                }
+            } catch (err) {
+                console.error("Gagal simpan log ke Supabase:", err.message);
+            }
+        }
+    });
+    next();
+};
+
+app.get('/api/user-activity', checkAuthSession, async (req, res) => {
+    let userKey = req.query.apikey || req.headers['x-api-key'];
+
+    // Fallback jika tidak ada param query, ambil dari session/JWT user
+    if (!userKey && req.user) {
+        userKey = req.user.apiKey || req.user.apikey;
+    }
+
+    // Jika masih tidak ada, coba cari di DB user berdasarkan req.user.id
+    if (!userKey && req.user) {
+        try {
+            const dbUser = await User.findById(req.user.id || req.user._id);
+            if (dbUser) userKey = dbUser.apikey;
+        } catch (e) {}
+    }
+
+    if (!userKey) {
+        return res.json({ status: false, message: "API Key tidak ditemukan", data: [] });
+    }
+
+    try {
+        const cleanKey = userKey.trim();
+
+        // Cari log berdasarkan API key di Supabase
+        const { data, error } = await supabase
+            .from('api_logs')
+            .select('method, endpoint, status_code, created_at')
+            .eq('apikey', cleanKey)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            return res.json({ status: true, data: [] });
+        }
+
+        // Format data sesuai UI
+        const formattedLogs = data.map(log => {
+            const date = new Date(log.created_at);
+            // Format Jam (WIB)
+            const timeStr = date.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false,
+                timeZone: 'Asia/Jakarta'
+            });
+            const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
+            return `[${timeStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+        });
+
+        return res.json({ status: true, data: formattedLogs });
+    } catch (err) {
+        console.error("Error fetching logs:", err.message);
+        return res.status(500).json({ status: false, data: [] });
+    }
+});
+
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
 app.get('/script.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'script.js'));
@@ -2991,100 +3080,111 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal -->
+<!-- User Profile Pop-up Modal (Tampilan Diperbesar & Avatar 3D Aktif) -->
+<!-- User Profile Pop-up Modal (Diperbesar & Responsif) -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl relative font-['Space_Grotesk'] overflow-hidden">
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="w-full max-w-lg bg-[#0a0f1d] border-2 border-cyan-400/80 rounded-3xl p-5 sm:p-7 shadow-[0_0_45px_rgba(34,211,238,0.35)] relative font-['Space_Grotesk'] text-white my-auto">
         
-        <div class="absolute -top-10 -left-10 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
-        <div class="flex flex-col items-center text-center mt-2 relative z-10">
-            <!-- Input File Tersembunyi -->
-            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-
-            <div class="relative w-32 h-32 flex items-center justify-center mb-3">
-                <div id="avatarBadge" class="absolute -top-5 z-20 transform scale-90"></div>
-                
-                <!-- Avatar Container -->
-                <div class="relative group cursor-pointer" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ganti avatar">
-                    <div id="avatar3DBorder" class="w-24 h-24 rounded-full p-[4px] z-10 flex items-center justify-center transition-all duration-300">
-                        <div class="w-full h-full rounded-full bg-slate-950 p-[2px] flex items-center justify-center shadow-inner overflow-hidden relative">
-                            <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300">
-                            
-                            <!-- Overlay Hover -->
-                            <div class="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <span class="text-[9px] font-bold text-cyan-400 uppercase tracking-wider">Ubah</span>
-                            </div>
-                        </div>
+        <!-- Header Profile -->
+        <div class="flex items-center justify-between mb-6 gap-4">
+            <!-- Avatar 3D & Badge Crown -->
+            <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 flex items-center justify-center">
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
+                <div id="avatarBadge" class="absolute -top-7 z-20 scale-100"></div>
+                <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
+                    <div id="avatar3DBorder" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-free">
+                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
                     </div>
-
-                    <!-- Tombol SVG Kamera Samping Bawah -->
-                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-500 hover:bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-900 shadow-lg transition-transform duration-200 group-hover:scale-110 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                        </svg>
+                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-950 shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
                     </div>
                 </div>
             </div>
 
-            <h2 id="userName" class="text-xl font-extrabold text-white tracking-wide mb-0.5">Loading...</h2>
-            <p id="userEmail" class="text-slate-400 font-mono text-xs mb-5">loading-email@mail.com</p>
+            <!-- Username & Email -->
+            <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
+                    <span id="userName" class="text-xs sm:text-sm font-bold text-cyan-200 tracking-wider">LOADING USER...</span>
+                </div>
+                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
+                    <span id="userEmail" class="text-[11px] sm:text-xs font-mono text-cyan-300">user@mail.com</span>
+                </div>
+            </div>
+
+            <!-- User Plan Box -->
+            <div class="w-16 sm:w-20 flex flex-col items-center justify-between">
+                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-2 py-0.5 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
+                <div id="planBoxContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
+                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">FREE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row Middle: Api Key & Limit User -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <!-- Box API Key -->
+            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-md">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-bold text-white bg-black/60 px-2.5 py-0.5 rounded-md border border-white/20">Api Key Kamu :</span>
+                    <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                </div>
+                <div class="bg-white text-slate-950 font-mono text-xs font-bold py-2 px-2.5 rounded-xl truncate mb-2.5 text-center shadow-inner">
+                    <span id="userApiKey">loading-key</span>
+                </div>
+                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-2 rounded-xl uppercase tracking-wider shadow-md active:scale-95 transition-all">
+                    Salin Api Key
+                </button>
+            </div>
+
+            <!-- Box Limit User (Disesuaikan Otomatis jika Unlimited/0/Premium) -->
+            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 flex flex-col items-center justify-between shadow-md">
+                <div class="w-full bg-white text-slate-950 text-center text-[10px] font-black py-1 rounded-md uppercase tracking-wider mb-2">
+                    LIMIT USER
+                </div>
+                <div class="my-auto py-1.5 w-full flex justify-center">
+                    <span class="text-lg sm:text-xl font-black text-slate-950 bg-white px-3 py-1.5 rounded-xl border border-black/20 font-mono tracking-tight shadow-inner max-w-full truncate text-center">
+                        <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Box Aktifitas Request API Terakhir -->
+        <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 mb-5 shadow-inner">
+            <div class="bg-white text-slate-950 text-center text-[11px] font-black py-1 rounded-xl uppercase tracking-wider mb-3">
+                Aktifitas Request Api Terakhir
+            </div>
             
-            <div class="w-full space-y-4 text-left mb-5">
-                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-1">
-                    <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Account Type / Role</span>
-                    <div id="userRoleContainer" class="flex items-center gap-2 font-bold text-slate-200 text-sm">
-                        <span id="userRole" class="flex items-center gap-1.5">Loading...</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-950/40 border border-white/5 rounded-xl p-3.5 flex flex-col gap-2">
-                    <div class="flex items-center gap-1.5 text-[10px] text-amber-400 font-medium tracking-wide animate-pulse bg-amber-500/5 px-2 py-1 rounded border border-amber-500/10">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 block"></span>
-                        Jangan bagikan API Key ini kepada siapapun!
-                    </div>
-                    
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="text-[10px] text-cyan-400 font-mono tracking-wider uppercase font-bold opacity-80">Your Personal API Key</span>
-                        <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5" title="Copy Key">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="bg-slate-900/90 border border-white/5 p-2.5 rounded-lg font-mono text-xs text-amber-300 break-all select-all shadow-inner w-full max-h-16 overflow-y-auto scrollbar-hide">
-                        <span id="userApiKey">loading-key-xxxx</span>
-                    </div>
+            <div id="activityLogsContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
+                <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
+                    Belum ada aktivitas request
                 </div>
             </div>
+        </div>
 
-            <div class="w-full flex flex-col gap-3">
-                <a href="/upgrade-apikey" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase shadow-lg shadow-amber-500/10">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    Upgrade
+        <!-- Action Buttons -->
+        <div class="space-y-2.5">
+            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-lg transition-all">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                UPGRADE
+            </a>
+
+            <div class="flex gap-2.5">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-[#1a2332] hover:bg-[#253246] text-slate-200 font-bold text-xs py-3 rounded-xl uppercase tracking-wider border border-white/10 transition-all">
+                    TUTUP
+                </button>
+                <a href="/auth/logout" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/40 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    LOG OUT
                 </a>
-                
-                <div class="flex gap-3 w-full">
-                    <button onclick="closeProfilePopup()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5 tracking-wider uppercase">
-                        Tutup
-                    </button>
-                    <a href="/auth/logout" class="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 tracking-wider uppercase">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
-                        Log Out
-                    </a>
-                </div>
             </div>
-
         </div>
     </div>
   </div>
 </div>
+
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
@@ -3127,7 +3227,6 @@ app.get('/docs', (req, res) => {
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
             <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
                 <div class="relative flex-shrink-0 z-10">
-                    <!-- TAMBAHKAN ID id="sidebarUserAvatar" DI SINI -->
                     <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
@@ -3485,11 +3584,11 @@ app.get('/docs', (req, res) => {
         }
 
         function setRoleTheme(roleName) {
-            const roleContainer = document.getElementById('userRoleContainer');
             const avatar3DBorder = document.getElementById('avatar3DBorder');
             const avatarBadge = document.getElementById('avatarBadge');
-            const usernameTag = document.getElementById('userEmail');
-            const normalizedRole = (roleName || '').toLowerCase();
+            const planText = document.getElementById('userPlanText');
+            const planContainer = document.getElementById('planBoxContainer');
+            const role = (roleName || '').toLowerCase();
 
             const iconFree = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>\`;
             const iconPremium = \`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>\`;
@@ -3522,29 +3621,30 @@ app.get('/docs', (req, res) => {
                     <path d="M25 71 C37 76, 63 76, 75 71" stroke="url(#\${gradId})" stroke-width="1.5" fill="none" stroke-linecap="round" />
                 </svg>\`;
 
-            if (normalizedRole.includes('vip')) {
-                roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-purple-400 drop-shadow-[0_0_6px_rgba(168,85,247,0.5)]";
-                roleContainer.innerHTML = \`\${iconVip} <span class="tracking-wide">VIP User</span>\`;
-                usernameTag.className = "text-purple-400 font-mono text-sm mb-4 opacity-90";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
-                avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
-            } else if (normalizedRole.includes('premium')) {
-                roleContainer.className = "flex items-center gap-1.5 font-bold mb-3 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]";
-                roleContainer.innerHTML = \`\${iconPremium} <span class="tracking-wide">Premium User</span>\`;
-                usernameTag.className = "text-amber-400 font-mono text-sm mb-4 opacity-90";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
-                avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
-                avatarBadge.innerHTML = buildCrownSVG('goldCrown');
+            if (role.includes('vip')) {
+                if (planText) planText.innerText = 'VIP';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-purple-400 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-vip";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]";
+                    avatarBadge.innerHTML = buildCrownSVG('purpleCrown');
+                }
+            } else if (role.includes('premium')) {
+                if (planText) planText.innerText = 'PREM';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-amber-400 bg-gradient-to-br from-amber-700 to-yellow-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)]";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[6px] transition-all duration-500 z-10 flex items-center justify-center border-3d-premium";
+                if (avatarBadge) {
+                    avatarBadge.className = "absolute -top-7 z-20 scale-125 drop-shadow-[0_4px_10px_rgba(251,191,36,0.4)]";
+                    avatarBadge.innerHTML = buildCrownSVG('goldCrown');
+                }
             } else {
-                roleContainer.className = "flex items-center gap-1.5 font-semibold mb-3 text-emerald-400";
-                roleContainer.innerHTML = \`\${iconFree} <span class="tracking-wide">Free User</span>\`;
-                usernameTag.className = "text-emerald-400 font-mono text-sm mb-4";
-                avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
-                avatarBadge.innerHTML = ""; 
+                if (planText) planText.innerText = 'FREE';
+                if (planContainer) planContainer.className = "w-14 h-14 rounded-2xl border-2 border-emerald-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center";
+                if (avatar3DBorder) avatar3DBorder.className = "w-28 h-28 rounded-full p-[4px] transition-all duration-500 z-10 flex items-center justify-center border-3d-free";
+                if (avatarBadge) avatarBadge.innerHTML = "";
             }
         }
-        
+
         async function uploadAvatarFile(input) {
             if (!input.files || !input.files[0]) return;
 
@@ -3559,7 +3659,6 @@ app.get('/docs', (req, res) => {
             if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
 
-            // Helper untuk menampilkan SweetAlert2 bergaya Cyan Neon Cyberpunk
             const showCyberAlert = (icon, title, text) => {
                 Swal.fire({
                     icon: icon,
@@ -3589,7 +3688,6 @@ app.get('/docs', (req, res) => {
                 if (result.status) {
                     const newAvatarUrl = result.avatar;
 
-                    // Force update DOM langsung menggunakan URL Data Base64 baru
                     document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
                         img.src = newAvatarUrl;
                     });
@@ -3612,37 +3710,63 @@ app.get('/docs', (req, res) => {
             }
         }
 
-        // Perbaikan pada fungsi fetchUserProfile agar selalu menyinkronkan avatar modal & sidebar
         function fetchUserProfile() {
-    fetch('/api/user-status')
-        .then(res => res.json())
-        .then(data => {
-            if (data.loggedIn && data.user) {
-                const latestAvatar = data.user.avatar || 'https://via.placeholder.com/150';
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
 
-                // Sync Avatar di Modal
-                const modalAvatar = document.getElementById('userAvatar');
-                if (modalAvatar) modalAvatar.src = latestAvatar;
+                        document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                            if (img) img.src = latestAvatar;
+                        });
 
-                // Sync Avatar di Sidebar Menu (AUTHORIZED USER)
-                const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-                if (sidebarAvatar) sidebarAvatar.src = latestAvatar;
+                        document.getElementById('userName').innerText = data.user.username || 'User';
+                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                        
+                        const userKey = data.user.apiKey || data.user.apikey || '';
+                        document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
+                        
+                        setRoleTheme(data.user.role || 'Free User');
 
-                document.getElementById('userName').innerText = data.user.username || 'User';
-                document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                
-                // Perbaikan pembacaan apiKey / apikey
-                const userKey = data.user.apiKey || data.user.apikey || 'No Key Found';
-                document.getElementById('userApiKey').innerText = userKey;
-                
-                setRoleTheme(data.user.role || 'free');
-            }
-        })
-        .catch((err) => {
-            console.error("Gagal sinkronisasi profile:", err);
-            setRoleTheme("free"); 
-        });
-}
+                        fetchUserActivityLogs(userKey);
+                        if (typeof fetchAndUpdateUserLimit === 'function') {
+                            fetchAndUpdateUserLimit();
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.error("Gagal sinkronisasi profile:", err);
+                });
+        }
+
+        function fetchUserActivityLogs(apiKey) {
+            const container = document.getElementById('activityLogsContainer');
+            if (!container) return;
+
+            fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
+                .then(res => res.json())
+                .then(resData => {
+                    if (resData.status && resData.data && resData.data.length > 0) {
+                        container.innerHTML = resData.data.map(logText => 
+                            '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
+                                logText +
+                            '</div>'
+                        ).join('');
+                    } else {
+                        container.innerHTML = 
+                            '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                                'Belum ada aktivitas request' +
+                            '</div>';
+                    }
+                })
+                .catch(err => {
+                    container.innerHTML = 
+                        '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                            'Gagal memuat aktivitas' +
+                        '</div>';
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
@@ -3676,7 +3800,7 @@ app.get('/docs', (req, res) => {
         const pageName = getPageDisplayName();
         const loaderTitleEl = document.getElementById('loader-title-text');
         if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = \`Memuat \${pageName}<span class="animated-dots"></span>\`;
+            loaderTitleEl.innerHTML = 'Memuat ' + pageName + '<span class="animated-dots"></span>';
         }
 
         let currentProgress = 0;
