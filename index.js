@@ -3080,111 +3080,102 @@ app.get('/docs', (req, res) => {
       </div>
     </div>
     
-<!-- User Profile Pop-up Modal (Tampilan Diperbesar & Avatar 3D Aktif) -->
-<!-- User Profile Pop-up Modal (Diperbesar & Responsif) -->
-<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+<!-- User Profile Pop-up Modal (Cyberpunk Theme) -->
+<div id="profilePopup" class="fixed inset-0 z-[99999] hidden font-['JetBrains_Mono',_monospace]">
+  <div class="fixed inset-0 bg-black/85 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-    <div class="w-full max-w-lg bg-[#0a0f1d] border-2 border-cyan-400/80 rounded-3xl p-5 sm:p-7 shadow-[0_0_45px_rgba(34,211,238,0.35)] relative font-['Space_Grotesk'] text-white my-auto">
+    <div class="w-full max-w-md bg-[#05111a] border-2 border-[#00f0ff] rounded-3xl p-5 sm:p-6 shadow-[0_0_30px_rgba(0,240,255,0.3)] relative text-white my-auto flex flex-col gap-4">
         
-        <!-- Header Profile -->
-        <div class="flex items-center justify-between mb-6 gap-4">
-            <!-- Avatar 3D & Badge Crown -->
-            <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 flex items-center justify-center">
+        <!-- Header Profile: Avatar + Username/Email + Badge Plan -->
+        <div class="flex items-center justify-between gap-3">
+            <!-- Avatar Circle with Camera Icon -->
+            <div class="relative w-20 h-20 sm:w-22 sm:h-22 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div id="avatarBadge" class="absolute -top-7 z-20 scale-100"></div>
-                <div class="relative group cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div id="avatar3DBorder" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[4px] z-10 flex items-center justify-center border-3d-free">
-                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover shadow-2xl">
-                    </div>
-                    <div class="absolute bottom-0 right-0 z-30 bg-cyan-400 text-slate-950 p-2 rounded-full border-2 border-slate-950 shadow-md">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
-                    </div>
+                <div class="w-full h-full rounded-full p-[2px] border-2 border-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.5)] overflow-hidden cursor-pointer" onclick="document.getElementById('avatarInput').click()">
+                    <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                 </div>
-            </div>
-
-            <!-- Username & Email -->
-            <div class="flex-1 flex flex-col gap-2 min-w-0 px-1">
-                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
-                    <span id="userName" class="text-xs sm:text-sm font-bold text-cyan-200 tracking-wider">LOADING USER...</span>
-                </div>
-                <div class="bg-[#0f1d2e] border border-cyan-400/60 rounded-full py-2 px-4 text-center truncate shadow-inner">
-                    <span id="userEmail" class="text-[11px] sm:text-xs font-mono text-cyan-300">user@mail.com</span>
-                </div>
-            </div>
-
-            <!-- User Plan Box -->
-            <div class="w-16 sm:w-20 flex flex-col items-center justify-between">
-                <span class="text-[9px] font-bold text-cyan-300 uppercase tracking-widest bg-[#0a1829] px-2 py-0.5 rounded border border-cyan-400/40 mb-1">USER PLAN</span>
-                <div id="planBoxContainer" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-lg">
-                    <span id="userPlanText" class="text-sm font-black text-white uppercase tracking-wider">FREE</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Row Middle: Api Key & Limit User -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <!-- Box API Key -->
-            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 flex flex-col justify-between shadow-md">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-bold text-white bg-black/60 px-2.5 py-0.5 rounded-md border border-white/20">Api Key Kamu :</span>
-                    <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
-                </div>
-                <div class="bg-white text-slate-950 font-mono text-xs font-bold py-2 px-2.5 rounded-xl truncate mb-2.5 text-center shadow-inner">
-                    <span id="userApiKey">loading-key</span>
-                </div>
-                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black text-[10px] py-2 rounded-xl uppercase tracking-wider shadow-md active:scale-95 transition-all">
-                    Salin Api Key
+                <button onclick="document.getElementById('avatarInput').click()" class="absolute bottom-0 right-0 bg-[#00f0ff] text-black p-1.5 rounded-full border border-black shadow-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
                 </button>
             </div>
 
-            <!-- Box Limit User (Disesuaikan Otomatis jika Unlimited/0/Premium) -->
-            <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 flex flex-col items-center justify-between shadow-md">
-                <div class="w-full bg-white text-slate-950 text-center text-[10px] font-black py-1 rounded-md uppercase tracking-wider mb-2">
-                    LIMIT USER
+            <!-- Username & Email pill inputs -->
+            <div class="flex-1 flex flex-col gap-2 min-w-0">
+                <div class="bg-[#030a10] border border-[#00f0ff]/80 rounded-full py-1.5 px-3 text-center truncate shadow-[inset_0_0_8px_rgba(0,240,255,0.2)]">
+                    <span id="userName" class="text-xs font-bold text-[#00f0ff] tracking-wider">arulzzzxd</span>
                 </div>
-                <div class="my-auto py-1.5 w-full flex justify-center">
-                    <span class="text-lg sm:text-xl font-black text-slate-950 bg-white px-3 py-1.5 rounded-xl border border-black/20 font-mono tracking-tight shadow-inner max-w-full truncate text-center">
-                        <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
-                    </span>
+                <div class="bg-[#030a10] border border-[#00f0ff]/80 rounded-full py-1.5 px-3 text-center truncate shadow-[inset_0_0_8px_rgba(0,240,255,0.2)]">
+                    <span id="userEmail" class="text-[11px] font-mono text-[#00f0ff]">arulz@gmail.com</span>
+                </div>
+            </div>
+
+            <!-- USER PLAN Badge -->
+            <div class="flex-shrink-0 flex flex-col items-center justify-center">
+                <div class="text-[8px] font-bold text-[#00f0ff] uppercase tracking-widest mb-0.5">USER PLAN</div>
+                <div id="planBoxContainer" class="w-14 h-16 border-2 border-[#7b2cbf] bg-[#0c051a] rounded-xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(123,44,191,0.5)]">
+                    <svg class="w-4 h-4 text-[#00f0ff] mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <span id="userPlanText" class="text-xs font-black text-white uppercase tracking-wider">VIP</span>
                 </div>
             </div>
         </div>
 
-        <!-- Box Aktifitas Request API Terakhir -->
-        <div class="bg-[#030712] border-2 border-cyan-400/80 rounded-2xl p-3.5 mb-5 shadow-inner">
-            <div class="bg-white text-slate-950 text-center text-[11px] font-black py-1 rounded-xl uppercase tracking-wider mb-3">
-                Aktifitas Request Api Terakhir
+        <!-- Section 1: Api Key Kamu -->
+        <div class="bg-[#030a10] border border-[#00f0ff]/80 rounded-2xl p-3 flex flex-col gap-2 relative shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded border border-white/10">Api Key Kamu :</span>
+                <span class="text-amber-400 text-xs">★</span>
             </div>
-            
-            <div id="activityLogsContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin">
-                <div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">
-                    Belum ada aktivitas request
+            <div class="bg-[#010508] border border-[#00f0ff]/60 rounded-xl py-2 px-3 text-center truncate">
+                <span id="userApiKey" class="text-xs text-[#00f0ff] font-mono font-bold tracking-wide">arulz-vip-123</span>
+            </div>
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-gradient-to-r from-[#e3a835] via-[#f7d070] to-[#c98e20] text-black font-black text-[11px] py-2 rounded-xl uppercase tracking-wider shadow-md hover:brightness-110 active:scale-95 transition-all">
+                SALIN API KEY
+            </button>
+        </div>
+
+        <!-- Section 2: LIMIT USER -->
+        <div class="bg-[#030a10] border border-[#00f0ff]/80 rounded-2xl p-3 flex flex-col items-center gap-2 shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+            <div class="w-full bg-[#00f0ff] text-black text-center text-[10px] font-black py-1 rounded-lg uppercase tracking-widest">
+                LIMIT USER
+            </div>
+            <div class="bg-[#010508] border border-[#00f0ff]/60 rounded-xl py-2 px-6 text-center my-1 w-full max-w-[200px]">
+                <span class="text-sm font-black text-[#00f0ff] font-mono tracking-wide">
+                    <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">Unlimited</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Section 3: AKTIFITAS REQUEST API TERAKHIR -->
+        <div class="bg-[#030a10] border border-[#00f0ff]/80 rounded-2xl p-3 flex flex-col gap-2 shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+            <div class="w-full bg-[#00f0ff] text-black text-center text-[10px] font-black py-1 rounded-lg uppercase tracking-widest">
+                AKTIFITAS REQUEST API TERAKHIR
+            </div>
+            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                <div class="bg-[#010508] border border-[#00f0ff]/40 text-[#00f0ff] font-mono text-[10px] py-1.5 px-2 rounded-lg text-center truncate">
+                    [16.55] [OK] [GET] : /api/random/tobut
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="space-y-2.5">
-            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-lg transition-all">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                UPGRADE
+        <!-- Action Buttons: Upgrade, Tutup, Logout -->
+        <div class="flex flex-col gap-2">
+            <a href="/upgrade-apikey" class="w-full bg-gradient-to-r from-[#e3a835] via-[#f7d070] to-[#c98e20] text-black font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest shadow-md hover:brightness-110 transition-all">
+                ★ UPGRADE
             </a>
-
-            <div class="flex gap-2.5">
-                <button onclick="closeProfilePopup()" class="flex-1 bg-[#1a2332] hover:bg-[#253246] text-slate-200 font-bold text-xs py-3 rounded-xl uppercase tracking-wider border border-white/10 transition-all">
+            <div class="flex gap-2">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-[#030a10] border border-[#00f0ff]/80 hover:bg-[#00f0ff]/10 text-[#00f0ff] font-bold text-xs py-2.5 rounded-xl uppercase tracking-wider transition-all">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-500/40 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <a href="/auth/logout" class="flex-1 bg-[#1a0508] border border-red-500/80 hover:bg-red-500/20 text-red-400 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-wider transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     LOG OUT
                 </a>
             </div>
         </div>
+
     </div>
   </div>
 </div>
-
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
@@ -3741,32 +3732,32 @@ app.get('/docs', (req, res) => {
         }
 
         function fetchUserActivityLogs(apiKey) {
-            const container = document.getElementById('activityLogsContainer');
-            if (!container) return;
+    const container = document.getElementById('activityLogsContainer');
+    if (!container) return;
 
-            fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
-                .then(res => res.json())
-                .then(resData => {
-                    if (resData.status && resData.data && resData.data.length > 0) {
-                        container.innerHTML = resData.data.map(logText => 
-                            '<div class="bg-white text-slate-950 font-mono font-bold text-[10px] py-1.5 px-2.5 rounded-lg text-center shadow truncate">' +
-                                logText +
-                            '</div>'
-                        ).join('');
-                    } else {
-                        container.innerHTML = 
-                            '<div class="bg-white/90 text-slate-700 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
-                                'Belum ada aktivitas request' +
-                            '</div>';
-                    }
-                })
-                .catch(err => {
-                    container.innerHTML = 
-                        '<div class="bg-red-500/20 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
-                            'Gagal memuat aktivitas' +
-                        '</div>';
-                });
-        }
+    fetch('/api/user-activity?apikey=' + encodeURIComponent(apiKey))
+        .then(res => res.json())
+        .then(resData => {
+            if (resData.status && resData.data && resData.data.length > 0) {
+                container.innerHTML = resData.data.map(logText => 
+                    '<div class="bg-[#010508] border border-[#00f0ff]/40 text-[#00f0ff] font-mono font-bold text-[10px] py-1.5 px-2 rounded-lg text-center shadow truncate">' +
+                        logText +
+                    '</div>'
+                ).join('');
+            } else {
+                container.innerHTML = 
+                    '<div class="bg-[#010508] border border-[#00f0ff]/30 text-slate-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                        'Belum ada aktivitas request' +
+                    '</div>';
+            }
+        })
+        .catch(err => {
+            container.innerHTML = 
+                '<div class="bg-red-950/40 border border-red-500/30 text-red-400 font-mono text-[10px] py-2 px-3 rounded-lg text-center">' +
+                    'Gagal memuat aktivitas' +
+                '</div>';
+        });
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchUserProfile();
