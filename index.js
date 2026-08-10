@@ -2556,17 +2556,21 @@ const logApiActivity = async (req, res, next) => {
         // Ambil endpoint path
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
+        // Ambil identifier nama user/email jika ada
+        const userIdentifier = req.user ? (req.user.username || req.user.email) : 'Guest';
+
         // Pastikan hanya mencatat jika ada API Key dan status code berhasil/proses
         if (
-    userKey && 
-    fullEndpoint.startsWith('/api/') && 
-    fullEndpoint !== '/api/user-activity' && 
-    fullEndpoint !== '/api/user-limit' && 
-    fullEndpoint !== '/api/apilist'
-) {
+            userKey && 
+            fullEndpoint.startsWith('/api/') && 
+            fullEndpoint !== '/api/user-activity' && 
+            fullEndpoint !== '/api/user-limit' && 
+            fullEndpoint !== '/api/apilist'
+        ) {
             try {
                 const { error } = await supabase.from('api_logs').insert([{
                     apikey: userKey.trim(),
+                    username: userIdentifier, // <--- Menyimpan nama/username user per request
                     method: req.method,
                     endpoint: fullEndpoint,
                     status_code: res.statusCode
@@ -2575,7 +2579,7 @@ const logApiActivity = async (req, res, next) => {
                 if (error) {
                     console.error("❌ Supabase Insert Log Error:", error.message);
                 } else {
-                    console.log(`✅ [LOG SAVED] Key: ${userKey} | Method: ${req.method} | Path: ${fullEndpoint}`);
+                    console.log(`✅ [LOG SAVED] User: ${userIdentifier} | Key: ${userKey} | Method: ${req.method} | Path: ${fullEndpoint}`);
                 }
             } catch (err) {
                 console.error("Gagal simpan log ke Supabase:", err.message);
@@ -2584,6 +2588,7 @@ const logApiActivity = async (req, res, next) => {
     });
     next();
 };
+
 
 app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
@@ -2610,12 +2615,12 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
 
         // Cari log berdasarkan API key di Supabase
         const { data, error } = await supabase
-    .from('api_logs')
-    .select('method, endpoint, status_code, created_at')
-    .eq('apikey', cleanKey)
-    .neq('endpoint', '/api/apilist') // <-- Mengecualikan /api/apilist dari query Supabase
-    .order('created_at', { ascending: false })
-    .limit(10);
+            .from('api_logs')
+            .select('username, method, endpoint, status_code, created_at')
+            .eq('apikey', cleanKey)
+            .neq('endpoint', '/api/apilist')
+            .order('created_at', { ascending: false })
+            .limit(10);
 
         if (error) throw error;
 
@@ -2623,7 +2628,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
             return res.json({ status: true, data: [] });
         }
 
-        // Format data sesuai UI
+        // Format data log agar menyertakan nama/username user di setiap request
         const formattedLogs = data.map(log => {
             const date = new Date(log.created_at);
             // Format Jam (WIB)
@@ -2634,7 +2639,10 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
                 timeZone: 'Asia/Jakarta'
             });
             const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
-            return `[${timeStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
+            const usernameStr = log.username || (req.user ? req.user.username : 'User');
+
+            // Format UI: [Jam] [User] [Status] [Method] : Endpoint
+            return `[${timeStr}] [${usernameStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
         });
 
         return res.json({ status: true, data: formattedLogs });
@@ -2643,6 +2651,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, data: [] });
     }
 });
+
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
@@ -3349,7 +3358,7 @@ app.get('/docs', (req, res) => {
             
             <div id="activityLogsContainer" class="space-y-2 max-h-44 overflow-y-auto pr-1">
                 <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    [16.55] [OK] [GET] : /api/random/tobrut
+                    belum ada request
                 </div>
             </div>
         </div>
