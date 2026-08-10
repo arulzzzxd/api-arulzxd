@@ -3254,26 +3254,49 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <!-- User Plan Futuristic Winged Shield Emblem -->
-            <div class="flex-shrink-0 flex items-center justify-center pl-1">
-                <div id="planBoxContainer" class="relative w-20 h-20 flex items-center justify-center">
-                    <svg class="w-full h-full filter drop-shadow-[0_0_10px_rgba(168,85,247,0.7)]" viewBox="0 0 120 120" fill="none">
-                        <!-- Outer Cyber Wings -->
-                        <path d="M60 10 L85 20 L105 50 L90 85 L60 110 L30 85 L15 50 L35 20 Z" fill="#010811" stroke="#00f3ff" stroke-width="3"/>
-                        <path d="M105 50 L115 35 M15 50 L5 35" stroke="#00f3ff" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Inner Shield -->
-                        <path d="M60 20 L82 30 L88 52 L75 80 L60 98 L45 80 L32 52 L38 30 Z" fill="#030b1c" stroke="#a855f7" stroke-width="2.5"/>
-                        <!-- Chevron Arrow V -->
-                        <path d="M48 48 L60 60 L72 48" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <!-- Emblem Text Overlay -->
-                    <div class="absolute inset-0 flex flex-col items-center justify-between py-2 text-center pointer-events-none">
-                        <span class="text-[7px] font-black text-cyan-300 tracking-widest leading-tight">USER<br>PLAN</span>
-                        <span id="userPlanText" class="text-xs font-black text-white tracking-widest mb-1">VIP</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- User Plan Emblem Badge (100% Pixel Perfect to Target Image) -->
+<div id="planBoxContainer" class="relative w-20 h-28 flex flex-col items-center justify-center flex-shrink-0">
+    <svg class="w-full h-full filter drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Gradien Cyan ke Ungu untuk Wings & Shield Border -->
+            <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f3ff" />
+                <stop offset="50%" stop-color="#38bdf8" />
+                <stop offset="100%" stop-color="#c084fc" />
+            </linearGradient>
+
+            <!-- Gradien Hijau Neon untuk Ikon Chevron -->
+            <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4ade80" />
+                <stop offset="100%" stop-color="#16a34a" />
+            </linearGradient>
+        </defs>
+
+        <!-- TULISAN: USER PLAN -->
+        <text x="50" y="14" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">USER</text>
+        <text x="50" y="24" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">PLAN</text>
+
+        <!-- SAYAP KIRI (LEFT CYBER WING) -->
+        <path d="M 20 31 L 8 47 L 18 80 L 25 68 L 20 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+        <path d="M 20 31 L 8 47 L 18 80" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round"/>
+
+        <!-- SAYAP KANAN (RIGHT CYBER WING) -->
+        <path d="M 80 31 L 92 47 L 82 80 L 75 68 L 80 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+        <path d="M 80 31 L 92 47 L 82 80" stroke="#c084fc" stroke-width="1.5" stroke-linejoin="round"/>
+
+        <!-- PERISAI LUAR (OUTER SHIELD BORDER) -->
+        <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+
+        <!-- PERISAI DALAM (INNER SHIELD BORDER) -->
+        <path d="M 50 46 L 71 53 L 73 79 L 50 104 L 27 79 L 29 53 Z" fill="#020d1a" stroke="url(#cyberGrad)" stroke-width="1.5" stroke-linejoin="round"/>
+
+        <!-- IKON CHEVRON HIJAU NEON (TOP CENTER EMBLEM) -->
+        <path d="M 42 41 L 50 48 L 58 41 L 58 46 L 50 53 L 42 46 Z" fill="url(#greenGrad)" stroke="#22c55e" stroke-width="0.8"/>
+
+        <!-- TEKS: VIP / DYNAMIC ROLE -->
+        <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="20" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="1">VIP</text>
+    </svg>
+</div>
 
         <!-- Section 1: Api Key Kamu -->
         <div class="double-border-cyan rounded-2xl p-3 mb-4 relative">
@@ -3761,16 +3784,19 @@ app.get('/docs', (req, res) => {
 
         function setRoleTheme(roleName) {
     const planText = document.getElementById('userPlanText');
+    if (!planText) return;
+
     const role = (roleName || '').toLowerCase();
 
-    if (planText) {
-        if (role.includes('vip')) {
-            planText.innerText = 'VIP';
-        } else if (role.includes('premium')) {
-            planText.innerText = 'PREM';
-        } else {
-            planText.innerText = 'FREE';
-        }
+    if (role.includes('vip')) {
+        planText.textContent = 'VIP';
+        planText.setAttribute('fill', '#00f3ff');
+    } else if (role.includes('premium')) {
+        planText.textContent = 'PREM';
+        planText.setAttribute('fill', '#fbbf24'); // Warna Emas untuk Premium
+    } else {
+        planText.textContent = 'FREE';
+        planText.setAttribute('fill', '#34d399'); // Warna Emerald untuk Free
     }
 }
 
