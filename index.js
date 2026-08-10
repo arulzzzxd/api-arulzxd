@@ -2553,9 +2553,6 @@ const logApiActivity = async (req, res, next) => {
 
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-        // Ambil nama user dari session/JWT
-        const userIdentifier = req.user ? (req.user.username || req.user.email) : 'Guest';
-
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
@@ -2564,9 +2561,15 @@ const logApiActivity = async (req, res, next) => {
             fullEndpoint !== '/api/apilist'
         ) {
             try {
+                // Tentukan username pemanggil berdasarkan req.user atau req.activeUser dari validateApiKey
+                let userIdentifier = 'Guest';
+                if (req.user && req.user.username) {
+                    userIdentifier = req.user.username;
+                }
+
                 const { error } = await supabase.from('api_logs').insert([{
                     apikey: userKey.trim(),
-                    username: userIdentifier, // <--- Kirim username ke Supabase
+                    username: userIdentifier,
                     method: req.method,
                     endpoint: fullEndpoint,
                     status_code: res.statusCode
@@ -2584,6 +2587,7 @@ const logApiActivity = async (req, res, next) => {
     });
     next();
 };
+
 
 app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'];
@@ -2606,7 +2610,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
     try {
         const cleanKey = userKey.trim();
 
-        // Ambil kolom username dari Supabase
+        // Ambil kolom log langsung dari Supabase berdasarkan API Key
         const { data, error } = await supabase
             .from('api_logs')
             .select('username, method, endpoint, status_code, created_at')
@@ -2630,9 +2634,11 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
                 timeZone: 'Asia/Jakarta'
             });
             const statusStr = log.status_code >= 200 && log.status_code < 300 ? 'OK' : 'ERR';
-            const userStr = log.username || (req.user ? req.user.username : 'User');
+            
+            // GUNAKAN USERNAME RIIL DARI SUPABASE (Bukan fallback ke session browser)
+            const userStr = log.username && log.username !== 'Guest' ? log.username : 'User';
 
-            // Format UI: [Jam] [Nama User] [Status] [Method] : Endpoint
+            // Format UI: [Jam] [Nama Pemanggil API] [Status] [Method] : Endpoint
             return `[${timeStr}] [${userStr}] [${statusStr}] [${log.method}] : ${log.endpoint}`;
         });
 
@@ -2642,6 +2648,7 @@ app.get('/api/user-activity', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, data: [] });
     }
 });
+
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
