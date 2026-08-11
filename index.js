@@ -2708,10 +2708,9 @@ app.get('/api/user-activity', async (req, res) => {
             return res.json({ status: true, data: [] });
         }
 
-        // Ambil 10 log terbaru
         const filteredLogs = userLogDoc.log
-            .filter(item => item.endpoint !== '/api/apilist')
-            .slice(0, 10);
+             .filter(item => item.endpoint !== '/api/apilist')
+             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const formattedLogs = filteredLogs.map(item => {
             const date = new Date(item.createdAt || Date.now());
