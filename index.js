@@ -2665,8 +2665,7 @@ const logApiActivity = async (req, res, next) => {
                         $push: { 
                             log: { 
                                 $each: [newLogItem], 
-                                $position: 0, // Ditaruh di urutan teratas
-                                $slice: 20    // Simpan maks 20 log
+                                $position: 0,
                             } 
                         }
                     },
