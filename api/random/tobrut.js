@@ -33,7 +33,17 @@ const videos = [
   "https://files.catbox.moe/i8sewv.mp4",
   "https://files.catbox.moe/3i9kq4.mp4",
   "https://files.catbox.moe/nq4v6b.mp4",
-  "https://files.catbox.moe/39yyc7.mp4"
+  "https://files.catbox.moe/39yyc7.mp4",
+  "https://arulz-xd.my.id/files/xutUSw.mp4",
+  "https://arulz-xd.my.id/files/6qvRhS.mp4",
+  "https://arulz-xd.my.id/files/lJYEOl.mp4",
+  "https://arulz-xd.my.id/files/k6VQBq.mp4",
+  "https://arulz-xd.my.id/files/zuhQpZ.mp4",
+  "https://arulz-xd.my.id/files/yGDLe7.mp4",
+  "https://arulz-xd.my.id/files/qtqgtE.mp4",
+  "https://arulz-xd.my.id/files/GlAidd.mp4",
+  "https://arulz-xd.my.id/files/vEUc4k.mp4",
+  "https://arulz-xd.my.id/files/Y8seG7.mp4"
 ];
 
 // ========================================
@@ -123,5 +133,4 @@ router.get('/', async (req, res) => {
 
 router.status = "ready";
 router.type = "free";
-
 module.exports = router;
