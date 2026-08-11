@@ -1,5 +1,5 @@
 const PREMIUM_USERS = [
-    "arulzz.xd",
+    "supportarulzxd",
     "Laras"
 ];
 
