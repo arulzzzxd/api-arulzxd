@@ -1,6 +1,7 @@
 /**
  * NAMA SCRAPE  :: RANDOM VIDEO STREAM
  * [•] BASIS        :: Local Video Database
+ * [•] RANDOM MODE  :: Shuffle Pool (No Repeat)
  */
 
 const axios = require('axios');
@@ -35,31 +36,92 @@ const videos = [
   "https://files.catbox.moe/39yyc7.mp4"
 ];
 
-// Fungsi untuk mengambil buffer video acak
-async function getRandomVideo() {
-  try {
-    const randomUrl = videos[Math.floor(Math.random() * videos.length)];
-    const response = await axios.get(randomUrl, { responseType: 'arraybuffer' });
-    return Buffer.from(response.data);
-  } catch (error) {
-    throw error;
+// ========================================
+// SHUFFLE POOL
+// ========================================
+
+let videoPool = [];
+
+/**
+ * Fisher-Yates Shuffle
+ */
+function shuffle(array) {
+  const arr = [...array];
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+
+  return arr;
 }
 
-// Endpoint utama Router
+/**
+ * Ambil video berikutnya.
+ *
+ * Semua video akan digunakan satu kali
+ * sebelum pool diacak ulang.
+ */
+function getNextVideoUrl() {
+  if (videoPool.length === 0) {
+    videoPool = shuffle(videos);
+  }
+
+  return videoPool.pop();
+}
+
+// ========================================
+// GET RANDOM VIDEO
+// ========================================
+
+async function getRandomVideo() {
+  const randomUrl = getNextVideoUrl();
+
+  const response = await axios.get(randomUrl, {
+    responseType: 'arraybuffer',
+    timeout: 60000,
+    headers: {
+      'User-Agent': 'Mozilla/5.0'
+    }
+  });
+
+  return {
+    buffer: Buffer.from(response.data),
+    url: randomUrl
+  };
+}
+
+// ========================================
+// ENDPOINT
+// ========================================
+
 router.get('/', async (req, res) => {
   try {
-    const videoBuffer = await getRandomVideo();
+    const { buffer, url } = await getRandomVideo();
+
     res.writeHead(200, {
       'Content-Type': 'video/mp4',
-      'Content-Length': videoBuffer.length,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+      'X-Random-Video': url
     });
-    res.end(videoBuffer);
+
+    res.end(buffer);
+
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error('Random Video Error:', error.message);
+
+    return res.status(500).json({
+      status: false,
+      message: 'Gagal mengambil video',
+      error: error.message
+    });
   }
 });
 
 router.status = "ready";
 router.type = "free";
+
 module.exports = router;
