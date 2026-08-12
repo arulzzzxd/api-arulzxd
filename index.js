@@ -68,6 +68,7 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
     role: { type: String, default: 'Free User' }, // 'Free User', 'Premium User', 'VIP User'
+    roleExpiresAt: { type: Date, default: null }, // MASA BERLAKU ROLE
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
     avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
@@ -78,7 +79,7 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', function() {
     if (this.isModified('role')) {
         const roleLower = (this.role || '').toLowerCase();
-        
+
         if (roleLower.includes('vip')) {
             if (!this.apikey) {
                 this.apikey = `${this.username.toLowerCase()}-custom-vip`;
@@ -132,12 +133,23 @@ const checkAuthSession = (req, res, next) => {
 
 app.use(checkAuthSession);
 
-cron.schedule('0 0 * * *', async () => {
+// CRON JOB: Cek & Reset Role ke 'Free User' jika masa aktif paket telah kadaluwarsa
+cron.schedule('0 * * * *', async () => {
     try {
-        await User.updateMany({}, { $set: { limit: 0, lastLimitReset: new Date() } });
-        console.log('🔄 [CRON] Semua limit user berhasil di-reset pada jam 12 malam!');
+        const expiredUsers = await User.find({
+            role: { $ne: 'Free User' },
+            roleExpiresAt: { $lte: new Date() }
+        });
+
+        for (const user of expiredUsers) {
+            user.role = 'Free User';
+            user.roleExpiresAt = null;
+            user.apikey = generateFreeApiKey(); // Reset API Key ke Format Free
+            await user.save();
+            console.log(`📉 [EXPIRED] Role pengguna ${user.username} dikembalikan ke Free User.`);
+        }
     } catch (err) {
-        console.error('❌ [CRON] Gagal melakukan reset limit harian:', err.message);
+        console.error('❌ [CRON] Gagal memproses ekspirasi role:', err.message);
     }
 }, {
     scheduled: true,
@@ -1042,14 +1054,76 @@ app.post('/webhook', async (req, res) => {
                 if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
                     console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
+                    // 1. LOGIKA UNTUK PEMBELIAN PRODUK STORE
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
 
-                        const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
-                        await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
+                        // Jika transaksi BUKAN upgrade role API Key, update stok toko biasa
+                        if (!localTrx.itemDetails.nama.includes("Upgrade Role")) {
+                            await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
+
+                            const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
+                            await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
+                        }
                     }
 
+                    // 2. LOGIKA OTOMATISASI UPGRADE ROLE & API KEY USER
+                    if (localTrx.itemDetails && localTrx.itemDetails.nama && localTrx.itemDetails.nama.includes("Upgrade Role")) {
+                        try {
+                            // Identifikasi user dari email/username/IP
+                            const buyerIdentifier = getUserIdentifier(req);
+                            const daysToAdd = Number(localTrx.itemDetails.qty) || 3;
+                            const isVip = localTrx.itemDetails.nama.toLowerCase().includes("vip");
+                            const targetRole = isVip ? "VIP User" : "Premium User";
+
+                            let targetUser = null;
+
+                            // Cari user berdasarkan email, username, atau ID
+                            if (buyerIdentifier) {
+                                targetUser = await User.findOne({
+                                    $or: [
+                                        { email: buyerIdentifier.toLowerCase() },
+                                        { username: buyerIdentifier.toLowerCase() }
+                                    ]
+                                });
+                            }
+
+                            // Fallback: Jika tidak ditemukan via req, cari via session/IP jika ada
+                            if (!targetUser && req.user) {
+                                targetUser = await User.findById(req.user.id || req.user._id);
+                            }
+
+                            if (targetUser) {
+                                // Hitung tanggal ekspirasi baru (akumulasi jika masa aktif masih berjalan)
+                                let currentExpiry = (targetUser.roleExpiresAt && new Date(targetUser.roleExpiresAt) > new Date())
+                                    ? new Date(targetUser.roleExpiresAt)
+                                    : new Date();
+
+                                currentExpiry.setDate(currentExpiry.getDate() + daysToAdd);
+
+                                targetUser.role = targetRole;
+                                targetUser.roleExpiresAt = currentExpiry;
+
+                                // Generate Apikey otomatis jika belum berkesesuaian
+                                if (targetRole === "Premium User") {
+                                    targetUser.apikey = generatePremiumApiKey(targetUser.username);
+                                } else if (targetRole === "VIP User") {
+                                    if (!targetUser.apikey || targetUser.apikey.startsWith('arulzxdfree-')) {
+                                        targetUser.apikey = `${targetUser.username.toLowerCase()}-custom-vip`;
+                                    }
+                                }
+
+                                await targetUser.save();
+                                console.log(`🎉 [UPGRADE SUCCESS] User ${targetUser.username} berhasil di-upgrade ke ${targetRole} hingga ${currentExpiry.toISOString()}`);
+                            } else {
+                                console.warn(`⚠️ [UPGRADE WARNING] Tidak dapat menemukan akun user untuk transaksi ${orderId}`);
+                            }
+                        } catch (upgradeErr) {
+                            console.error("❌ Gagal memproses upgrade role user di webhook:", upgradeErr.message);
+                        }
+                    }
+
+                    // Auto-fill link produk jika belum terisi
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
@@ -1058,7 +1132,8 @@ app.post('/webhook', async (req, res) => {
                     }
                 } 
                 else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
+                    // Rollback stok jika transaksi toko biasa dibatalkan setelah lunas
+                    if (localTrx.itemDetails && localTrx.itemDetails.nama && !localTrx.itemDetails.nama.includes("Upgrade Role")) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
                         await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
                     }
@@ -1814,7 +1889,7 @@ async function getOrResetUserLimit(user) {
     if (todayStr !== lastResetStr) {
         user.limit = 0;
         user.lastLimitReset = now;
-        
+
         await User.findByIdAndUpdate(user._id, { 
             $set: { 
                 limit: 0, 
