@@ -521,10 +521,12 @@ const productSchema = new mongoose.Schema({
     badge: { type: String, default: "" },
     terjual: { type: Number, default: 0 },
     stok: { type: Number, default: 0 },
-    gambar: { type: String, default: "https://arulz-xd.my.id/files/X1F0Cn.png" },
+    gambar: { 
+        type: [String], 
+        default: ["https://arulz-xd.my.id/files/X1F0Cn.png"] 
+    },    
     deskripsi: { type: String, default: "" },
     link: { type: String, required: true },
-    purchasedBy: [{ type: String }], 
     createdAt: { type: Date, default: Date.now }
 });
 
