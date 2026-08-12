@@ -843,7 +843,7 @@
         <p>© 2026 Arulz-XD Store. All rights reserved.</p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
+        <!-- JAVASCRIPT LOGIC -->
     <script>
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
@@ -866,6 +866,9 @@
         let REMOVED_MEDIA_URLS = []; 
         let KEEP_EXISTING_MEDIA = true;
 
+        // Cache ulasan internal untuk loading cepat tanpa delay
+        const REVIEWS_CACHE = {};
+
         // CAROUSEL & LIGHTBOX ZOOM STATE
         let cardCarouselIndices = {};
         let currentModalImages = [];
@@ -881,9 +884,11 @@
         async function fetchCurrentUserStatus() {
             try {
                 const res = await fetch('/api/user-status');
-                const data = await res.json();
-                if (data.loggedIn && data.user) {
-                    CURRENT_LOGGED_USER = data.user;
+                if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+                    const data = await res.json();
+                    if (data.loggedIn && data.user) {
+                        CURRENT_LOGGED_USER = data.user;
+                    }
                 }
             } catch (e) {
                 console.error("Gagal mendapatkan user status:", e);
@@ -1092,7 +1097,7 @@
             document.getElementById('productDetailModal').classList.add('hidden');
         }
 
-        // ==================== LIGHTBOX ZOOM GAMBAR PRODUK (FULLSCREEN + SLIDE SWIPE) ====================
+        // ==================== LIGHTBOX ZOOM GAMBAR PRODUK ====================
         function openProductZoomLightbox(prodIndex, initialImgIndex = 0) {
             const produk = DATA_PRODUK[prodIndex];
             if (!produk) return;
@@ -1143,7 +1148,6 @@
             document.getElementById('productZoomLightbox').classList.add('hidden');
         }
 
-        // EVENT SWIPE LAYAR UNTUK LIGHTBOX ZOOM PRODUK
         let zoomTouchStartX = 0;
         const zoomSwipeArea = document.getElementById('zoomSwipeArea');
         if (zoomSwipeArea) {
@@ -1159,7 +1163,7 @@
             }, { passive: true });
         }
 
-        // ==================== LIGHTBOX SLIDER RATING MEDIA 2-WAY SLIDE ====================
+        // ==================== LIGHTBOX SLIDER RATING MEDIA ====================
         function openMediaLightboxSlider(reviewIndex, mediaIndex) {
             activeUserReviewIndex = reviewIndex;
             activeMediaItemIndex = mediaIndex;
@@ -1288,6 +1292,7 @@
             }
         }
 
+        // FIX HAPUS RATING: PENANGANAN ERROR UNEXPECTED TOKEN '<' BILA BACKEND RESPONSE BUKAN JSON
         async function deleteMyReview(reviewId) {
             const confirm = await Swal.fire({
                 title: 'HAPUS ULASAN?',
@@ -1302,16 +1307,29 @@
             if (confirm.isConfirmed) {
                 try {
                     const res = await fetch(`/api/reviews/${reviewId}`, { method: 'DELETE' });
-                    const result = await res.json();
+                    
+                    const contentType = res.headers.get('content-type') || '';
+                    let result = {};
 
-                    if (result.status) {
-                        Swal.fire({ icon: 'success', title: 'TERHAPUS', text: 'Ulasan berhasil dihapus.', timer: 1500, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
+                    if (contentType.includes('application/json')) {
+                        result = await res.json();
+                    } else {
+                        const rawText = await res.text();
+                        if (!res.ok) {
+                            throw new Error(`Endpoint menghapus ulasan tidak ditemukan atau server mengalami kendala (${res.status}).`);
+                        }
+                        result = { status: true, message: 'Ulasan berhasil dihapus.' };
+                    }
+
+                    if (res.ok && (result.status || result.success)) {
+                        Swal.fire({ icon: 'success', title: 'TERHAPUS', text: result.message || 'Ulasan berhasil dihapus.', timer: 1500, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
                         const productId = document.getElementById('reviewProductId').value;
+                        delete REVIEWS_CACHE[productId];
                         resetReviewForm();
-                        await loadProductReviews(productId);
+                        await loadProductReviews(productId, true);
                         await renderProduk();
                     } else {
-                        throw new Error(result.message);
+                        throw new Error(result.message || 'Gagal menghapus ulasan.');
                     }
                 } catch (err) {
                     Swal.fire({ icon: 'error', title: 'GAGAL', text: err.message || 'Gagal menghapus ulasan.', customClass: { popup: 'cyber-swal' } });
@@ -1319,91 +1337,106 @@
             }
         }
 
-        async function loadProductReviews(productId) {
+        // LOADING ULASAN TANPA DELAY DENGAN OPTIMASI CACHING
+        async function loadProductReviews(productId, forceRefresh = false) {
             const container = document.getElementById('reviewsListContainer');
+
+            if (!forceRefresh && REVIEWS_CACHE[productId]) {
+                renderReviewsToDOM(REVIEWS_CACHE[productId]);
+                return;
+            }
+
             container.innerHTML = `<p class="text-xs text-slate-500 animate-pulse">Memuat ulasan...</p>`;
 
             try {
                 const res = await fetch(`/api/reviews/${productId}`);
+                if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) {
+                    throw new Error('Gagal mengambil data ulasan dari server');
+                }
                 const data = await res.json();
+                REVIEWS_CACHE[productId] = data;
+                renderReviewsToDOM(data);
+            } catch (err) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
+            }
+        }
 
-                document.getElementById('detailRatingSummary').innerHTML = `
-                    ${renderStarRating(data.averageRating)}
-                    <span class="text-[11px] text-slate-400">(${data.totalReviews} Penilaian)</span>
-                `;
+        function renderReviewsToDOM(data) {
+            const container = document.getElementById('reviewsListContainer');
+            
+            document.getElementById('detailRatingSummary').innerHTML = `
+                ${renderStarRating(data.averageRating || 0)}
+                <span class="text-[11px] text-slate-400">(${data.totalReviews || 0} Penilaian)</span>
+            `;
 
-                if (!data.reviews || data.reviews.length === 0) {
-                    currentReviewsListWithMedia = [];
-                    container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
-                    return;
+            if (!data.reviews || data.reviews.length === 0) {
+                currentReviewsListWithMedia = [];
+                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
+                return;
+            }
+
+            currentReviewsListWithMedia = data.reviews.filter(r => r.media && r.media.length > 0);
+
+            container.innerHTML = data.reviews.map(rev => {
+                let mediaHtml = '';
+                if (rev.media && rev.media.length > 0) {
+                    const revMediaIdx = currentReviewsListWithMedia.findIndex(r => r._id === rev._id);
+                    
+                    mediaHtml = `<div class="flex gap-2 mt-2 overflow-x-auto scrollbar-hide py-1">` + rev.media.map((m, mIdx) => {
+                        if (m.type === 'video') {
+                            return `
+                                <div class="relative w-20 h-20 rounded-lg overflow-hidden bg-black border border-cyberBorder cursor-pointer flex-shrink-0 group" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})">
+                                    <video src="${m.url}" class="w-full h-full object-cover pointer-events-none"></video>
+                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/10 transition">
+                                        <i class="fa-solid fa-play text-white text-xs"></i>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return `
+                            <img src="${m.url}" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder cursor-pointer hover:opacity-80 transition flex-shrink-0">
+                        `;
+                    }).join('') + `</div>`;
                 }
 
-                currentReviewsListWithMedia = data.reviews.filter(r => r.media && r.media.length > 0);
+                const currentUsername = CURRENT_LOGGED_USER ? CURRENT_LOGGED_USER.username : null;
+                const currentUserId = CURRENT_LOGGED_USER ? CURRENT_LOGGED_USER.id : null;
+                const isMyReview = (currentUsername && rev.username.toLowerCase() === currentUsername.toLowerCase()) ||
+                                   (currentUserId && rev.userId === currentUserId);
 
-                container.innerHTML = data.reviews.map(rev => {
-                    let mediaHtml = '';
-                    if (rev.media && rev.media.length > 0) {
-                        const revMediaIdx = currentReviewsListWithMedia.findIndex(r => r._id === rev._id);
-                        
-                        mediaHtml = `<div class="flex gap-2 mt-2 overflow-x-auto scrollbar-hide py-1">` + rev.media.map((m, mIdx) => {
-                            if (m.type === 'video') {
-                                return `
-                                    <div class="relative w-20 h-20 rounded-lg overflow-hidden bg-black border border-cyberBorder cursor-pointer flex-shrink-0 group" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})">
-                                        <video src="${m.url}" class="w-full h-full object-cover pointer-events-none"></video>
-                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/10 transition">
-                                            <i class="fa-solid fa-play text-white text-xs"></i>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                            return `
-                                <img src="${m.url}" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder cursor-pointer hover:opacity-80 transition flex-shrink-0">
-                            `;
-                        }).join('') + `</div>`;
-                    }
+                const encodedMedia = encodeURIComponent(JSON.stringify(rev.media || []));
 
-                    const currentUsername = CURRENT_LOGGED_USER ? CURRENT_LOGGED_USER.username : null;
-                    const currentUserId = CURRENT_LOGGED_USER ? CURRENT_LOGGED_USER.id : null;
-                    const isMyReview = (currentUsername && rev.username.toLowerCase() === currentUsername.toLowerCase()) ||
-                                       (currentUserId && rev.userId === currentUserId);
+                const actionBtnsHtml = isMyReview ? `
+                    <div class="flex items-center gap-1.5 ml-2">
+                        <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}', '${encodedMedia}')" 
+                                class="text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit Rating
+                        </button>
+                        <button onclick="deleteMyReview('${rev._id}')" 
+                                class="text-[10px] font-bold text-red-400 hover:underline flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/30 transition" title="Hapus Ulasan">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                ` : '';
 
-                    const encodedMedia = encodeURIComponent(JSON.stringify(rev.media || []));
-
-                    const actionBtnsHtml = isMyReview ? `
-                        <div class="flex items-center gap-1.5 ml-2">
-                            <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}', '${encodedMedia}')" 
-                                    class="text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
-                                <i class="fa-solid fa-pen-to-square"></i> Edit Rating
-                            </button>
-                            <button onclick="deleteMyReview('${rev._id}')" 
-                                    class="text-[10px] font-bold text-red-400 hover:underline flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/30 transition" title="Hapus Ulasan">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    ` : '';
-
-                    return `
-                        <div class="bg-cyberDark/80 p-3 rounded-xl border border-cyberBorder space-y-2">
-                            <div class="flex items-center gap-2.5">
-                                <img src="${rev.userAvatar}" class="w-7 h-7 rounded-full object-cover border border-cyberCyan">
-                                <div class="flex-1">
-                                    <div class="flex items-center">
-                                        <p class="text-xs font-bold text-slate-200">${rev.username}</p>
-                                        ${actionBtnsHtml}
-                                    </div>
-                                    <div class="flex items-center gap-1 mt-0.5">${renderStarRating(rev.rating)}</div>
+                return `
+                    <div class="bg-cyberDark/80 p-3 rounded-xl border border-cyberBorder space-y-2">
+                        <div class="flex items-center gap-2.5">
+                            <img src="${rev.userAvatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-full object-cover border border-cyberCyan">
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <p class="text-xs font-bold text-slate-200">${rev.username}</p>
+                                    ${actionBtnsHtml}
                                 </div>
-                                <span class="ml-auto text-[9px] text-slate-500">${new Date(rev.createdAt).toLocaleDateString('id-ID')}</span>
+                                <div class="flex items-center gap-1 mt-0.5">${renderStarRating(rev.rating)}</div>
                             </div>
-                            <p class="text-xs text-slate-300 leading-relaxed">${rev.comment}</p>
-                            ${mediaHtml}
+                            <span class="ml-auto text-[9px] text-slate-500">${rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('id-ID') : ''}</span>
                         </div>
-                    `;
-                }).join('');
-
-            } catch (err) {
-                container.innerHTML = `<p class="text-xs text-red-400">Gagal memuat ulasan.</p>`;
-            }
+                        <p class="text-xs text-slate-300 leading-relaxed">${rev.comment}</p>
+                        ${mediaHtml}
+                    </div>
+                `;
+            }).join('');
         }
 
         async function submitReview(event) {
@@ -1445,16 +1478,22 @@
                     body: formData
                 });
 
-                const result = await res.json();
+                let result = {};
+                if (res.headers.get('content-type')?.includes('application/json')) {
+                    result = await res.json();
+                } else {
+                    result = { status: res.ok, message: 'Penilaian Anda berhasil dikirim.' };
+                }
 
-                if (result.status) {
+                if (res.ok && (result.status || result.success)) {
                     Swal.fire({ icon: 'success', title: 'BERHASIL!', text: result.message || 'Penilaian Anda telah diperbarui.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
                     
+                    delete REVIEWS_CACHE[productId];
                     resetReviewForm();
-                    await loadProductReviews(productId);
+                    await loadProductReviews(productId, true);
                     await renderProduk();
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Gagal mengirim ulasan');
                 }
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'GAGAL', text: err.message || 'Gagal mengirim ulasan', customClass: { popup: 'cyber-swal' } });
@@ -1566,6 +1605,7 @@
                 }
 
                 const res = await fetch(`/transactions/${savedOrderId}`);
+                if (!res.ok) return;
                 const result = await res.json();
 
                 if ((result.status || result.data) && result.data) {
@@ -1642,6 +1682,7 @@
             renderProduk();
         }
 
+        // LOADING PRODUK TANPA DELAY (PARALLEL PROMISE FETCHING)
         async function renderProduk() {
             const grid = document.getElementById('productGrid');
             const emptyState = document.getElementById('emptyState');
@@ -1666,17 +1707,28 @@
 
             const productsWithRatings = await Promise.all(filtered.map(async (produk) => {
                 const pId = produk.Id || produk._id;
-                try {
-                    const res = await fetch(`/api/reviews/${pId}`);
-                    const data = await res.json();
+                
+                if (REVIEWS_CACHE[pId]) {
                     return {
                         ...produk,
-                        averageRating: data.averageRating || 0,
-                        totalReviews: data.totalReviews || 0
+                        averageRating: REVIEWS_CACHE[pId].averageRating || 0,
+                        totalReviews: REVIEWS_CACHE[pId].totalReviews || 0
                     };
-                } catch (e) {
-                    return { ...produk, averageRating: 0, totalReviews: 0 };
                 }
+
+                try {
+                    const res = await fetch(`/api/reviews/${pId}`);
+                    if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+                        const data = await res.json();
+                        REVIEWS_CACHE[pId] = data;
+                        return {
+                            ...produk,
+                            averageRating: data.averageRating || 0,
+                            totalReviews: data.totalReviews || 0
+                        };
+                    }
+                } catch (e) {}
+                return { ...produk, averageRating: 0, totalReviews: 0 };
             }));
 
             grid.innerHTML = productsWithRatings.map((produk) => {
@@ -1702,7 +1754,6 @@
                     </div>
                 `;
 
-                // RENDER CAROUSEL SLIDE GAMBAR PRODUK SHOPEE STYLE + KLIK UNTUK ZOOM
                 let imageList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'];
                 let imagesHtml = imageList.map((imgUrl, imgIdx) => 
                     `<img src="${imgUrl}" onclick="event.stopPropagation(); openProductZoomLightbox(${originalIndex}, ${imgIdx})" class="w-full h-full object-cover flex-shrink-0 cursor-pointer ${isOutOfStock ? 'grayscale brightness-50' : ''}">`
@@ -2217,6 +2268,7 @@
             pollingInterval = setInterval(async () => {
                 try {
                     const res = await fetch(`/transactions/${CURRENT_ORDER_ID}`);
+                    if (!res.ok) return;
                     const result = await res.json();
 
                     if ((result.status || result.data) && result.data) {
