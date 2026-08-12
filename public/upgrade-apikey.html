@@ -6,7 +6,11 @@
     <title>Upgrade Apikey - Arulzxd API</title>
     <link rel="icon" type="image/png" href="https://arulz-xd.my.id/files/UBkDZZ.png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode Generator & SweetAlert2 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Space Grotesk', sans-serif;
@@ -48,7 +52,6 @@
             pointer-events: none;
         }
 
-        /* Laser Scanner Beam */
         .scanner-beam {
             position: absolute;
             top: 0;
@@ -63,7 +66,6 @@
             100% { transform: translateY(100%); }
         }
 
-        /* Concentric Hologram HUD Rotating Rings */
         .hud-ring {
             position: relative;
             width: 130px;
@@ -116,7 +118,6 @@
         @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
         @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
 
-        /* Animated Dot Pulse */
         .animated-dots::after {
             content: '';
             display: inline-block;
@@ -136,6 +137,39 @@
             box-shadow: 0 0 12px var(--neon-cyan);
             transition: width 0.15s ease-out;
         }
+
+        .swal2-popup.cyber-swal {
+            background: #0a1628 !important;
+            border: 1px solid #162a45 !important;
+            border-radius: 16px !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.25) !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+        }
+        .swal2-title.cyber-swal-title {
+            color: #00f3ff !important;
+            font-family: 'Orbitron', sans-serif !important;
+            font-size: 1.1rem !important;
+        }
+        .swal2-html-container.cyber-swal-text {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+        }
+        .swal2-confirm.cyber-swal-confirm {
+            background: #00f3ff !important;
+            color: #050b14 !important;
+            font-weight: 800 !important;
+            font-family: 'Orbitron', sans-serif !important;
+            border-radius: 8px !important;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4) !important;
+        }
+
+        #qrcodeContainer canvas, #qrcodeContainer img {
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+        }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-cyan-500/30 selection:text-cyan-300 relative">
@@ -143,7 +177,6 @@
     <div id="cyber-loader-overlay">
         <div class="scanner-beam"></div>
 
-        <!-- Central Holographic HUD Ring Spinner -->
         <div class="hud-ring mb-6">
             <div class="ring-outer"></div>
             <div class="ring-middle"></div>
@@ -151,7 +184,6 @@
             <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
         </div>
 
-        <!-- Dynamic Page Name & Animated Dot Text -->
         <div class="text-center px-4">
             <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
                 Memuat Halaman<span class="animated-dots"></span>
@@ -161,7 +193,6 @@
             </div>
         </div>
 
-        <!-- Progress Bar (0% - 100%) -->
         <div class="w-64 sm:w-80 mt-6">
             <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
                 <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
@@ -192,6 +223,12 @@
         <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
             Tingkatkan batas request, dapatkan performa maksimal, dan nikmati fitur eksklusif untuk kebutuhan pengembangan aplikasi Anda.
         </p>
+
+        <!-- Informational Banner Logged User -->
+        <div id="userLoggedInfoBanner" class="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-900/80 border border-cyan-500/30 text-xs text-slate-300">
+            <i class="fa-solid fa-user-check text-cyan-400"></i>
+            <span>Akun Terhubung: <strong id="userBannerUsername" class="text-white">Loading...</strong> (<span id="userBannerEmail" class="text-cyan-400">Loading...</span>)</span>
+        </div>
     </header>
 
     <!-- Main Pricing Cards Section -->
@@ -263,7 +300,7 @@
                         </div>
                         <div class="flex items-start gap-2.5 text-xs text-slate-200">
                             <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            <span>Tanpa Apikey Custom</span>
+                            <span>Apikey Otomatis Format Premium</span>
                         </div>
                     </div>
                 </div>
@@ -279,10 +316,10 @@
                             <span class="text-xs text-slate-400 pr-2">Hari</span>
                         </div>
                     </div>
-                    <!-- Tombol Beli -->
-                    <a id="premium-btn" href="#" target="_blank" class="block w-full text-center bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-amber-500/10">
-                        Beli Paket Premium
-                    </a>
+                    <!-- Tombol Beli Otomatis PayWuz -->
+                    <button onclick="processPaywuzPayment('premium')" class="block w-full text-center bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-amber-500/10">
+                        <i class="fa-solid fa-bolt mr-1"></i> Beli Premium (Otomatis)
+                    </button>
                 </div>
             </div>
 
@@ -308,11 +345,11 @@
                         </div>
                         <div class="flex items-start gap-2.5 text-xs text-slate-200">
                             <svg class="w-4 h-4 text-purple-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            <span>Akses Prioritas Fitur</span>
+                            <span>Akses Prioritas Fitur VIP</span>
                         </div>
                         <div class="flex items-start gap-2.5 text-xs text-slate-200">
                             <svg class="w-4 h-4 text-purple-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            <span>Apikey Custom</span>
+                            <span>Apikey Custom Suka-Suka</span>
                         </div>
                     </div>
                 </div>
@@ -328,15 +365,92 @@
                             <span class="text-xs text-slate-400 pr-2">Hari</span>
                         </div>
                     </div>
-                    <!-- Tombol Beli -->
-                    <a id="vip-btn" href="#" target="_blank" class="block w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-purple-500/20">
-                        Beli Paket VIP
-                    </a>
+                    <!-- Tombol Beli Otomatis PayWuz -->
+                    <button onclick="processPaywuzPayment('vip')" class="block w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-purple-500/20">
+                        <i class="fa-solid fa-bolt mr-1"></i> Beli VIP (Otomatis)
+                    </button>
                 </div>
             </div>
 
         </div>
     </main>
+
+    <!-- MODAL POPUP CHECKOUT PAYWUZ -->
+    <div id="paymentModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-slate-900 w-full max-w-lg rounded-2xl border border-cyan-500/40 overflow-hidden my-auto max-h-[95vh] flex flex-col shadow-[0_0_25px_rgba(0,243,255,0.3)]">
+
+            <div class="bg-gradient-to-r from-cyan-900 to-slate-900 p-4 text-white flex justify-between items-center border-b border-white/10 flex-shrink-0">
+                <h3 class="font-bold text-sm font-mono flex items-center gap-2 text-cyan-400">
+                    <i class="fa-solid fa-bolt"></i> Pembayaran QRIS PayWuz
+                </h3>
+                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white text-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto p-4 sm:p-5 flex-1">
+                
+                <!-- QRIS STEP 1 -->
+                <div id="qrisContainerBox" class="flex flex-col items-center justify-center space-y-4">
+                    <div class="w-full bg-slate-950 p-3 rounded-xl border border-cyan-500/30 text-center">
+                        <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Pembayaran Paket</p>
+                        <h3 id="modalQrisAmount" class="text-2xl font-extrabold text-cyan-400 font-mono mt-0.5">Rp 0</h3>
+                        <p class="text-[10px] text-slate-400 mt-1">Order ID: <span id="modalQrisOrderId" class="font-mono text-white">TRX-000000</span></p>
+                        <p class="text-[10px] text-amber-400 mt-0.5">Role Target: <strong id="modalQrisTargetRole" class="uppercase">PREMIUM USER</strong></p>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-2 bg-red-950/50 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg text-xs font-mono font-bold w-full">
+                        <i class="fa-solid fa-clock animate-pulse"></i>
+                        <span>Selesaikan Sebelum: <strong id="modalQrisCountdown" class="text-white text-sm">15:00</strong></span>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-xs text-slate-300 font-semibold">Scan QRIS untuk Upgrade Role Otomatis</p>
+                        <p class="text-[10px] text-slate-400">Dukungan GoPay, OVO, DANA, ShopeePay & All Bank</p>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-xl border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,243,255,0.4)] flex flex-col items-center justify-center w-full max-w-[280px]">
+                        <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse w-full justify-center">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Verifikasi Pembayaran...
+                    </div>
+
+                    <button type="button" onclick="cancelTransaction()" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/50 text-red-400 hover:text-red-300 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider">
+                        <i class="fa-solid fa-xmark text-sm"></i> BATALKAN TRANSAKSI
+                    </button>
+                </div>
+
+                <!-- SUCCESS STEP 2 -->
+                <div id="qrisSuccessBox" class="hidden flex flex-col items-center justify-center space-y-4 text-center py-4">
+                    <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-bold text-white uppercase tracking-wide">Upgrade Berhasil!</h4>
+                        <p class="text-xs text-slate-300 mt-1">Pembayaran telah dikonfirmasi. Role & API Key Anda telah diubah secara otomatis oleh sistem.</p>
+                    </div>
+
+                    <div class="w-full bg-slate-950 border border-cyan-500/50 p-4 rounded-xl text-left space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-white/10 pb-1.5">
+                            <span class="text-slate-400">Status Role:</span>
+                            <span id="successUserRole" class="text-cyan-400 font-bold">Premium User</span>
+                        </div>
+                        <div class="flex flex-col pt-1">
+                            <span class="text-slate-400 mb-1">API Key Baru Anda:</span>
+                            <span id="successUserApiKey" class="text-amber-400 font-mono font-bold break-all bg-slate-900 p-2 rounded border border-white/10">key-12345</span>
+                        </div>
+                    </div>
+
+                    <a href="/docs" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition uppercase tracking-wider block text-center">
+                        Kembali Ke Dashboard
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <!-- Footer Section -->
     <footer class="relative max-w-4xl mx-auto w-full px-6 py-8 text-center border-t border-white/5 text-slate-500 text-xs z-10">
@@ -346,20 +460,26 @@
     <!-- JavaScript Logic -->
     <script>
         const config = {
-            premium: { rate: 100, days: 3, min: 3, btnId: 'premium-btn', displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium Plan' },
-            vip: { rate: 500, days: 3, min: 3, btnId: 'vip-btn', displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP Plan' }
+            premium: { rate: 100, days: 3, min: 3, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
+            vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
         };
 
-        const adminPhone = "6285122629940";
-        
-        // Simpan data user secara global
         let currentUser = {
+            loggedIn: false,
             username: "Belum Login",
             email: "-"
         };
 
+        let currentOrderId = "";
+        let pollingInterval = null;
+        let countdownInterval = null;
+
         function formatRupiah(amount) {
             return "Rp " + amount.toLocaleString('id-ID');
+        }
+
+        function generateUniqueOrderId() {
+            return `UPG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
         }
 
         function updateDays(type, change) {
@@ -372,42 +492,208 @@
                 
                 let totalCost = plan.days * plan.rate;
                 document.getElementById(plan.displayId).innerText = formatRupiah(totalCost);
-                
-                updateWhatsAppLink(type);
             }
         }
 
-        function updateWhatsAppLink(type) {
-            let plan = config[type];
-            let totalCost = plan.days * plan.rate;
-            let message = `Halo Admin, saya ingin membeli paket *${plan.name}* di Arulzxd API.\n\n` +
-                          `• Username: *${currentUser.username}*\n` +
-                          `• Email: *${currentUser.email}*\n` +
-                          `• Durasi: ${plan.days} Hari\n` +
-                          `• Total Harga: ${formatRupiah(totalCost)}\n\n` +
-                          `Mohon diproses sistem pembayarannya, terima kasih!`;
-            
-            let encodedMessage = encodeURIComponent(message);
-            document.getElementById(plan.btnId).href = `https://wa.me/${adminPhone}?text=${encodedMessage}`;
+        async function fetchUserStatus() {
+            try {
+                const res = await fetch('/api/user-status');
+                const data = await res.json();
+                if (data.loggedIn && data.user) {
+                    currentUser.loggedIn = true;
+                    currentUser.username = data.user.username || data.user.name || "User";
+                    currentUser.email = data.user.email || "-";
+
+                    document.getElementById('userBannerUsername').innerText = currentUser.username;
+                    document.getElementById('userBannerEmail').innerText = currentUser.email;
+                } else {
+                    document.getElementById('userBannerUsername').innerText = "Belum Login";
+                    document.getElementById('userBannerEmail').innerText = "Silakan login dulu";
+                }
+            } catch (err) {
+                console.error("Gagal mengambil data user-status:", err);
+            }
         }
 
-        // Inisialisasi data user saat halaman dimuat
-        window.onload = function() {
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        currentUser.username = data.user.username || data.user.name || "User";
-                        currentUser.email = data.user.email || "-";
-                    }
-                    updateWhatsAppLink('premium');
-                    updateWhatsAppLink('vip');
-                })
-                .catch(err => {
-                    console.error("Gagal mengambil data user-status:", err);
-                    updateWhatsAppLink('premium');
-                    updateWhatsAppLink('vip');
+        function renderQrisCode(qrisString) {
+            const qrContainer = document.getElementById('qrcodeContainer');
+            qrContainer.innerHTML = '';
+
+            new QRCode(qrContainer, {
+                text: qrisString,
+                width: 260,
+                height: 260,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        async function processPaywuzPayment(type) {
+            if (!currentUser.loggedIn) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'HARUS LOGIN',
+                    text: 'Anda harus login terlebih dahulu sebelum dapat mengupgrade paket API Key!',
+                    confirmButtonText: 'Ke Halaman Login',
+                    customClass: { popup: 'cyber-swal', confirmButton: 'cyber-swal-confirm' }
+                }).then(() => {
+                    window.location.href = '/login';
                 });
+                return;
+            }
+
+            const plan = config[type];
+            const totalAmount = plan.days * plan.rate;
+            currentOrderId = generateUniqueOrderId();
+
+            Swal.fire({
+                title: 'MEMPROSES QRIS',
+                text: 'Menghubungkan ke gateway PayWuz...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); },
+                customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text' }
+            });
+
+            try {
+                const res = await fetch('/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: currentOrderId,
+                        amount: totalAmount,
+                        qty: plan.days,
+                        itemDetails: {
+                            nama: `Upgrade Role - ${plan.roleName}`,
+                            harga: totalAmount,
+                            kategori: 'Upgrade API Key'
+                        }
+                    })
+                });
+
+                const result = await res.json();
+                if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS PayWuz");
+
+                Swal.close();
+
+                document.getElementById('modalQrisAmount').innerText = formatRupiah(result.data.amount || totalAmount);
+                document.getElementById('modalQrisOrderId').innerText = currentOrderId;
+                document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
+
+                renderQrisCode(result.data.paymentNumber);
+
+                document.getElementById('qrisContainerBox').classList.remove('hidden');
+                document.getElementById('qrisSuccessBox').classList.add('hidden');
+                document.getElementById('paymentModal').classList.remove('hidden');
+
+                const expireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : Date.now() + (15 * 60 * 1000);
+                startCountdown(expireTime);
+                startStatusPolling(plan.roleName);
+
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'GAGAL MEMBUAT QRIS',
+                    text: err.message || 'Terjadi kesalahan sistem saat membuat QRIS.',
+                    customClass: { popup: 'cyber-swal', confirmButton: 'cyber-swal-confirm' }
+                });
+            }
+        }
+
+        function startCountdown(expireTimestamp) {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = expireTimestamp - now;
+
+                if (distance <= 0) {
+                    clearInterval(countdownInterval);
+                    if (pollingInterval) clearInterval(pollingInterval);
+                    document.getElementById('modalQrisCountdown').innerText = "00:00";
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'WAKTU HABIS',
+                        text: 'Batas waktu pembayaran 15 menit telah berakhir.',
+                        customClass: { popup: 'cyber-swal', confirmButton: 'cyber-swal-confirm' }
+                    });
+                    closePaymentModal();
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('modalQrisCountdown').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function startStatusPolling(targetRoleName) {
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`/transactions/${currentOrderId}`);
+                    const result = await res.json();
+
+                    if (result && result.data) {
+                        const status = (result.data.status || "").toLowerCase();
+
+                        if (["settlement", "success", "paid", "settled"].includes(status)) {
+                            clearInterval(pollingInterval);
+                            if (countdownInterval) clearInterval(countdownInterval);
+
+                            // Panggil sinkronisasi user status untuk mengambil Role & API Key baru dari DB
+                            const userRes = await fetch('/api/user-status');
+                            const userData = await userRes.json();
+
+                            document.getElementById('qrisContainerBox').classList.add('hidden');
+                            document.getElementById('qrisSuccessBox').classList.remove('hidden');
+
+                            if (userData.loggedIn && userData.user) {
+                                document.getElementById('successUserRole').innerText = userData.user.role;
+                                document.getElementById('successUserApiKey').innerText = userData.user.apikey;
+                            }
+                        } else if (["cancelled", "failed"].includes(status)) {
+                            clearInterval(pollingInterval);
+                            if (countdownInterval) clearInterval(countdownInterval);
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'TRANSAKSI BATAL',
+                                text: 'Transaksi telah dibatalkan atau gagal.',
+                                customClass: { popup: 'cyber-swal' }
+                            });
+                            closePaymentModal();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error polling status transaksi:", e);
+                }
+            }, 3000);
+        }
+
+        async function cancelTransaction() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            try {
+                await fetch(`/transactions/${currentOrderId}/cancel`, { method: 'POST' });
+            } catch (e) {}
+
+            closePaymentModal();
+        }
+
+        function closePaymentModal() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+            document.getElementById('paymentModal').classList.add('hidden');
+        }
+
+        // Inisialisasi saat dimuat
+        window.onload = function() {
+            fetchUserStatus();
         };
 
         function getPageDisplayName() {
@@ -441,7 +727,6 @@
             loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
         }
 
-        // Progress Loader 0% - 100%
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
@@ -469,7 +754,6 @@
             }, 400);
         });
 
-        // Fallback Safety (Maksimal 4 detik)
         setTimeout(() => {
             clearInterval(progressInterval);
             updateProgress(100);
