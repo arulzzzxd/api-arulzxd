@@ -75,12 +75,11 @@ const userSchema = new mongoose.Schema({
 });
 
 // Middleware Otomatis Update API Key saat Role Berubah jika tidak ditentukan khusus
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function() {
     if (this.isModified('role')) {
         const roleLower = (this.role || '').toLowerCase();
         
         if (roleLower.includes('vip')) {
-            // Untuk VIP, jika apikey belum ada / belum custom, biarkan / atur default
             if (!this.apikey) {
                 this.apikey = `${this.username.toLowerCase()}-custom-vip`;
             }
@@ -89,14 +88,13 @@ userSchema.pre('save', function(next) {
                 this.apikey = generatePremiumApiKey(this.username);
             }
         } else {
-            // Free User
             if (!this.apikey || !this.apikey.startsWith('arulzxdfree-')) {
                 this.apikey = generateFreeApiKey();
             }
         }
     }
-    next();
 });
+
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
@@ -1646,13 +1644,24 @@ app.get('/auth/google/callback', async (req, res) => {
     if (!code) return res.send('Authentication failed: No code provided');
 
     try {
-        const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+        // Konversi payload ke format application/x-www-form-urlencoded
+        const params = new URLSearchParams({
             client_id: GOOGLE_CLIENT_ID,
             client_secret: GOOGLE_CLIENT_SECRET,
             code: code,
             grant_type: 'authorization_code',
             redirect_uri: GOOGLE_CALLBACK_URL
         });
+
+        const tokenResponse = await axios.post(
+            'https://oauth2.googleapis.com/token',
+            params.toString(),
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
 
         const accessToken = tokenResponse.data.access_token;
         const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -1705,8 +1714,8 @@ app.get('/auth/google/callback', async (req, res) => {
 
         res.redirect('/docs?showProfile=true');
     } catch (error) {
-        console.error(error);
-        res.send('Login Error: ' + error.message);
+        console.error('Google Auth Callback Error:', error.response?.data || error.message);
+        res.send('Login Error: ' + (error.response?.data?.error_description || error.message));
     }
 });
 
