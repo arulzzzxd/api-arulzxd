@@ -2864,7 +2864,7 @@ app.get('/docs', (req, res) => {
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>API-ARULZXD - REST</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/UBkDZZ.png" type="image/png">
+    <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
