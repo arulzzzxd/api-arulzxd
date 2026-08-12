@@ -24,7 +24,6 @@
             --border-color: rgba(0, 243, 255, 0.2);
         }
 
-        /* Support Light Theme Mode */
         html.light {
             --neon-cyan: #008b9b;
             --neon-glow: rgba(0, 139, 155, 0.25);
@@ -208,10 +207,8 @@
         </div>
     </div>
 
-    <!-- Background Decoration Grid -->
     <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b10_1px,transparent_1px),linear-gradient(to_bottom,#1e293b10_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
-    <!-- Header Section -->
     <header class="relative max-w-4xl mx-auto w-full px-6 pt-12 pb-6 text-center z-10">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-4 animate-pulse">
             <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
@@ -224,14 +221,12 @@
             Tingkatkan batas request, dapatkan performa maksimal, dan nikmati fitur eksklusif untuk kebutuhan pengembangan aplikasi Anda.
         </p>
 
-        <!-- Informational Banner Logged User -->
         <div id="userLoggedInfoBanner" class="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-900/80 border border-cyan-500/30 text-xs text-slate-300">
             <i class="fa-solid fa-user-check text-cyan-400"></i>
             <span>Akun Terhubung: <strong id="userBannerUsername" class="text-white">Loading...</strong> (<span id="userBannerEmail" class="text-cyan-400">Loading...</span>)</span>
         </div>
     </header>
 
-    <!-- Main Pricing Cards Section -->
     <main class="relative max-w-6xl mx-auto w-full px-4 md:px-6 py-6 z-10 flex-1 flex items-center">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-stretch">
             
@@ -271,7 +266,7 @@
                 </div>
             </div>
 
-            <!-- PREMIUM PLAN (POPULAR) -->
+            <!-- PREMIUM PLAN (MINIMAL 10 HARI) -->
             <div class="bg-slate-900/90 border-2 border-amber-500/60 rounded-2xl p-6 flex flex-col justify-between shadow-2xl relative backdrop-blur-sm transition-all duration-300 hover:border-amber-400 hover:translate-y-[-4px]">
                 <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black rounded-full uppercase tracking-wider shadow-lg">
                     Paling Populer
@@ -283,8 +278,8 @@
                         <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">Rekomendasi</span>
                     </div>
                     <div class="mb-6">
-                        <span class="text-3xl font-extrabold text-white" id="premium-display-price">Rp 300</span>
-                        <span class="text-slate-400 text-xs font-mono block mt-1">Rp 100 / Hari (Min. 3 Hari)</span>
+                        <span class="text-3xl font-extrabold text-white" id="premium-display-price">Rp 1.000</span>
+                        <span class="text-slate-400 text-xs font-mono block mt-1">Rp 100 / Hari (Min. 10 Hari)</span>
                     </div>
                     <p class="text-slate-300 text-xs mb-6 leading-relaxed">
                         Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.
@@ -306,24 +301,22 @@
                 </div>
                 
                 <div class="mt-8 space-y-4">
-                    <!-- Counter Hari -->
                     <div class="flex items-center justify-between bg-slate-950/40 border border-white/10 p-2 rounded-xl">
                         <span class="text-xs text-slate-400 font-medium pl-2">Durasi Paket</span>
                         <div class="flex items-center gap-3">
                             <button onclick="updateDays('premium', -1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-lg flex items-center justify-center transition border border-white/5">-</button>
-                            <span id="premium-days" class="text-sm font-bold text-white font-mono w-6 text-center">3</span>
+                            <span id="premium-days" class="text-sm font-bold text-white font-mono w-6 text-center">10</span>
                             <button onclick="updateDays('premium', 1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-lg flex items-center justify-center transition border border-white/5">+</button>
                             <span class="text-xs text-slate-400 pr-2">Hari</span>
                         </div>
                     </div>
-                    <!-- Tombol Beli Otomatis PayWuz -->
                     <button onclick="processPaywuzPayment('premium')" class="block w-full text-center bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 text-xs font-black py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-amber-500/10">
                         <i class="fa-solid fa-bolt mr-1"></i> Beli Premium (Otomatis)
                     </button>
                 </div>
             </div>
 
-            <!-- VIP PLAN -->
+            <!-- VIP PLAN (MINIMAL 3 HARI) -->
             <div class="bg-slate-900/60 border border-white/5 rounded-2xl p-6 flex flex-col justify-between shadow-xl backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:translate-y-[-4px]">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl pointer-events-none"></div>
                 <div>
@@ -355,7 +348,6 @@
                 </div>
 
                 <div class="mt-8 space-y-4">
-                    <!-- Counter Hari -->
                     <div class="flex items-center justify-between bg-slate-950/40 border border-white/10 p-2 rounded-xl">
                         <span class="text-xs text-slate-400 font-medium pl-2">Durasi Paket</span>
                         <div class="flex items-center gap-3">
@@ -365,7 +357,6 @@
                             <span class="text-xs text-slate-400 pr-2">Hari</span>
                         </div>
                     </div>
-                    <!-- Tombol Beli Otomatis PayWuz -->
                     <button onclick="processPaywuzPayment('vip')" class="block w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition duration-200 uppercase tracking-wider shadow-lg shadow-purple-500/20">
                         <i class="fa-solid fa-bolt mr-1"></i> Beli VIP (Otomatis)
                     </button>
@@ -375,7 +366,6 @@
         </div>
     </main>
 
-    <!-- MODAL POPUP CHECKOUT PAYWUZ -->
     <div id="paymentModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-slate-900 w-full max-w-lg rounded-2xl border border-cyan-500/40 overflow-hidden my-auto max-h-[95vh] flex flex-col shadow-[0_0_25px_rgba(0,243,255,0.3)]">
 
@@ -390,7 +380,6 @@
 
             <div class="overflow-y-auto p-4 sm:p-5 flex-1">
                 
-                <!-- QRIS STEP 1 -->
                 <div id="qrisContainerBox" class="flex flex-col items-center justify-center space-y-4">
                     <div class="w-full bg-slate-950 p-3 rounded-xl border border-cyan-500/30 text-center">
                         <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Pembayaran Paket</p>
@@ -422,7 +411,6 @@
                     </button>
                 </div>
 
-                <!-- SUCCESS STEP 2 -->
                 <div id="qrisSuccessBox" class="hidden flex flex-col items-center justify-center space-y-4 text-center py-4">
                     <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                         <i class="fa-solid fa-check"></i>
@@ -452,15 +440,13 @@
         </div>
     </div>
 
-    <!-- Footer Section -->
     <footer class="relative max-w-4xl mx-auto w-full px-6 py-8 text-center border-t border-white/5 text-slate-500 text-xs z-10">
         <p>© 2026 Arulzxd API. All rights reserved. Hubungi admin untuk kostumisasi limit korporat.</p>
     </footer>
 
-    <!-- JavaScript Logic -->
     <script>
         const config = {
-            premium: { rate: 100, days: 3, min: 3, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
+            premium: { rate: 100, days: 10, min: 10, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
             vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
         };
 
@@ -549,7 +535,7 @@
 
             Swal.fire({
                 title: 'MEMPROSES QRIS',
-                text: 'Menghubungkan ke gateway PayWuz...',
+                text: 'Menghubungkan ke gateway...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); },
                 customClass: { popup: 'cyber-swal', title: 'cyber-swal-title', htmlContainer: 'cyber-swal-text' }
@@ -572,7 +558,7 @@
                 });
 
                 const result = await res.json();
-                if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS PayWuz");
+                if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS");
 
                 Swal.close();
 
@@ -645,7 +631,6 @@
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
 
-                            // Panggil sinkronisasi user status untuk mengambil Role & API Key baru dari DB
                             const userRes = await fetch('/api/user-status');
                             const userData = await userRes.json();
 
@@ -691,7 +676,6 @@
             document.getElementById('paymentModal').classList.add('hidden');
         }
 
-        // Inisialisasi saat dimuat
         window.onload = function() {
             fetchUserStatus();
         };
