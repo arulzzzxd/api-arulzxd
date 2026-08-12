@@ -3156,7 +3156,7 @@ app.get('/docs', (req, res) => {
         <div class="ring-outer"></div>
         <div class="ring-middle"></div>
         <div class="ring-inner"></div>
-        <img src="https://files.catbox.moe/1rr9zi.png" alt="Logo" class="hud-avatar">
+        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
     </div>
 
     <div class="text-center px-4">
