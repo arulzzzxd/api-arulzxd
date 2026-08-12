@@ -430,17 +430,22 @@
                 <!-- Ringkasan Produk dengan Carousel Slide Gambar ala Shopee -->
                 <div class="flex flex-col sm:flex-row gap-4 items-start bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder">
                     
-                    <!-- CAROUSEL GAMBAR PRODUK MODAL -->
-                    <div class="relative w-full sm:w-36 h-36 rounded-lg overflow-hidden bg-slate-900 border border-cyberBorder flex-shrink-0 group" id="modalProductCarousel">
+                    <!-- CAROUSEL GAMBAR PRODUK MODAL (BISA DIKLIK UNTUK ZOOME) -->
+                    <div class="relative w-full sm:w-36 h-36 rounded-lg overflow-hidden bg-slate-900 border border-cyberBorder flex-shrink-0 group cursor-pointer" id="modalProductCarousel" onclick="zoomCurrentProductImage()">
                         <div class="flex w-full h-full transition-transform duration-300 ease-out" id="modalCarouselTrack">
                             <img id="detailImg" src="" class="w-full h-full object-cover flex-shrink-0">
                         </div>
                         
+                        <!-- Icon Zoom Hint -->
+                        <span class="absolute top-1.5 right-1.5 bg-black/60 text-cyberCyan text-[10px] p-1 rounded backdrop-blur-sm opacity-80 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </span>
+
                         <!-- Navigasi Panah Slide Modal -->
-                        <button onclick="slideModalCarousel(-1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
+                        <button onclick="event.stopPropagation(); slideModalCarousel(-1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
-                        <button onclick="slideModalCarousel(1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
+                        <button onclick="event.stopPropagation(); slideModalCarousel(1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
 
@@ -517,7 +522,47 @@
         </div>
     </div>
 
-    <!-- MODAL LIGHTBOX SLIDER MEDIA RATING (2-WAY SLIDE: KANAN/KIRI=MEDIA, ATAS/BAWAH=USER) -->
+    <!-- MODAL LIGHTBOX FULLSCREEN UNTUK ZOOM GAMBAR PRODUK & SLIDER -->
+    <div id="productZoomLightbox" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeProductZoomLightbox()">
+        
+        <!-- Header Lightbox Zoom -->
+        <div class="flex items-center justify-between text-white z-20" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-box text-cyberCyan"></i>
+                <h5 id="zoomProductTitle" class="text-xs sm:text-sm font-bold text-slate-100 font-cyber truncate max-w-xs sm:max-w-md"></h5>
+            </div>
+            <button onclick="closeProductZoomLightbox()" class="text-slate-400 hover:text-cyberCyan text-2xl transition p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Area Gambar & Swipe/Drag Gesture -->
+        <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2" id="zoomSwipeArea" onclick="event.stopPropagation()">
+            <!-- Tombol Navigasi Slide Gambar Produk -->
+            <button onclick="navigateProductZoom(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110 shadow-glowCyanSm">
+                <i class="fa-solid fa-chevron-left text-base"></i>
+            </button>
+            <button onclick="navigateProductZoom(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110 shadow-glowCyanSm">
+                <i class="fa-solid fa-chevron-right text-base"></i>
+            </button>
+
+            <!-- Element Gambar Produk Fullscreen Zoom -->
+            <div class="max-w-4xl max-h-[78vh] w-full flex items-center justify-center p-2">
+                <img id="zoomImageElement" src="" class="max-w-full max-h-[78vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan transition-transform duration-200">
+            </div>
+        </div>
+
+        <!-- Footer Lightbox Zoom Indikator -->
+        <div class="bg-cyberDark/90 border border-cyberBorder/60 p-3 rounded-xl max-w-xl mx-auto w-full z-20 flex flex-col items-center justify-center space-y-2" onclick="event.stopPropagation()">
+            <div id="zoomCounterText" class="text-xs font-mono text-cyberCyan font-bold">Gambar 1 dari 1</div>
+            <div id="zoomDotsContainer" class="flex items-center gap-1.5"></div>
+            <p class="text-[9px] text-slate-500 uppercase tracking-wider text-center">
+                <i class="fa-solid fa-hand-pointer text-cyberCyan"></i> Geser layar (swipe) atau klik tombol panah untuk berpindah gambar
+            </p>
+        </div>
+    </div>
+
+    <!-- MODAL LIGHTBOX SLIDER MEDIA RATING (2-WAY SLIDE) -->
     <div id="mediaLightboxModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeMediaLightbox()">
         
         <!-- Header Lightbox Info User -->
@@ -821,10 +866,13 @@
         let REMOVED_MEDIA_URLS = []; 
         let KEEP_EXISTING_MEDIA = true;
 
-        // VARIABEL STATE CAROUSEL SLIDE PRODUK & RATING
+        // CAROUSEL & LIGHTBOX ZOOM STATE
         let cardCarouselIndices = {};
         let currentModalImages = [];
         let currentModalImageIndex = 0;
+
+        let zoomProductImageList = [];
+        let zoomProductActiveIndex = 0;
 
         let currentReviewsListWithMedia = [];
         let activeUserReviewIndex = 0;
@@ -977,7 +1025,6 @@
             document.getElementById('detailPrice').innerText = formatRupiah(product.harga_diskon || product.harga);
             document.getElementById('detailDesc').innerText = product.deskripsi || 'Tidak ada deskripsi.';
 
-            // MENGATUR SLIDE CAROUSEL GAMBAR MODAL
             let imgList = [];
             if (Array.isArray(product.gambar)) {
                 imgList = product.gambar;
@@ -1045,6 +1092,73 @@
             document.getElementById('productDetailModal').classList.add('hidden');
         }
 
+        // ==================== LIGHTBOX ZOOM GAMBAR PRODUK (FULLSCREEN + SLIDE SWIPE) ====================
+        function openProductZoomLightbox(prodIndex, initialImgIndex = 0) {
+            const produk = DATA_PRODUK[prodIndex];
+            if (!produk) return;
+
+            let imgList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'];
+
+            zoomProductImageList = imgList;
+            zoomProductActiveIndex = initialImgIndex;
+
+            document.getElementById('zoomProductTitle').innerText = produk.nama;
+            renderProductZoomContent();
+
+            document.getElementById('productZoomLightbox').classList.remove('hidden');
+        }
+
+        function zoomCurrentProductImage() {
+            if (currentModalImages.length === 0) return;
+            zoomProductImageList = currentModalImages;
+            zoomProductActiveIndex = currentModalImageIndex;
+
+            document.getElementById('zoomProductTitle').innerText = document.getElementById('detailTitle').innerText;
+            renderProductZoomContent();
+
+            document.getElementById('productZoomLightbox').classList.remove('hidden');
+        }
+
+        function renderProductZoomContent() {
+            if (zoomProductImageList.length === 0) return;
+
+            const imgEl = document.getElementById('zoomImageElement');
+            imgEl.src = zoomProductImageList[zoomProductActiveIndex];
+
+            document.getElementById('zoomCounterText').innerText = `Gambar ${zoomProductActiveIndex + 1} dari ${zoomProductImageList.length}`;
+
+            const dotsContainer = document.getElementById('zoomDotsContainer');
+            dotsContainer.innerHTML = zoomProductImageList.map((_, i) => `
+                <span class="w-2 h-2 rounded-full ${i === zoomProductActiveIndex ? 'bg-cyberCyan shadow-glowCyanSm scale-125' : 'bg-slate-600'} transition-all"></span>
+            `).join('');
+        }
+
+        function navigateProductZoom(dir) {
+            if (zoomProductImageList.length <= 1) return;
+            zoomProductActiveIndex = (zoomProductActiveIndex + dir + zoomProductImageList.length) % zoomProductImageList.length;
+            renderProductZoomContent();
+        }
+
+        function closeProductZoomLightbox() {
+            document.getElementById('productZoomLightbox').classList.add('hidden');
+        }
+
+        // EVENT SWIPE LAYAR UNTUK LIGHTBOX ZOOM PRODUK
+        let zoomTouchStartX = 0;
+        const zoomSwipeArea = document.getElementById('zoomSwipeArea');
+        if (zoomSwipeArea) {
+            zoomSwipeArea.addEventListener('touchstart', e => {
+                zoomTouchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            zoomSwipeArea.addEventListener('touchend', e => {
+                const diffX = e.changedTouches[0].screenX - zoomTouchStartX;
+                if (Math.abs(diffX) > 40) {
+                    navigateProductZoom(diffX < 0 ? 1 : -1);
+                }
+            }, { passive: true });
+        }
+
         // ==================== LIGHTBOX SLIDER RATING MEDIA 2-WAY SLIDE ====================
         function openMediaLightboxSlider(reviewIndex, mediaIndex) {
             activeUserReviewIndex = reviewIndex;
@@ -1062,13 +1176,11 @@
 
             const currentMedia = userReview.media[activeMediaItemIndex];
 
-            // Render Info User
             document.getElementById('lightboxUserAvatar').src = userReview.userAvatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
             document.getElementById('lightboxUserName').innerText = userReview.username || 'Pembeli';
             document.getElementById('lightboxUserRating').innerHTML = renderStarRating(userReview.rating || 5);
             document.getElementById('lightboxUserComment').innerText = userReview.comment || '';
 
-            // Render Media Item
             const img = document.getElementById('lightboxImage');
             const video = document.getElementById('lightboxVideo');
 
@@ -1084,12 +1196,10 @@
                 img.classList.remove('hidden');
             }
 
-            // Render Counters
             document.getElementById('lightboxMediaCounter').innerText = `Media ${activeMediaItemIndex + 1} dari ${userReview.media.length}`;
             document.getElementById('lightboxUserCounter').innerText = `Ulasan ${activeUserReviewIndex + 1} dari ${currentReviewsListWithMedia.length}`;
         }
 
-        // NAVIGASI SWIPE HORIZONTAL (GESER MEDIA)
         function navigateMediaHorizontal(dir) {
             const userReview = currentReviewsListWithMedia[activeUserReviewIndex];
             if (!userReview || !userReview.media) return;
@@ -1099,13 +1209,12 @@
             renderLightboxMediaContent();
         }
 
-        // NAVIGASI SWIPE VERTIKAL (GESER ULASAN USER LAIN)
         function navigateUserVertical(dir) {
             const totalUsers = currentReviewsListWithMedia.length;
             if (totalUsers <= 1) return;
 
             activeUserReviewIndex = (activeUserReviewIndex + dir + totalUsers) % totalUsers;
-            activeMediaItemIndex = 0; // Reset ke media pertama ulasan user baru
+            activeMediaItemIndex = 0;
             renderLightboxMediaContent();
         }
 
@@ -1115,7 +1224,6 @@
             document.getElementById('mediaLightboxModal').classList.add('hidden');
         }
 
-        // SWIPE EVENT LISTENERS FOR LIGHTBOX (TOUCH & MOUSE)
         let touchStartX = 0;
         let touchStartY = 0;
 
@@ -1230,7 +1338,6 @@
                     return;
                 }
 
-                // FILTER ULASAN YANG MEMILIKI MEDIA UNTUK LIGHTBOX SLIDER 2 ARAH
                 currentReviewsListWithMedia = data.reviews.filter(r => r.media && r.media.length > 0);
 
                 container.innerHTML = data.reviews.map(rev => {
@@ -1595,9 +1702,11 @@
                     </div>
                 `;
 
-                // RENDER CAROUSEL SLIDE PRODUK SHOPEE STYLE
+                // RENDER CAROUSEL SLIDE GAMBAR PRODUK SHOPEE STYLE + KLIK UNTUK ZOOM
                 let imageList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'];
-                let imagesHtml = imageList.map(imgUrl => `<img src="${imgUrl}" class="w-full h-full object-cover flex-shrink-0 ${isOutOfStock ? 'grayscale brightness-50' : ''}">`).join('');
+                let imagesHtml = imageList.map((imgUrl, imgIdx) => 
+                    `<img src="${imgUrl}" onclick="event.stopPropagation(); openProductZoomLightbox(${originalIndex}, ${imgIdx})" class="w-full h-full object-cover flex-shrink-0 cursor-pointer ${isOutOfStock ? 'grayscale brightness-50' : ''}">`
+                ).join('');
                 
                 let cardNavBtns = imageList.length > 1 ? `
                     <button onclick="event.stopPropagation(); slideCardCarousel(${originalIndex}, -1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black z-10">
