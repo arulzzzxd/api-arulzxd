@@ -6,7 +6,7 @@
     "title": "Menambahkan fitur payment otomatis pada upgrade apikey",
     "description": "Penambahan sistem pembayaran otomatis untuk proses upgrade API Key yang mencakup:\n• Integrasi gateway pembayaran instan untuk verifikasi transaksi secara real-time.\n• Otomatisasi pembaruan status dan peningkatan limit/akses API Key setelah pembayaran berhasil.\n• Riwayat transaksi dan konfirmasi pembayaran yang langsung diproses tanpa verifikasi manual.",
     "node": "EPH-DLAHL-173"
-  }
+  },
   {
     "version": "v2.0.0",
     "date": "12 AUG 2026",
@@ -14,7 +14,7 @@
     "title": "Feature Endpoint Komiku",
     "description": "Penambahan endpoint API Komiku baru yang mencakup:\n• komiku-last: Menampilkan daftar rilis komik terbaru beserta pembaruannya.\n• komiku-search: Melakukan pencarian judul komik berdasarkan kata kunci.\n• komiku-info: Mengambil detail informasi komik seperti status, genre, tipe, dan daftar chapter.\n• komiku-chapter-img: Mengambil daftar URL gambar untuk setiap chapter.",
     "node": "AQV-PRDHV-211"
-  }
+  },
   {
     "version": "v2.0.0",
     "date": "7 AUG 2026",
