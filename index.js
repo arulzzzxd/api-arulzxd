@@ -465,6 +465,64 @@ app.get('/api/reviews/:productId', async (req, res) => {
     }
 });
 
+// ====================================================
+// ENDPOINT DELETE REVIEWS (HAPUS ULASAN/RATING)
+// ====================================================
+app.delete('/api/reviews/:reviewId', checkAuthSession, async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(reviewId)) {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'ID ulasan tidak valid!' 
+            });
+        }
+
+        const review = await Review.findById(reviewId);
+
+        if (!review) {
+            return res.status(404).json({ 
+                status: false, 
+                message: 'Ulasan tidak ditemukan!' 
+            });
+        }
+
+        // Dapatkan identitas pengguna yang sedang melakukan request
+        let currentUserId = getUserIdentifier(req);
+        if (req.user) {
+            currentUserId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
+        }
+
+        const currentUsername = req.user ? req.user.username : null;
+
+        // Validasi: Pastikan pengguna hanya bisa menghapus ulasannya sendiri (atau admin jika ada)
+        const isOwner = (review.userId && review.userId.toString() === currentUserId.toString()) ||
+                        (currentUsername && review.username.toLowerCase() === currentUsername.toLowerCase());
+
+        if (!isOwner) {
+            return res.status(403).json({ 
+                status: false, 
+                message: 'Anda tidak memiliki hak akses untuk menghapus ulasan ini!' 
+            });
+        }
+
+        await Review.findByIdAndDelete(reviewId);
+
+        return res.json({
+            status: true,
+            message: 'Ulasan berhasil dihapus!'
+        });
+
+    } catch (error) {
+        console.error("Error delete review:", error);
+        return res.status(500).json({ 
+            status: false, 
+            message: 'Terjadi kesalahan server saat menghapus ulasan.' 
+        });
+    }
+});
+
 const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
 const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
 const PAYWUZ_HEADERS = {
