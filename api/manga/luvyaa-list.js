@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
     const status = req.query.status || '';
     const genre = req.query.genre || '';
     const order = req.query.order || 'update';
-    const page = req.query.page || 1;
+    const page = parseInt(req.query.page) || 1;
 
     const data = await getList(type, { status, genre, order, page });
     return res.json({ success: true, author: 'Nimzz', data });
@@ -56,7 +56,7 @@ router.paramsConfig = {
     type: {
         type: "select",
         options: [
-            "manga", "manhua", "manhwa", ;"novel", "pornwa"
+            "manga", "manhua", "manhwa", "novel", "pornwa"
         ]
     },
     status: {
@@ -70,7 +70,7 @@ router.paramsConfig = {
         options: [
             'update', 'popular', 'title', 'titlereverse'
         ]
-    },
+    }
 };
 
 router.status = "ready";
