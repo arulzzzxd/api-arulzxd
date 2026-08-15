@@ -40,9 +40,9 @@ async function getBuffer(url) {
 // y: 50 (Turunkan sedikit agar sejajar margin atas)
 // rotate: -0.024 (Kemiringan miring ke kiri mengikuti bentuk box dialog)
 const POS = {
-    x: 195,
-    y: 50,
-    rotate: -0.024
+    x: 255,
+    y: 60,
+    rotate: -1
 };
 
 const COLOR = {
