@@ -9,8 +9,6 @@ const {
 const router = express.Router();
 
 const DEFAULT_IMAGE = "https://files.catbox.moe/otf3hb.jpg";
-
-// URL GitHub Raw untuk font PixelOperator
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/PixelOperator.ttf";
 
 let fontLoaded = false;
@@ -37,10 +35,11 @@ async function getBuffer(url) {
     return Buffer.from(data);
 }
 
+// POSISI DAN ROTASI DIATUR ULANG AGAR PAS DI DALAM KOTAK DIALOG HITAM
 const POS = {
-    x: 160,
-    y: 438,
-    rotate: 0.028
+    x: 180,       // Ditarik lebih ke kanan pas margin kiri dialog
+    y: 40,        // Ditarik ke atas agar masuk ke dalam kotak dialog
+    rotate: 0     // Dinetralkan tanpa rotasi miring
 };
 
 const COLOR = {
@@ -53,18 +52,15 @@ const COLOR = {
 function getLayout(text) {
     const len = text.length;
     if (len <= 70) {
-        return { nameSize: 29, textSize: 33, width: 610, lineHeight: 38, textY: 46 };
+        return { nameSize: 28, textSize: 30, width: 720, lineHeight: 36, textY: 42 };
     }
     if (len <= 120) {
-        return { nameSize: 28, textSize: 31, width: 640, lineHeight: 36, textY: 43 };
+        return { nameSize: 26, textSize: 28, width: 730, lineHeight: 34, textY: 38 };
     }
     if (len <= 170) {
-        return { nameSize: 27, textSize: 29, width: 670, lineHeight: 34, textY: 40 };
+        return { nameSize: 25, textSize: 26, width: 740, lineHeight: 32, textY: 35 };
     }
-    if (len <= 230) {
-        return { nameSize: 26, textSize: 27, width: 700, lineHeight: 32, textY: 36 };
-    }
-    return { nameSize: 24, textSize: 25, width: 730, lineHeight: 30, textY: 32 };
+    return { nameSize: 24, textSize: 24, width: 750, lineHeight: 30, textY: 32 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
@@ -104,7 +100,6 @@ router.get("/", async (req, res) => {
             });
         }
 
-        // Muat font secara dinamis dari GitHub Raw
         await loadFont();
 
         const bg = await loadImage(await getBuffer(DEFAULT_IMAGE));
@@ -124,11 +119,11 @@ router.get("/", async (req, res) => {
         ctx.font = `${textSize}px "PixelOperator"`;
         let lines = wrapLines(ctx, text, width);
 
-        while (lines.length > 4 && textSize > 20) {
+        while (lines.length > 4 && textSize > 18) {
             textSize--;
             lineHeight--;
-            width += 12;
-            textY -= 2;
+            width += 10;
+            textY -= 1;
 
             ctx.font = `${textSize}px "PixelOperator"`;
             lines = wrapLines(ctx, text, width);
@@ -140,7 +135,7 @@ router.get("/", async (req, res) => {
 
         // Menggambar Nama
         ctx.font = `${layout.nameSize}px "PixelOperator"`;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = COLOR.nameStroke;
         ctx.fillStyle = COLOR.name;
         ctx.strokeText(name, 0, 0);
@@ -148,7 +143,7 @@ router.get("/", async (req, res) => {
 
         // Menggambar Teks/Dialog
         ctx.font = `${textSize}px "PixelOperator"`;
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = COLOR.textStroke;
         ctx.fillStyle = COLOR.text;
 
@@ -161,7 +156,6 @@ router.get("/", async (req, res) => {
 
         ctx.restore();
 
-        // Encode ke PNG dan kirim response
         const buffer = await canvas.encode("png");
         res.setHeader("Content-Type", "image/png");
         res.end(buffer);
