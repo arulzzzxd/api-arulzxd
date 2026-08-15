@@ -14,7 +14,7 @@ const BASE_URL = 'https://animexin.dev';
 async function fetchHTML(url) {
   const res = await axios.get(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
       'Referer': BASE_URL
     },
     timeout: 30000,
@@ -23,22 +23,21 @@ async function fetchHTML(url) {
   return res.data;
 }
 
-function normalizeUrl(input) {
-  if (!input) return null;
-  if (input.startsWith('http')) return input;
-  return `${BASE_URL}/${input.replace(/^\//, '')}`;
+function extractSlug(url) {
+  if (!url) return null;
+  return url.replace(/^https?:\/\/animexin\.dev\//i, '').replace(/^\//, '').replace(/\/$/, '');
 }
 
 router.get('/', async (req, res) => {
   try {
-    const input = req.query.slug;
-    if (!input) return res.status(400).json({ status: false, error: "Parameter 'slug' atau 'url' diperlukan." });
+    const slug = req.query.slug;
+    if (!slug) return res.status(400).json({ status: false, error: "Parameter 'slug' wajib diisi." });
 
     const page = parseInt(req.query.page) || 1;
-    const slug = input.replace(`${BASE_URL}/genres/`, '').replace(/\/$/, '').replace(/\/page\/\d+/, '');
+    const cleanSlug = slug.replace(/^genres\//, '').replace(/\/$/, '');
     const url = page === 1
-      ? `${BASE_URL}/genres/${slug}/`
-      : `${BASE_URL}/genres/${slug}/page/${page}/`;
+      ? `${BASE_URL}/genres/${cleanSlug}/`
+      : `${BASE_URL}/genres/${cleanSlug}/page/${page}/`;
 
     const html = await fetchHTML(url);
     const $ = cheerio.load(html);
@@ -54,7 +53,7 @@ router.get('/', async (req, res) => {
       if (title && href) {
         animeList.push({
           title,
-          url: normalizeUrl(href),
+          slug: extractSlug(href),
           type: type || 'ONA',
           status: status || 'Ongoing',
           image: img || null
@@ -64,14 +63,14 @@ router.get('/', async (req, res) => {
 
     return res.json({
       status: true,
-      data: { slug, page, animeList }
+      data: { slug: cleanSlug, page, animeList }
     });
   } catch (err) {
     return res.status(500).json({ status: false, error: err.message });
   }
 });
 
-router.desc = "Mengambil daftar anime berdasarkan genre tertentu. Parameter wajib: ?slug=action atau ?url=https://animexin.dev/genres/action & ?page=1";
+router.desc = "Mengambil daftar anime berdasarkan genre. Parameter wajib: ?slug=action & ?page=1";
 router.status = "ready";
 router.type = "free";
 module.exports = router;

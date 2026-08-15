@@ -14,19 +14,13 @@ const BASE_URL = 'https://animexin.dev';
 async function fetchHTML(url) {
   const res = await axios.get(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
       'Referer': BASE_URL
     },
     timeout: 30000,
     httpsAgent: new https.Agent({ rejectUnauthorized: false })
   });
   return res.data;
-}
-
-function normalizeUrl(input) {
-  if (!input) return null;
-  if (input.startsWith('http')) return input;
-  return `${BASE_URL}/${input.replace(/^\//, '')}`;
 }
 
 router.get('/', async (req, res) => {
@@ -41,10 +35,11 @@ router.get('/', async (req, res) => {
       const count = $(el).find('.count').text().trim();
       const href = $(el).attr('href');
       if (name && href) {
+        const slug = href.replace(/^https?:\/\/animexin\.dev\/genres\//i, '').replace(/\/$/, '');
         genres.push({
           name,
           count: parseInt(count) || 0,
-          url: normalizeUrl(href)
+          slug
         });
       }
     });
@@ -58,7 +53,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mendapatkan seluruh daftar genre anime yang tersedia beserta jumlah total anime di setiap genre.";
+router.desc = "Mendapatkan seluruh daftar genre anime beserta total item dan slug-nya.";
 router.status = "ready";
 router.type = "free";
 module.exports = router;
