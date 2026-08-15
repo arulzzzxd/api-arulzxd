@@ -52,18 +52,19 @@ const COLOR = {
     textStroke: "#000000"
 };
 
+// DITAMBAHKAN UKURAN FONT NAMA (nameSize) DAN TEKS (textSize) AGAR LEBIH BESAR & JELAS
 function getLayout(text) {
     const len = text.length;
     if (len <= 70) {
-        return { nameSize: 26, textSize: 28, width: 680, lineHeight: 34, textY: 36 };
+        return { nameSize: 36, textSize: 38, width: 680, lineHeight: 46, textY: 50 };
     }
     if (len <= 120) {
-        return { nameSize: 26, textSize: 28, width: 690, lineHeight: 32, textY: 34 };
+        return { nameSize: 34, textSize: 35, width: 690, lineHeight: 42, textY: 46 };
     }
     if (len <= 170) {
-        return { nameSize: 26, textSize: 28, width: 700, lineHeight: 30, textY: 32 };
+        return { nameSize: 32, textSize: 33, width: 700, lineHeight: 39, textY: 43 };
     }
-    return { nameSize: 26, textSize: 28, width: 710, lineHeight: 28, textY: 30 };
+    return { nameSize: 30, textSize: 30, width: 710, lineHeight: 36, textY: 40 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
@@ -122,7 +123,7 @@ router.get("/", async (req, res) => {
         ctx.font = `${textSize}px "PixelOperator"`;
         let lines = wrapLines(ctx, text, width);
 
-        while (lines.length > 4 && textSize > 18) {
+        while (lines.length > 4 && textSize > 22) {
             textSize--;
             lineHeight--;
             width += 10;
@@ -138,7 +139,7 @@ router.get("/", async (req, res) => {
 
         // Menggambar Nama
         ctx.font = `${layout.nameSize}px "PixelOperator"`;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = COLOR.nameStroke;
         ctx.fillStyle = COLOR.name;
         ctx.strokeText(name, 0, 0);
@@ -146,7 +147,7 @@ router.get("/", async (req, res) => {
 
         // Menggambar Teks/Dialog
         ctx.font = `${textSize}px "PixelOperator"`;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.strokeStyle = COLOR.textStroke;
         ctx.fillStyle = COLOR.text;
 
