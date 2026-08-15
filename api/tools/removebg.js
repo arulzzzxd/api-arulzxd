@@ -1,19 +1,54 @@
+/**
+ * NAMA SCRAPE  :: REMOVE BACKGROUND (CUKI API)
+ * [•] BASIS        :: api.cuki.biz.id
+ */
 
 const express = require('express');
 const axios = require('axios');
+const FormData = require('form-data');
+const multer = require('multer');
+const { fromBuffer } = require('file-type');
 
 const router = express.Router();
+const upload = multer();
 
 // --- CONFIGURATION ---
 const API_URL = 'https://api.cuki.biz.id/api/editing/removebg';
 const API_KEY = 'cuki-x'; // Apikey bawaan dari endpoint target
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+// --- HELPER FUNCTION: UPLOAD TEMPORARY IMAGE ---
+// Karena API target butuh parameter URL gambar, file upload kita ubah dulu ke URL publik (Catbox)
+async function uploadToCatbox(fileBuffer, mimetype, originalName) {
+    const mimeInfo = await fromBuffer(fileBuffer);
+    const contentType = mimeInfo ? mimeInfo.mime : (mimetype || 'image/jpeg');
+    const filename = originalName || 'upload.jpg';
+
+    const form = new FormData();
+    form.append('reqtype', 'fileupload');
+    form.append('fileToUpload', fileBuffer, {
+        filename: filename,
+        contentType: contentType,
+        knownLength: fileBuffer.length
+    });
+
+    const res = await axios.post('https://catbox.moe/user/api.php', form, {
+        headers: {
+            ...form.getHeaders(),
+            'User-Agent': UA
+        },
+        timeout: 30000
+    });
+
+    if (typeof res.data === 'string' && res.data.startsWith('https://')) {
+        return res.data.trim();
+    }
+    throw new Error('Gagal mengunggah gambar sementara ke host publik.');
+}
+
 // --- SCRAPER FUNCTION ---
 async function scrapeCukiRemoveBg(targetImgUrl) {
     try {
-        // Menembak langsung ke API cuki.biz.id dengan responseType arraybuffer
-        // agar kita mendapatkan hasil biner gambarnya langsung
         const response = await axios.get(API_URL, {
             params: {
                 apikey: API_KEY,
@@ -24,13 +59,11 @@ async function scrapeCukiRemoveBg(targetImgUrl) {
                 'Accept': 'image/png,image/*;q=0.8,*/*;q=0.5'
             },
             responseType: 'arraybuffer',
-            timeout: 25000 // Timeout 25 detik jika server target lambat
+            timeout: 30000
         });
 
-        // Validasi apakah respon berupa gambar, jika berupa JSON (berarti error/apikey habis)
         const contentType = response.headers['content-type'];
         if (contentType && contentType.includes('application/json')) {
-            // Konversi buffer kembali ke teks untuk membaca pesan errornya
             const errorJson = JSON.parse(Buffer.from(response.data).toString('utf-8'));
             throw new Error(errorJson.message || 'API Cuki mengembalikan error JSON.');
         }
@@ -45,24 +78,26 @@ async function scrapeCukiRemoveBg(targetImgUrl) {
     }
 }
 
-// --- ENDPOINT ROUTE (GET) ---
-router.get('/', async (req, res) => {
+// --- ENDPOINT ROUTE (METHOD POST) ---
+router.post('/', upload.single('fileupload'), async (req, res) => {
     try {
-        const imgUrl = req.query.url?.trim();
+        const file = req.file;
 
-        if (!imgUrl) {
+        if (!file) {
             return res.status(400).json({
                 status: false,
                 creator: "Arulzxd",
-                message: "Parameter ?url= wajib diisi!",
-                example: "/api/removebg?url=https://example.com/foto.jpg"
+                message: "Berkas 'fileupload' wajib diunggah!"
             });
         }
 
-        // Eksekusi fungsi scraper
-        const imageBuffer = await scrapeCukiRemoveBg(imgUrl);
+        // 1. Upload file buffer ke host publik sementara
+        const tempImageUrl = await uploadToCatbox(file.buffer, file.mimetype, file.originalname);
 
-        // Mengirimkan respons berupa gambar PNG transparan langsung ke client
+        // 2. Eksekusi scraper Remove Background
+        const imageBuffer = await scrapeCukiRemoveBg(tempImageUrl);
+
+        // 3. Mengirimkan respons berupa gambar PNG transparan langsung ke client
         res.setHeader('Content-Type', 'image/png');
         return res.send(Buffer.from(imageBuffer));
 
@@ -80,6 +115,15 @@ router.get('/', async (req, res) => {
     }
 });
 
+// --- CONFIG PARAMETERS UNTUK DASHBOARD UI ---
+router.paramsConfig = {
+    fileupload: {
+        type: "file",
+        desc: "Berkas gambar yang akan dihapus latar belakangnya"
+    }
+};
+
+router.desc = "Menghapus background gambar secara otomatis. Menggunakan upload berkas.";
 router.status = "ready"; 
 router.type = "free";
 module.exports = router;

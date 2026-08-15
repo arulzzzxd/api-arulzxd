@@ -1,30 +1,36 @@
+/**
+ * NAMA SCRAPE  :: BGERASER REMOVE BACKGROUND
+ * [•] BASIS        :: bgeraser.com
+ */
+
 const express = require("express");
 const axios = require("axios");
 const FormData = require("form-data");
+const multer = require("multer");
+const { fromBuffer } = require("file-type");
 
 const router = express.Router();
+const upload = multer();
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function removeBgimage(imageUrl) {
-    const image = await axios.get(imageUrl, {
-        responseType: "arraybuffer",
-        headers: {
-            "User-Agent": "Mozilla/5.0"
-        }
-    });
+async function removeBgBuffer(fileBuffer, mimetype, originalName) {
+    const mimeInfo = await fromBuffer(fileBuffer);
+    const contentType = mimeInfo ? mimeInfo.mime : (mimetype || "image/png");
+    const filename = originalName || "image.png";
 
     const form = new FormData();
-    form.append("file", Buffer.from(image.data), {
-        filename: "image.png",
-        contentType: "image/png"
+    form.append("file", fileBuffer, {
+        filename: filename,
+        contentType: contentType,
+        knownLength: fileBuffer.length
     });
     form.append("type", "4");
     form.append("mattValue", "0");
 
-    const { data: upload } = await axios.post(
+    const { data: uploadRes } = await axios.post(
         "https://bgeraser.com/api/bgeraser/legacy/upload",
         form,
         {
@@ -34,15 +40,17 @@ async function removeBgimage(imageUrl) {
                 referer: "https://bgeraser.com/",
                 "user-agent":
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         }
     );
 
-    if (!upload || !upload.taskId) {
+    if (!uploadRes || !uploadRes.taskId) {
         throw new Error("Upload gagal.");
     }
 
-    const taskId = upload.taskId;
+    const taskId = uploadRes.taskId;
 
     for (let i = 0; i < 20; i++) {
         await sleep(2000);
@@ -76,10 +84,11 @@ async function removeBgimage(imageUrl) {
     throw new Error("Timeout menunggu hasil.");
 }
 
-router.get("/", async (req, res) => {
+// --- ENDPOINT ROUTE (METHOD POST) ---
+router.post("/", upload.single("fileupload"), async (req, res) => {
     try {
-        const apikey = req.query.apikey;
-        const url = req.query.url;
+        const file = req.file;
+        const apikey = req.body.apikey || req.query.apikey;
 
         if (!apikey) {
             return res.status(403).json({
@@ -95,16 +104,19 @@ router.get("/", async (req, res) => {
             });
         }
 
-        if (!url) {
+        if (!file) {
             return res.status(400).json({
                 status: false,
-                message: "Parameter 'url' diperlukan."
+                creator: "ArulzXD",
+                message: "Berkas 'fileupload' wajib diunggah!"
             });
         }
 
-        const imageUrl = await removeBgimage(url);
+        // 1. Proses penghapusan latar belakang langsung dari Buffer
+        const resultImageUrl = await removeBgBuffer(file.buffer, file.mimetype, file.originalname);
 
-        const image = await axios.get(imageUrl, {
+        // 2. Stream hasil gambar kembali ke klien
+        const imageStream = await axios.get(resultImageUrl, {
             responseType: "stream",
             headers: {
                 "User-Agent": "Mozilla/5.0",
@@ -115,13 +127,15 @@ router.get("/", async (req, res) => {
 
         res.setHeader(
             "Content-Type",
-            image.headers["content-type"] || "image/png"
+            imageStream.headers["content-type"] || "image/png"
         );
 
-        return image.data.pipe(res);
+        return imageStream.data.pipe(res);
 
     } catch (err) {
+        console.error("====== SCRAPER ERROR LOG ======");
         console.error(err.response?.data || err.message);
+        console.error("===============================");
 
         return res.status(500).json({
             status: false,
@@ -132,6 +146,19 @@ router.get("/", async (req, res) => {
     }
 });
 
+// --- CONFIG PARAMETERS UNTUK DASHBOARD UI ---
+router.paramsConfig = {
+    fileupload: {
+        type: "file",
+        desc: "Berkas gambar yang akan dihapus latar belakangnya"
+    },
+    apikey: {
+        type: "text",
+        desc: "API Key akses endpoint"
+    }
+};
+
+router.desc = "Menghapus background gambar otomatis via bgeraser. Menggunakan upload berkas.";
 router.status = "ready";
 router.type = "free";
 module.exports = router;
