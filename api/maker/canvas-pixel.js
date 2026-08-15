@@ -42,7 +42,7 @@ async function getBuffer(url) {
 const POS = {
     x: 255,
     y: 60,
-    rotate: -0.100
+    rotate: 0.035
 };
 
 const COLOR = {
@@ -58,12 +58,12 @@ function getLayout(text) {
         return { nameSize: 26, textSize: 28, width: 680, lineHeight: 34, textY: 36 };
     }
     if (len <= 120) {
-        return { nameSize: 25, textSize: 26, width: 690, lineHeight: 32, textY: 34 };
+        return { nameSize: 26, textSize: 28, width: 690, lineHeight: 32, textY: 34 };
     }
     if (len <= 170) {
-        return { nameSize: 24, textSize: 24, width: 700, lineHeight: 30, textY: 32 };
+        return { nameSize: 26, textSize: 28, width: 700, lineHeight: 30, textY: 32 };
     }
-    return { nameSize: 23, textSize: 23, width: 710, lineHeight: 28, textY: 30 };
+    return { nameSize: 26, textSize: 28, width: 710, lineHeight: 28, textY: 30 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
