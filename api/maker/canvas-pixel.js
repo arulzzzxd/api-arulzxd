@@ -12,7 +12,7 @@ const DEFAULT_IMAGE = "https://files.catbox.moe/otf3hb.jpg";
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/PixelOperator.ttf";
 
 // SKALA RE-RENDER UNTUK KUALITAS ULTRA HD / 4K
-const SCALE_FACTOR = 4; 
+const SCALE_FACTOR = 2; 
 
 let fontLoaded = false;
 
