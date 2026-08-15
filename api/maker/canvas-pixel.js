@@ -12,7 +12,7 @@ const DEFAULT_IMAGE = "https://files.catbox.moe/otf3hb.jpg";
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/PixelOperator.ttf";
 
 // SKALA RE-RENDER UNTUK KUALITAS ULTRA HD / 4K
-const SCALE_FACTOR = 2; 
+const SCALE_FACTOR = 3; 
 
 let fontLoaded = false;
 
@@ -40,7 +40,7 @@ async function getBuffer(url) {
 
 const POS = {
     x: 255,
-    y: 50, // Dinaikkan sedikit ke atas agar menampung font yang lebih besar
+    y: 50,
     rotate: 0.035
 };
 
@@ -51,19 +51,19 @@ const COLOR = {
     textStroke: "#000000"
 };
 
-// PERBESARAN UKURAN FONT LEBIH BESAR
+// PEMBARUAN LEBAR WRAPPER (width) DIPERLEBAR AGAR MEMENUHI AREA KANAN DIALOG BOX
 function getLayout(text) {
     const len = text.length;
     if (len <= 70) {
-        return { nameSize: 52, textSize: 54, width: 710, lineHeight: 62, textY: 66 };
+        return { nameSize: 52, textSize: 54, width: 1020, lineHeight: 62, textY: 66 };
     }
     if (len <= 120) {
-        return { nameSize: 48, textSize: 48, width: 720, lineHeight: 56, textY: 60 };
+        return { nameSize: 48, textSize: 48, width: 1000, lineHeight: 56, textY: 60 };
     }
     if (len <= 170) {
-        return { nameSize: 45, textSize: 44, width: 730, lineHeight: 52, textY: 56 };
+        return { nameSize: 45, textSize: 44, width: 990, lineHeight: 52, textY: 56 };
     }
-    return { nameSize: 40, textSize: 38, width: 740, lineHeight: 46, textY: 50 };
+    return { nameSize: 40, textSize: 38, width: 980, lineHeight: 46, textY: 50 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
