@@ -8,7 +8,7 @@ const {
 
 const router = express.Router();
 
-const DEFAULT_IMAGE = "https://files.catbox.moe/ezo9bi.png";
+const DEFAULT_IMAGE = "https://files.catbox.moe/otf3hb.jpg";
 
 // URL GitHub Raw untuk font PixelOperator
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/PixelOperator.ttf";
