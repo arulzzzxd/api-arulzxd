@@ -35,13 +35,14 @@ async function getBuffer(url) {
     return Buffer.from(data);
 }
 
-// PERBAIKAN KOORDINAT:
-// x: 185 digeser ke kanan menjadi 220 agar masuk di dalam bingkai hitam
-// y: 40 diturunkan sedikit menjadi 55 agar sejajar dengan batas dalam kotak
+// PERBAIKAN KOORDINAT & KEMIRINGAN BINGKAI:
+// x: 195 (Geser lebih masuk ke dalam kotak hitam)
+// y: 50 (Turunkan sedikit agar sejajar margin atas)
+// rotate: -0.024 (Kemiringan miring ke kiri mengikuti bentuk box dialog)
 const POS = {
-    x: 220,
-    y: 55,
-    rotate: 0
+    x: 195,
+    y: 50,
+    rotate: -0.024
 };
 
 const COLOR = {
@@ -54,15 +55,15 @@ const COLOR = {
 function getLayout(text) {
     const len = text.length;
     if (len <= 70) {
-        return { nameSize: 28, textSize: 30, width: 680, lineHeight: 36, textY: 38 };
+        return { nameSize: 26, textSize: 28, width: 680, lineHeight: 34, textY: 36 };
     }
     if (len <= 120) {
-        return { nameSize: 26, textSize: 28, width: 690, lineHeight: 34, textY: 35 };
+        return { nameSize: 25, textSize: 26, width: 690, lineHeight: 32, textY: 34 };
     }
     if (len <= 170) {
-        return { nameSize: 25, textSize: 26, width: 700, lineHeight: 32, textY: 32 };
+        return { nameSize: 24, textSize: 24, width: 700, lineHeight: 30, textY: 32 };
     }
-    return { nameSize: 24, textSize: 24, width: 710, lineHeight: 30, textY: 30 };
+    return { nameSize: 23, textSize: 23, width: 710, lineHeight: 28, textY: 30 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
