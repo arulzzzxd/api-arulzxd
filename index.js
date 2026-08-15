@@ -2576,6 +2576,14 @@ for (const category of endpointDirs) {
   }
 }
 
+function formatEndpointTitle(filename, categoryName) {
+  const cleanName = filename.replace(/\.js$/, "").replace(/[-_]/g, " ");
+  return cleanName
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function getEndpointsFromRouter(category, file) {
   const endpoints = [];
   const routePath = path.join(apiPath, category, file);
@@ -2591,6 +2599,7 @@ function getEndpointsFromRouter(category, file) {
   const subRouter = route.stack ? route : route.router || route;
   if (!subRouter || !subRouter.stack) return endpoints;
 
+  const endpointTitle = route.name || formatEndpointTitle(file, category);
   const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
 
   subRouter.stack.forEach(layer => {
@@ -2622,7 +2631,7 @@ function getEndpointsFromRouter(category, file) {
       }
 
       endpoints.push({
-        name: `/${category}/${file.replace(/\.js$/, "")}`,
+        name: endpointTitle,
         path: `/api/${category}/${file.replace(/\.js$/, "")}`,
         desc: routeDesc,
         status: route.status || "ready",
