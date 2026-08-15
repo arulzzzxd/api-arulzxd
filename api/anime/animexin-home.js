@@ -32,14 +32,31 @@ function extractSlug(url) {
 
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const url = page === 1 ? `${BASE_URL}/` : `${BASE_URL}/page/${page}/`;
+    const pageParam = req.query.page;
+
+    // Proteksi: Parameter page dibuat WAJIB (Tidak Opsional)
+    if (!pageParam) {
+      return res.status(400).json({
+        status: false,
+        error: "Parameter 'page' wajib diisi. Contoh: ?page=1"
+      });
+    }
+
+    const page = parseInt(pageParam);
+    if (isNaN(page) || page < 1) {
+      return res.status(400).json({
+        status: false,
+        error: "Parameter 'page' harus berupa angka positif."
+      });
+    }
+
+    const url = page === 2 ? `${BASE_URL}/` : `${BASE_URL}/page/${page}/`;
     const html = await fetchHTML(url);
     const $ = cheerio.load(html);
 
     const schedule = [];
-    $('.listSchh, .schedule').each((i, el) => {
-      const day = $(el).find('h2, h3').text().trim();
+    $('.listSchh, .schedulepage, .schedule').each((i, el) => {
+      const day = $(el).find('h2, h3, .releases h3 span').first().text().trim();
       const animeList = [];
       $(el).find('a').each((j, link) => {
         const title = $(link).text().trim();
@@ -79,7 +96,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil data halaman utama (homepage) Animexin. Parameter opsional: ?page=1";
+router.desc = "Mengambil data halaman utama Animexin. Parameter wajib: ?page=1";
 router.status = "ready";
 router.type = "free";
 module.exports = router;
