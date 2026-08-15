@@ -11,6 +11,9 @@ const router = express.Router();
 const DEFAULT_IMAGE = "https://files.catbox.moe/otf3hb.jpg";
 const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/PixelOperator.ttf";
 
+// SKALA RE-RENDER UNTUK KUALITAS ULTRA HD / 4K
+const SCALE_FACTOR = 4; 
+
 let fontLoaded = false;
 
 async function loadFont() {
@@ -35,13 +38,9 @@ async function getBuffer(url) {
     return Buffer.from(data);
 }
 
-// PERBAIKAN KOORDINAT & KEMIRINGAN BINGKAI:
-// x: 195 (Geser lebih masuk ke dalam kotak hitam)
-// y: 50 (Turunkan sedikit agar sejajar margin atas)
-// rotate: -0.024 (Kemiringan miring ke kiri mengikuti bentuk box dialog)
 const POS = {
     x: 255,
-    y: 60,
+    y: 50, // Dinaikkan sedikit ke atas agar menampung font yang lebih besar
     rotate: 0.035
 };
 
@@ -52,19 +51,19 @@ const COLOR = {
     textStroke: "#000000"
 };
 
-// DITAMBAHKAN UKURAN FONT NAMA (nameSize) DAN TEKS (textSize) AGAR LEBIH BESAR & JELAS
+// PERBESARAN UKURAN FONT LEBIH BESAR
 function getLayout(text) {
     const len = text.length;
     if (len <= 70) {
-        return { nameSize: 36, textSize: 38, width: 680, lineHeight: 46, textY: 50 };
+        return { nameSize: 52, textSize: 54, width: 710, lineHeight: 62, textY: 66 };
     }
     if (len <= 120) {
-        return { nameSize: 34, textSize: 35, width: 690, lineHeight: 42, textY: 46 };
+        return { nameSize: 48, textSize: 48, width: 720, lineHeight: 56, textY: 60 };
     }
     if (len <= 170) {
-        return { nameSize: 32, textSize: 33, width: 700, lineHeight: 39, textY: 43 };
+        return { nameSize: 45, textSize: 44, width: 730, lineHeight: 52, textY: 56 };
     }
-    return { nameSize: 30, textSize: 30, width: 710, lineHeight: 36, textY: 40 };
+    return { nameSize: 40, textSize: 38, width: 740, lineHeight: 46, textY: 50 };
 }
 
 function wrapLines(ctx, text, maxWidth) {
@@ -107,47 +106,56 @@ router.get("/", async (req, res) => {
         await loadFont();
 
         const bg = await loadImage(await getBuffer(DEFAULT_IMAGE));
-        const canvas = createCanvas(bg.width, bg.height);
+        
+        const canvasWidth = bg.width * SCALE_FACTOR;
+        const canvasHeight = bg.height * SCALE_FACTOR;
+        
+        const canvas = createCanvas(canvasWidth, canvasHeight);
         const ctx = canvas.getContext("2d");
 
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(bg, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        
+        ctx.drawImage(bg, 0, 0, canvasWidth, canvasHeight);
         ctx.textBaseline = "top";
 
         const layout = getLayout(text);
-        let textSize = layout.textSize;
-        let lineHeight = layout.lineHeight;
-        let width = layout.width;
-        let textY = layout.textY;
+        
+        let textSize = layout.textSize * SCALE_FACTOR;
+        let lineHeight = layout.lineHeight * SCALE_FACTOR;
+        let width = layout.width * SCALE_FACTOR;
+        let textY = layout.textY * SCALE_FACTOR;
+        let nameSize = layout.nameSize * SCALE_FACTOR;
 
         ctx.font = `${textSize}px "PixelOperator"`;
         let lines = wrapLines(ctx, text, width);
 
-        while (lines.length > 4 && textSize > 22) {
-            textSize--;
-            lineHeight--;
-            width += 10;
-            textY -= 1;
+        // Auto-scale jika kalimat terlalu panjang
+        while (lines.length > 4 && textSize > (28 * SCALE_FACTOR)) {
+            textSize -= (1 * SCALE_FACTOR);
+            lineHeight -= (1 * SCALE_FACTOR);
+            width += (10 * SCALE_FACTOR);
+            textY -= (1 * SCALE_FACTOR);
 
             ctx.font = `${textSize}px "PixelOperator"`;
             lines = wrapLines(ctx, text, width);
         }
 
         ctx.save();
-        ctx.translate(POS.x, POS.y);
+        ctx.translate(POS.x * SCALE_FACTOR, POS.y * SCALE_FACTOR);
         ctx.rotate(POS.rotate);
 
-        // Menggambar Nama
-        ctx.font = `${layout.nameSize}px "PixelOperator"`;
-        ctx.lineWidth = 3;
+        // Menggambar Nama HD
+        ctx.font = `${nameSize}px "PixelOperator"`;
+        ctx.lineWidth = 4.5 * SCALE_FACTOR;
         ctx.strokeStyle = COLOR.nameStroke;
         ctx.fillStyle = COLOR.name;
         ctx.strokeText(name, 0, 0);
         ctx.fillText(name, 0, 0);
 
-        // Menggambar Teks/Dialog
+        // Menggambar Teks/Dialog HD
         ctx.font = `${textSize}px "PixelOperator"`;
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5.5 * SCALE_FACTOR;
         ctx.strokeStyle = COLOR.textStroke;
         ctx.fillStyle = COLOR.text;
 
