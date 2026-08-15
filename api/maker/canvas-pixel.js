@@ -42,7 +42,7 @@ async function getBuffer(url) {
 const POS = {
     x: 255,
     y: 60,
-    rotate: -1
+    rotate: -0.100
 };
 
 const COLOR = {
