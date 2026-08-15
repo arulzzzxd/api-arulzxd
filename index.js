@@ -2576,7 +2576,7 @@ for (const category of endpointDirs) {
   }
 }
 
-function formatEndpointTitle(filename, categoryName) {
+function formatEndpointTitle(filename) {
   const cleanName = filename.replace(/\.js$/, "").replace(/[-_]/g, " ");
   return cleanName
     .split(" ")
@@ -2599,7 +2599,8 @@ function getEndpointsFromRouter(category, file) {
   const subRouter = route.stack ? route : route.router || route;
   if (!subRouter || !subRouter.stack) return endpoints;
 
-  const endpointTitle = route.name || formatEndpointTitle(file, category);
+  // Gunakan route.title / route.name jika ada, atau buat Title Case dari nama file
+  const endpointTitle = route.title || (route.name && route.name !== 'router' ? route.name : formatEndpointTitle(file));
   const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
 
   subRouter.stack.forEach(layer => {
@@ -2631,8 +2632,8 @@ function getEndpointsFromRouter(category, file) {
       }
 
       endpoints.push({
-        name: endpointTitle,
-        path: `/api/${category}/${file.replace(/\.js$/, "")}`,
+        name: endpointTitle, // Misal: "Aio Downloader" / "Capcut"
+        path: `/api/${category}/${file.replace(/\.js$/, "")}`, // Misal: "/api/download/capcut"
         desc: routeDesc,
         status: route.status || "ready",
         type: route.type || "free",

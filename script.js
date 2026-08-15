@@ -976,22 +976,25 @@ function loadApis() {
 
             html += `
             <div class="api-item border-t border-white/10 light-mode:border-slate-200" 
-                data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
-                <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
-                        <div class="text-left flex-1 min-w-0">
-                            <p class="code-font font-semibold text-[13px] ${pathColorClass} truncate">${path}</p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-xs ${subTextColorClass} truncate">${item.name}</p>
-                                <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
-                                ${badgeTypeHtml}
-                            </div>
-                        </div>
-                    </div>
-                    <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
+    data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
+             <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+             <div class="flex items-center gap-3 flex-1 min-w-0">
+               <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
+                <div class="text-left flex-1 min-w-0">
+                   <!-- NAMA FITUR / JUDUL (JUDUL DI ATAS) -->
+                   <p class="font-bold text-sm text-white light-mode:text-slate-900 truncate">${item.name}</p>
+                 
+                  <!-- PATH ENDPOINT /api/... (PATH DI BAWAH) -->
+                   <div class="flex items-center gap-2 mt-0.5">
+                       <p class="code-font text-xs ${pathColorClass} truncate">${path}</p>
+                       <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
+                      ${badgeTypeHtml}
+                   </div>
+                  </div>
+                </div>
+                <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
                    ${SVG_PLUS}
-                 </span>
+                  </span>
                 </button>
                 <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
     
