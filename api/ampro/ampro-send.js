@@ -2,14 +2,22 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const crypto = require('crypto');
-const fs = require('fs');
+const mongoose = require('mongoose');
 
 const CONFIG = {
     baseUrl: 'https://am.maulanabot.my.id',
     secretKey: 'kontol_jangan_so_tau_ngentod_2636273', 
-    userAgent: 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
-    dbFile: 'accounts.json'
+    userAgent: 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36'
 };
+
+// Model Account untuk MongoDB (Biar compatible di Vercel)
+const accountSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const AmAccount = mongoose.models.AmAccount || mongoose.model('AmAccount', accountSchema);
 
 let GLOBAL_COOKIES = {};
 
@@ -120,27 +128,17 @@ async function getProtectedHeaders(payloadObj) {
     };
 }
 
-function loadAccounts() {
-    try {
-        if (fs.existsSync(CONFIG.dbFile)) return JSON.parse(fs.readFileSync(CONFIG.dbFile, 'utf8'));
-    } catch (e) {}
-    return [];
+// Menggantikan fungsi simpan & cari akun lokal dengan MongoDB
+async function saveAccount(username, password) {
+    await AmAccount.findOneAndUpdate(
+        { username },
+        { username, password, createdAt: new Date() },
+        { upsert: true, new: true }
+    );
 }
 
-function saveAccount(username, password) {
-    const accounts = loadAccounts();
-    const index = accounts.findIndex(a => a.username === username);
-    const newData = { username, password, createdAt: new Date().toISOString() };
-    
-    if (index !== -1) accounts[index] = newData;
-    else accounts.push(newData);
-    
-    fs.writeFileSync(CONFIG.dbFile, JSON.stringify(accounts, null, 2));
-}
-
-function findValidAccount() {
-    const accounts = loadAccounts();
-    return accounts.length > 0 ? accounts[accounts.length - 1] : null;
+async function findValidAccount() {
+    return await AmAccount.findOne().sort({ createdAt: -1 });
 }
 
 async function createNewOperatorSession() {
@@ -163,12 +161,12 @@ async function createNewOperatorSession() {
         throw new Error('Gagal mendapatkan sesi valid untuk operator baru.');
     }
     
-    saveAccount(username, password);
+    await saveAccount(username, password);
     return { username, password };
 }
 
 async function ensureOperatorLoggedIn() {
-    let account = findValidAccount();
+    let account = await findValidAccount();
     
     if (account) {
         try {
@@ -221,7 +219,6 @@ async function sendOobLinkWithRetry(targetEmail, maxRetries = 3) {
     throw new Error('Gagal mengirim link setelah beberapa kali rotasi akun.');
 }
 
-// Endpoint GET / (Misal dipanggil via /api/am/send?email=target@mail.com)
 router.get('/', async (req, res) => {
     try {
         const email = req.query.email;
