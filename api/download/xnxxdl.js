@@ -183,25 +183,8 @@ async function xnxxdl(URL) {
 // ENDPOINT GET UTAMA
 // ======================================================
 router.get('/', async (req, res) => {
-    const apikey = req.query.apikey;
     const url = req.query.url;
     
-    if (!apikey) {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulzxd",
-            message: "API Key mana? masukkan parameter ?apikey=MasukkanApiKey"
-        });
-    }
-
-    // 2. Validasi kecocokan nilai API Key
-    if (apikey !== 'arulzxd-keys') {
-        return res.status(403).json({
-            status: false,
-            creator: "Arulzxd",
-            message: "API Key salah / tidak valid!"
-        });
-    }
     if (!url) {
         return res.status(400).json({
             status: false,
