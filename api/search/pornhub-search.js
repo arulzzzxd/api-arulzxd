@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cheerio = require('cheerio');
 const express = require('express');
 const router = express.Router();
 
@@ -7,38 +8,69 @@ async function searchPornhub(query) {
         const searchUrl = `https://www.pornhub.com/video/search?search=${encodeURIComponent(query)}`;
         const { data: html } = await axios.get(searchUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Cookie': 'age_verified=1'
             },
             timeout: 15000
         });
 
+        const $ = cheerio.load(html);
         const results = [];
-        const videoRegex = /<li class="[^"]*videoBlock[^"]*"[\s\S]*?<a href="(\/view_video\.php\?viewkey=[^"]+)" title="([^"]+)"[\s\S]*?<var class="duration">([^<]+)<\/var>[\s\S]*?<span class="views"><var>([^<]+)<\/var>/g;
-        let match;
-        while ((match = videoRegex.exec(html)) !== null) {
-            results.push({
-                title: match[2].trim(),
-                url: `https://www.pornhub.com${match[1]}`,
-                duration: match[3].trim(),
-                views: match[4].trim()
-            });
-        }
 
+        // Parsing berbasis selector DOM Pornhub
+        $('ul.videos.search-video-thumbs li.videoBlock, ul.videos li.pcVideoListItem').each((_, el) => {
+            const $el = $(el);
+            
+            // Ambil Judul & Link
+            const titleEl = $el.find('.title a, span.title a').first();
+            const title = titleEl.attr('title') || titleEl.text().trim();
+            let link = titleEl.attr('href');
+
+            if (!link || !link.includes('/view_video.php')) return;
+            if (!link.startsWith('http')) link = `https://www.pornhub.com${link}`;
+
+            // Ambil Durasi (Mendukung var.duration / .duration / attribute data-duration)
+            let duration = $el.find('var.duration, .duration, span.time').text().trim();
+            if (!duration) {
+                duration = $el.find('[data-duration]').attr('data-duration') || '-';
+            }
+
+            // Ambil Views
+            let views = $el.find('.views var, span.views, .videoDetailsBlock .views').text().trim();
+            if (!views) {
+                views = '-';
+            }
+
+            // Ambil Thumbnail (Opsional)
+            const thumbnail = $el.find('img').attr('data-mediumhint') || $el.find('img').attr('src') || '';
+
+            if (title && link) {
+                results.push({
+                    title,
+                    url: link,
+                    duration,
+                    views,
+                    thumbnail
+                });
+            }
+        });
+
+        // Fallback Regex jika Cheerio tidak menemukan elemen akibat struktur inline script
         if (!results.length) {
-            const simpleRegex = /href="(\/view_video\.php\?viewkey=[a-zA-Z0-9]+)" title="([^"]+)"/g;
-            let m;
+            const fallbackRegex = /<li[^>]*class="[^"]*videoBlock[^"]*"[\s\S]*?<a href="(\/view_video\.php\?viewkey=[^"]+)"[^>]*title="([^"]+)"[\s\S]*?(?:<var class="duration">([^<]+)<\/var>|<span class="duration">([^<]+)<\/span>)?[\s\S]*?(?:<span class="views"><var>([^<]+)<\/var>|<span class="views">([^<]+)<\/span>)?/g;
+            let match;
             const added = new Set();
-            while ((m = simpleRegex.exec(html)) !== null) {
-                const vUrl = `https://www.pornhub.com${m[1]}`;
+
+            while ((match = fallbackRegex.exec(html)) !== null) {
+                const vUrl = `https://www.pornhub.com${match[1]}`;
                 if (!added.has(vUrl)) {
                     added.add(vUrl);
                     results.push({
-                        title: m[2].trim(),
+                        title: match[2].trim(),
                         url: vUrl,
-                        duration: '-',
-                        views: '-'
+                        duration: (match[3] || match[4] || '-').trim(),
+                        views: (match[5] || match[6] || '-').trim()
                     });
                 }
             }
@@ -79,5 +111,5 @@ router.get('/', async (req, res) => {
 });
 
 router.status = "ready";
-router.type = "free";
+router.type = "premium";
 module.exports = router;
