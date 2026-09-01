@@ -3,10 +3,21 @@ const cheerio = require('cheerio');
 const express = require('express');
 const router = express.Router();
 
-// Helper to format duration
-function formatDuration(durationStr) {
-    if (!durationStr) return "00.00";
-    return durationStr.trim().replace(/:/g, '.');
+// Helper untuk membersihkan dan memformat durasi (misal: "12min" -> "12.00" atau "12:30" -> "12.30")
+function formatDuration(rawText) {
+    if (!rawText) return "00.00";
+    
+    // Ambil format "12min", "1h 20min", atau "12:30"
+    const text = rawText.trim();
+    
+    // Jika format berbentuk "12min" atau "1h 5min"
+    if (text.includes('min') || text.includes('h')) {
+        return text;
+    }
+
+    // Jika format HH:MM:SS atau MM:SS, ubah titik dua menjadi titik
+    const cleanDuration = text.replace(/[^0-9:]/g, '');
+    return cleanDuration ? cleanDuration.replace(/:/g, '.') : "00.00";
 }
 
 // ======================================================
@@ -25,22 +36,20 @@ async function xnxxSearch(searchQuery) {
         'accept-language': 'en-US,en;q=0.9'
     };
 
-    // 1. Fetch the first page to determine how many pages exist
+    // 1. Fetch first page
     const initialUrl = `https://www.xnxx.com/search/${encodeURIComponent(query)}/1`;
     const { data } = await axios.get(initialUrl, { headers });
     const $ = cheerio.load(data);
 
-    // 2. Determine Max Pages: Extract the last page number from pagination
-    // This assumes standard pagination structure usually found in '.pagination'
+    // 2. Determine Max Pages
     let maxPages = 1;
     const paginationLinks = $('.pagination li a');
     if (paginationLinks.length > 0) {
-        // Look for the "Last" or highest number link
         const lastPage = parseInt(paginationLinks.last().attr('href')?.split('/').pop()) || 1;
         maxPages = lastPage;
     }
 
-    // 3. Generate Random Page within valid range (Max 50 to avoid scraping deep)
+    // 3. Generate Random Page
     const safeMax = Math.min(maxPages, 50); 
     const randomPage = Math.floor(Math.random() * safeMax) + 1;
 
@@ -57,7 +66,13 @@ async function xnxxSearch(searchQuery) {
         let link = $p(element).find('.thumb-under a').attr('href') || $p(element).find('a').attr('href');
         if (link && !link.startsWith('http')) link = `https://www.xnxx.com${link}`;
         const thumbnail = $p(element).find('img').attr('data-src') || $p(element).find('img').attr('src');
-        const duration = formatDuration($p(element).find('.duration').first().text().trim());
+        
+        // --- FIX DURASI ---
+        // Isolasi penangan durasi dari metadata agar tidak tercampur dengan flag HD/1080p
+        let rawDuration = $p(element).find('.metadata').text();
+        let matchedDuration = rawDuration.match(/(\d+\s*min|\d+\s*h\s*\d+\s*min|\d+:\d+(?::\d+)?)/i);
+        
+        const duration = matchedDuration ? formatDuration(matchedDuration[0]) : "00.00";
 
         if (title && link) results.push({ title, duration, thumbnail, link });
     });
@@ -71,7 +86,7 @@ async function xnxxSearch(searchQuery) {
     };
 }
 
-// Router remains largely the same
+// Router Endpoint
 router.get('/', async (req, res) => {
     const queryParam = req.query.query;
 
