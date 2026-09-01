@@ -3,6 +3,22 @@ const cheerio = require('cheerio');
 const express = require('express');
 const router = express.Router();
 
+// Helper untuk membersihkan teks views yang berulang (misal: "74.1K74.1K" -> "74.1K")
+function cleanViews(rawViews) {
+    if (!rawViews) return '-';
+    const trimmed = rawViews.trim();
+    
+    // Jika teks terduplikasi persis setengahnya (misal "74.1K74.1K" atau "10M10M")
+    const halfLen = trimmed.length / 2;
+    if (trimmed.length % 2 === 0 && trimmed.slice(0, halfLen) === trimmed.slice(halfLen)) {
+        return trimmed.slice(0, halfLen);
+    }
+    
+    // Ambil pola angka + suffix (misal "74.1K", "1.2M", "500")
+    const match = trimmed.match(/\d+(?:\.\d+)?[KMGT]?/i);
+    return match ? match[0] : trimmed;
+}
+
 async function searchPornhub(query) {
     try {
         const searchUrl = `https://www.pornhub.com/video/search?search=${encodeURIComponent(query)}`;
@@ -18,7 +34,6 @@ async function searchPornhub(query) {
         const $ = cheerio.load(html);
         const results = [];
 
-        // Parsing berbasis selector DOM Pornhub
         $('ul.videos.search-video-thumbs li.videoBlock, ul.videos li.pcVideoListItem').each((_, el) => {
             const $el = $(el);
             
@@ -30,19 +45,16 @@ async function searchPornhub(query) {
             if (!link || !link.includes('/view_video.php')) return;
             if (!link.startsWith('http')) link = `https://www.pornhub.com${link}`;
 
-            // Ambil Durasi (Mendukung var.duration / .duration / attribute data-duration)
-            let duration = $el.find('var.duration, .duration, span.time').text().trim();
-            if (!duration) {
-                duration = $el.find('[data-duration]').attr('data-duration') || '-';
-            }
+            // Ambil Durasi
+            let duration = $el.find('var.duration').text().trim() || $el.find('.duration').text().trim() || '-';
+            duration = duration.replace(/\s+/g, ' ');
 
-            // Ambil Views
-            let views = $el.find('.views var, span.views, .videoDetailsBlock .views').text().trim();
-            if (!views) {
-                views = '-';
-            }
+            // Ambil Views (spesifik ambil teks var pertama agar tidak duplikat)
+            let rawViews = $el.find('.views var').first().text().trim() 
+                        || $el.find('span.views').contents().filter((_, node) => node.type === 'text').text().trim()
+                        || $el.find('.views').text().trim();
 
-            // Ambil Thumbnail (Opsional)
+            const views = cleanViews(rawViews);
             const thumbnail = $el.find('img').attr('data-mediumhint') || $el.find('img').attr('src') || '';
 
             if (title && link) {
@@ -56,9 +68,9 @@ async function searchPornhub(query) {
             }
         });
 
-        // Fallback Regex jika Cheerio tidak menemukan elemen akibat struktur inline script
+        // Fallback Regex
         if (!results.length) {
-            const fallbackRegex = /<li[^>]*class="[^"]*videoBlock[^"]*"[\s\S]*?<a href="(\/view_video\.php\?viewkey=[^"]+)"[^>]*title="([^"]+)"[\s\S]*?(?:<var class="duration">([^<]+)<\/var>|<span class="duration">([^<]+)<\/span>)?[\s\S]*?(?:<span class="views"><var>([^<]+)<\/var>|<span class="views">([^<]+)<\/span>)?/g;
+            const fallbackRegex = /<li[^>]*class="[^"]*videoBlock[^"]*"[\s\S]*?<a href="(\/view_video\.php\?viewkey=[^"]+)"[^>]*title="([^"]+)"[\s\S]*?<var class="duration">([^<]+)<\/var>[\s\S]*?<span class="views">(?:<var>)?([^<]+)(?:<\/var>)?<\/span>/g;
             let match;
             const added = new Set();
 
@@ -69,8 +81,8 @@ async function searchPornhub(query) {
                     results.push({
                         title: match[2].trim(),
                         url: vUrl,
-                        duration: (match[3] || match[4] || '-').trim(),
-                        views: (match[5] || match[6] || '-').trim()
+                        duration: match[3].trim(),
+                        views: cleanViews(match[4]),
                     });
                 }
             }
