@@ -137,6 +137,11 @@ router.get("/", async (req, res) => {
 
 // --- CONFIG DROPDOWN SELECT ---
 router.paramsConfig = {
+    kota: {
+        type: "text",
+        required: true,
+        placeholder: "Masukkan kata kunci pencarian..."
+    },
     lang: {
         type: "select",
         options: [
