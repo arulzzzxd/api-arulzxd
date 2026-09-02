@@ -5,13 +5,11 @@ const cheerio = require("cheerio");
 const router = express.Router();
 const BASE_URL = "https://melolo.com";
 
-// Fungsi pembuat IP acak untuk header spoofing
 function generateRandomIP() {
   const ranges = [
     [1, 1], [2, 2], [5, 5], [23, 23], [27, 27], [31, 31],
     [36, 36], [37, 37], [39, 39], [42, 42], [46, 46],
-    [49, 49], [50, 50], [60, 60], [114, 114], [117, 117],
-    [118, 118], [119, 119], [120, 120], [121, 121]
+    [49, 49], [50, 50], [60, 60], [114, 114], [117, 117]
   ];
   const range = ranges[Math.floor(Math.random() * ranges.length)];
   return [
@@ -22,7 +20,6 @@ function generateRandomIP() {
   ].join(".");
 }
 
-// Helper untuk fetch HTML halaman target
 async function fetchHtml(targetUrl) {
   const spoofedIp = generateRandomIP();
   const response = await axios.get(targetUrl, {
@@ -39,30 +36,52 @@ async function fetchHtml(targetUrl) {
   return response.data;
 }
 
-// Parse HTML menggunakan Cheerio
 function parseSearchResults(html, type) {
   const $ = cheerio.load(html);
   const results = [];
 
+  // 1. Coba ekstrak data jika terdapat Embedded State JSON (__NEXT_DATA__ / __NUXT__)
+  const nextDataScript = $("#__NEXT_DATA__").html();
+  if (nextDataScript) {
+    try {
+      const jsonState = JSON.parse(nextDataScript);
+      // Ambil array pencarian dari data state Next.js (sesuaikan key internalnya jika ada)
+      const stateResults = jsonState?.props?.pageProps?.searchResults || [];
+      stateResults.forEach(item => {
+        results.push({
+          title: item.title || item.name,
+          url: `${BASE_URL}/dramas/${item.id || item.slug}`
+        });
+      });
+      if (results.length > 0) return results;
+    } catch (e) {
+      // Mengabaikan error parsing JSON dan beralih ke fallback HTML
+    }
+  }
+
+  // 2. Fallback: Tangkap link dengan selector lebih longgar (merangkul pola URL drama / series / play)
   $("a").each((_, el) => {
     const href = $(el).attr("href");
-    const title = $(el).text().trim();
+    const title = $(el).text().trim() || $(el).attr("title");
 
     if (href && title) {
+      const lowerHref = href.toLowerCase();
       let isMatch = false;
 
-      // Filter berdasarkan tipe konten
-      if (type === "short_dramas" && href.includes("/dramas/")) isMatch = true;
-      else if (type === "novels" && href.includes("/novels/")) isMatch = true;
-      else if (type === "articles" && href.includes("/articles/")) isMatch = true;
+      // Pelonggaran filter path URL untuk Short Drama
+      if (type === "short_dramas" && (lowerHref.includes("/dramas/") || lowerHref.includes("/series/") || lowerHref.includes("/play/"))) {
+        isMatch = true;
+      } else if (type === "novels" && (lowerHref.includes("/novels/") || lowerHref.includes("/book/"))) {
+        isMatch = true;
+      } else if (type === "articles" && lowerHref.includes("/article")) {
+        isMatch = true;
+      }
 
       if (isMatch) {
         const fullUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
-        
-        // Mencegah duplikasi data
         if (!results.some(item => item.url === fullUrl)) {
           results.push({
-            title,
+            title: title.replace(/\s+/g, " "),
             url: fullUrl
           });
         }
@@ -73,24 +92,16 @@ function parseSearchResults(html, type) {
   return results;
 }
 
-// Endpoint utama GET /
 router.get("/", async (req, res) => {
   try {
-    const { query, type, limit = 10 } = req.query;
+    const query = req.query.query;
+const type = req.query.type;
+const limit = req.query.limit ? Number(req.query.limit) : 5;
 
-    if (!query) {
+    if (!query || !type) {
       return res.status(400).json({
         status: false,
-        message: "Parameter 'query' wajib diisi"
-      });
-    }
-
-    const validTypes = ["short_dramas", "novels", "articles"];
-    if (!type || !validTypes.includes(type)) {
-      return res.status(400).json({
-        status: false,
-        message: "Parameter 'type' wajib diisi dengan nilai yang valid",
-        available_types: validTypes
+        message: "Parameter 'query' dan 'type' wajib diisi"
       });
     }
 
@@ -98,7 +109,7 @@ router.get("/", async (req, res) => {
     const html = await fetchHtml(searchUrl);
     const parsedResults = parseSearchResults(html, type);
 
-    const parsedLimit = Math.max(1, parseInt(limit, 10) || 10);
+    const parsedLimit = Math.max(1, parseInt(limit, 10) || 5);
     const finalResults = parsedResults.slice(0, parsedLimit);
 
     return res.json({
@@ -114,12 +125,9 @@ router.get("/", async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       status: false,
-      error: error.message || "Terjadi kesalahan pada server"
+      error: error.message
     });
   }
 });
-
-router.status = "ready";
-router.type = "free";
 
 module.exports = router;
