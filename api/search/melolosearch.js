@@ -1,210 +1,125 @@
 const express = require("express");
-const https = require("https");
-const http = require("http");
+const axios = require("axios");
 const cheerio = require("cheerio");
 
 const router = express.Router();
+const BASE_URL = "https://melolo.com";
 
-const BASE = "https://melolo.com";
-
+// Fungsi pembuat IP acak untuk header spoofing
 function generateRandomIP() {
-const ranges = [
-[1,1],[2,2],[5,5],[23,23],[27,27],[31,31],
-[36,36],[37,37],[39,39],[42,42],[46,46],
-[49,49],[50,50],[60,60],[114,114],[117,117],
-[118,118],[119,119],[120,120],[121,121],
-[122,122],[123,123],[124,124],[125,125],
-[126,126],[180,180],[182,182],[183,183]
-];
-
-const range =
-ranges[
-Math.floor(
-Math.random() * ranges.length
-)
-];
-
-return [
-range[0],
-Math.floor(Math.random() * 256),
-Math.floor(Math.random() * 256),
-Math.floor(Math.random() * 256)
-].join(".");
+  const ranges = [
+    [1, 1], [2, 2], [5, 5], [23, 23], [27, 27], [31, 31],
+    [36, 36], [37, 37], [39, 39], [42, 42], [46, 46],
+    [49, 49], [50, 50], [60, 60], [114, 114], [117, 117],
+    [118, 118], [119, 119], [120, 120], [121, 121]
+  ];
+  const range = ranges[Math.floor(Math.random() * ranges.length)];
+  return [
+    range[0],
+    Math.floor(Math.random() * 256),
+    Math.floor(Math.random() * 256),
+    Math.floor(Math.random() * 256)
+  ].join(".");
 }
 
-function fetchUrl(url) {
-return new Promise((resolve, reject) => {
-const client =
-url.startsWith("https")
-? https
-: http;
-
-const spoofedIp =
-  generateRandomIP();
-
-const req = client.get(
-  url,
-  {
+// Helper untuk fetch HTML halaman target
+async function fetchHtml(targetUrl) {
+  const spoofedIp = generateRandomIP();
+  const response = await axios.get(targetUrl, {
     headers: {
-      "User-Agent":
-        "Mozilla/5.0",
-      "Accept":
-        "text/html,application/xhtml+xml",
-      "Accept-Language":
-        "en-US,en;q=0.9",
-      "Referer":
-        BASE,
-      "X-Forwarded-For":
-        spoofedIp,
-      "X-Real-IP":
-        spoofedIp
-    }
-  },
-  (res) => {
-    if (
-      res.statusCode >= 300 &&
-      res.statusCode < 400 &&
-      res.headers.location
-    ) {
-      let redirect =
-        res.headers.location;
-
-      if (
-        !redirect.startsWith(
-          "http"
-        )
-      ) {
-        redirect =
-          new URL(url).origin +
-          redirect;
-      }
-
-      return fetchUrl(
-        redirect
-      )
-        .then(resolve)
-        .catch(reject);
-    }
-
-    let data = "";
-
-    res.on(
-      "data",
-      chunk =>
-        (data += chunk)
-    );
-
-    res.on(
-      "end",
-      () => resolve(data)
-    );
-
-    res.on(
-      "error",
-      reject
-    );
-  }
-);
-
-req.on("error", reject);
-
-});
-}
-
-function parseSearch(html) {
-const $ = cheerio.load(html);
-
-const results = [];
-
-$("a").each((_, el) => {
-const href =
-$(el).attr("href");
-
-const title =
-  $(el)
-    .text()
-    .trim();
-
-if (
-  href &&
-  title &&
-  href.includes(
-    "/dramas/"
-  )
-) {
-  results.push({
-    title,
-    url: href.startsWith(
-      "http"
-    )
-      ? href
-      : BASE + href
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Referer": BASE_URL,
+      "X-Forwarded-For": spoofedIp,
+      "X-Real-IP": spoofedIp
+    },
+    timeout: 10000
   });
+  return response.data;
 }
 
-});
+// Parse HTML menggunakan Cheerio
+function parseSearchResults(html, type) {
+  const $ = cheerio.load(html);
+  const results = [];
 
-return results;
+  $("a").each((_, el) => {
+    const href = $(el).attr("href");
+    const title = $(el).text().trim();
+
+    if (href && title) {
+      let isMatch = false;
+
+      // Filter berdasarkan tipe konten
+      if (type === "short_dramas" && href.includes("/dramas/")) isMatch = true;
+      else if (type === "novels" && href.includes("/novels/")) isMatch = true;
+      else if (type === "articles" && href.includes("/articles/")) isMatch = true;
+
+      if (isMatch) {
+        const fullUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
+        
+        // Mencegah duplikasi data
+        if (!results.some(item => item.url === fullUrl)) {
+          results.push({
+            title,
+            url: fullUrl
+          });
+        }
+      }
+    }
+  });
+
+  return results;
 }
 
+// Endpoint utama GET /
 router.get("/", async (req, res) => {
   try {
-    const query = req.query.query;
-    const type = req.query.type;
-    const limit = Number(
-      req.query.limit || 1
-    );
+    const { query, type, limit = 10 } = req.query;
 
     if (!query) {
       return res.status(400).json({
         status: false,
-        message: "Parameter query wajib diisi"
+        message: "Parameter 'query' wajib diisi"
       });
     }
 
-    if (!type) {
+    const validTypes = ["short_dramas", "novels", "articles"];
+    if (!type || !validTypes.includes(type)) {
       return res.status(400).json({
         status: false,
-        message: "Parameter type wajib diisi",
-        available: [
-          "short_dramas",
-          "novels",
-          "articles"
-        ]
+        message: "Parameter 'type' wajib diisi dengan nilai yang valid",
+        available_types: validTypes
       });
     }
-    
-    const html =
-  await fetchUrl(
-    `${BASE}/search?q=${encodeURIComponent(
-      query
-    )}`
-  );
 
-const results =
-  parseSearch(html);
+    const searchUrl = `${BASE_URL}/search?q=${encodeURIComponent(query)}`;
+    const html = await fetchHtml(searchUrl);
+    const parsedResults = parseSearchResults(html, type);
 
-res.json({
-  status: true,
-  creator: "ArulzXD",
-  query,
-  type,
-  limit: Number(limit),
-  total_results:
-    results.length,
-  results: results.slice(
-    0,
-    Number(limit)
-  )
-});
+    const parsedLimit = Math.max(1, parseInt(limit, 10) || 10);
+    const finalResults = parsedResults.slice(0, parsedLimit);
 
-  } catch (e) {
-    res.status(500).json({
+    return res.json({
+      status: true,
+      creator: "ArulzXD",
+      query,
+      type,
+      limit: parsedLimit,
+      total_results: finalResults.length,
+      results: finalResults
+    });
+
+  } catch (error) {
+    return res.status(500).json({
       status: false,
-      error: e.message
+      error: error.message || "Terjadi kesalahan pada server"
     });
   }
 });
-router.status = "ready"; 
+
+router.status = "ready";
 router.type = "free";
+
 module.exports = router;
