@@ -5,6 +5,8 @@ const path = require("path");
 const os = require("os");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
+const ffmpegPath = require("ffmpeg-static"); // <--- Import ffmpeg-static
+
 const execFileAsync = promisify(execFile);
 
 const router = express.Router();
@@ -430,8 +432,9 @@ async function generateBratVideo({
   const ext = format === "gif" ? "gif" : "mp4";
   const outPath = path.join(os.tmpdir(), `brat-${Date.now()}.${ext}`);
 
+  // Gunakan variabel ffmpegPath di sini
   if (format === "gif") {
-    await execFileAsync("ffmpeg", [
+    await execFileAsync(ffmpegPath, [
       "-y",
       "-f", "concat", "-safe", "0", "-i", concatPath,
       "-vf", "fps=60,scale=1000:1000:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer",
@@ -439,7 +442,7 @@ async function generateBratVideo({
       outPath
     ]);
   } else {
-    await execFileAsync("ffmpeg", [
+    await execFileAsync(ffmpegPath, [
       "-y",
       "-f", "concat", "-safe", "0", "-i", concatPath,
       "-vf", "fps=60,scale=1000:1000",
