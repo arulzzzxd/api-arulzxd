@@ -13,6 +13,15 @@ const router = express.Router();
 const FONT_URL = "https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Font/ARIALN.ttf";
 const EMOJI_JSON_URL = "https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json";
 
+// KONSTANTA DEFAULT OTOMATIS
+const DEFAULT_THEME = "white";
+const DEFAULT_BLUR = 0;
+const DEFAULT_FRAME_DURATION = 0.4;
+const DEFAULT_HOLD_DURATION = 1.2;
+const DEFAULT_MAX_WORD_PER_LAYER = 1;
+const DEFAULT_MAX_WORD_BEFORE_RESET = [7, 8];
+const DEFAULT_FAST_PROGRESS = true;
+
 const THEMES = {
   black: { bg: "#000000", text: "#ffffff" },
   white: { bg: "#ffffff", text: "#000000" },
@@ -103,6 +112,7 @@ async function drawTextWithEmojis(ctx, text, x, y, fontSize) {
       curX += fontSize;
     } else {
       ctx.fillText(part, curX, y);
+      ctx.measureText(part);
       curX += ctx.measureText(part).width;
     }
     EMOJI_REGEX.lastIndex = 0;
@@ -195,16 +205,16 @@ async function renderCanvas(text, theme, blurAmount) {
 
 async function generateBratVideo({
   text = "Halo Guys Nama Saya",
-  theme = "white",
-  blur = 0,
+  theme = DEFAULT_THEME,
+  blur = DEFAULT_BLUR,
   format = "mp4",
-  frameDuration = 0.35,
-  holdDuration = 1.2,
-  maxWordPerLayer = 1,
-  maxWordBeforeReset = [7, 8],
-  fastProgress = true
+  frameDuration = DEFAULT_FRAME_DURATION,
+  holdDuration = DEFAULT_HOLD_DURATION,
+  maxWordPerLayer = DEFAULT_MAX_WORD_PER_LAYER,
+  maxWordBeforeReset = DEFAULT_MAX_WORD_BEFORE_RESET,
+  fastProgress = DEFAULT_FAST_PROGRESS
 } = {}) {
-  const blurAmount = [0, 1, 2, 3].includes(blur) ? blur : 0;
+  const blurAmount = [0, 1, 2, 3].includes(blur) ? blur : DEFAULT_BLUR;
   const step = Math.max(1, maxWordPerLayer);
   const resetSchedule = Array.isArray(maxWordBeforeReset)
     ? maxWordBeforeReset.map(n => Math.max(0, n))
@@ -305,34 +315,25 @@ router.get("/", async (req, res) => {
       });
     }
 
-    const theme = req.query.theme || "white";
-    const blur = parseInt(req.query.blur) || 0;
-    const format = req.query.format === "gif" ? "gif" : "mp4";
-    const frameDuration = parseFloat(req.query.frameDuration) || 0.4;
-    const holdDuration = parseFloat(req.query.holdDuration) || 1.2;
-    const maxWordPerLayer = parseInt(req.query.maxWordPerLayer) || 1;
+    const parseParam = (paramValue) => paramValue ? String(paramValue).split('|')[0].trim() : null;
 
-    let maxWordBeforeReset = [7, 8];
-    if (req.query.maxWordBeforeReset) {
-      try {
-        maxWordBeforeReset = JSON.parse(req.query.maxWordBeforeReset);
-      } catch {
-        maxWordBeforeReset = parseInt(req.query.maxWordBeforeReset) || 0;
-      }
-    }
+    // Hanya memproses parameter text, theme, dan format
+    const rawTheme = parseParam(req.query.theme) || DEFAULT_THEME;
+    const theme = THEMES[rawTheme] ? rawTheme : DEFAULT_THEME;
 
-    const fastProgress = req.query.fastProgress !== "false";
+    const format = (parseParam(req.query.format) || "mp4").toLowerCase();
 
+    // Menggunakan nilai default langsung tanpa mengambil dari req.query
     const filePath = await generateBratVideo({
       text,
       theme,
-      blur,
       format,
-      frameDuration,
-      holdDuration,
-      maxWordPerLayer,
-      maxWordBeforeReset,
-      fastProgress
+      blur: DEFAULT_BLUR,
+      frameDuration: DEFAULT_FRAME_DURATION,
+      holdDuration: DEFAULT_HOLD_DURATION,
+      maxWordPerLayer: DEFAULT_MAX_WORD_PER_LAYER,
+      maxWordBeforeReset: DEFAULT_MAX_WORD_BEFORE_RESET,
+      fastProgress: DEFAULT_FAST_PROGRESS
     });
 
     const contentType = format === "gif" ? "image/gif" : "video/mp4";
@@ -357,6 +358,26 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+// Konfigurasi parameter untuk dashboard/frontend (Hanya text, theme, dan format)
+router.paramsConfig = {
+  text: "text",
+  theme: {
+    type: "select",
+    options: [
+      "white | White Theme",
+      "black | Black Theme",
+      "green | Green Theme"
+    ]
+  },
+  format: {
+    type: "select",
+    options: [
+      "mp4 | MP4 Video",
+      "gif | Animated GIF"
+    ]
+  }
+};
 
 router.status = "ready";
 router.type = "free";
