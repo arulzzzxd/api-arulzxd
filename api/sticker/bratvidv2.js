@@ -315,15 +315,11 @@ router.get("/", async (req, res) => {
       });
     }
 
-    const parseParam = (paramValue) => paramValue ? String(paramValue).split('|')[0].trim() : null;
-
-    // Hanya memproses parameter text, theme, dan format
-    const rawTheme = parseParam(req.query.theme) || DEFAULT_THEME;
+    const rawTheme = (req.query.theme || DEFAULT_THEME).toLowerCase().trim();
     const theme = THEMES[rawTheme] ? rawTheme : DEFAULT_THEME;
 
-    const format = (parseParam(req.query.format) || "mp4").toLowerCase();
+    const format = (req.query.format || "mp4").toLowerCase().trim();
 
-    // Menggunakan nilai default langsung tanpa mengambil dari req.query
     const filePath = await generateBratVideo({
       text,
       theme,
@@ -359,22 +355,22 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Konfigurasi parameter untuk dashboard/frontend (Hanya text, theme, dan format)
+// Parameter config bersih tanpa deskripsi ' | ...'
 router.paramsConfig = {
   text: "text",
   theme: {
     type: "select",
     options: [
-      "white | White Theme",
-      "black | Black Theme",
-      "green | Green Theme"
+      "white",
+      "black",
+      "green"
     ]
   },
   format: {
     type: "select",
     options: [
-      "mp4 | MP4 Video",
-      "gif | Animated GIF"
+      "mp4",
+      "gif"
     ]
   }
 };
