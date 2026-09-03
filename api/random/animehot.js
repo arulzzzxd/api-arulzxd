@@ -87,6 +87,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.desc = "Mengambil gambar anime hot 🤤 acak.";
 router.status = "ready";
 router.type = "free";
 module.exports = router;

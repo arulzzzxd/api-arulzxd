@@ -131,6 +131,8 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.desc = "Mengambil video cewe tobrut acak.";
 router.status = "ready";
 router.type = "free";
+
 module.exports = router;

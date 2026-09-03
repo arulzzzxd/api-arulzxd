@@ -92,6 +92,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.desc = "menampilkan video / gif secara acak";
 router.status = "ready"; 
 router.type = "vip";
 module.exports = router;

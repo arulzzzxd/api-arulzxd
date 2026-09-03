@@ -88,11 +88,13 @@ router.paramsConfig = {
             "aesthetic", "antiwork", "bike", "blackpink", "boneka", 
             "car", "cat", "cosplay", "doggo", "justina", 
             "kayes", "kpop", "notnot", "ppcouple", "profile", 
-            "pubg", "rose", "ryujin", "ulzzangboy"
+            "pubg", "rose", "ryujin", "ulzzangboy", "ulzzanggirl",
+            "wallhp", "wallml"
         ]
     }
 };
 
+router.desc = "Mengambil gambar sesuai dengan category.";
 router.status = "ready"; 
 router.type = "free";
 module.exports = router;

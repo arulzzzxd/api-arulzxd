@@ -2,11 +2,11 @@ const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 
-// Fungsi untuk mengambil gambar anime Waifu secara acak
-async function randomWaifu() {
+// Fungsi untuk mengambil gambar anime nsfw secara acak
+async function randomNsfw() {
     try {
         // Request API waifu.im dengan tanda asli (timeout & headers)
-        const api = await axios.get("https://api.waifu.im/images?isnsfw=false", {
+        const api = await axios.get("https://api.waifu.im/images?isnsfw=true", {
             headers: {
                 "User-Agent": "Mozilla/5.0",
                 "Accept": "application/json"
@@ -18,7 +18,7 @@ async function randomWaifu() {
 
         // Validasi data asli tetap dipertahankan
         if (!data || !data.items || !Array.isArray(data.items) || !data.items[0]) {
-            throw new Error("Gagal mengambil gambar Waifu");
+            throw new Error("Gagal mengambil gambar nsfw");
         }
 
         const imageUrl = data.items[0].url;
@@ -47,7 +47,7 @@ async function randomWaifu() {
 // Endpoint utama Router
 router.get('/', async (req, res) => {
     try {
-        const nsfw = await randomWaifu();
+        const nsfw = await randomNsfw();
         
         res.writeHead(200, {
             'Content-Type': nsfw.contentType,
@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.desc = "Mengambil gambar anime waifu acak.";
+router.desc = "Mengambil gambar anime 🔞 acak.";
 router.status = "ready"; 
-router.type = "free";
+router.type = "premium";
 module.exports = router;
