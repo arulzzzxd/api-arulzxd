@@ -1,8 +1,18 @@
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const mongoose = require("mongoose");
 
 const router = express.Router();
+
+// Schema dan Model Cache MongoDB
+const cacheSchema = new mongoose.Schema({
+    key: { type: String, required: true, unique: true },
+    data: { type: mongoose.Schema.Types.Mixed, required: true },
+    createdAt: { type: Date, default: Date.now, expires: 60 } 
+});
+
+const CacheModel = mongoose.models.Cache || mongoose.model('Cache', cacheSchema);
 
 const BASE_URL = "https://pinedrama.com";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -69,7 +79,6 @@ async function fetchSearch(query) {
   };
 }
 
-// 1. Coba ekstrak data langsung dari Next.js JSON State
 function parseNextDataHtml(html) {
   try {
     const $ = cheerio.load(html);
@@ -109,9 +118,7 @@ function parseNextDataHtml(html) {
   }
 }
 
-// 2. Fallback Selector HTML Universal
 function parseMainSearchResults($, html) {
-  // Coba Next Data JSON terlebih dahulu
   const nextItems = parseNextDataHtml(html);
   if (nextItems && nextItems.length > 0) {
     const unique = uniqueBy(nextItems, "url");
@@ -124,12 +131,10 @@ function parseMainSearchResults($, html) {
 
   const items = [];
 
-  // Pindai seluruh tautan drama tanpa membatasi ke ID tertentu
   $('a[href*="/dramas/"]').each((_, el) => {
     const link = $(el);
     const url = absUrl(link.attr("href"));
     
-    // Abaikan tautan episode individual (misal: /ep1)
     if (!url || url.includes("/ep")) return;
 
     const container = link.closest("div, article, li");
@@ -228,21 +233,52 @@ function parseSections($) {
   return uniqueBy(sections, "name");
 }
 
+function compareUpdates(oldData, newData) {
+  const oldItems = oldData?.result?.all || oldData?.Result?.All || [];
+  const newItems = newData?.result?.all || newData?.Result?.All || [];
+
+  const oldSlugs = new Set(oldItems.map(item => item.slug).filter(Boolean));
+  const newItemsOnly = newItems.filter(item => item.slug && !oldSlugs.has(item.slug));
+
+  const bySection = {};
+
+  for (const item of newItemsOnly) {
+    const key = item.section || "Search";
+    if (!bySection[key]) bySection[key] = [];
+    bySection[key].push(item);
+  }
+
+  return {
+    hasUpdate: newItemsOnly.length > 0,
+    totalNew: newItemsOnly.length,
+    newItems: newItemsOnly,
+    newBySection: bySection
+  };
+}
+
 router.get("/", async (req, res) => {
   try {
-    const query = req.query.text?.trim() || req.query.q?.trim() || "CEO";
+    const query = req.query.text?.trim() || req.query.q?.trim() || "Romance";
+    const cacheKey = `pinedrama_search_${query.toLowerCase()}`;
 
+    // 1. Ambil data cache lama dari MongoDB
+    let oldCacheDoc = null;
+    try {
+      oldCacheDoc = await CacheModel.findOne({ key: cacheKey });
+    } catch (e) {
+      console.warn("[MongoDB Cache Warning]: Gagal membaca cache", e.message);
+    }
+
+    // 2. Scraping data segar dari PineDrama
     const { url, html } = await fetchSearch(query);
     const $ = cheerio.load(html);
 
     const searchResult = parseMainSearchResults($, html);
     const sections = parseSections($);
     const hotGenres = parseHotGenres($);
-
-    // Gabungkan seluruh hasil
     const all = uniqueBy([...searchResult.items, ...sections.flatMap(s => s.items)], "url");
 
-    return res.json({
+    const responseData = {
       status: true,
       creator: "ArulzXD",
       query,
@@ -254,7 +290,23 @@ router.get("/", async (req, res) => {
         sections,
         all
       }
-    });
+    };
+
+    // 3. Bandingkan pembaruan data dengan cache sebelumnya
+    responseData.update = compareUpdates(oldCacheDoc?.data, responseData);
+
+    // 4. Simpan/Update cache di MongoDB (otomatis terhapus setelah 60 detik)
+    try {
+      await CacheModel.findOneAndUpdate(
+        { key: cacheKey },
+        { data: responseData, createdAt: new Date() },
+        { upsert: true, new: true }
+      );
+    } catch (e) {
+      console.warn("[MongoDB Cache Warning]: Gagal memperbarui cache", e.message);
+    }
+
+    return res.json(responseData);
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -265,9 +317,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.desc = "Mencari drama, genre populer, dan rekomendasi short drama dari PineDrama berdasarkan kata kunci.";
+router.desc = "Mencari drama, genre populer, dan rekomendasi short drama dari PineDrama berdasarkan kata kunci dengan MongoDB TTL Caching.";
 router.paramsConfig = {
-  text: "text (contoh: CEO)"
+  text: "text (contoh: Romance)"
 };
 router.status = "ready";
 router.type = "free";
