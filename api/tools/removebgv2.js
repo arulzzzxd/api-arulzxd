@@ -88,21 +88,6 @@ async function removeBgBuffer(fileBuffer, mimetype, originalName) {
 router.post("/", upload.single("fileupload"), async (req, res) => {
     try {
         const file = req.file;
-        const apikey = req.body.apikey || req.query.apikey;
-
-        if (!apikey) {
-            return res.status(403).json({
-                status: false,
-                message: "Parameter 'apikey' diperlukan."
-            });
-        }
-
-        if (apikey !== "arulzxd-keys") {
-            return res.status(403).json({
-                status: false,
-                message: "Apikey tidak valid."
-            });
-        }
 
         if (!file) {
             return res.status(400).json({
@@ -151,10 +136,6 @@ router.paramsConfig = {
     fileupload: {
         type: "file",
         desc: "Berkas gambar yang akan dihapus latar belakangnya"
-    },
-    apikey: {
-        type: "text",
-        desc: "API Key akses endpoint"
     }
 };
 
