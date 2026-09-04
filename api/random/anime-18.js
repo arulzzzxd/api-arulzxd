@@ -2,33 +2,13 @@ const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 
-// Fungsi untuk mengambil gambar waifu.im dengan opsi query dinamis
-async function fetchWaifuImage(queryParams = {}) {
+// Fungsi untuk mengambil gambar anime nsfw secara acak (langsung buffer CDN)
+async function randomNsfw() {
     try {
-        const params = new URLSearchParams();
-
-        // Menyusun parameter query berdasarkan dokumentasi API waifu.im
-        Object.entries(queryParams).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                if (Array.isArray(value)) {
-                    value.forEach(val => params.append(key, val));
-                } else {
-                    params.append(key, value);
-                }
-            }
-        });
-
-        // Set default IsNsfw jika tidak dipassing dari req.query
-        if (!params.has('IsNsfw') && !params.has('isnsfw')) {
-            params.append('IsNsfw', 'true');
-        }
-
-        const apiUrl = `https://api.waifu.im/images?${params.toString()}`;
-
-        // Request API waifu.im dengan timeout & headers
-        const api = await axios.get(apiUrl, {
+        // Request API waifu.im dengan tanda asli (timeout & headers)
+        const api = await axios.get("https://api.waifu.im/images?IsNsfw=True", {
             headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0",
                 "Accept": "application/json"
             },
             timeout: 10000
@@ -36,16 +16,14 @@ async function fetchWaifuImage(queryParams = {}) {
 
         const data = api.data;
 
-        // Validasi response data
-        if (!data || !data.items || !Array.isArray(data.items) || data.items.length === 0) {
-            throw new Error("Gagal mengambil gambar, data kosong atau parameter tidak sesuai.");
+        // Validasi data tetap dipertahankan
+        if (!data || !data.items || !Array.isArray(data.items) || !data.items[0]) {
+            throw new Error("Gagal mengambil gambar nsfw");
         }
 
-        // Ambil elemen pertama
-        const targetImage = data.items[0];
-        const imageUrl = targetImage.url;
+        const imageUrl = data.items[0].url;
 
-        // Download gambar dengan responseType arraybuffer
+        // Download image CDN dengan responseType arraybuffer
         const image = await axios.get(imageUrl, {
             responseType: "arraybuffer",
             timeout: 15000,
@@ -54,8 +32,9 @@ async function fetchWaifuImage(queryParams = {}) {
             }
         });
 
-        const contentType = image.headers["content-type"] || "image/png";
+        const contentType = image.headers["content-type"] || "image/jpeg";
 
+        // Mengembalikan Buffer dan Content-Type secara dinamis
         return {
             buffer: Buffer.from(image.data),
             contentType: contentType
@@ -68,17 +47,18 @@ async function fetchWaifuImage(queryParams = {}) {
 // Endpoint utama Router
 router.get('/', async (req, res) => {
     try {
-        const imageResult = await fetchWaifuImage(req.query);
+        const nsfw = await randomNsfw();
         
         res.writeHead(200, {
-            'Content-Type': imageResult.contentType,
-            'Content-Length': imageResult.buffer.length,
+            'Content-Type': nsfw.contentType,
+            'Content-Length': nsfw.buffer.length,
         });
         
-        res.end(imageResult.buffer);
+        res.end(nsfw.buffer);
     } catch (error) {
-        console.error(error);
+        console.log(error);
         
+        // Response error dengan format JSON & data creator
         return res.status(500).json({
             status: false,
             creator: "Arulzxd",
@@ -87,15 +67,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.desc = "Mengambil gambar anime acak dari waifu.im dengan berbagai parameter filter (NSFW, Tags, Orientation, dll).";
-router.paramsConfig = {
-    IsNsfw: "boolean (default: true)",
-    IncludedTags: "array/string (contoh: waifu, maid)",
-    ExcludedTags: "array/string",
-    Orientation: "Landscape | Portrait | Square | All",
-    OrderBy: "Random | UploadedAt | Favorites | AddedToAlbum",
-    IsAnimated: "False | True | All"
-};
+router.desc = "Mengambil gambar anime 🔞 acak.";
 router.status = "ready"; 
 router.type = "premium";
 
