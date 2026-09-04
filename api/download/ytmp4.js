@@ -88,6 +88,7 @@ router.get("/", async (req, res) => {
 });
 
 router.paramsConfig = {
+  url: "text",
   quality: {
     type: "select",
     options: ["1080", "720", "480", "360", "144"]
