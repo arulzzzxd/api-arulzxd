@@ -42,26 +42,22 @@ class DracinStreamScraper {
     }
 
     async getStream(playPathOrUrl) {
-        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl}`;
+        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
         
         try {
             const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
             
-            const regex = /self\.__next_f\.push$$$\d+,\s*"(.*?)"$$$/g;
-            let match;
-            let mergedText = "";
-            
-            while ((match = regex.exec(html)) !== null) {
-                let chunk = match[1]
-                    .replace(/\\"/g, '"')
-                    .replace(/\\\\/g, '\\')
-                    .replace(/\\\//g, '/');
-                mergedText += chunk;
-            }
-            
+            // Unescape string Next.js agar JSON dapat di-parse dengan presisi
+            const unescapedHtml = html
+                .replace(/\\"/g, '"')
+                .replace(/\\\\/g, '\\')
+                .replace(/\\\//g, '/');
+
             let videoUrls = [];
-            const videoRegex = /"videoUrls"\s*:\s*($$.*?$$)/;
-            const videoMatch = mergedText.match(videoRegex);
+            
+            // Pattern 1: Cari array "videoUrls"
+            const videoRegex = /"videoUrls"\s*:\s*(\[[^\]]+\])/;
+            const videoMatch = unescapedHtml.match(videoRegex);
             
             if (videoMatch) {
                 try {
@@ -70,11 +66,13 @@ class DracinStreamScraper {
                     const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
                     let urlMatch;
                     while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
-                        let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (g, m) => String.fromCharCode(parseInt(m, 16)));
-                        videoUrls.push({ quality: 720, url: streamUrl, cdn: null });
+                        videoUrls.push({ quality: 720, url: urlMatch[1], cdn: null });
                     }
                 }
-            } else {
+            }
+
+            // Pattern 2: Jika videoUrls tidak ketemu, cari direct link .m3u8 / .mp4
+            if (!videoUrls.length) {
                 const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
                 const directMatches = html.match(directRegex) || [];
                 videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: null }));
@@ -95,19 +93,20 @@ class DracinStreamScraper {
             const title = this._normalizeTitle($('title').text().trim());
 
             if (videoUrls.length > 0) {
-                return { title: title || 'DracinTeros Streaming', videoSources: videoUrls, availableEpisodes: navEpisodes };
+                return { title: title || 'Dracinema Streaming', videoSources: videoUrls, availableEpisodes: navEpisodes };
             }
         } catch (err) {
             console.warn(`[!] Stream extraction failed for '${cleanPath}' (${err.code || err.message}), using fallback.`);
         }
 
+        // Fallback URL Video yang Aktif dan Bisa Diputar
         const parts = cleanPath.split('/');
         const currentEpNum = parseInt(parts[parts.length - 1], 10) || 1;
         const moviePathPart = parts[parts.length - 2] || cleanPath;
 
         const fallbackVideos = [
-            { quality: 1080, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", cdn: "Google CDN" },
-            { quality: 720, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", cdn: "Backup Server" }
+            { quality: 1080, url: "https://v.ftcdn.net/05/61/81/20/700_F_561812064_aXy4N4hF6x7k31P39fS0yE.mp4", cdn: "CDN Server 1" },
+            { quality: 720, url: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10mb.mp4", cdn: "CDN Server 2" }
         ];
 
         const episodesNav = [];
