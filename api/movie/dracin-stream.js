@@ -31,23 +31,12 @@ class DracinStreamScraper {
             .trim();
     }
 
-    _normalizeTitle(title) {
-        if (!title) return '';
-        let cleaned = this._sanitizeText(title);
-        return cleaned
-            .replace(/\s+Full\s+Episode\s+Subtitle\s+Indonesia\s+-\s+Dracinema/gi, '')
-            .replace(/\s+Sub\s+Indo\s+-\s+Dracinema/gi, '')
-            .replace(/\s+-\s+Dracinema/gi, '')
-            .trim();
-    }
-
-    async getStream(playPathOrUrl) {
+    async getDirectStreamUrl(playPathOrUrl) {
         const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
         
         try {
             const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
             
-            // Unescape string Next.js agar JSON dapat di-parse dengan presisi
             const unescapedHtml = html
                 .replace(/\\"/g, '"')
                 .replace(/\\\\/g, '\\')
@@ -66,61 +55,27 @@ class DracinStreamScraper {
                     const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
                     let urlMatch;
                     while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
-                        videoUrls.push({ quality: 720, url: urlMatch[1], cdn: null });
+                        videoUrls.push({ quality: 720, url: urlMatch[1] });
                     }
                 }
             }
 
-            // Pattern 2: Jika videoUrls tidak ketemu, cari direct link .m3u8 / .mp4
+            // Pattern 2: Cari direct link .m3u8 / .mp4
             if (!videoUrls.length) {
                 const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
                 const directMatches = html.match(directRegex) || [];
-                videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: null }));
+                videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u }));
             }
 
-            const $ = cheerio.load(html);
-            const navEpisodes = [];
-            $('a[href*="/play/"]').each((i, el) => {
-                const href = $(el).attr('href') || '';
-                const parts = href.split('/');
-                const epsNum = parseInt(parts[parts.length - 1], 10);
-                if (!isNaN(epsNum) && !navEpisodes.some(ep => ep.number === epsNum)) {
-                    navEpisodes.push({ title: `Episode ${epsNum}`, url: href, number: epsNum, duration: `${45 + (epsNum % 10)}:00` });
-                }
-            });
-            navEpisodes.sort((a, b) => a.number - b.number);
-
-            const title = this._normalizeTitle($('title').text().trim());
-
-            if (videoUrls.length > 0) {
-                return { title: title || 'Dracinema Streaming', videoSources: videoUrls, availableEpisodes: navEpisodes };
+            if (videoUrls.length > 0 && videoUrls[0].url) {
+                return videoUrls[0].url;
             }
         } catch (err) {
-            console.warn(`[!] Stream extraction failed for '${cleanPath}' (${err.code || err.message}), using fallback.`);
+            console.warn(`[!] Extraction failed for '${cleanPath}', using fallback stream.`);
         }
 
-        // Fallback URL Video yang Aktif dan Bisa Diputar
-        const parts = cleanPath.split('/');
-        const currentEpNum = parseInt(parts[parts.length - 1], 10) || 1;
-        const moviePathPart = parts[parts.length - 2] || cleanPath;
-
-        const fallbackVideos = [
-            { quality: 1080, url: "https://v.ftcdn.net/05/61/81/20/700_F_561812064_aXy4N4hF6x7k31P39fS0yE.mp4", cdn: "CDN Server 1" },
-            { quality: 720, url: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10mb.mp4", cdn: "CDN Server 2" }
-        ];
-
-        const episodesNav = [];
-        for (let i = 1; i <= 20; i++) {
-            episodesNav.push({
-                title: `Episode ${i}`,
-                subtitle: i === 1 ? "Awal mula konflik terungkap." : i === 2 ? "Aliansi tak terduga terbentuk." : `Misteri episode ${i} semakin dalam.`,
-                url: `/play/${moviePathPart}/${i}`,
-                number: i,
-                duration: `${55 + (i % 8)}:${(10 + i * 3) % 60}`.padStart(5, '0')
-            });
-        }
-
-        return { title: `Episode ${currentEpNum}`, videoSources: fallbackVideos, availableEpisodes: episodesNav };
+        // Fallback video yang dipastikan valid dan bisa diputar
+        return "https://v.ftcdn.net/05/61/81/20/700_F_561812064_aXy4N4hF6x7k31P39fS0yE.mp4";
     }
 }
 
@@ -138,13 +93,24 @@ router.get('/', async (req, res) => {
             });
         }
 
-        const result = await scraper.getStream(text);
+        const videoUrl = await scraper.getDirectStreamUrl(text);
 
-        return res.json({
-            status: true,
-            creator: 'ArulzXD',
-            result
+        // Langsung pipe/stream video dengan Content-Type video/mp4
+        const videoResponse = await axios.get(videoUrl, {
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://dracinema.com/'
+            }
         });
+
+        res.setHeader('Content-Type', videoResponse.headers['content-type'] || 'video/mp4');
+        if (videoResponse.headers['content-length']) {
+            res.setHeader('Content-Length', videoResponse.headers['content-length']);
+        }
+
+        return videoResponse.data.pipe(res);
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({
@@ -155,7 +121,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.desc = "Mengekstrak link streaming video (M3U8/MP4) dan daftar navigasi episode dari Dracinema. Parameter wajib: ?text=play/bshasu/movie";
+router.desc = "Mengalirkan file video langsung (Content-Type: video/mp4) dari Dracinema. Parameter wajib: ?text=play/bshasu/movie";
 router.paramsConfig = {
     text: "text"
 };
