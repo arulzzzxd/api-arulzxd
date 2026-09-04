@@ -5,7 +5,7 @@ const cheerio = require("cheerio");
 const router = express.Router();
 
 const BASE_URL = "https://pinedrama.com";
-const UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 function clean(text) {
   return String(text || "")
@@ -53,7 +53,7 @@ async function fetchSearch(query) {
     validateStatus: () => true,
     headers: {
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-      "accept-language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+      "accept-language": "en-US,en;q=0.9,id;q=0.8",
       referer: `${BASE_URL}/search`,
       "user-agent": UA
     }
@@ -69,99 +69,154 @@ async function fetchSearch(query) {
   };
 }
 
-function parseHotGenres($) {
+// 1. Coba ekstrak data langsung dari Next.js JSON State
+function parseNextDataHtml(html) {
+  try {
+    const $ = cheerio.load(html);
+    const script = $("#__NEXT_DATA__").html();
+    if (!script) return null;
+
+    const jsonData = JSON.parse(script);
+    const props = jsonData?.props?.pageProps;
+
+    if (!props) return null;
+
+    const items = [];
+    const rawList = props.dramas || props.searchResults || props.searchResultsData || props.data || [];
+
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      for (const item of rawList) {
+        const title = item.title || item.name;
+        const slug = item.slug || item.id;
+        const url = slug ? `${BASE_URL}/dramas/${slug}` : null;
+        if (title && url) {
+          items.push({
+            section: "Search Results",
+            title: clean(title),
+            slug,
+            url,
+            image: absUrl(item.cover || item.image || item.poster),
+            genre: item.genre || item.genres?.[0]?.name || null,
+            rating: item.rating ? String(item.rating) : null
+          });
+        }
+      }
+    }
+
+    return items.length > 0 ? items : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+// 2. Fallback Selector HTML Universal
+function parseMainSearchResults($, html) {
+  // Coba Next Data JSON terlebih dahulu
+  const nextItems = parseNextDataHtml(html);
+  if (nextItems && nextItems.length > 0) {
+    const unique = uniqueBy(nextItems, "url");
+    return {
+      title: "Search Results",
+      total: unique.length,
+      items: unique
+    };
+  }
+
   const items = [];
 
-  $("main")
-    .find('a[href*="/genres/"]')
-    .each((_, el) => {
-      const a = $(el);
-      const name = clean(a.text());
-      const url = absUrl(a.attr("href"));
+  // Pindai seluruh tautan drama tanpa membatasi ke ID tertentu
+  $('a[href*="/dramas/"]').each((_, el) => {
+    const link = $(el);
+    const url = absUrl(link.attr("href"));
+    
+    // Abaikan tautan episode individual (misal: /ep1)
+    if (!url || url.includes("/ep")) return;
 
-      if (!name || !url) return;
-      if (name.match(/^\d+$/)) return;
-      if (name === "...") return;
+    const container = link.closest("div, article, li");
+    const img = container.find("img").first();
+    const title = clean(link.text()) || clean(img.attr("alt")) || clean(container.find("h2, h3, h4, p").first().text());
 
-      items.push({
-        name,
-        slug: slugFromUrl(url),
-        url
-      });
+    if (!title || title.length < 2) return;
+
+    const image = absUrl(img.attr("src") || img.attr("data-src"));
+    const genreLink = container.find('a[href*="/genres/"]').first();
+    const genre = clean(genreLink.text()) || null;
+
+    items.push({
+      section: "Search Results",
+      title,
+      slug: slugFromUrl(url),
+      url,
+      image,
+      genre,
+      rating: null
     });
-
-  return uniqueBy(items, "url");
-}
-
-function parseDramaCard($, el, section) {
-  const card = $(el);
-  const dramaLink = card.find('a[href*="/dramas/"]').first();
-  const genreLink = card.find('a[href*="/genres/"]').first();
-  const img = card.find("img").first();
-
-  const title = clean(dramaLink.text()) || clean(img.attr("alt"));
-  const url = absUrl(dramaLink.attr("href"));
-  const image = absUrl(img.attr("src"));
-  const genre = clean(genreLink.text()) || null;
-  const text = clean(card.text());
-  const ratingMatch = text.match(/\b\d(?:\.\d)?\b/);
-
-  if (!title || !url) return null;
-
-  return {
-    section,
-    title,
-    slug: slugFromUrl(url),
-    url,
-    image,
-    genre,
-    rating: ratingMatch ? ratingMatch[0] : null
-  };
-}
-
-function parseMainSearchResults($) {
-  const items = [];
-  const heading = clean($("#short_drama").text()) || null;
-  const area = $("#short_drama").parent();
-
-  area.find('a[href*="/dramas/"]').each((_, el) => {
-    const card = $(el).closest("div");
-    const item = parseDramaCard($, card, "Search Results");
-
-    if (item) items.push(item);
   });
 
   const uniqueItems = uniqueBy(items, "url");
 
   return {
-    title: heading,
+    title: "Search Results",
     total: uniqueItems.length,
     items: uniqueItems
   };
 }
 
+function parseHotGenres($) {
+  const items = [];
+
+  $('a[href*="/genres/"]').each((_, el) => {
+    const a = $(el);
+    const name = clean(a.text());
+    const url = absUrl(a.attr("href"));
+
+    if (!name || !url) return;
+    if (name.match(/^\d+$/) || name === "...") return;
+
+    items.push({
+      name,
+      slug: slugFromUrl(url),
+      url
+    });
+  });
+
+  return uniqueBy(items, "url");
+}
+
 function parseSections($) {
   const sections = [];
 
-  $("h2, h3, div").each((_, heading) => {
+  $("h2, h3").each((_, heading) => {
     const title = clean($(heading).text());
-
     if (!title) return;
-    if (!["New Short Dramas", "Hot Genre"].includes(title)) return;
 
     const area = $(heading).parent();
     const items = [];
 
     area.find('a[href*="/dramas/"]').each((__, a) => {
-      const card = $(a).closest("div");
-      const item = parseDramaCard($, card, title);
+      const link = $(a);
+      const url = absUrl(link.attr("href"));
+      if (!url || url.includes("/ep")) return;
 
-      if (item) items.push(item);
+      const card = link.closest("div");
+      const img = card.find("img").first();
+      const itemTitle = clean(link.text()) || clean(img.attr("alt"));
+
+      if (itemTitle) {
+        items.push({
+          section: title,
+          title: itemTitle,
+          slug: slugFromUrl(url),
+          url,
+          image: absUrl(img.attr("src") || img.attr("data-src")),
+          genre: null,
+          rating: null
+        });
+      }
     });
 
     const unique = uniqueBy(items, "url");
-
-    if (unique.length) {
+    if (unique.length > 0) {
       sections.push({
         name: title,
         total: unique.length,
@@ -173,33 +228,19 @@ function parseSections($) {
   return uniqueBy(sections, "name");
 }
 
-function parseAllDramas(searchResult, sections) {
-  const items = [];
-
-  for (const item of searchResult.items || []) {
-    items.push(item);
-  }
-
-  for (const section of sections) {
-    for (const item of section.items || []) {
-      items.push(item);
-    }
-  }
-
-  return uniqueBy(items, "url");
-}
-
 router.get("/", async (req, res) => {
   try {
-    const query = req.query.text?.trim() || req.query.q?.trim() || "Romance";
+    const query = req.query.text?.trim() || req.query.q?.trim() || "CEO";
 
     const { url, html } = await fetchSearch(query);
     const $ = cheerio.load(html);
 
-    const searchResult = parseMainSearchResults($);
+    const searchResult = parseMainSearchResults($, html);
     const sections = parseSections($);
     const hotGenres = parseHotGenres($);
-    const all = parseAllDramas(searchResult, sections);
+
+    // Gabungkan seluruh hasil
+    const all = uniqueBy([...searchResult.items, ...sections.flatMap(s => s.items)], "url");
 
     return res.json({
       status: true,
@@ -226,7 +267,7 @@ router.get("/", async (req, res) => {
 
 router.desc = "Mencari drama, genre populer, dan rekomendasi short drama dari PineDrama berdasarkan kata kunci.";
 router.paramsConfig = {
-  text: "text (contoh: Romance)"
+  text: "text (contoh: CEO)"
 };
 router.status = "ready";
 router.type = "free";
