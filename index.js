@@ -2609,18 +2609,9 @@ function getEndpointsFromRouter(category, file) {
 
       let params = { apikey: "" }; 
 
-if (route.paramsConfig) {
-    params = { apikey: "" };
-    Object.keys(route.paramsConfig).forEach(pKey => {
-        const val = route.paramsConfig[pKey];
-        // Jika nilai mengandung kata 'opsional', tandai parameter sebagai tidak wajib
-        const isOptional = typeof val === 'string' && val.toLowerCase().includes('opsional');
-        params[pKey] = {
-            type: val,
-            required: !isOptional
-        };
-    });
-} 
+      if (route.paramsConfig) {
+        params = { apikey: "", ...route.paramsConfig };
+      } 
       else if (layer.route.stack && layer.route.stack.length) {
         layer.route.stack.forEach(mw => {
           if (!mw.handle) return;
