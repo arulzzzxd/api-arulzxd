@@ -337,7 +337,7 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     if (!form) return;
 
     const formData = new FormData(form);
-    
+
     let formHasFile = false;
     form.querySelectorAll('input[type="file"]').forEach(fileInput => {
         if (fileInput.files && fileInput.files.length > 0) {
@@ -366,7 +366,7 @@ function updateLivePreview(catIdx, epIdx, method, basePath, endpointType) {
     const curlContainer = document.getElementById(`live-curl-${catIdx}-${epIdx}`);
 
     if (urlContainer) urlContainer.textContent = finalUrl;
-    
+
     if (curlContainer) {
         if (finalMethod === 'GET' || finalMethod === 'DELETE') {
             curlContainer.textContent = `curl -X ${finalMethod} "${finalUrl}"`;
@@ -509,7 +509,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 </div>
             `;
             showToast(data.message || "Akses Ditolak!", true);
-            
+
             if (typeof fetchAndUpdateUserLimit === 'function') {
                 fetchAndUpdateUserLimit();
             }
@@ -555,7 +555,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             // Jika berupa response JSON yang mengandung URL Video/Gambar
 if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
     hintText = getMediaHint(detectedMediaUrl);
-    
+
     let mediaMarkup = '';
     const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
@@ -584,7 +584,7 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
     mediaBlobObject = await response.blob(); 
     if (!bytes) bytes = mediaBlobObject.size;
     const blobUrl = URL.createObjectURL(mediaBlobObject);
-    
+
     if (cleanContentType.startsWith("audio/")) {
         finalInnerContent = `
             <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
@@ -753,7 +753,7 @@ function escapeHtml(text) {
 
 function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
-    
+
     if (responseDiv) {
         // Hanya hentikan audio/video di dalam card response endpoint tersebut
         const mediaElements = responseDiv.querySelectorAll('video, audio');
@@ -1039,89 +1039,110 @@ function loadApis() {
                             <div class="space-y-4 mb-4">`;
 
                 if (item.params) {
-                    Object.keys(item.params).forEach(paramName => {
-                        const pType = item.params[paramName];
-                        const isRequired = true; 
-                        let paramDesc = (pType && pType.type) ? pType.type : (pType || paramName);
+    Object.keys(item.params).forEach(paramName => {
+        const pType = item.params[paramName];
 
-                        let inputValue = '';
-                        let inputPlaceholder = `Masukkan ${paramName}`;
+        // --- PENENTUAN ISREQUIRED DINAMIS ---
+        let isRequired = false;
+        let paramDesc = "";
 
-                        if (paramName.toLowerCase() === 'apikey') {
-                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
-                            
-                            if (epType === 'vip') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey VIP';
-                            } else if (epType === 'premium') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey Premium';
-                            } else {
-                                inputValue = isUserLoggedIn ? displayApiKey : '';
-                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-                            }
-                        }
+        if (typeof pType === 'object' && pType !== null) {
+            // Jika pType berupa object (misal dari paramsConfig yang sudah di-parse di index.js)
+            isRequired = pType.required !== false;
+            paramDesc = pType.type || (typeof pType.desc === 'string' ? pType.desc : paramName);
+        } else if (typeof pType === 'string') {
+            // Jika pType berupa string deskripsi
+            const lowerVal = pType.toLowerCase();
+            const lowerKey = paramName.toLowerCase();
 
-                        html += `
-                        <div>
-                            <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
-                                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
-                                </label>
-                                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
-                            </div>`;
+            // Parameter 'apikey' atau yang tidak mengandung kata 'opsional' dianggap wajib
+            if (lowerKey === 'apikey' || !lowerVal.includes('opsional')) {
+                isRequired = true;
+            }
+            paramDesc = pType;
+        } else {
+            isRequired = paramName.toLowerCase() === 'apikey';
+            paramDesc = paramName;
+        }
 
-                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
-                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-                            const defaultVal = pType.options[0] || '';
-                            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
-                            
-                            html += `
-                            <div class="relative w-full">
-                                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
-                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                <div id="${uniqueId}-modal" class="select-modal-container hidden">
-                                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                            </svg>
-                                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
-                                        </div>
-                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <ul class="select-modal-list">`;
-                                    
-                            pType.options.forEach(opt => {
-                                const isSelected = opt === defaultVal ? 'selected' : '';
-                                html += `
-                                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
-                                        <span>${opt}</span>
-                                    </li>`;
-                            });
+        let inputValue = '';
+        let inputPlaceholder = `Masukkan ${paramName}`;
 
-                            html += `
-                                    </ul>
-                                </div>
-                            </div>`;
-                        } else {
-                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
-                        }
-                        html += `</div>`;
-                    });
-                }
+        if (paramName.toLowerCase() === 'apikey') {
+            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+
+            if (epType === 'vip') {
+                inputValue = ''; 
+                inputPlaceholder = 'Masukkan apikey VIP';
+            } else if (epType === 'premium') {
+                inputValue = ''; 
+                inputPlaceholder = 'Masukkan apikey Premium';
+            } else {
+                inputValue = isUserLoggedIn ? displayApiKey : '';
+                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+            }
+        }
+
+        html += `
+        <div>
+            <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
+                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
+                </label>
+                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
+            </div>`;
+
+        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+            const defaultVal = pType.options[0] || '';
+            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
+
+            html += `
+            <div class="relative w-full">
+                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
+                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
+                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                <div id="${uniqueId}-modal" class="select-modal-container hidden">
+                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                        </div>
+                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <ul class="select-modal-list">`;
+
+            pType.options.forEach(opt => {
+                const isSelected = opt === defaultVal ? 'selected' : '';
+                html += `
+                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                        <span>${opt}</span>
+                    </li>`;
+            });
+
+            html += `
+                    </ul>
+                </div>
+            </div>`;
+        } else {
+            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+        }
+        html += `</div>`;
+    });
+}
 
                 html += `
                             </div>
@@ -1196,15 +1217,15 @@ function initMultiMusicPlayer() {
     function loadTrack(index) {
         currentTrackIdx = index;
         const track = playlist[index];
-        
+
         if (audio) audio.src = track.url || '';
         if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
         if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
         if (coverImg) coverImg.src = track.cover || 'default-cover.png';
-        
+
         if (progressBar) progressBar.style.width = '0%';
         if (currentTimeEl) currentTimeEl.textContent = '0:00';
-        
+
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: track.title || 'Unknown Title',
@@ -1240,7 +1261,7 @@ function initMultiMusicPlayer() {
             navigator.mediaSession.setActionHandler('pause', () => {
                 if (audio) audio.pause();
             });
-            
+
             navigator.mediaSession.setActionHandler('seekto', (details) => {
                 if (audio && details.seekTime) {
                     audio.currentTime = details.seekTime;
@@ -1248,14 +1269,14 @@ function initMultiMusicPlayer() {
                 }
             });
         }
-        
+
         renderPlaylistItems();
     }
 
     function renderPlaylistItems() {
         if (!playlistPanel) return;
         playlistPanel.innerHTML = '';
-        
+
         playlist.forEach((track, idx) => {
             const isActive = idx === currentTrackIdx;
             const itemBtn = document.createElement('button');
@@ -1264,7 +1285,7 @@ function initMultiMusicPlayer() {
                 ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-500 light-mode:text-cyan-700 font-bold' 
                 : 'hover:bg-white/5 light-mode:hover:bg-black/5 text-slate-400 light-mode:text-slate-600'
             }`;
-            
+
             itemBtn.innerHTML = `
                 <div class="flex items-center gap-2 truncate">
                     <span class="opacity-50 text-[10px] code-font">${String(idx + 1).padStart(2, '0')}</span>
@@ -1272,7 +1293,7 @@ function initMultiMusicPlayer() {
                 </div>
                 ${isActive ? '<span class="text-[9px] tracking-wider text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded animate-pulse font-bold">PLAYING</span>' : ''}
             `;
-            
+
             itemBtn.addEventListener('click', () => {
                 loadTrack(idx);
                 audio.play().catch(e => console.log("Playback dicegah oleh browser:", e));
@@ -1291,7 +1312,7 @@ function initMultiMusicPlayer() {
         audio.addEventListener('play', () => {
             if (playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             if (coverImg) coverImg.classList.add('scale-105', 'rotate-3');
-            
+
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = "playing";
             }
@@ -1301,7 +1322,7 @@ function initMultiMusicPlayer() {
         audio.addEventListener('pause', () => {
             if (playIcon) playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
             if (coverImg) coverImg.classList.remove('scale-105', 'rotate-3');
-            
+
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = "paused";
             }
@@ -1410,7 +1431,7 @@ function initImageLightbox() {
 async function fetchAndUpdateUserLimit() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        
+
         let apiKey = urlParams.get('apikey') 
             || (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' ? displayApiKey : '');
 
@@ -1426,7 +1447,7 @@ async function fetchAndUpdateUserLimit() {
         });
 
         if (!response.ok) return;
-        
+
         const data = await response.json();
 
         const limitUsedEl = document.getElementById('userLimitUsed');
@@ -1467,7 +1488,7 @@ async function fetchAndUpdateUserLimit() {
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('lang') || 'id';
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     initTheme();
     initDigitalClock();
     initImageLightbox(); 
@@ -1537,7 +1558,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/uploader'; 
         });
     }
-    
+
     fetch('/api/apilist')
         .then(res => res.json())
         .then(data => {
