@@ -1042,16 +1042,14 @@ function loadApis() {
     Object.keys(item.params).forEach(paramName => {
         const pType = item.params[paramName];
 
-        // --- PENENTUAN ISREQUIRED DINAMIS ---
+        // --- 1. PENENTUAN ISREQUIRED DINAMIS ---
         let isRequired = false;
         let paramDesc = "";
 
         if (typeof pType === 'object' && pType !== null) {
-            // Jika pType berupa object (misal dari paramsConfig yang sudah di-parse di index.js)
             isRequired = pType.required !== false;
             paramDesc = pType.type || (typeof pType.desc === 'string' ? pType.desc : paramName);
         } else if (typeof pType === 'string') {
-            // Jika pType berupa string deskripsi
             const lowerVal = pType.toLowerCase();
             const lowerKey = paramName.toLowerCase();
 
@@ -1065,8 +1063,14 @@ function loadApis() {
             paramDesc = paramName;
         }
 
+        // --- 2. PENENTUAN PLACEHOLDER DINAMIS DARI PARAMSCONFIG FILE ---
         let inputValue = '';
         let inputPlaceholder = `Masukkan ${paramName}`;
+
+        if (typeof paramDesc === 'string' && paramDesc.trim() !== '') {
+            // Mengambil petunjuk/contoh isi dari teks paramsConfig jika ada (misal: "text (contoh: Halo World)")
+            inputPlaceholder = paramDesc;
+        }
 
         if (paramName.toLowerCase() === 'apikey') {
             const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
