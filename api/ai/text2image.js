@@ -7,14 +7,26 @@ const os = require('os');
 
 const router = express.Router();
 
-// --- KONFIGURASI INTERNAL GEMINI (DARI KODE ASLI) ---
+// =========================================================================
+// TEMPELKAN HASIL EXPORT JSON COOKIES DI SINI (ARRAY OF COOKIE OBJECTS)
+// =========================================================================
+const COOKIES_DATA = [
+    /* Contoh isi:
+    { "name": "__Secure-1PSID", "value": "xxx" },
+    { "name": "__Secure-1PAPISID", "value": "yyy" }
+    */
+];
+
+// --- KONFIGURASI INTERNAL GEMINI ---
 
 const agent = new https.Agent({ keepAlive: true });
 
-const randomUUID = () => '8b970a7e2606d4b6'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-});
+const randomUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
 
 function syncCookies(jar, setCookies = []) {
     const list = Array.isArray(setCookies) ? setCookies : [setCookies];
@@ -105,27 +117,22 @@ function parseFrames(buffer) {
     return { frames, remaining };
 }
 
-// Global variable untuk menyimpan auth session agar tidak login terus menerus
 let globalAuth = null;
 
 async function getSession() {
     if (globalAuth) return globalAuth;
 
     const cookies = {};
-    const cookiePath = path.join(process.cwd(), 'cookies.json');
-    
-    if (!fs.existsSync(cookiePath)) {
-        throw new Error('cookies.json not found. Please export cookies from Gemini.');
+
+    if (!Array.isArray(COOKIES_DATA) || COOKIES_DATA.length === 0) {
+        throw new Error('Array COOKIES_DATA masih kosong. Tempelkan data cookie langsung pada file.');
     }
 
-    try {
-        const cookieData = JSON.parse(fs.readFileSync(cookiePath, 'utf8'));
-        // J2teams export format biasanya memiliki property 'cookies' yang berisi array
-        const cookieArray = Array.isArray(cookieData) ? cookieData : cookieData.cookies;
-        if (cookieArray) cookieArray.forEach(c => cookies[c.name] = c.value);
-    } catch (err) {
-        throw new Error('Failed to parse cookies.json: ' + err.message);
-    }
+    COOKIES_DATA.forEach(c => {
+        if (c.name && c.value) {
+            cookies[c.name] = c.value;
+        }
+    });
 
     const pageRes = await request('https://gemini.google.com/app', {
         headers: {
@@ -139,7 +146,7 @@ async function getSession() {
     const atToken = pageRes.text.match(/"SNlM0e":"([^"]+)"/)?.[1] ?? null;
     const fSid = pageRes.text.match(/"FdrFJe":"(-?\d+)"/)?.[1] ?? null;
 
-    if (!atToken) throw new Error('Failed to get AT Token. Cookies might be invalid or expired.');
+    if (!atToken) throw new Error('Gagal mendapatkan AT Token. Cookie tidak valid atau kadaluwarsa.');
 
     const batchRes = await request('https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=maGuAc&source-path=%2F&hl=en-US&_reqid=1&rt=c', {
         method: 'POST',
@@ -165,11 +172,10 @@ function buildStreamRequest(prompt, auth) {
     if (auth.buildLabel) qp.set('bl', auth.buildLabel);
     qp.set('f.sid', auth.fSid || auth.sessionId);
 
-    // Metadata kosong untuk chat baru
     const metadata = ['', '', '', null, null, null, null, null, null, ''];
 
     const p = new Array(97).fill(null);
-    p[0] = [prompt, 0, null, null, null, null, 0]; // No image input for text-to-image
+    p[0] = [prompt, 0, null, null, null, null, 0]; 
     p[1] = ['en-US'];
     p[2] = metadata;
     p[6] = [1]; p[7] = 1; p[10] = 1; p[11] = 0;
@@ -220,7 +226,6 @@ function extractImageUrl(frames, fullRawText) {
 // --- EXPRESS ROUTE HANDLER ---
 
 router.get('/', async (req, res) => {
-    // Mengambil prompt dari query parameter 'text' atau 'prompt'
     const prompt = req.query.text?.trim() || req.query.prompt?.trim();
 
     if (!prompt) {
@@ -234,15 +239,11 @@ router.get('/', async (req, res) => {
     let tempImagePath = null;
 
     try {
-        // 1. Dapatkan atau perbarui session
         const auth = await getSession();
-        // Increment reqId untuk request baru
         auth.reqId += 100000;
 
-        // 2. Bangun request stream
         const streamReq = buildStreamRequest(prompt, auth);
 
-        // 3. Lakukan request ke Gemini
         const { res: geminiRes, headers: geminiHeaders } = await request(streamReq.url, { 
             method: 'POST', 
             headers: streamReq.headers, 
@@ -250,10 +251,8 @@ router.get('/', async (req, res) => {
             stream: true 
         });
         
-        // Update cookies jika ada yang baru
         syncCookies(auth.cookies, geminiHeaders['set-cookie']);
 
-        // 4. Proses stream respon
         await new Promise((resolve, reject) => {
             let fullRawText = '', buf = '';
             const allFrames = [];
@@ -276,12 +275,9 @@ router.get('/', async (req, res) => {
                 if (responseFinished) return;
                 responseFinished = true;
                 try {
-                    // 5. Ekstrak URL Gambar
                     const imageUrl = extractImageUrl(allFrames, fullRawText);
 
                     if (!imageUrl) {
-                        // Jika tidak ada gambar, mungkin Gemini menolak atau prompt tidak menghasilkan gambar
-                        // Mencoba mengambil teks balasan sebagai alasan
                         let replyText = '';
                         for (const pj of allFrames) {
                             for (const cand of (pj?.[4] || [])) {
@@ -292,12 +288,10 @@ router.get('/', async (req, res) => {
                         throw new Error(cleanText(replyText) || "Gemini did not generate an image for this prompt.");
                     }
 
-                    // 6. Download Gambar asli dari Google
                     const imgBuf = await download(imageUrl, buildCookieString(auth.cookies));
                     
-                    // 7. Simpan sementara di sistem temp
-                    const ext = imageUrl.split('=').pop() || 'png'; // Biasanya png
-                    tempImagePath = path.join(os.tmpdir(), `gemini-gen-${Date.now()}.${ext}`);
+                    const tempFileName = `gemini-gen-${Date.now()}.png`;
+                    tempImagePath = path.join(os.tmpdir(), tempFileName);
                     fs.writeFileSync(tempImagePath, imgBuf);
                     resolve();
                 } catch (err) { reject(err); }
@@ -308,7 +302,6 @@ router.get('/', async (req, res) => {
                 reject(new Error("Gemini stream error: " + err.message));
             });
             
-            // Timeout jika stream terlalu lama (misal 60 detik)
             setTimeout(() => {
                 if (!responseFinished) {
                     responseFinished = true;
@@ -318,10 +311,8 @@ router.get('/', async (req, res) => {
             }, 60000);
         });
 
-        // 8. Kirim file gambar ke client
-        res.setHeader('Content-Type', 'image/png'); // Gemini generation biasanya PNG
+        res.setHeader('Content-Type', 'image/png'); 
         res.sendFile(tempImagePath, (err) => {
-            // 9. Hapus file temp setelah dikirim atau jika terjadi error saat pengiriman
             if (fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath);
             if (err && !res.headersSent) {
                 console.error("Gagal mengirim file:", err);
@@ -331,11 +322,9 @@ router.get('/', async (req, res) => {
     } catch (err) {
         console.error("API Error:", err.message);
         
-        // Bersihkan temp jika ada error sebelum sendFile
         if (tempImagePath && fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath);
 
-        // Reset session jika error kemungkinan karena cookie mati ( Unauthorized / Failed to get AT Token)
-        if (err.message.includes('AT Token') || err.message.includes('cookies')) {
+        if (err.message.includes('AT Token') || err.message.includes('Cookie')) {
             globalAuth = null; 
         }
 
@@ -347,11 +336,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Konfigurasi meta untuk dokumentasi API (sesuai format Anda sebelumnya)
 router.paramsConfig = {
     text: "Teks prompt untuk menghasilkan gambar",
 };
 router.status = "ready";
-router.type = "free"; // Biasanya generate image itu berat, jadi diberi tipe limit
+router.type = "free"; 
 
 module.exports = router;
