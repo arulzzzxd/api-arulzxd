@@ -1,7 +1,7 @@
 /**
- * ✦ Nama Scrape : Brat Video Generator (480p White Only MP4)
+ * ✦ Nama Scrape : Brat Video Generator (2K High Quality Canvas)
  * ✦ Author      : ArulzXD
- * ✦ Deskripsi   : Membuat video animasi kata demi kata teks Brat ala Charli XCX beresolusi 480x480 MP4, tema putih, dan tanpa blur menggunakan ffmpeg-static.
+ * ✦ Deskripsi   : Membuat video animasi kata demi kata teks Brat ala Charli XCX beresolusi 2K MP4/GIF menggunakan ffmpeg-static.
  */
 
 const express = require("express");
@@ -19,11 +19,18 @@ const router = express.Router();
 const FONT_URL = "https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Font/ARIALN.ttf";
 const EMOJI_JSON_URL = "https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json";
 
-// KONSTANTA PERMANEN: White Only, Blur 0, Resolusi 480
-const THEME_WHITE = { bg: "#ffffff", text: "#000000" };
+// KONSTANTA DEFAULT OTOMATIS
+const DEFAULT_THEME = "white";
+const DEFAULT_BLUR = 0;
 const DEFAULT_MAX_WORD_PER_LAYER = 1;
 const DEFAULT_MAX_WORD_BEFORE_RESET = [7, 8];
 const DEFAULT_FAST_PROGRESS = true;
+
+const THEMES = {
+  black: { bg: "#000000", text: "#ffffff" },
+  white: { bg: "#ffffff", text: "#000000" },
+  green: { bg: "#8ace00", text: "#000000" }
+};
 
 async function downloadBuffer(url) {
   const res = await fetch(url);
@@ -141,8 +148,8 @@ function fitsAt(ctx, text, fontSize, maxWidth, maxHeight, lineGap) {
 }
 
 function findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap) {
-  let lo = 10;
-  let hi = 350;
+  let lo = 20;
+  let hi = 1400;
   let best = lo;
 
   while (lo <= hi) {
@@ -161,17 +168,18 @@ function tokenize(text) {
   return text.split(" ").filter(Boolean);
 }
 
-async function renderCanvas(text) {
-  const size = 480; // Resolusi 480x480 px
-  const padding = 38;
-  const lineGap = 10;
+async function renderCanvas(text, theme, blurAmount) {
+  const selectedTheme = THEMES[theme] || THEMES.white;
+  const size = 2000; // Resolusi 2K (2000x2000 px)
+  const padding = 160;
+  const lineGap = 40;
   const maxWidth = size - padding * 2;
   const maxHeight = size - padding * 2;
 
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = THEME_WHITE.bg;
+  ctx.fillStyle = selectedTheme.bg;
   ctx.fillRect(0, 0, size, size);
 
   if (!text.trim()) return canvas;
@@ -179,10 +187,13 @@ async function renderCanvas(text) {
   const fontSize = findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap);
   const lines = wrapText(ctx, text, maxWidth, fontSize);
 
-  ctx.fillStyle = THEME_WHITE.text;
+  ctx.fillStyle = selectedTheme.text;
   ctx.font = `${fontSize}px ArialNarrow`;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
+
+  ctx.save();
+  if (blurAmount > 0) ctx.filter = `blur(${blurAmount * 2}px)`;
 
   const totalTextHeight = lines.length * (fontSize + lineGap) - lineGap;
   let y = (size - totalTextHeight) / 2;
@@ -191,17 +202,22 @@ async function renderCanvas(text) {
     y += fontSize + lineGap;
   }
 
+  ctx.restore();
   return canvas;
 }
 
 async function generateBratVideo({
   text = "",
+  theme = DEFAULT_THEME,
+  blur = DEFAULT_BLUR,
+  format = "mp4",
   frameDuration,
   holdDuration,
   maxWordPerLayer = DEFAULT_MAX_WORD_PER_LAYER,
   maxWordBeforeReset = DEFAULT_MAX_WORD_BEFORE_RESET,
   fastProgress = DEFAULT_FAST_PROGRESS
 } = {}) {
+  const blurAmount = [0, 1, 2, 3].includes(blur) ? blur : DEFAULT_BLUR;
   const step = Math.max(1, maxWordPerLayer);
   const resetSchedule = Array.isArray(maxWordBeforeReset)
     ? maxWordBeforeReset.map(n => Math.max(0, n))
@@ -219,7 +235,7 @@ async function generateBratVideo({
   const computedFrameDur = frameDuration ?? (wordCount > 15 ? 0.25 : wordCount > 8 ? 0.35 : 0.45);
   const computedHoldDur = holdDuration ?? (wordCount > 15 ? 1.5 : 1.2);
 
-  const tmpDir = mkdtempSync(path.join(os.tmpdir(), "brat-480-"));
+  const tmpDir = mkdtempSync(path.join(os.tmpdir(), "brat-2k-"));
 
   const partialTexts = [];
   let batchStart = 0;
@@ -236,7 +252,7 @@ async function generateBratVideo({
   }
 
   const renderFrame = async (partialText, index) => {
-    const canvas = await renderCanvas(partialText);
+    const canvas = await renderCanvas(partialText, theme, blurAmount);
     const buffer = await canvas.encode("png");
     const framePath = path.join(tmpDir, `frame-${String(index + 1).padStart(4, "0")}.png`);
     writeFileSync(framePath, buffer);
@@ -266,19 +282,30 @@ async function generateBratVideo({
   const concatPath = path.join(tmpDir, "concat.txt");
   writeFileSync(concatPath, manifestLines.join("\n"));
 
-  const outPath = path.join(os.tmpdir(), `brat-480-${Date.now()}.mp4`);
+  const ext = format === "gif" ? "gif" : "mp4";
+  const outPath = path.join(os.tmpdir(), `brat-2k-${Date.now()}.${ext}`);
 
-  await execFileAsync(ffmpegPath, [
-    "-y",
-    "-f", "concat", "-safe", "0", "-i", concatPath,
-    "-vf", "scale=480:480",
-    "-c:v", "libx264",
-    "-preset", "fast",
-    "-crf", "18",
-    "-pix_fmt", "yuv420p",
-    "-movflags", "+faststart",
-    outPath
-  ]);
+  if (format === "gif") {
+    await execFileAsync(ffmpegPath, [
+      "-y",
+      "-f", "concat", "-safe", "0", "-i", concatPath,
+      "-vf", "fps=10,scale=2000:2000:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer",
+      "-loop", "0",
+      outPath
+    ]);
+  } else {
+    await execFileAsync(ffmpegPath, [
+      "-y",
+      "-f", "concat", "-safe", "0", "-i", concatPath,
+      "-vf", "scale=2000:2000",
+      "-c:v", "libx264",
+      "-preset", "fast",
+      "-crf", "18",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      outPath
+    ]);
+  }
 
   rmSync(tmpDir, { recursive: true, force: true });
   return outPath;
@@ -296,14 +323,23 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const rawTheme = (req.body.theme || DEFAULT_THEME).toLowerCase().trim();
+    const theme = THEMES[rawTheme] ? rawTheme : DEFAULT_THEME;
+    const blur = parseInt(req.body.blur, 10) || DEFAULT_BLUR;
+    const format = (req.body.format || "mp4").toLowerCase().trim();
+
     const filePath = await generateBratVideo({
       text,
+      theme,
+      blur,
+      format,
       maxWordPerLayer: DEFAULT_MAX_WORD_PER_LAYER,
       maxWordBeforeReset: DEFAULT_MAX_WORD_BEFORE_RESET,
       fastProgress: DEFAULT_FAST_PROGRESS
     });
 
-    res.setHeader("Content-Type", "video/mp4");
+    const contentType = format === "gif" ? "image/gif" : "video/mp4";
+    res.setHeader("Content-Type", contentType);
 
     res.sendFile(filePath, (err) => {
       if (existsSync(filePath)) {
@@ -320,14 +356,38 @@ router.post("/", async (req, res) => {
     return res.status(500).json({
       status: false,
       creator: "ArulzXD",
-      message: err.message || "Terjadi kesalahan saat memproses Brat Video."
+      message: err.message || "Terjadi kesalahan saat memproses Brat Video 2K."
     });
   }
 });
 
-router.desc = "Membuat video teks animasi Brat.";
+router.desc = "Membuat video teks animasi Brat";
 router.paramsConfig = {
-  text: "text"
+  text: "text",
+  theme: {
+    type: "select",
+    options: [
+      "white",
+      "black",
+      "green"
+    ]
+  },
+  blur: {
+    type: "select",
+    options: [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  format: {
+    type: "select",
+    options: [
+      "mp4",
+      "gif"
+    ]
+  }
 };
 
 router.status = "ready";

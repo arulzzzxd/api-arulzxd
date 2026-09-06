@@ -10,16 +10,13 @@ const ffmpegPath = require("ffmpeg-static");
 const execFileAsync = promisify(execFile);
 const router = express.Router();
 
-const FONT_URL = "https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Font/ARIALN.ttf";
+const FONT_URL = "https://cdn.jsdelivr.net/gh/Napoleon-Fibonacci/assets@main/font/impact.ttf";
 const EMOJI_JSON_URL = "https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json";
 
-// KONSTANTA DEFAULT OTOMATIS
+// KONSTANTA DEFAULT
 const DEFAULT_THEME = "white";
 const DEFAULT_BLUR = 0;
-const DEFAULT_FRAME_DURATION = 0.4;
-const DEFAULT_HOLD_DURATION = 1.2;
-const DEFAULT_MAX_WORD_PER_LAYER = 1;
-const DEFAULT_MAX_WORD_BEFORE_RESET = [7, 8];
+const DEFAULT_HOLD_DURATION = 1.5;
 const DEFAULT_FAST_PROGRESS = true;
 
 const THEMES = {
@@ -38,7 +35,7 @@ let fontLoaded = false;
 async function ensureFont() {
   if (!fontLoaded) {
     const fontBuffer = await downloadBuffer(FONT_URL);
-    GlobalFonts.register(fontBuffer, "ArialNarrow");
+    GlobalFonts.register(fontBuffer, "Impact");
     fontLoaded = true;
   }
 }
@@ -120,7 +117,7 @@ async function drawTextWithEmojis(ctx, text, x, y, fontSize) {
 }
 
 function wrapText(ctx, text, maxWidth, fontSize) {
-  ctx.font = `${fontSize}px ArialNarrow`;
+  ctx.font = `${fontSize}px Impact`;
   const words = text.split(" ");
   const lines = [];
   let cur = "";
@@ -161,45 +158,147 @@ function findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap) {
   return best;
 }
 
-function tokenize(text) {
-  return text.split(" ").filter(Boolean);
+function easeOutBack(x) {
+  const c1 = 1.4;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
 }
 
-async function renderCanvas(text, theme, blurAmount) {
+function calculateWordLayout(ctx, fullText, maxWidth, maxHeight, lineGap, margin, padding, boxSize) {
+  const fontSize = findBestFontSize(ctx, fullText, maxWidth, maxHeight, lineGap);
+  ctx.font = `${fontSize}px Impact`;
+  const defaultSpaceWidth = ctx.measureText(" ").width;
+
+  const fullLines = wrapText(ctx, fullText, maxWidth, fontSize);
+  const totalTextHeight = fullLines.length * (fontSize + lineGap) - lineGap;
+  const startY = margin + (boxSize - totalTextHeight) / 2;
+
+  const wordLayouts = [];
+  let currentY = startY;
+
+  for (let l = 0; l < fullLines.length; l++) {
+    const line = fullLines[l];
+    const lineWords = line.split(" ").filter(Boolean);
+    const isLastLine = (l === fullLines.length - 1);
+
+    const totalWordsW = lineWords.reduce((acc, w) => acc + measureTextCustom(ctx, w, fontSize), 0);
+
+    let spaceBetween = defaultSpaceWidth;
+    if (!isLastLine && lineWords.length > 1) {
+      spaceBetween = (maxWidth - totalWordsW) / (lineWords.length - 1);
+    }
+
+    let currentX = margin + padding;
+
+    for (const word of lineWords) {
+      const wordW = measureTextCustom(ctx, word, fontSize);
+      wordLayouts.push({
+        text: word,
+        x: currentX,
+        y: currentY,
+        w: wordW,
+        h: fontSize
+      });
+      currentX += wordW + spaceBetween;
+    }
+    currentY += fontSize + lineGap;
+  }
+
+  return { fontSize, wordLayouts };
+}
+
+async function renderCanvas({
+  wordLayouts,
+  fontSize,
+  wordStates,
+  theme,
+  blurAmount,
+  highlightProgress = 0,
+  format = "mp4",
+  margin = 70
+}) {
   const selectedTheme = THEMES[theme] || THEMES.white;
   const size = 1000;
-  const padding = 80;
-  const lineGap = 20;
-  const maxWidth = size - padding * 2;
-  const maxHeight = size - padding * 2;
+  const boxSize = size - margin * 2;
+  const x = margin;
+  const y = margin;
+  const w = boxSize;
+  const h = boxSize;
 
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = selectedTheme.bg;
-  ctx.fillRect(0, 0, size, size);
+  if (format !== "gif") {
+    ctx.fillStyle = selectedTheme.bg;
+    ctx.fillRect(0, 0, size, size);
+  } else {
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = selectedTheme.bg;
+    ctx.fillRect(x, y, w, h);
+  }
 
-  if (!text.trim()) return canvas;
+  if (!wordLayouts || wordLayouts.length === 0) return canvas;
 
-  const fontSize = findBestFontSize(ctx, text, maxWidth, maxHeight, lineGap);
-  const lines = wrapText(ctx, text, maxWidth, fontSize);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
 
   ctx.fillStyle = selectedTheme.text;
-  ctx.font = `${fontSize}px ArialNarrow`;
+  ctx.font = `${fontSize}px Impact`;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
 
-  ctx.save();
   if (blurAmount > 0) ctx.filter = `blur(${blurAmount}px)`;
 
-  const totalTextHeight = lines.length * (fontSize + lineGap) - lineGap;
-  let y = (size - totalTextHeight) / 2;
-  for (const line of lines) {
-    await drawTextWithEmojis(ctx, line, padding, y, fontSize);
-    y += fontSize + lineGap;
+  for (let idx = 0; idx < wordLayouts.length; idx++) {
+    const item = wordLayouts[idx];
+    const state = wordStates[idx] || { scale: 0, alpha: 0, visible: false };
+
+    if (!state.visible) continue;
+
+    const centerX = item.x + item.w / 2;
+    const centerY = item.y + fontSize / 2;
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, state.alpha));
+
+    if (state.scale !== 1.0) {
+      ctx.translate(centerX, centerY);
+      ctx.scale(state.scale, state.scale);
+      ctx.translate(-centerX, -centerY);
+    }
+
+    await drawTextWithEmojis(ctx, item.text, item.x, item.y, fontSize);
+    ctx.restore();
+  }
+
+  if (highlightProgress > 0 && highlightProgress <= 1) {
+    const totalDist = boxSize * 2.8;
+    const curr = margin - boxSize * 1.0 + highlightProgress * totalDist;
+    const sweepW = boxSize * 0.95;
+
+    const grad = ctx.createLinearGradient(curr, curr, curr + sweepW, curr + sweepW);
+
+    grad.addColorStop(0.00, "rgba(255, 255, 255, 0)");
+    grad.addColorStop(0.10, "rgba(255, 255, 255, 0.35)");
+    grad.addColorStop(0.25, "rgba(255, 255, 255, 0.95)");
+    grad.addColorStop(0.38, "rgba(255, 255, 255, 0.35)");
+
+    grad.addColorStop(0.45, "rgba(255, 255, 255, 0.05)");
+    grad.addColorStop(0.52, "rgba(255, 255, 255, 0.05)");
+
+    grad.addColorStop(0.60, "rgba(255, 255, 255, 0.35)");
+    grad.addColorStop(0.75, "rgba(255, 255, 255, 0.95)");
+    grad.addColorStop(0.88, "rgba(255, 255, 255, 0.35)");
+    grad.addColorStop(1.00, "rgba(255, 255, 255, 0)");
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(margin, margin, boxSize, boxSize);
   }
 
   ctx.restore();
+
   return canvas;
 }
 
@@ -208,69 +307,130 @@ async function generateBratVideo({
   theme = DEFAULT_THEME,
   blur = DEFAULT_BLUR,
   format = "mp4",
-  frameDuration = DEFAULT_FRAME_DURATION,
   holdDuration = DEFAULT_HOLD_DURATION,
-  maxWordPerLayer = DEFAULT_MAX_WORD_PER_LAYER,
-  maxWordBeforeReset = DEFAULT_MAX_WORD_BEFORE_RESET,
   fastProgress = DEFAULT_FAST_PROGRESS
 } = {}) {
   const blurAmount = [0, 1, 2, 3].includes(blur) ? blur : DEFAULT_BLUR;
-  const step = Math.max(1, maxWordPerLayer);
-  const resetSchedule = Array.isArray(maxWordBeforeReset)
-    ? maxWordBeforeReset.map(n => Math.max(0, n))
-    : [Math.max(0, Number(maxWordBeforeReset) || 0)];
-  const getResetAt = (batchIndex) => resetSchedule[batchIndex % resetSchedule.length];
 
   await ensureFont();
   await loadEmojiMap();
 
-  const tokens = tokenize(text);
-  if (!tokens.length) throw new Error("Teks kosong");
+  if (!text.trim()) throw new Error("Teks kosong");
+
+  const formattedText = text;
 
   const tmpDir = mkdtempSync(path.join(os.tmpdir(), "brat-"));
 
-  const partialTexts = [];
-  let batchStart = 0;
-  let batchIndex = 0;
-  while (batchStart < tokens.length) {
-    const resetAt = getResetAt(batchIndex);
-    const batchEnd = resetAt > 0 ? Math.min(batchStart + resetAt, tokens.length) : tokens.length;
-    for (let i = batchStart + step; i < batchEnd; i += step) {
-      partialTexts.push(tokens.slice(batchStart, i).join(" "));
-    }
-    partialTexts.push(tokens.slice(batchStart, batchEnd).join(" "));
-    batchStart = batchEnd;
-    batchIndex++;
+  const FPS = 60;
+  const frameStepTime = 1 / FPS;
+  const tasks = [];
+
+  const size = 1000;
+  const margin = 70;
+  const padding = 40;
+  const boxSize = size - margin * 2;
+  const lineGap = 15;
+  const maxWidth = boxSize - padding * 2;
+  const maxHeight = boxSize - padding * 2;
+
+  const dummyCanvas = createCanvas(size, size);
+  const dummyCtx = dummyCanvas.getContext("2d");
+
+  const { fontSize, wordLayouts } = calculateWordLayout(
+    dummyCtx, formattedText, maxWidth, maxHeight, lineGap, margin, padding, boxSize
+  );
+
+  const totalWords = wordLayouts.length;
+
+  tasks.push({
+    wordStates: wordLayouts.map(() => ({ scale: 0, alpha: 0, visible: false })),
+    highlightProgress: 0,
+    duration: 0.15
+  });
+
+  const staggerFrames = 5;
+  const bounceFramesCount = 28;
+  const totalBounceFrames = (totalWords - 1) * staggerFrames + bounceFramesCount;
+
+  for (let f = 0; f < totalBounceFrames; f++) {
+    const wordStates = wordLayouts.map((_, i) => {
+      const startFrame = i * staggerFrames;
+      const currentFrame = f - startFrame;
+
+      if (currentFrame < 0) {
+        return { scale: 0, alpha: 0, visible: false };
+      } else if (currentFrame >= bounceFramesCount) {
+        return { scale: 1.0, alpha: 1.0, visible: true };
+      } else {
+        const prog = currentFrame / (bounceFramesCount - 1);
+        const bounceFactor = easeOutBack(prog);
+        const scale = 0.2 + (1.0 - 0.2) * bounceFactor;
+        const alpha = Math.min(1.0, prog * 1.8);
+        return { scale, alpha, visible: true };
+      }
+    });
+
+    const highlightProgress = (f + 1) / totalBounceFrames;
+
+    tasks.push({
+      wordStates,
+      highlightProgress,
+      duration: frameStepTime
+    });
   }
 
-  const renderFrame = async (partialText, index) => {
-    const canvas = await renderCanvas(partialText, theme, blurAmount);
+  const secondHighlightFrames = 38;
+  const allVisibleStates = wordLayouts.map(() => ({ scale: 1.0, alpha: 1.0, visible: true }));
+
+  for (let hf = 0; hf < secondHighlightFrames; hf++) {
+    const highlightProgress = (hf + 1) / secondHighlightFrames;
+    tasks.push({
+      wordStates: allVisibleStates,
+      highlightProgress,
+      duration: frameStepTime
+    });
+  }
+
+  tasks.push({
+    wordStates: allVisibleStates,
+    highlightProgress: 0,
+    duration: holdDuration
+  });
+
+  const renderFrame = async (task, index) => {
+    const canvas = await renderCanvas({
+      wordLayouts,
+      fontSize,
+      wordStates: task.wordStates,
+      theme,
+      blurAmount,
+      highlightProgress: task.highlightProgress,
+      format,
+      margin
+    });
     const buffer = await canvas.encode("png");
-    const framePath = path.join(tmpDir, `frame-${String(index + 1).padStart(4, "0")}.png`);
+    const framePath = path.join(tmpDir, `frame-${String(index + 1).padStart(5, "0")}.png`);
     writeFileSync(framePath, buffer);
-    return framePath;
+    return { path: framePath, duration: task.duration };
   };
 
   let framePaths;
   if (fastProgress) {
-    framePaths = await Promise.all(partialTexts.map((t, i) => renderFrame(t, i)));
+    framePaths = await Promise.all(tasks.map((task, i) => renderFrame(task, i)));
   } else {
     framePaths = [];
-    for (let i = 0; i < partialTexts.length; i++) {
-      framePaths.push(await renderFrame(partialTexts[i], i));
+    for (let i = 0; i < tasks.length; i++) {
+      framePaths.push(await renderFrame(tasks[i], i));
     }
   }
 
-  const durations = framePaths.map((_, i) =>
-    i === framePaths.length - 1 ? holdDuration : frameDuration
-  );
-
   const manifestLines = [];
   for (let i = 0; i < framePaths.length; i++) {
-    manifestLines.push(`file '${framePaths[i].replace(/'/g, "'\\''")}'`);
-    manifestLines.push(`duration ${durations[i]}`);
+    manifestLines.push(`file '${framePaths[i].path.replace(/'/g, "'\\''")}'`);
+    manifestLines.push(`duration ${framePaths[i].duration}`);
   }
-  manifestLines.push(`file '${framePaths[framePaths.length - 1].replace(/'/g, "'\\''")}'`);
+  manifestLines.push(`file '${framePaths[framePaths.length - 1].path.replace(/'/g, "'\\''")}'`);
+
   const concatPath = path.join(tmpDir, "concat.txt");
   writeFileSync(concatPath, manifestLines.join("\n"));
 
@@ -281,7 +441,7 @@ async function generateBratVideo({
     await execFileAsync(ffmpegPath, [
       "-y",
       "-f", "concat", "-safe", "0", "-i", concatPath,
-      "-vf", "fps=10,scale=1000:1000:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer",
+      "-vf", "fps=60,scale=1000:1000:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer",
       "-loop", "0",
       outPath
     ]);
@@ -289,7 +449,7 @@ async function generateBratVideo({
     await execFileAsync(ffmpegPath, [
       "-y",
       "-f", "concat", "-safe", "0", "-i", concatPath,
-      "-vf", "scale=1000:1000",
+      "-vf", "fps=60,scale=1000:1000",
       "-c:v", "libx264",
       "-preset", "fast",
       "-crf", "18",
@@ -325,10 +485,7 @@ router.get("/", async (req, res) => {
       theme,
       format,
       blur: DEFAULT_BLUR,
-      frameDuration: DEFAULT_FRAME_DURATION,
       holdDuration: DEFAULT_HOLD_DURATION,
-      maxWordPerLayer: DEFAULT_MAX_WORD_PER_LAYER,
-      maxWordBeforeReset: DEFAULT_MAX_WORD_BEFORE_RESET,
       fastProgress: DEFAULT_FAST_PROGRESS
     });
 
@@ -355,7 +512,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Parameter config bersih tanpa deskripsi ' | ...'
+// Parameter config bersih tanpa deskripsi
 router.paramsConfig = {
   text: "text",
   theme: {
