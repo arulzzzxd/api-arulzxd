@@ -1,7 +1,7 @@
 /**
- * ✦ Nama Scrape : IQC Canvas (iPhone Quote Generator - Pure In-Memory)
+ * ✦ Nama Scrape : IQC Canvas (iPhone Quote Generator - Custom Emojis Support)
  * ✦ Author      : kyzz & ArulzXD
- * ✦ Deskripsi   : Membuat quote gelembung obrolan iPhone dengan emoji Apple tanpa menyimpan file ke disk.
+ * ✦ Deskripsi   : Membuat quote gelembung obrolan iPhone dengan emoji Apple dan kustomisasi daftar emoji reaksi.
  */
 
 const express = require('express');
@@ -44,7 +44,6 @@ const baseState = {
     offsetY: 0,
 };
 
-// Global in-memory cache
 let fontsLoaded = false;
 let appleEmojiMap = null;
 let bgImageBuffer = null;
@@ -61,6 +60,25 @@ async function downloadBuffer(url) {
 
 function emojiToUnicode(emoji) {
     return [...emoji].map(c => c.codePointAt(0).toString(16)).join('-');
+}
+
+// Fungsi pembantu mengekstrak emoji kustom dari teks input
+function parseCustomEmojis(emojiInput) {
+    if (!emojiInput) return baseState.emojis;
+
+    // Jika mengandung koma, pisahkan berdasarkan koma
+    if (emojiInput.includes(',')) {
+        const parsed = emojiInput.split(',').map(e => e.trim()).filter(Boolean);
+        if (parsed.length > 0) return parsed;
+    }
+
+    // Jika berupa rentetan emoji berturut-turut
+    const parsed = emojiInput.match(/\p{Extended_Pictographic}/gu);
+    if (parsed && parsed.length > 0) {
+        return parsed;
+    }
+
+    return baseState.emojis;
 }
 
 async function loadAppleEmojiMap() {
@@ -193,10 +211,11 @@ function wrapText(ctx, text, maxWidth, fontSize) {
     return lines;
 }
 
-async function renderQuote(text, time) {
+async function renderQuote(text, time, customEmojiList) {
     await ensureAssets();
 
-    const s = { ...baseState, text, time: time ?? baseState.time };
+    const emojis = parseCustomEmojis(customEmojiList);
+    const s = { ...baseState, text, time: time ?? baseState.time, emojis };
 
     const canvas = createCanvas(BG_W, BG_H);
     const ctx = canvas.getContext('2d');
@@ -337,7 +356,7 @@ async function renderQuote(text, time) {
     ctx.stroke();
     ctx.restore();
 
-    if (s.showReaction) {
+    if (s.showReaction && s.emojis.length > 0) {
         ctx.save();
         const emojiNum = s.emojis.length;
         const startPad = Math.round(52 * SX);
@@ -396,6 +415,7 @@ router.get('/', async (req, res) => {
     try {
         const text = req.query.text?.trim() || req.query.q?.trim();
         const time = req.query.time?.trim() || "22.54";
+        const emojisInput = req.query.emojis?.trim() || req.query.emoji?.trim();
 
         if (!text) {
             return res.status(400).json({
@@ -405,7 +425,7 @@ router.get('/', async (req, res) => {
             });
         }
 
-        const buffer = await renderQuote(text, time);
+        const buffer = await renderQuote(text, time, emojisInput);
 
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Length', buffer.length);
@@ -421,10 +441,11 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.desc = "Membuat gambar gelembung pesan iPhone (IQC Canvas) dengan dukungan emoji Apple tanpa menulis file ke disk.";
+router.desc = "Membuat gambar gelembung pesan iPhone (IQC Canvas) dengan kustomisasi daftar emoji reaksi.";
 router.paramsConfig = {
     text: "text (contoh: Kesendirian adalah teman terbaik ku😂😂)",
-    time: "text (opsional, contoh: 22.54)"
+    time: "text (opsional, contoh: 22.54)",
+    emojis: "text (opsional, contoh: 🔥,❤️,✨ atau 🔥❤️✨)"
 };
 router.status = "ready";
 router.type = "free";
