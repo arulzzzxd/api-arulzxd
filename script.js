@@ -1039,114 +1039,89 @@ function loadApis() {
                             <div class="space-y-4 mb-4">`;
 
                 if (item.params) {
-    Object.keys(item.params).forEach(paramName => {
-        const pType = item.params[paramName];
+                    Object.keys(item.params).forEach(paramName => {
+                        const pType = item.params[paramName];
+                        const isRequired = true; 
+                        let paramDesc = (pType && pType.type) ? pType.type : (pType || paramName);
 
-        // --- 1. PENENTUAN ISREQUIRED DINAMIS ---
-        let isRequired = false;
-        let paramDesc = "";
+                        let inputValue = '';
+                        let inputPlaceholder = `Masukkan ${paramName}`;
 
-        if (typeof pType === 'object' && pType !== null) {
-            isRequired = pType.required !== false;
-            paramDesc = pType.type || (typeof pType.desc === 'string' ? pType.desc : paramName);
-        } else if (typeof pType === 'string') {
-            const lowerVal = pType.toLowerCase();
-            const lowerKey = paramName.toLowerCase();
+                        if (paramName.toLowerCase() === 'apikey') {
+                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
 
-            // Parameter 'apikey' atau yang tidak mengandung kata 'opsional' dianggap wajib
-            if (lowerKey === 'apikey' || !lowerVal.includes('opsional')) {
-                isRequired = true;
-            }
-            paramDesc = pType;
-        } else {
-            isRequired = paramName.toLowerCase() === 'apikey';
-            paramDesc = paramName;
-        }
+                            if (epType === 'vip') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey VIP';
+                            } else if (epType === 'premium') {
+                                inputValue = ''; 
+                                inputPlaceholder = 'Masukkan apikey Premium';
+                            } else {
+                                inputValue = isUserLoggedIn ? displayApiKey : '';
+                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+                            }
+                        }
 
-        // --- 2. PENENTUAN PLACEHOLDER DINAMIS DARI PARAMSCONFIG FILE ---
-        let inputValue = '';
-        let inputPlaceholder = `Masukkan ${paramName}`;
+                        html += `
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
+                                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
+                                </label>
+                                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
+                            </div>`;
 
-        if (typeof paramDesc === 'string' && paramDesc.trim() !== '') {
-            // Mengambil petunjuk/contoh isi dari teks paramsConfig jika ada (misal: "text (contoh: Halo World)")
-            inputPlaceholder = paramDesc;
-        }
+                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+                            const defaultVal = pType.options[0] || '';
+                            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
 
-        if (paramName.toLowerCase() === 'apikey') {
-            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+                            html += `
+                            <div class="relative w-full">
+                                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
+                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                <div id="${uniqueId}-modal" class="select-modal-container hidden">
+                                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
+                                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                                        </div>
+                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul class="select-modal-list">`;
 
-            if (epType === 'vip') {
-                inputValue = ''; 
-                inputPlaceholder = 'Masukkan apikey VIP';
-            } else if (epType === 'premium') {
-                inputValue = ''; 
-                inputPlaceholder = 'Masukkan apikey Premium';
-            } else {
-                inputValue = isUserLoggedIn ? displayApiKey : '';
-                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-            }
-        }
+                            pType.options.forEach(opt => {
+                                const isSelected = opt === defaultVal ? 'selected' : '';
+                                html += `
+                                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                                        <span>${opt}</span>
+                                    </li>`;
+                            });
 
-        html += `
-        <div>
-            <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
-                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
-                </label>
-                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
-            </div>`;
-
-        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
-        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-            const defaultVal = pType.options[0] || '';
-            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
-
-            html += `
-            <div class="relative w-full">
-                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
-                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
-                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                <div id="${uniqueId}-modal" class="select-modal-container hidden">
-                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
-                        </div>
-                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <ul class="select-modal-list">`;
-
-            pType.options.forEach(opt => {
-                const isSelected = opt === defaultVal ? 'selected' : '';
-                html += `
-                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
-                        <span>${opt}</span>
-                    </li>`;
-            });
-
-            html += `
-                    </ul>
-                </div>
-            </div>`;
-        } else {
-            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
-        }
-        html += `</div>`;
-    });
-}
+                            html += `
+                                    </ul>
+                                </div>
+                            </div>`;
+                        } else {
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                        }
+                        html += `</div>`;
+                    });
+                }
 
                 html += `
                             </div>
