@@ -102,7 +102,10 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 router.desc = "Menghapus background gambar menggunakan layanan Removal.ai (Upload via multipart/form-data field 'image').";
 router.paramsConfig = {
-    image: "file/form-data"
+    image: {
+        type: "file",
+        desc: "Berkas gambar yang akan dihapus latar belakangnya"
+    }
 };
 router.status = "ready";
 router.type = "free";
