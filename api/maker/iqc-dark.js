@@ -14,8 +14,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // Limit 10MB
 });
 
-const RIN_BG_URL = 'https://raw.githubusercontent.com/ryyntwx/allimagerin/refs/heads/main/iqc-hytam.png';
-const APPLE_EMOJI_JSON_URL = 'https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json';
+const RIN_BG_URL = 'https://arulz-xd.my.id/files/7q7gFa.png';
+const APPLE_EMOJI_JSON_URL = 'https://raw.githubusercontent.com/arulzzzxd/database/refs/heads/main/emoji-apple.json';
 
 const RIN_FONTS = [{
   url: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2',
@@ -461,9 +461,9 @@ router.paramsConfig = {
     type: "file",
     desc: "Berkas gambar yang akan diunggah ke gelembung obrolan (opsional)"
   },
-  text: "opsional jika menyertakan gambar",
-  time: "opsional, contoh: 22.54",
-  emojis: "opsional, contoh: 😈,🥶,😹 atau 😈🥶😹"
+  text: "contoh: tunggu semuanya membaik akan kutunjukka hasilnya",
+  time: "contoh: 22.54",
+  emojis: "contoh: 😈,🥶,😹 atau 😈🥶😹"
 };
 router.status = "ready";
 router.type = "free";

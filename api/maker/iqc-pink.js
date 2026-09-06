@@ -1,6 +1,6 @@
 /**
  * ✦ Nama Scrape : IQC Canvas (iPhone Quote Generator - Custom Emojis Support)
- * ✦ Author      : kyzz & ArulzXD
+ * ✦ Author      : ArulzXD
  * ✦ Deskripsi   : Membuat quote gelembung obrolan iPhone dengan emoji Apple dan kustomisasi daftar emoji reaksi.
  */
 
@@ -10,7 +10,7 @@ const axios = require('axios');
 
 const router = express.Router();
 
-const BG_URL = "https://raw.githubusercontent.com/ryyntwx/allimagerin/refs/heads/main/Iqcbyrin.png";
+const BG_URL = "https://arulz-xd.my.id/files/UCVykl.png";
 
 const INTER_FONTS = [
     { url: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2', name: 'Inter' },
@@ -18,7 +18,7 @@ const INTER_FONTS = [
     { url: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff2', name: 'Inter' },
 ];
 
-const APPLE_EMOJI_JSON_URL = 'https://media.githubusercontent.com/media/Ditzzx-vibecoder/entahlah/main/emoji-apple.json';
+const APPLE_EMOJI_JSON_URL = 'https://raw.githubusercontent.com/arulzzzxd/database/refs/heads/main/emoji-apple.json';
 
 const BG_W = 906;
 const BG_H = 1736;
@@ -443,9 +443,9 @@ router.get('/', async (req, res) => {
 
 router.desc = "Membuat gambar gelembung pesan iPhone (IQC Canvas) dengan kustomisasi daftar emoji reaksi.";
 router.paramsConfig = {
-    text: "text (contoh: Kesendirian adalah teman terbaik ku😂😂)",
-    time: "text (opsional, contoh: 22.54)",
-    emojis: "text (opsional, contoh: 🔥,❤️,✨ atau 🔥❤️✨)"
+    text: "contoh: Kesendirian adalah teman terbaik ku",
+    time: "contoh: 22.54",
+    emojis: "contoh: 🔥,❤️,✨ atau 🔥❤️✨"
 };
 router.status = "ready";
 router.type = "free";

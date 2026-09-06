@@ -1,6 +1,6 @@
 /**
  * ✦ Nama Scrape : IQC Call Canvas (iPhone Call / Chat Quote Generator)
- * ✦ Author      : ArulzXD
+ * ✦ Author      : kyzz & ArulzXD
  * ✦ Deskripsi   : Membuat kartu visual iPhone call/profile generator menggunakan Canvas dan asset font SF Pro.
  */
 
@@ -29,7 +29,7 @@ const REMOTE_ASSETS = [
     dest: path.join(FONTS_DIR, 'SFPRODISPLAYSEMIBOLD.ttf'),
   },
   {
-    url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Image/bg.jpg',
+    url: 'https://arulz-xd.my.id/files/azNi7F.jpg',
     dest: path.join(BG_DIR, 'bg.jpg'),
   },
   {

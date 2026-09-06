@@ -192,7 +192,6 @@ async function handleGenerator(req, res) {
 }
 
 router.post('/', upload.single('avatar'), handleGenerator);
-router.get('/', handleGenerator);
 
 router.desc = "Membuat gambar profil/lobby Fake Mobile Legends kustom dengan fitur upload avatar.";
 router.paramsConfig = {
