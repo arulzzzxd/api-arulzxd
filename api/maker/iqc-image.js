@@ -6,17 +6,18 @@
 
 const express = require('express');
 const { createCanvas, GlobalFonts, loadImage } = require('@napi-rs/canvas');
-const https = require('https');
+const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
 const router = express.Router();
 
-const ROOT_DIR = process.cwd();
-const ASSETS_DIR = path.join(ROOT_DIR, 'assets');
-const FONTS_DIR = path.join(ASSETS_DIR, 'fonts');
-const BG_DIR = path.join(ASSETS_DIR, 'backgrounds');
-const IMG_DIR = path.join(ASSETS_DIR, 'images');
+// Gunakan folder OS Temp (/tmp) untuk lingkungan Serverless/Vercel
+const TEMP_DIR = path.join(os.tmpdir(), 'iqc-assets');
+const FONTS_DIR = path.join(TEMP_DIR, 'fonts');
+const BG_DIR = path.join(TEMP_DIR, 'backgrounds');
+const IMG_DIR = path.join(TEMP_DIR, 'images');
 
 const REMOTE_ASSETS = [
   {
@@ -43,16 +44,21 @@ const WA_COLORS = [
   '#F4511E', '#FB8C00',
 ];
 
-const COLOR_FILE = path.join(ROOT_DIR, '.color_index');
+const COLOR_FILE = path.join(TEMP_DIR, '.color_index');
 
 function getNextColor() {
   let idx = 0;
-  if (fs.existsSync(COLOR_FILE)) {
-    idx = parseInt(fs.readFileSync(COLOR_FILE, 'utf8')) || 0;
+  try {
+    if (fs.existsSync(COLOR_FILE)) {
+      idx = parseInt(fs.readFileSync(COLOR_FILE, 'utf8')) || 0;
+    }
+    const color = WA_COLORS[idx % WA_COLORS.length];
+    fs.mkdirSync(path.dirname(COLOR_FILE), { recursive: true });
+    fs.writeFileSync(COLOR_FILE, String((idx + 1) % WA_COLORS.length));
+    return color;
+  } catch (e) {
+    return WA_COLORS[Math.floor(Math.random() * WA_COLORS.length)];
   }
-  const color = WA_COLORS[idx % WA_COLORS.length];
-  fs.writeFileSync(COLOR_FILE, String((idx + 1) % WA_COLORS.length));
-  return color;
 }
 
 const config = {
@@ -86,49 +92,20 @@ const config = {
   debug: false,
 };
 
-function download(url, dest) {
-  return new Promise((resolve, reject) => {
-    if (fs.existsSync(dest) && fs.statSync(dest).size > 0) {
-      return resolve();
-    }
+async function download(url, dest) {
+  if (fs.existsSync(dest) && fs.statSync(dest).size > 0) {
+    return;
+  }
 
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    const file = fs.createWriteStream(dest);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
 
-    https.get(url, res => {
-      if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
-        file.close(() => {
-          if (fs.existsSync(dest)) fs.unlinkSync(dest);
-          download(res.headers.location, dest).then(resolve).catch(reject);
-        });
-        return;
-      }
-
-      if (res.statusCode !== 200) {
-        file.close(() => {
-          if (fs.existsSync(dest)) fs.unlinkSync(dest);
-          reject(new Error(`HTTP ${res.statusCode} untuk ${url}`));
-        });
-        return;
-      }
-
-      res.pipe(file);
-
-      file.on('finish', () => {
-        file.close(() => {
-          if (!fs.existsSync(dest) || fs.statSync(dest).size <= 0) {
-            return reject(new Error(`Asset gagal disimpan: ${dest}`));
-          }
-          resolve();
-        });
-      });
-    }).on('error', err => {
-      file.close(() => {
-        if (fs.existsSync(dest)) fs.unlinkSync(dest);
-        reject(err);
-      });
-    });
+  const res = await axios.get(url, {
+    responseType: 'arraybuffer',
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    timeout: 15000,
   });
+
+  fs.writeFileSync(dest, Buffer.from(res.data));
 }
 
 async function downloadAll() {
@@ -252,6 +229,15 @@ function drawText(ctx, text, zone, textColor) {
   }
 }
 
+async function fetchImageBuffer(url) {
+  const res = await axios.get(url, {
+    responseType: 'arraybuffer',
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    timeout: 15000,
+  });
+  return Buffer.from(res.data);
+}
+
 async function drawFoto(ctx, imageInput, zone) {
   const { a, b, c, d, radius } = zone;
 
@@ -263,7 +249,8 @@ async function drawFoto(ctx, imageInput, zone) {
 
   let img;
   if (typeof imageInput === 'string' && (imageInput.startsWith('http://') || imageInput.startsWith('https://'))) {
-    img = await loadImage(imageInput);
+    const buf = await fetchImageBuffer(imageInput);
+    img = await loadImage(buf);
   } else if (fs.existsSync(imageInput)) {
     img = await loadImage(imageInput);
   } else {
