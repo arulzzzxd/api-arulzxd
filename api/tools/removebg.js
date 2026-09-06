@@ -1,129 +1,110 @@
-/**
- * NAMA SCRAPE  :: REMOVE BACKGROUND (CUKI API)
- * [•] BASIS        :: api.cuki.biz.id
- */
-
 const express = require('express');
 const axios = require('axios');
 const FormData = require('form-data');
 const multer = require('multer');
-const { fromBuffer } = require('file-type');
 
 const router = express.Router();
-const upload = multer();
 
-// --- CONFIGURATION ---
-const API_URL = 'https://api.cuki.biz.id/api/editing/removebg';
-const API_KEY = 'cuki-x'; // Apikey bawaan dari endpoint target
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+// Middleware Multer untuk membaca file yang di-upload dari body
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // Batas maksimum 10MB
+});
 
-// --- HELPER FUNCTION: UPLOAD TEMPORARY IMAGE ---
-// Karena API target butuh parameter URL gambar, file upload kita ubah dulu ke URL publik (Catbox)
-async function uploadToCatbox(fileBuffer, mimetype, originalName) {
-    const mimeInfo = await fromBuffer(fileBuffer);
-    const contentType = mimeInfo ? mimeInfo.mime : (mimetype || 'image/jpeg');
-    const filename = originalName || 'upload.jpg';
+const headers = {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
+    'sec-ch-ua': '"Chromium";v="139", "Not;A=Brand";v="99"',
+    'sec-ch-ua-mobile': '?1',
+    'sec-ch-ua-platform': '"Android"',
+    'Accept-Language': 'id-ID,id;q=0.9,en-AU;q=0.8,en;q=0.7,en-US;q=0.6'
+};
+
+async function getWebToken() {
+    const r = await axios.get('https://removal.ai/wp-admin/admin-ajax.php', {
+        headers,
+        params: {
+            action: 'ajax_get_webtoken',
+            security: '4acc8a2f93'
+        },
+        timeout: 10000
+    });
+    return r.data?.data?.webtoken;
+}
+
+async function removeBackground(fileBuffer, originalName, mimeType) {
+    const webToken = await getWebToken();
+
+    if (!webToken) {
+        throw new Error('Gagal mendapatkan webtoken dari removal.ai');
+    }
 
     const form = new FormData();
-    form.append('reqtype', 'fileupload');
-    form.append('fileToUpload', fileBuffer, {
-        filename: filename,
-        contentType: contentType,
-        knownLength: fileBuffer.length
+    form.append('image_file', fileBuffer, {
+        filename: originalName || 'input.jpg',
+        contentType: mimeType || 'image/jpeg'
     });
 
-    const res = await axios.post('https://catbox.moe/user/api.php', form, {
+    const r = await axios.post('https://api.removal.ai/3.0/remove', form, {
         headers: {
+            ...headers,
             ...form.getHeaders(),
-            'User-Agent': UA
+            'Web-Token': webToken
         },
         timeout: 30000
     });
 
-    if (typeof res.data === 'string' && res.data.startsWith('https://')) {
-        return res.data.trim();
-    }
-    throw new Error('Gagal mengunggah gambar sementara ke host publik.');
+    return r.data;
 }
 
-// --- SCRAPER FUNCTION ---
-async function scrapeCukiRemoveBg(targetImgUrl) {
+// Endpoint utama
+router.post('/', upload.single('image'), async (req, res) => {
     try {
-        const response = await axios.get(API_URL, {
-            params: {
-                apikey: API_KEY,
-                image: targetImgUrl
-            },
-            headers: {
-                'User-Agent': UA,
-                'Accept': 'image/png,image/*;q=0.8,*/*;q=0.5'
-            },
-            responseType: 'arraybuffer',
-            timeout: 30000
-        });
-
-        const contentType = response.headers['content-type'];
-        if (contentType && contentType.includes('application/json')) {
-            const errorJson = JSON.parse(Buffer.from(response.data).toString('utf-8'));
-            throw new Error(errorJson.message || 'API Cuki mengembalikan error JSON.');
-        }
-
-        return response.data;
-    } catch (err) {
-        if (err.response && err.response.data instanceof Buffer) {
-            const errMsg = Buffer.from(err.response.data).toString('utf-8');
-            throw new Error(`Cuki API Error: ${errMsg}`);
-        }
-        throw new Error(err.message);
-    }
-}
-
-// --- ENDPOINT ROUTE (METHOD POST) ---
-router.post('/', upload.single('fileupload'), async (req, res) => {
-    try {
-        const file = req.file;
-
-        if (!file) {
+        if (!req.file) {
             return res.status(400).json({
                 status: false,
-                creator: "Arulzxd",
-                message: "Berkas 'fileupload' wajib diunggah!"
+                creator: 'ArulzXD',
+                message: 'Silakan upload gambar menggunakan multipart/form-data dengan field name "image"'
             });
         }
 
-        // 1. Upload file buffer ke host publik sementara
-        const tempImageUrl = await uploadToCatbox(file.buffer, file.mimetype, file.originalname);
+        const result = await removeBackground(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+        );
 
-        // 2. Eksekusi scraper Remove Background
-        const imageBuffer = await scrapeCukiRemoveBg(tempImageUrl);
-
-        // 3. Mengirimkan respons berupa gambar PNG transparan langsung ke client
-        res.setHeader('Content-Type', 'image/png');
-        return res.send(Buffer.from(imageBuffer));
+        return res.json({
+            status: true,
+            creator: 'ArulzXD',
+            result: {
+                url: result.url,
+                lowResolution: result.low_resolution,
+                highResolution: result.high_resolution,
+                originalUrl: result.original,
+                dimensions: {
+                    originalWidth: result.original_width,
+                    originalHeight: result.original_height,
+                    previewWidth: result.preview_width,
+                    previewHeight: result.preview_height
+                }
+            }
+        });
 
     } catch (err) {
-        console.error("====== SCRAPER ERROR LOG ======");
-        console.error(err.message);
-        console.error("===============================");
-
+        console.error(err);
         return res.status(500).json({
             status: false,
-            creator: "Arulzxd",
-            message: "Internal Server Error saat memproses penghapusan background via API Cuki",
-            error: err.message
+            creator: 'ArulzXD',
+            message: err.message || 'Terjadi kesalahan saat memproses gambar'
         });
     }
 });
 
-// --- CONFIG PARAMETERS UNTUK DASHBOARD UI ---
+router.desc = "Menghapus background gambar menggunakan layanan Removal.ai (Upload via multipart/form-data field 'image').";
 router.paramsConfig = {
-    fileupload: {
-        type: "file",
-        desc: "Berkas gambar yang akan dihapus latar belakangnya"
-    }
+    image: "file/form-data"
 };
-
-router.desc = "Menghapus background gambar secara otomatis. Menggunakan upload berkas.";
-router.status = "ready"; 
+router.status = "ready";
 router.type = "free";
+
 module.exports = router;
