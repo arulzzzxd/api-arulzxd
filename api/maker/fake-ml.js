@@ -1,5 +1,5 @@
 const express = require('express');
-const { Canvas, loadImage, FontLibrary } = require('@napi-rs/canvas');
+const { createCanvas, GlobalFonts, loadImage } = require('@napi-rs/canvas');
 const axios = require('axios');
 const multer = require('multer');
 
@@ -43,13 +43,16 @@ async function loadFromUrl(url) {
   return loadImage(Buffer.from(res.data));
 }
 
+// Memuat font remote menggunakan GlobalFonts.register dari @napi-rs/canvas
 async function loadFontRemote() {
   if (fontLoaded) return;
   try {
     const fontUrl = 'https://raw.githubusercontent.com/arulzzzxd/database/main/font/noto-sans.regular.ttf';
     const res = await axios.get(fontUrl, { responseType: 'arraybuffer' });
     const fontBuffer = Buffer.from(res.data);
-    FontLibrary.use('NotoSans', fontBuffer);
+    
+    // Registrasi font untuk @napi-rs/canvas
+    GlobalFonts.register(fontBuffer, 'NotoSans');
     fontLoaded = true;
   } catch (err) {
     console.error('Gagal memuat font NotoSans remote:', err.message);
@@ -117,7 +120,6 @@ function drawUsername(ctx, username, cfg) {
   ctx.fillText(name, centerX, y + h / 2 + size / 3);
 }
 
-// Handler pemrosesan utama
 async function handleGenerator(req, res) {
   try {
     const body = req.method === 'POST' ? req.body : req.query;
@@ -133,7 +135,6 @@ async function handleGenerator(req, res) {
     const useBorder = border && border > 0 && border <= 16;
     const BASE_DB = 'https://raw.githubusercontent.com/arulzzzxd/database/main/fake-ml';
 
-    // Prioritas avatar: 1. File Upload (req.file) -> 2. URL -> 3. Default Avatar
     let avatarPromise;
     if (req.file && req.file.buffer) {
       avatarPromise = loadImage(req.file.buffer);
@@ -157,7 +158,7 @@ async function handleGenerator(req, res) {
     const [lobbyImg, avatarImgLoaded, flagImg, rankImg, borderImg] = await Promise.all(baseImages);
 
     const { width, height } = config.canvas;
-    const canvas = new Canvas(width, height);
+    const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
 
     ctx.drawImage(lobbyImg, 0, 0, width, height);
@@ -173,7 +174,8 @@ async function handleGenerator(req, res) {
     drawFlagCircle(ctx, flagImg, config.flag);
     drawUsername(ctx, username, config.username);
 
-    const buffer = await canvas.toBuffer('png', { quality: 1.0 });
+    // Encoding buffer gambar khusus untuk @napi-rs/canvas
+    const buffer = await canvas.encode('png');
 
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Length', buffer.length);
@@ -189,7 +191,6 @@ async function handleGenerator(req, res) {
   }
 }
 
-// Mendukung POST (Upload berkas 'avatar' / 'avatar') dan GET (URL/Default)
 router.post('/', upload.single('avatar'), handleGenerator);
 router.get('/', handleGenerator);
 
