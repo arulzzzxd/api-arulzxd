@@ -5,8 +5,10 @@ const multer = require("multer");
 
 const router = express.Router();
 
-// Middleware Multer untuk menangani pengunggahan berkas
-const upload = multer();
+// Middleware Multer dengan batas ukuran memori (misal: 10MB)
+const upload = multer({
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 async function upscaleImg(fileBuffer, originalName, mimeType) {
     const form = new FormData();
@@ -16,27 +18,43 @@ async function upscaleImg(fileBuffer, originalName, mimeType) {
         contentType: mimeType || "image/jpeg"
     });
 
-    // Upscale via photiu.ai
-    const result = await axios.post(
+    const headers = {
+        ...form.getHeaders(),
+        origin: "https://www.photiu.ai",
+        referer: "https://www.photiu.ai/image-upscaler",
+        "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "x-paramsjs": JSON.stringify({
+            mode: "upscale",
+            level: "default"
+        })
+    };
+
+    // Menggunakan arraybuffer agar aman untuk Vercel / Express Serverless
+    const response = await axios.post(
         "https://www.photiu.ai/api/tools/img_improve",
         form,
         {
-            headers: {
-                ...form.getHeaders(),
-                origin: "https://www.photiu.ai",
-                referer: "https://www.photiu.ai/image-upscaler",
-                "user-agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-                "x-paramsjs": JSON.stringify({
-                    mode: "upscale",
-                    level: "default"
-                })
-            },
-            responseType: "stream"
+            headers,
+            responseType: "arraybuffer",
+            timeout: 60000,
+            validateStatus: () => true
         }
     );
 
-    return result;
+    if (response.status !== 200 || !response.data) {
+        let errMessage = `HTTP Error ${response.status}`;
+        try {
+            const errJson = JSON.parse(Buffer.from(response.data).toString("utf-8"));
+            errMessage = errJson.message || errJson.msg || errMessage;
+        } catch (_) {}
+        throw new Error(errMessage);
+    }
+
+    return {
+        buffer: Buffer.from(response.data),
+        contentType: response.headers["content-type"] || mimeType || "image/jpeg"
+    };
 }
 
 // Endpoint POST dengan pengunggah file
@@ -52,22 +70,18 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
             });
         }
 
-        const image = await upscaleImg(file.buffer, file.originalname, file.mimetype);
+        const result = await upscaleImg(file.buffer, file.originalname, file.mimetype);
 
-        res.setHeader(
-            "Content-Type",
-            image.headers["content-type"] || "image/jpeg"
-        );
-
-        image.data.pipe(res);
+        res.setHeader("Content-Type", result.contentType);
+        return res.send(result.buffer);
 
     } catch (err) {
-        console.error(err.response?.data || err.message);
+        console.error("Upscale V2 Error:", err.message);
 
-        res.status(500).json({
+        return res.status(500).json({
             status: false,
             creator: "ArulzXD",
-            message: err.message
+            message: err.message || "Terjadi kesalahan saat memproses upscale gambar."
         });
     }
 });
@@ -82,4 +96,5 @@ router.paramsConfig = {
 
 router.status = "ready";
 router.type = "free";
+
 module.exports = router;
