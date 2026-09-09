@@ -963,7 +963,7 @@ function loadApis() {
                <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
                 <div class="text-left flex-1 min-w-0">
                    <!-- FIX KONTRAS NAMA ENDPOINT UNTUK DARK & LIGHT MODE -->
-                   <p class="font-extrabold text-base text-slate-100 dark:text-slate-100 light-mode:text-slate-900 truncate tracking-wide">${item.name}</p>
+                   <p class="font-extrabold text-base text-slate-100 dark:text-slate-100 light-mode:!text-slate-900 truncate tracking-wide">${item.name}</p>
                  
                    <div class="flex items-center gap-2 mt-0.5">
                        <p class="code-font text-xs font-semibold ${pathColorClass} truncate">${path}</p>
@@ -978,9 +978,10 @@ function loadApis() {
                 </button>
                 
                 <!-- BOX FORM DENGAN CONTRAS KHAS DARK & LIGHT -->
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/60 dark:bg-slate-950/60 light-mode:bg-slate-100/90 px-4 py-4 border-t-2 border-cyan-500/20 light-mode:border-slate-300 backdrop-blur-md">
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/60 dark:bg-slate-950/60 light-mode:!bg-slate-200/90 px-4 py-4 border-t-2 border-cyan-500/20 light-mode:border-slate-300 backdrop-blur-md">
     
-    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/80 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-sm backdrop-blur-md">
+<!-- DESKRIPSI ENDPOINT -->
+<div class="mb-4 p-3.5 rounded-xl bg-slate-900/80 light-mode:!bg-white border border-white/10 light-mode:!border-slate-300 shadow-sm backdrop-blur-md">
         <div class="flex items-center gap-2 mb-1.5">
             <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
@@ -997,7 +998,8 @@ function loadApis() {
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 code-font">ENDPOINT / REQUEST URL</h4>
                             <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/10 light-mode:bg-white hover:bg-white/20 light-mode:hover:bg-slate-200 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-cyan-300 light-mode:text-slate-800 font-bold">Copy URL</button>
                         </div>
-                        <div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:bg-white border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                        <!-- REQUEST URL BOX -->
+<div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:!bg-white border border-white/10 light-mode:!border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
                             <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-semibold break-all">${BASE_URL}${path}</code>
                         </div>
                     </div>
@@ -1007,9 +1009,10 @@ function loadApis() {
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 code-font">cURL Command</h4>
                             <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/10 light-mode:bg-white hover:bg-white/20 light-mode:hover:bg-slate-200 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-cyan-300 light-mode:text-slate-800 font-bold">Copy cURL</button>
                         </div>
-                        <div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:bg-white border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
-                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-200 dark:text-slate-200 light-mode:text-slate-800 font-medium block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
-                        </div>
+                        <!-- cURL COMMAND BOX -->
+<div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:!bg-white border border-white/10 light-mode:!border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+    <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-200 dark:text-slate-200 light-mode:!text-slate-900 font-medium block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
+</div>
                     </div>`;
 
             if (item.status === 'ready' || item.status === 'update') {
