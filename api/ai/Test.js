@@ -1,196 +1,195 @@
-/**
- * ✦ Nama Scrape : Remaker AI Photo Editor (Prompt Edit / Inpainting)
- * ✦ Author      : ArulzXD
- * ✦ Deskripsi   : Mengubah/mengedit bagian foto berdasarkan instruksi teks (prompt) menggunakan AI Remaker.
- */
-
 const express = require('express');
-const axios = require('axios');
-const FormData = require('form-data');
-const { Readable } = require('stream');
 const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
-const upload = multer({
-  limits: { fileSize: 15 * 1024 * 1024 }
+const upload = multer({ 
+    limits: { 
+        fileSize: 50 * 1024 * 1024 // Maksimal 50MB
+    } 
 });
 
-const PROXY_API = 'https://api.ikyyxd.my.id/v2l/proxy-free/ikyy-xsample';
-const BASE_URL = 'https://api.remaker.ai';
-const PRODUCT_CODE = '067003';
-const PRODUCT_SERIAL = 'd0556055c62201b80a956de9c4ad7d37';
-const REFERER_URL = 'https://remaker.ai/ai-photo-editor/';
+// Konfigurasi default
+const DEFAULT_PIXEL_LEVEL = 30;
+const MAX_PIXEL_LEVEL = 40;
+const MIN_PIXEL_LEVEL = 1;
 
-let proxies = [];
+// Fungsi untuk mendapatkan ukuran blok
+function getBlock(level) {
+    const value = Math.min(Math.max(Number(level) || 12, MIN_PIXEL_LEVEL), MAX_PIXEL_LEVEL);
+    return 41 - value;
+}
 
-async function fetchProxies() {
+// Fungsi utama pixel art
+async function processPixelArt(imageBuffer, pixelLevel) {
     try {
-        const res = await axios.get(PROXY_API, { timeout: 10000 });
-        if (!Array.isArray(res.data)) throw new Error('Format proxy tidak valid');
-        proxies = res.data.filter(p => p.split(':').length === 4);
-    } catch (err) {
-        console.error(`[PROXY ERROR] ${err.message}`);
-    }
-}
+        const image = sharp(imageBuffer, { limitInputPixels: false }).rotate().ensureAlpha();
+        const meta = await image.metadata();
 
-function getRandomProxy() {
-    if (!proxies.length) return null;
-    const p = proxies[Math.floor(Math.random() * proxies.length)];
-    const [host, port, user, pass] = p.split(':');
-    return {
-        str: p,
-        config: { host, port: parseInt(port), auth: { username: user, password: pass }, protocol: 'http' }
-    };
-}
+        const width = meta.width;
+        const height = meta.height;
+        const block = getBlock(pixelLevel);
 
-async function createJob(file, prompt, proxyConfig) {
-    const form = new FormData();
-    const ext = file.mimetype.includes('png') ? 'png' : (file.mimetype.includes('webp') ? 'webp' : 'jpg');
+        const input = await image.raw().toBuffer();
+        const output = Buffer.alloc(input.length);
 
-    form.append('image', Readable.from(file.buffer), { filename: `input.${ext}`, contentType: file.mimetype });
-    form.append('prompt', prompt);
-    form.append('version', '2');
+        for (let y = 0; y < height; y += block) {
+            for (let x = 0; x < width; x += block) {
+                let r = 0, g = 0, b = 0, a = 0;
+                let count = 0;
 
-    const clientAxiosConfig = {
-        baseURL: BASE_URL,
-        timeout: 60000,
-        headers: { 
-            ...form.getHeaders(), 
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36', 
-            'Origin': 'https://remaker.ai', 
-            'Referer': REFERER_URL, 
-            'Product-Code': PRODUCT_CODE, 
-            'Product-Serial': PRODUCT_SERIAL 
+                const maxY = Math.min(y + block, height);
+                const maxX = Math.min(x + block, width);
+
+                for (let yy = y; yy < maxY; yy++) {
+                    for (let xx = x; xx < maxX; xx++) {
+                        const i = (yy * width + xx) * 4;
+                        r += input[i];
+                        g += input[i + 1];
+                        b += input[i + 2];
+                        a += input[i + 3];
+                        count++;
+                    }
+                }
+
+                r = Math.round(r / count);
+                g = Math.round(g / count);
+                b = Math.round(b / count);
+                a = Math.round(a / count);
+
+                for (let yy = y; yy < maxY; yy++) {
+                    for (let xx = x; xx < maxX; xx++) {
+                        const i = (yy * width + xx) * 4;
+                        output[i] = r;
+                        output[i + 1] = g;
+                        output[i + 2] = b;
+                        output[i + 3] = a;
+                    }
+                }
+            }
         }
-    };
 
-    if (proxyConfig?.config) {
-        clientAxiosConfig.proxy = proxyConfig.config;
+        return await sharp(output, {
+            raw: {
+                width,
+                height,
+                channels: 4
+            }
+        })
+        .png({
+            compressionLevel: 9,
+            adaptiveFiltering: false
+        })
+        .toBuffer();
+
+    } catch (error) {
+        throw new Error(`Gagal memproses gambar: ${error.message}`);
     }
-
-    const client = axios.create(clientAxiosConfig);
-
-    const res = await client.post('/api/pai/v3/ai-photo-editor/appapi/create-job', form);
-    if (res.data.code !== 100000) throw new Error(`Create job failed: ${res.data.message?.en || 'Unknown error'}`);
-    return res.data.result.job_id;
 }
 
-async function getResult(jobId, proxyConfig) {
-    const clientAxiosConfig = {
-        baseURL: BASE_URL,
-        timeout: 60000,
-        headers: { 
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36', 
-            'Origin': 'https://remaker.ai', 
-            'Referer': REFERER_URL, 
-            'Product-Code': PRODUCT_CODE, 
-            'Product-Serial': PRODUCT_SERIAL 
+// Endpoint utama untuk pixel art
+router.post('/', upload.single('image'), async (req, res) => {
+    try {
+        // Validasi file
+        if (!req.file) {
+            return res.status(400).json({
+                status: false,
+                message: "File gambar wajib diunggah!",
+                code: 400
+            });
         }
-    };
 
-    if (proxyConfig?.config) {
-        clientAxiosConfig.proxy = proxyConfig.config;
-    }
+        // Validasi tipe file
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedMimes.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                status: false,
+                message: "Format file tidak didukung! Gunakan: JPEG, PNG, WEBP, atau GIF",
+                code: 400
+            });
+        }
 
-    const client = axios.create(clientAxiosConfig);
-
-    for (let i = 0; i < 25; i++) {
-        await new Promise(r => setTimeout(r, 6000));
-        const res = await client.get(`/api/pai/v3/ai-photo-editor/appapi/get-job/${jobId}`);
+        // Ambil parameter pixel level (default: 30)
+        const pixelLevel = parseInt(req.body.pixel_level) || DEFAULT_PIXEL_LEVEL;
         
-        if (res.data.code === 100000 && res.data.result.output_image_url?.length > 0) {
-            return res.data.result.output_image_url[0];
-        }
-        if (res.data.code !== 100002) throw new Error(`Polling failed: ${res.data.message?.en || 'Unknown error'}`);
-    }
-    throw new Error('Timeout saat menunggu hasil editing gambar.');
-}
-
-router.post('/', upload.single('fileupload'), async (req, res) => {
-    const start = Date.now();
-    try {
-        const file = req.file;
-        const prompt = req.body.prompt?.trim() || req.body.text?.trim();
-
-        if (!file) {
+        // Validasi pixel level
+        if (pixelLevel < MIN_PIXEL_LEVEL || pixelLevel > MAX_PIXEL_LEVEL) {
             return res.status(400).json({
                 status: false,
-                creator: 'ArulzXD',
-                message: "Wajib mengunggah berkas 'fileupload'!"
+                message: `Pixel level harus antara ${MIN_PIXEL_LEVEL} dan ${MAX_PIXEL_LEVEL}`,
+                code: 400
             });
         }
 
-        if (!prompt) {
-            return res.status(400).json({
-                status: false,
-                creator: 'ArulzXD',
-                message: "Parameter 'prompt' tidak boleh kosong!"
-            });
-        }
+        // Proses pixel art
+        const resultBuffer = await processPixelArt(req.file.buffer, pixelLevel);
 
-        if (proxies.length === 0) {
-            await fetchProxies();
-        }
+        // Kirim response berupa gambar
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', `attachment; filename="pixel-art-${Date.now()}.png"`);
+        return res.send(resultBuffer);
 
-        let success = false;
-        let lastError = '';
-        let resultUrl = '';
-        let usedProxyIp = '';
-
-        const maxAttempts = proxies.length > 0 ? 5 : 1;
-
-        for (let i = 0; i < maxAttempts; i++) {
-            const proxyConfig = getRandomProxy();
-            usedProxyIp = proxyConfig ? proxyConfig.str.split(':')[0] : 'direct';
-
-            try {
-                const jobId = await createJob(file, prompt, proxyConfig);
-                resultUrl = await getResult(jobId, proxyConfig);
-                success = true;
-                break;
-            } catch (err) {
-                lastError = err.message;
-            }
-        }
-
-        if (!success || !resultUrl) {
-            return res.status(500).json({
-                status: false,
-                creator: 'ArulzXD',
-                message: lastError || 'Gagal memproses gambar setelah beberapa kali percobaan.'
-            });
-        }
-
-        return res.json({
-            status: true,
-            creator: 'ArulzXD',
-            runtime: `${Date.now() - start} ms`,
-            result: {
-                prompt: prompt,
-                result_url: resultUrl,
-                proxy_ip: usedProxyIp,
-                processed_at: new Date().toISOString()
-            }
-        });
-
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error('Error:', error);
         return res.status(500).json({
             status: false,
-            creator: 'ArulzXD',
-            message: err.message || 'Terjadi kesalahan pada server saat memproses Remaker AI Photo Editor.'
+            message: "Terjadi kesalahan internal server",
+            error: error.message,
+            code: 500
         });
     }
 });
 
-router.desc = "Mengedit foto berdasarkan instruksi teks (prompt) menggunakan Remaker AI Photo Editor.";
+// Endpoint untuk mendapatkan informasi
+router.get('/info', (req, res) => {
+    res.json({
+        status: true,
+        message: "Pixel Art API",
+        description: "Ubah gambar menjadi pixel art",
+        parameters: {
+            pixel_level: {
+                type: "number",
+                min: 1,
+                max: 40,
+                default: 30,
+                description: "Semakin kecil nilai, semakin detail pixel art-nya"
+            },
+            image: {
+                type: "file",
+                required: true,
+                description: "File gambar yang akan diproses"
+            }
+        },
+        example: {
+            url: "/pixelart",
+            method: "POST",
+            body: {
+                pixel_level: 25
+            },
+            formData: {
+                image: "file.jpg"
+            }
+        }
+    });
+});
+
+// Konfigurasi untuk dashboard UI
 router.paramsConfig = {
-    fileupload: {
+    image: {
         type: "file",
-        desc: "Berkas foto yang ingin diedit"
+        desc: "File gambar yang akan diubah menjadi pixel art"
     },
-    prompt: "text (wajib, contoh: Add sunglasses to the face)"
+    pixel_level: {
+        type: "number",
+        min: 1,
+        max: 40,
+        default: 30,
+        desc: "Level pixelasi (1-40, semakin kecil semakin detail)"
+    }
 };
+
 router.status = "ready";
 router.type = "free";
 
