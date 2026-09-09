@@ -1,5 +1,5 @@
 /* =========================================================================
-   SCRIPT.JS REST API (FIXED LIGHT THEME & CONTRAST PLACEHOLDERS)
+   SCRIPT.JS REST API (FULL VERSION - FIXED LIGHT MODE & DARK CONTRAST)
    ========================================================================= */
 
 const BASE_URL = window.location.origin;
@@ -919,7 +919,7 @@ function loadApis() {
                             ${iconSvg}
                         </div>
                         <div class="text-left">
-                            <h3 class="font-bold text-sm tracking-widest text-cyan-400 light-mode:text-cyan-600 uppercase font-['Space_Grotesk']">${category.name}</h3>
+                            <h3 class="font-bold text-sm tracking-widest text-cyan-400 light-mode:text-cyan-700 uppercase font-['Space_Grotesk']">${category.name}</h3>
                             <p class="text-[11px] code-font ${subTextColorClass}">${category.items.length} ${i18n[currentLang].endpointsCount}</p>
                         </div>
                     </div>
@@ -956,15 +956,17 @@ function loadApis() {
             }
 
             html += `
-            <div class="api-item border-t-2 border-white/20 light-mode:border-slate-300 hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors" 
+            <div class="api-item border-t-2 border-white/10 light-mode:border-slate-200 hover:bg-white/5 light-mode:hover:bg-slate-100 transition-colors" 
                 data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
              <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
              <div class="flex items-center gap-3 flex-1 min-w-0">
                <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
                 <div class="text-left flex-1 min-w-0">
-                   <p class="font-bold text-base text-white light-mode:text-slate-900 truncate">${item.name}</p>
+                   <!-- FIX KONTRAS NAMA ENDPOINT UNTUK DARK & LIGHT MODE -->
+                   <p class="font-extrabold text-base text-slate-100 dark:text-slate-100 light-mode:text-slate-900 truncate tracking-wide">${item.name}</p>
+                 
                    <div class="flex items-center gap-2 mt-0.5">
-                       <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
+                       <p class="code-font text-xs font-semibold ${pathColorClass} truncate">${path}</p>
                        <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
                       ${badgeTypeHtml}
                    </div>
@@ -974,44 +976,46 @@ function loadApis() {
                    ${SVG_PLUS}
                   </span>
                 </button>
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-100 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm">
+                
+                <!-- BOX FORM DENGAN CONTRAS KHAS DARK & LIGHT -->
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/60 dark:bg-slate-950/60 light-mode:bg-slate-100/90 px-4 py-4 border-t-2 border-cyan-500/20 light-mode:border-slate-300 backdrop-blur-md">
     
-    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/80 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-sm backdrop-blur-md">
         <div class="flex items-center gap-2 mb-1.5">
             <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
             </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 font-mono">DESKRIPSI ENDPOINT</span>
         </div>
-        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+        <p class="text-xs font-medium text-slate-200 dark:text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
             ${item.desc}
         </p>
     </div>
 
     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
-                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 code-font">ENDPOINT / REQUEST URL</h4>
+                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/10 light-mode:bg-white hover:bg-white/20 light-mode:hover:bg-slate-200 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-cyan-300 light-mode:text-slate-800 font-bold">Copy URL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/80 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
-                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
+                        <div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:bg-white border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-semibold break-all">${BASE_URL}${path}</code>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">cURL Command</h4>
-                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy cURL</button>
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 code-font">cURL Command</h4>
+                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/10 light-mode:bg-white hover:bg-white/20 light-mode:hover:bg-slate-200 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-cyan-300 light-mode:text-slate-800 font-bold">Copy cURL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/80 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
-                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-300 light-mode:text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
+                        <div class="bg-slate-900/90 dark:bg-slate-900/90 light-mode:bg-white border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-200 dark:text-slate-200 light-mode:text-slate-800 font-medium block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
                         </div>
                     </div>`;
 
             if (item.status === 'ready' || item.status === 'update') {
                 html += `
                     <div>
-                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 mb-3">Parameter</h4>
+                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-300 dark:text-slate-300 light-mode:text-slate-700 mb-3 code-font">Parameter</h4>
                         <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
                             <div class="space-y-4 mb-4">`;
 
@@ -1042,15 +1046,14 @@ function loadApis() {
                         html += `
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
+                                <label class="block text-xs font-bold text-slate-200 dark:text-slate-200 light-mode:text-slate-800 code-font">
                                     ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
                                 </label>
-                                <!-- Teks contoh parameter diperjelas kontras warnanya -->
-                                <span class="text-[11px] text-cyan-400 light-mode:text-cyan-700 font-medium code-font">${paramDesc}</span>
+                                <span class="text-[11px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-700 font-bold code-font">${paramDesc}</span>
                             </div>`;
 
                         if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2.5 rounded-xl bg-black/60 dark:bg-black/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-slate-100 dark:text-slate-100 light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-cyan-500/20 file:text-cyan-300 light-mode:file:text-cyan-800 hover:file:bg-cyan-500/30 cursor-pointer" ${isRequired ? 'required' : ''}>`;
                         } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
                             const defaultVal = pType.options[0] || '';
                             const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
@@ -1058,8 +1061,8 @@ function loadApis() {
                             html += `
                             <div class="relative w-full">
                                 <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 light-mode:text-cyan-700 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-800 font-medium">${defaultVal}</span>
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 dark:bg-black/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 light-mode:text-cyan-700 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm font-semibold">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-100 dark:text-slate-100 light-mode:text-slate-900 font-bold">${defaultVal}</span>
                                     <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                     </svg>
@@ -1095,7 +1098,7 @@ function loadApis() {
                                 </div>
                             </div>`;
                         } else {
-                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 placeholder-slate-400 light-mode:placeholder-slate-500 focus:outline-none focus:border-cyan-500 code-font text-sm font-medium" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 dark:bg-black/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-slate-100 dark:text-slate-100 light-mode:text-slate-900 placeholder-slate-400 light-mode:placeholder-slate-500 focus:outline-none focus:border-cyan-500 code-font text-sm font-semibold shadow-inner" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
                         }
                         html += `</div>`;
                     });
@@ -1104,15 +1107,15 @@ function loadApis() {
                 html += `
                             </div>
                             <div class="flex gap-3">
-                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
-                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-200 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                                <button type="submit" class="px-5 py-2.5 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-xl font-bold text-xs tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center">EKSEKUSI</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2.5 bg-slate-800/80 light-mode:bg-white border border-white/10 light-mode:border-slate-300 hover:bg-slate-700 light-mode:hover:bg-slate-100 text-slate-200 light-mode:text-slate-800 rounded-xl font-bold text-xs transition-colors shadow-sm active:scale-95">BERSIHKAN</button>
                             </div>
                         </form>
 
                         <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
                             <div>
-                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-600">Response</h5>
-                                <div class="bg-slate-950/80 light-mode:bg-white border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
+                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-300 dark:text-slate-300 light-mode:text-slate-700 code-font">Response</h5>
+                                <div class="bg-slate-950/90 dark:bg-slate-950/90 light-mode:bg-white border border-white/10 light-mode:border-slate-300 p-3 rounded-xl min-h-[100px] overflow-x-auto shadow-inner" id="response-content-${catIdx}-${epIdx}"></div>
                             </div>
                         </div>
                     </div>`;
