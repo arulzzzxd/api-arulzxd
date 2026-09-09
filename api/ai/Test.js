@@ -1,196 +1,321 @@
+/**
+ * ✦ Nama Scrape : TikTok Chat Generator (iPhone Quote Generator)
+ * ✦ Author      : ArulzXD
+ * ✦ Deskripsi   : Membuat screenshot obrolan TikTok dengan avatar dan teks kustom
+ */
+
 const express = require('express');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
+const axios = require('axios');
 const multer = require('multer');
-const sharp = require('sharp');
-const path = require('path');
-const fs = require('fs');
 
 const router = express.Router();
-const upload = multer({ 
-    limits: { 
-        fileSize: 50 * 1024 * 1024 // Maksimal 50MB
-    } 
-});
+const upload = multer();
 
-// Konfigurasi default
-const DEFAULT_PIXEL_LEVEL = 30;
-const MAX_PIXEL_LEVEL = 40;
-const MIN_PIXEL_LEVEL = 1;
+// Konfigurasi assets
+const TEMPLATE_URL = 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/qyzwa.png';
 
-// Fungsi untuk mendapatkan ukuran blok
-function getBlock(level) {
-    const value = Math.min(Math.max(Number(level) || 12, MIN_PIXEL_LEVEL), MAX_PIXEL_LEVEL);
-    return 41 - value;
+const FONT_ASSETS = [
+  { name: 'PlusJakartaSans-Regular', url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/PlusJakartaSans-Regular.ttf', family: 'Plus Jakarta Sans' },
+  { name: 'PlusJakartaSans-Medium', url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/PlusJakartaSans-Medium.ttf', family: 'Plus Jakarta Sans' },
+  { name: 'PlusJakartaSans-Bold', url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/PlusJakartaSans-Bold.ttf', family: 'Plus Jakarta Sans' },
+  { name: 'FontAwesome-Solid', url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/fa-solid-900.ttf', family: 'Font Awesome 6 Free' },
+  { name: 'NotoColorEmoji', url: 'https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf', family: 'Noto Color Emoji' },
+];
+
+const MENU_ICONS = [
+  { unicode: '\uf3e5', text: 'Balas', color: '#000000' },
+  { unicode: '\uf064', text: 'Teruskan', color: '#000000' },
+  { unicode: '\uf0c5', text: 'Salin', color: '#000000' },
+  { unicode: '\uf1ab', text: 'Terjemahkan', color: '#000000' },
+  { unicode: '\uf2ed', text: 'Hapus untuk saya', color: '#000000' },
+  { unicode: '\uf024', text: 'Laporkan', color: '#ea4335' },
+];
+
+const config = {
+  topPPX: 183, topPPY: 83, topPPRadius: 42,
+  topNameX: 250, topNameY: 82, topNameSize: 34,
+  chatPPX: 75, chatPPRadius: 38,
+  textX: 175, textY: 962,
+  bubbleWidth: 520, textSize: 30,
+  bubbleBgColor: '#ffffff', textColor: '#161823',
+};
+
+let fontsLoaded = false;
+let templateBuffer = null;
+let defaultAvatarBuffer = null;
+
+// Fungsi download buffer
+async function downloadBuffer(url) {
+  const res = await axios.get(url, {
+    responseType: 'arraybuffer',
+    headers: { 'User-Agent': 'Mozilla/5.0' },
+    timeout: 15000,
+    maxRedirects: 5,
+  });
+  return Buffer.from(res.data);
 }
 
-// Fungsi utama pixel art
-async function processPixelArt(imageBuffer, pixelLevel) {
-    try {
-        const image = sharp(imageBuffer, { limitInputPixels: false }).rotate().ensureAlpha();
-        const meta = await image.metadata();
-
-        const width = meta.width;
-        const height = meta.height;
-        const block = getBlock(pixelLevel);
-
-        const input = await image.raw().toBuffer();
-        const output = Buffer.alloc(input.length);
-
-        for (let y = 0; y < height; y += block) {
-            for (let x = 0; x < width; x += block) {
-                let r = 0, g = 0, b = 0, a = 0;
-                let count = 0;
-
-                const maxY = Math.min(y + block, height);
-                const maxX = Math.min(x + block, width);
-
-                for (let yy = y; yy < maxY; yy++) {
-                    for (let xx = x; xx < maxX; xx++) {
-                        const i = (yy * width + xx) * 4;
-                        r += input[i];
-                        g += input[i + 1];
-                        b += input[i + 2];
-                        a += input[i + 3];
-                        count++;
-                    }
-                }
-
-                r = Math.round(r / count);
-                g = Math.round(g / count);
-                b = Math.round(b / count);
-                a = Math.round(a / count);
-
-                for (let yy = y; yy < maxY; yy++) {
-                    for (let xx = x; xx < maxX; xx++) {
-                        const i = (yy * width + xx) * 4;
-                        output[i] = r;
-                        output[i + 1] = g;
-                        output[i + 2] = b;
-                        output[i + 3] = a;
-                    }
-                }
-            }
-        }
-
-        return await sharp(output, {
-            raw: {
-                width,
-                height,
-                channels: 4
-            }
-        })
-        .png({
-            compressionLevel: 9,
-            adaptiveFiltering: false
-        })
-        .toBuffer();
-
-    } catch (error) {
-        throw new Error(`Gagal memproses gambar: ${error.message}`);
-    }
+// Fungsi load gambar dari buffer
+async function loadImageFromBuffer(buffer) {
+  if (!buffer) return null;
+  try {
+    return await loadImage(buffer);
+  } catch (err) {
+    console.error('Gagal load image dari buffer:', err.message);
+    return null;
+  }
 }
 
-// Endpoint utama untuk pixel art
-router.post('/', upload.single('image'), async (req, res) => {
+async function ensureAssets() {
+  // Download template
+  if (!templateBuffer) {
     try {
-        // Validasi file
-        if (!req.file) {
-            return res.status(400).json({
-                status: false,
-                message: "File gambar wajib diunggah!",
-                code: 400
-            });
-        }
-
-        // Validasi tipe file
-        const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!allowedMimes.includes(req.file.mimetype)) {
-            return res.status(400).json({
-                status: false,
-                message: "Format file tidak didukung! Gunakan: JPEG, PNG, WEBP, atau GIF",
-                code: 400
-            });
-        }
-
-        // Ambil parameter pixel level (default: 30)
-        const pixelLevel = parseInt(req.body.pixel_level) || DEFAULT_PIXEL_LEVEL;
-        
-        // Validasi pixel level
-        if (pixelLevel < MIN_PIXEL_LEVEL || pixelLevel > MAX_PIXEL_LEVEL) {
-            return res.status(400).json({
-                status: false,
-                message: `Pixel level harus antara ${MIN_PIXEL_LEVEL} dan ${MAX_PIXEL_LEVEL}`,
-                code: 400
-            });
-        }
-
-        // Proses pixel art
-        const resultBuffer = await processPixelArt(req.file.buffer, pixelLevel);
-
-        // Kirim response berupa gambar
-        res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename="pixel-art-${Date.now()}.png"`);
-        return res.send(resultBuffer);
-
-    } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).json({
-            status: false,
-            message: "Terjadi kesalahan internal server",
-            error: error.message,
-            code: 500
-        });
+      templateBuffer = await downloadBuffer(TEMPLATE_URL);
+    } catch (err) {
+      console.error('Gagal download template:', err.message);
+      throw new Error('Gagal mengunduh template gambar');
     }
-});
+  }
 
-// Endpoint untuk mendapatkan informasi
-router.get('/info', (req, res) => {
-    res.json({
-        status: true,
-        message: "Pixel Art API",
-        description: "Ubah gambar menjadi pixel art",
-        parameters: {
-            pixel_level: {
-                type: "number",
-                min: 1,
-                max: 40,
-                default: 30,
-                description: "Semakin kecil nilai, semakin detail pixel art-nya"
-            },
-            image: {
-                type: "file",
-                required: true,
-                description: "File gambar yang akan diproses"
-            }
-        },
-        example: {
-            url: "/pixelart",
-            method: "POST",
-            body: {
-                pixel_level: 25
-            },
-            formData: {
-                image: "file.jpg"
-            }
-        }
+  // Download default avatar
+  if (!defaultAvatarBuffer) {
+    try {
+      const defaultAvatarUrl = 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/6b71d84a580f385bd7ee36402df5341ead4770a0/Image/artworks-gWLRE6HyPH3DgVMG-ZFFxtg-t500x500.jpg';
+      defaultAvatarBuffer = await downloadBuffer(defaultAvatarUrl);
+    } catch (err) {
+      console.error('Gagal download default avatar:', err.message);
+      // Buat avatar default dari canvas jika download gagal
+    }
+  }
+
+  // Load fonts
+  if (!fontsLoaded) {
+    for (const font of FONT_ASSETS) {
+      try {
+        const fontBuffer = await downloadBuffer(font.url);
+        GlobalFonts.register(fontBuffer, font.family);
+      } catch (err) {
+        console.error(`Gagal memuat font ${font.name}:`, err.message);
+      }
+    }
+    fontsLoaded = true;
+  }
+}
+
+// Wrap teks dengan support native font fallback
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(/(\s+)/);
+  const lines = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    if (!word) continue;
+    if (word.trim() === '' && currentLine === '') continue;
+
+    const testLine = currentLine + word;
+    if (ctx.measureText(testLine).width > maxWidth) {
+      if (currentLine !== '') {
+        lines.push(currentLine.trimEnd());
+        currentLine = word.trimStart();
+      } else {
+        lines.push(testLine);
+        currentLine = '';
+      }
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine.trim()) {
+    lines.push(currentLine.trimEnd());
+  }
+  return lines;
+}
+
+function drawRoundedRect(ctx, x, y, w, h, r, fill, stroke = null, shadow = false) {
+  ctx.save();
+  if (shadow) {
+    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 12;
+  }
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawCircleImage(ctx, img, cx, cy, r) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+  ctx.restore();
+}
+
+async function renderChat(username, chatText, avatarBuffer) {
+  await ensureAssets();
+
+  const USERNAME = username || 'Ditzzx';
+  const CHAT_TEXT = chatText || 'Just friend kok cemburu 😂😂';
+
+  const templateImage = await loadImageFromBuffer(templateBuffer);
+  
+  // Gunakan avatar dari upload atau default
+  let avatarImage;
+  if (avatarBuffer) {
+    try {
+      avatarImage = await loadImageFromBuffer(avatarBuffer);
+    } catch (err) {
+      console.error('Gagal load avatar user, menggunakan default:', err.message);
+      avatarImage = await loadImageFromBuffer(defaultAvatarBuffer);
+    }
+  } else {
+    avatarImage = await loadImageFromBuffer(defaultAvatarBuffer);
+  }
+
+  const canvas = createCanvas(1080 * 2, 2280 * 2);
+  const ctx = canvas.getContext('2d');
+
+  ctx.scale(2, 2);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  ctx.clearRect(0, 0, 1080, 2280);
+  ctx.drawImage(templateImage, 0, 0, 1080, 2280);
+
+  // Gambar avatar di header
+  drawCircleImage(ctx, avatarImage, config.topPPX, config.topPPY, config.topPPRadius);
+
+  // Nama pengguna
+  ctx.font = `bold ${config.topNameSize}px 'Plus Jakarta Sans', 'Noto Color Emoji'`;
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(USERNAME, config.topNameX, config.topNameY);
+
+  // Wrap dan gambar teks chat
+  ctx.font = `500 ${config.textSize}px 'Plus Jakarta Sans', 'Noto Color Emoji'`;
+  
+  const lines = wrapText(ctx, CHAT_TEXT, config.bubbleWidth - 52);
+  const lineH = config.textSize * 1.45;
+
+  let maxW = 0;
+  for (const l of lines) {
+    const w = ctx.measureText(l).width;
+    if (w > maxW) maxW = w;
+  }
+
+  const padX = 30, padY = 24;
+  const bubbleW = Math.max(maxW + padX * 2, 180);
+  const bubbleH = lines.length * lineH + padY * 2;
+  const bubbleX = config.textX - padX;
+  const bubbleY = config.textY - padY;
+
+  // Avatar chat
+  drawCircleImage(ctx, avatarImage, config.chatPPX, bubbleY + bubbleH / 2, config.chatPPRadius);
+  
+  // Bubble chat
+  drawRoundedRect(ctx, bubbleX, bubbleY, bubbleW, bubbleH, 35, config.bubbleBgColor);
+
+  // Teks chat
+  ctx.fillStyle = config.textColor;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+
+  lines.forEach((line, i) => {
+    const lineY = config.textY + i * lineH + config.textSize / 2;
+    ctx.fillText(line, config.textX, lineY);
+  });
+
+  // Menu bawah
+  const menuX = 90, menuY = bubbleY + bubbleH + 28;
+  drawRoundedRect(ctx, menuX, menuY, 565, 580, 40, '#ffffff', 'rgba(0,0,0,0.02)', true);
+
+  const itemH = 90, iconX = menuX + 60, labelX = menuX + 130;
+  MENU_ICONS.forEach((item, i) => {
+    const cy = menuY + 25 + i * itemH + itemH / 2;
+    ctx.fillStyle = item.color;
+    ctx.font = `900 34px 'Font Awesome 6 Free'`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.unicode, iconX, cy);
+    ctx.font = `500 34px 'Plus Jakarta Sans'`;
+    ctx.textAlign = 'left';
+    ctx.fillText(item.text, labelX, cy);
+  });
+
+  ctx.restore();
+
+  return await canvas.encode('png');
+}
+
+// --- ENDPOINT ROUTE (METHOD POST ONLY) ---
+
+router.post('/', upload.single('avatar'), async (req, res) => {
+  try {
+    const username = req.body.username?.trim() || req.body.user?.trim();
+    const chatText = req.body.text?.trim() || req.body.q?.trim();
+    
+    // Ambil file avatar jika ada
+    const avatarBuffer = req.file ? req.file.buffer : null;
+
+    if (!chatText) {
+      return res.status(400).json({
+        status: false,
+        creator: "ArulzXD",
+        message: "Parameter 'text' wajib diisi!"
+      });
+    }
+
+    // Proses render chat
+    const imageBuffer = await renderChat(username, chatText, avatarBuffer);
+
+    // Kirimkan respons langsung berupa file gambar
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="tiktok-chat-${Date.now()}.png"`);
+    return res.send(Buffer.from(imageBuffer));
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      status: false,
+      creator: "ArulzXD",
+      message: "Internal Server Error saat memproses TikTok Chat",
+      error: err.message
     });
+  }
 });
 
-// Konfigurasi untuk dashboard UI
+// --- CONFIG PARAMETERS UNTUK DASHBOARD UI ---
 router.paramsConfig = {
-    image: {
-        type: "file",
-        desc: "File gambar yang akan diubah menjadi pixel art"
-    },
-    pixel_level: {
-        type: "number",
-        min: 1,
-        max: 40,
-        default: 30,
-        desc: "Level pixelasi (1-40, semakin kecil semakin detail)"
-    }
+  text: {
+    type: "string",
+    desc: "Teks chat yang akan ditampilkan (wajib)"
+  },
+  username: {
+    type: "string",
+    desc: "Nama pengguna (default: Ditzzx)"
+  },
+  avatar: {
+    type: "file",
+    desc: "Foto avatar (opsional, upload file gambar)"
+  }
 };
 
 router.status = "ready";
 router.type = "free";
-
 module.exports = router;
