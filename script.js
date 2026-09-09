@@ -975,18 +975,18 @@ function loadApis() {
             }
 
             html += `
-            <div class="api-item border-t border-white/10 light-mode:border-slate-200" 
+            <div class="api-item border-t-2 border-white/20 light-mode:border-slate-300 hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors" 
     data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
-             <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+             <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
              <div class="flex items-center gap-3 flex-1 min-w-0">
                <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
                 <div class="text-left flex-1 min-w-0">
                    <!-- NAMA FITUR / JUDUL (JUDUL DI ATAS) -->
-                   <p class="font-bold text-sm text-white light-mode:text-slate-900 truncate">${item.name}</p>
+                   <p class="font-bold text-base text-white light-mode:text-slate-900 truncate">${item.name}</p>
                  
                   <!-- PATH ENDPOINT /api/... (PATH DI BAWAH) -->
                    <div class="flex items-center gap-2 mt-0.5">
-                       <p class="code-font text-xs ${pathColorClass} truncate">${path}</p>
+                       <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
                        <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
                       ${badgeTypeHtml}
                    </div>
@@ -996,7 +996,7 @@ function loadApis() {
                    ${SVG_PLUS}
                   </span>
                 </button>
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t border-white/10 light-mode:border-slate-200 backdrop-blur-sm">
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm">
     
     <!-- BOX DESKRIPSI BARU -->
     <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
