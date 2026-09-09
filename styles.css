@@ -539,3 +539,27 @@
         opacity: 1;
     }
 }
+
+/* Penyesuaian Light Mode Khusus Endpoint */
+html.light .api-item p {
+    color: #0f172a !important;
+}
+
+html.light [id^="ep-"] {
+    background-color: #f1f5f9 !important;
+}
+
+html.light [id^="ep-"] .bg-slate-900\/80,
+html.light [id^="ep-"] .bg-slate-900\/90,
+html.light [id^="ep-"] .bg-slate-950\/60,
+html.light [id^="ep-"] input[type="text"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.light [id^="ep-"] label,
+html.light [id^="ep-"] h4,
+html.light [id^="ep-"] code {
+    color: #0f172a !important;
+}
