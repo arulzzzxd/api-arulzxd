@@ -1,208 +1,234 @@
-const express = require("express");
-const axios = require("axios");
-const FormData = require("form-data");
-const crypto = require("crypto");
+const express = require('express');
+const axios = require('axios');
+const FormData = require('form-data');
+const crypto = require('node:crypto');
+const multer = require('multer');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const router = express.Router();
+const upload = multer();
 
-const UA =
-"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+const API = "https://api.unwatermark.ai";
+const WEB = "https://unblurimage.ai";
+const UA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36";
+const PRODUCT_CODE = "067003";
+const RESOLUTIONS = ["720p", "1080p", "2k", "4k"];
+const IS_PREVIEW = "false";
 
-function headers(extra = {}) {
-const SERIAL = crypto
-.createHash("md5")
-.update(UA + Date.now())
-.digest("hex");
+// --- SCRAPER FUNCTIONS ---
 
-return {
-    accept: "*/*",
-    "product-serial": SERIAL,
-    "user-agent": UA,
-    Referer: "https://unblurimage.ai/",
-    ...extra
-};
-
+function randomProductSerial() {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let out = "";
+    for (let i = 0; i < 6; i++) {
+        out += chars[crypto.randomInt(chars.length)];
+    }
+    return out;
 }
 
-router.get("/", async (req, res) => {
-try {
-const videoUrl =
-req.query.url?.trim();
+function extToMime(file) {
+    const ext = path.extname(file.originalname || file).toLowerCase();
+    if (ext === ".mp4") return "video/mp4";
+    if (ext === ".mov") return "video/quicktime";
+    if (ext === ".webm") return "video/webm";
+    if (ext === ".mkv") return "video/x-matroska";
+    return "application/octet-stream";
+}
 
-    if (!videoUrl) {
-        return res.status(400).json({
-            status: false,
-            creator: "ArulzXD",
-            message:
-                "Parameter url wajib diisi",
-            example:
-                "/api/tools/hdvideo?url=https://example.com/video.mp4"
-        });
+function baseHeaders(extra = {}) {
+    return {
+        accept: "*/*",
+        origin: WEB,
+        referer: `${WEB}/`,
+        "user-agent": UA,
+        "product-code": PRODUCT_CODE,
+        "product-serial": randomProductSerial(),
+        "x-request-id": crypto.randomUUID(),
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-ch-ua": "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+        "sec-ch-ua-mobile": "?1",
+        ...extra
+    };
+}
+
+async function postForm(endpoint, fields) {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) {
+        form.append(key, value);
     }
 
-    const videoBuffer =
-        Buffer.from(
-            (
-                await axios.get(
-                    videoUrl,
-                    {
-                        responseType:
-                            "arraybuffer"
-                    }
-                )
-            ).data
-        );
+    const res = await axios.post(`${API}${endpoint}`, form, {
+        headers: baseHeaders(form.getHeaders()),
+        validateStatus: () => true
+    });
 
-    // Register File
-    const fileName =
-        crypto.randomBytes(3)
-            .toString("hex") +
-        "_video.mp4";
+    return { status: res.status, data: res.data };
+}
 
-    const formReg =
-        new FormData();
+async function getJson(endpoint) {
+    const res = await axios.get(`${API}${endpoint}`, {
+        headers: baseHeaders({
+            "content-type": "application/json; charset=UTF-8"
+        }),
+        validateStatus: () => true
+    });
+    return { status: res.status, data: res.data };
+}
 
-    formReg.append(
-        "video_file_name",
-        fileName
-    );
+async function createUploadUrl(fileName) {
+    const result = await postForm("/api/web/common/upload/video", {
+        video_file_name: fileName
+    });
 
-    const reg =
-        await axios.post(
-            "https://api.unblurimage.ai/api/upscaler/v1/ai-video-enhancer/upload-video",
-            formReg,
-            {
-                headers: {
-                    ...headers(),
-                    ...formReg.getHeaders()
-                }
-            }
-        );
+    if (result.status >= 400 || result.data?.code !== 100000) {
+        throw new Error(`Gagal ambil upload url: ${JSON.stringify(result.data)}`);
+    }
+    return result.data.result;
+}
 
-    const {
-        url: ossUrl,
-        object_name: objectName
-    } = reg.data.result;
+async function uploadVideoToSignedUrl(uploadUrl, fileBuffer, mimeType) {
+    const res = await axios.put(uploadUrl, fileBuffer, {
+        headers: {
+            "content-type": mimeType,
+            "content-length": fileBuffer.length
+        },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        validateStatus: () => true
+    });
+    return { status: res.status, data: res.data };
+}
 
-    // Upload OSS
-    await axios.put(
-        ossUrl,
-        videoBuffer,
-        {
-            headers: {
-                "Content-Type":
-                    "video/mp4",
-                "User-Agent":
-                    UA
-            }
+function cleanPublicUrl(url) {
+    return String(url || "").split("?")[0];
+}
+
+async function createJob(originalVideoUrl, resolution) {
+    const result = await postForm("/api/web/unblurimage/v1/video-enhancer/create-job", {
+        original_video_url: originalVideoUrl,
+        resolution: resolution,
+        is_preview: IS_PREVIEW
+    });
+
+    if (result.status >= 400 || !result.data?.result?.job_id) {
+        throw new Error(`Gagal create job: ${JSON.stringify(result.data)}`);
+    }
+    return result.data.result;
+}
+
+async function getJob(jobId) {
+    return await getJson(`/api/web/unblurimage/v1/video-enhancer/get-job/${jobId}`);
+}
+
+async function waitJob(jobId, maxTry = 80, delayMs = 5000) {
+    let last = null;
+    for (let i = 1; i <= maxTry; i++) {
+        const result = await getJob(jobId);
+        last = result.data;
+        const status = result.data?.result?.status;
+        const outputUrl = result.data?.result?.output_url;
+
+        if (Array.isArray(outputUrl) && outputUrl.length > 0) {
+            return result.data;
         }
-    );
+        if (status === 1) {
+            return result.data;
+        }
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    throw new Error(`Job belum selesai: ${JSON.stringify(last)}`);
+}
 
-    // Create Job
-    const formJob =
-        new FormData();
+// --- ENDPOINT ROUTE (METHOD POST) ---
 
-    formJob.append(
-        "original_video_file",
-        `https://cdn.unblurimage.ai/${objectName}`
-    );
+router.post('/', upload.single('fileupload'), async (req, res) => {
+    try {
+        const file = req.file;
+        const resolution = req.body.resolution?.toString().trim() || '1080p';
 
-    formJob.append(
-        "resolution",
-        ""
-    );
+        if (!file) {
+            return res.status(400).json({
+                status: false,
+                creator: "Arulzxd",
+                message: "Berkas 'fileupload' wajib diunggah!"
+            });
+        }
 
-    formJob.append(
-        "is_preview",
-        "false"
-    );
+        if (!RESOLUTIONS.includes(resolution)) {
+            return res.status(400).json({
+                status: false,
+                creator: "Arulzxd",
+                message: `Resolusi tidak valid! Gunakan salah satu opsi: ${RESOLUTIONS.join(', ')}`
+            });
+        }
 
-    const create =
-        await axios.post(
-            "https://api.unblurimage.ai/api/upscaler/v2/ai-video-enhancer/create-job",
-            formJob,
-            {
-                headers: {
-                    ...headers(),
-                    ...formJob.getHeaders()
-                }
-            }
-        );
+        // Validasi tipe file
+        const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-matroska'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({
+                status: false,
+                creator: "Arulzxd",
+                message: "Format file tidak didukung! Gunakan: MP4, MOV, WEBM, atau MKV"
+            });
+        }
 
-    const jobId =
-        create.data.result?.job_id;
+        // Alur Eksekusi Scraper
+        const fileName = file.originalname || `${crypto.randomUUID()}.mp4`;
+        const mimeType = extToMime(file);
 
-    if (!jobId) {
+        // Step 1: Dapatkan upload URL
+        const upload = await createUploadUrl(fileName);
+        const signedUrl = upload.url;
+        const publicUrl = cleanPublicUrl(upload.url);
+
+        // Step 2: Upload video
+        const uploadResult = await uploadVideoToSignedUrl(signedUrl, file.buffer, mimeType);
+        if (uploadResult.status >= 400) {
+            throw new Error(`Upload file gagal HTTP ${uploadResult.status}`);
+        }
+
+        // Step 3: Create job
+        const job = await createJob(publicUrl, resolution);
+
+        // Step 4: Tunggu proses selesai
+        const done = await waitJob(job.job_id);
+
+        // Step 5: Kirim hasil
+        const resultUrl = done.result?.output_url?.[0] || "";
+        return res.status(200).json({
+            status: true,
+            creator: "Arulzxd",
+            input_file: fileName,
+            resolution: resolution,
+            result_url: resultUrl,
+            job_id: job.job_id
+        });
+
+    } catch (err) {
+        console.error(err);
         return res.status(500).json({
             status: false,
-            message:
-                "Gagal membuat job"
+            creator: "Arulzxd",
+            message: "Internal Server Error saat memproses video",
+            error: err.message
         });
     }
-
-    let outputUrl = null;
-
-    for (
-        let i = 0;
-        i < 60;
-        i++
-    ) {
-        await new Promise(
-            resolve =>
-                setTimeout(
-                    resolve,
-                    5000
-                )
-        );
-
-        const check =
-            await axios.get(
-                `https://api.unblurimage.ai/api/upscaler/v2/ai-video-enhancer/get-job/${jobId}`,
-                {
-                    headers:
-                        headers()
-                }
-            );
-
-        if (
-            check.data.result
-                ?.output_url
-        ) {
-            outputUrl =
-                check.data.result.output_url;
-
-            break;
-        }
-    }
-
-    if (!outputUrl) {
-        return res.status(408).json({
-            status: false,
-            message:
-                "Timeout atau gagal memproses video"
-        });
-    }
-
-    res.json({
-        status: true,
-        creator: "ArulzXD",
-        result: {
-            job_id: jobId,
-            video: outputUrl
-        }
-    });
-
-} catch (err) {
-    res.status(500).json({
-        status: false,
-        creator: "ArulzXD",
-        message: err.message
-    });
-}
-
 });
+
+// --- CONFIG PARAMETERS UNTUK DASHBOARD UI ---
+router.paramsConfig = {
+    fileupload: {
+        type: "file",
+        desc: "Berkas video yang akan di-enhance"
+    },
+    resolution: {
+        type: "select",
+        options: RESOLUTIONS,
+        default: "1080p"
+    }
+};
 
 router.status = "ready";
 router.type = "free";
-
 module.exports = router;
