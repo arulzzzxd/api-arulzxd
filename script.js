@@ -1,5 +1,5 @@
 /* =========================================================================
-   SCRIPT.JS REST API (UPDATED & FIXED)
+   SCRIPT.JS REST API (FIXED LIGHT THEME & CONTRAST PLACEHOLDERS)
    ========================================================================= */
 
 const BASE_URL = window.location.origin;
@@ -70,10 +70,6 @@ const i18n = {
     }
 };
 
-/* =========================================================================
-   ADDITIONAL / MISSING CORE FUNCTIONS & MEDIA PREVIEW DEFINITION
-   ========================================================================= */
-
 function toggleCategory(catIdx) {
     const catDiv = document.getElementById(`cat-${catIdx}`);
     const catIcon = document.getElementById(`cat-icon-${catIdx}`);
@@ -116,36 +112,25 @@ function closeSidebarMenu() {
     }
 }
 
-// Fungsi Generator Komponen Pratinjau Media Hasil Eksekusi (Updated)
 function createMediaPreview(url, contentType, fullPath) {
     const type = contentType || '';
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
         return `
-            <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
+            <div class="w-full flex justify-center bg-black/20 light-mode:bg-slate-100 p-2 rounded-xl border border-white/10 light-mode:border-slate-300">
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
         return `
-            <div class="w-full bg-black/40 p-2 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
-                <video src="${url}" 
-                       controls
-                       autoplay
-                       loop 
-                       playsinline
-                       class="w-full h-auto max-h-[85vh] rounded-lg object-contain bg-black">
-                </video>
+            <div class="w-full bg-black/40 light-mode:bg-slate-100 p-2 rounded-xl border border-white/10 light-mode:border-slate-300 overflow-hidden shadow-2xl">
+                <video src="${url}" controls autoplay loop playsinline class="w-full h-auto max-h-[85vh] rounded-lg object-contain bg-black"></video>
             </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
-        return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
+        return `<div class="mt-2 bg-black/20 light-mode:bg-slate-100 p-3 rounded-lg border border-white/5 light-mode:border-slate-300"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
     } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
-        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
+        return `<div class="mt-2 bg-black/20 light-mode:bg-slate-100 p-2 rounded-lg border border-white/5 light-mode:border-slate-300"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
     }
-    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
+    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 light-mode:text-cyan-700 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
 }
-
-/* =========================================================================
-   THEME & APPLICATION FUNCTIONS
-   ========================================================================= */
 
 function updateThemeBackground(theme) {
     if (themeBg) {
@@ -539,8 +524,6 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
         }
 
         const currentEndpoint = apiData?.categories[catIdx]?.items[epIdx];
-        const epName = currentEndpoint?.name || 'video';
-        const epDesc = currentEndpoint?.desc || '';
 
         if (cleanContentType.includes("application/json")) {
             const data = await response.json();
@@ -552,57 +535,56 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             if (data.url && typeof data.url === 'string' && data.url.startsWith('http')) detectedMediaUrl = data.url;
             else if (data.result && data.result.url && typeof data.result.url === 'string') detectedMediaUrl = data.result.url;
 
-            // Jika berupa response JSON yang mengandung URL Video/Gambar
-if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
-    hintText = getMediaHint(detectedMediaUrl);
+            if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp3|webm|mov|wav|ogg|pdf|docx|xlsx|zip|txt|js)/i))) {
+                hintText = getMediaHint(detectedMediaUrl);
 
-    let mediaMarkup = '';
-    const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
+                let mediaMarkup = '';
+                const isAudioUrl = detectedMediaUrl.match(/\.(mp3|wav|ogg)/i);
 
-    if (isAudioUrl) {
-        mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
-    } else {
-        mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
-    }
+                if (isAudioUrl) {
+                    mediaMarkup = `<audio controls autoplay class="w-full max-w-md mx-auto block" src="${detectedMediaUrl}">Browser tidak mendukung pemutar audio.</audio>`;
+                } else {
+                    mediaMarkup = createMediaPreview(detectedMediaUrl, null, detectedMediaUrl);
+                }
 
-    finalInnerContent = `
-       <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
-           <div class="w-full flex justify-center items-center">
-               ${mediaMarkup}
-           </div>
-       </div>
-       <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-       <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
-    `;
-    isMedia = true;
-} else {
+                finalInnerContent = `
+                   <div class="p-3 bg-black/30 light-mode:bg-slate-100 flex justify-center items-center w-full max-w-full overflow-hidden" ${!isAudioUrl ? `onclick="if(typeof zoomMedia==='function') zoomMedia('${detectedMediaUrl}')"` : ''}>
+                       <div class="w-full flex justify-center items-center">
+                           ${mediaMarkup}
+                       </div>
+                   </div>
+                   <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+                   <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+                `;
+                isMedia = true;
+            } else {
                  finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
             }
         } else if (cleanContentType.startsWith("image/") || cleanContentType.startsWith("video/") || cleanContentType.startsWith("audio/") || cleanContentType.includes("application/pdf")) {
-    isMedia = true;
-    hintText = getMediaHint(cleanContentType);
-    mediaBlobObject = await response.blob(); 
-    if (!bytes) bytes = mediaBlobObject.size;
-    const blobUrl = URL.createObjectURL(mediaBlobObject);
+            isMedia = true;
+            hintText = getMediaHint(cleanContentType);
+            mediaBlobObject = await response.blob(); 
+            if (!bytes) bytes = mediaBlobObject.size;
+            const blobUrl = URL.createObjectURL(mediaBlobObject);
 
-    if (cleanContentType.startsWith("audio/")) {
-        finalInnerContent = `
-            <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
-                <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
-                    Browser Anda tidak mendukung pemutar audio.
-                </audio>
-            </div>
-        `;
-    } else {
-        finalInnerContent = `
-            <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
-                <div class="w-full flex justify-center items-center">
-                    ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
-                </div>
-            </div>
-        `;
-    }
-} else {
+            if (cleanContentType.startsWith("audio/")) {
+                finalInnerContent = `
+                    <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
+                        <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
+                            Browser Anda tidak mendukung pemutar audio.
+                        </audio>
+                    </div>
+                `;
+            } else {
+                finalInnerContent = `
+                    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden" onclick="if(typeof zoomMedia==='function') zoomMedia('${blobUrl}')">
+                        <div class="w-full flex justify-center items-center">
+                            ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
             rawResponseText = await response.text();
             if (!bytes) bytes = new Blob([rawResponseText]).size;
             hintText = "Klik teks untuk memperbesar";
@@ -621,14 +603,14 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
             : 'text-red-400 bg-red-500/10 border-2 border-red-500/50 dark:text-red-400 dark:bg-red-500/10 dark:border-2 dark:border-red-500/50 light-mode:text-red-700 light-mode:bg-red-500/5 light-mode:border-2 light-mode:border-red-500/60';
 
         let downloadButtonHtml = `
-            <button type="button" id="download-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-2 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <button type="button" id="download-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
                 <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Download ${isMedia ? 'Media' : 'Response'}</span>
             </button>
         `;
 
         responseContent.innerHTML = `
-            <div class="rounded-xl overflow-hidden border-2 border-cyan-500/40 dark:border-2 dark:border-cyan-500/40 light-mode:border-2 light-mode:border-slate-400 bg-slate-950/40 dark:bg-slate-950/40 light-mode:bg-white shadow-2xl transition-all duration-300">
+            <div class="rounded-xl overflow-hidden border-2 border-cyan-500/40 dark:border-2 dark:border-cyan-500/40 light-mode:border-slate-300 bg-slate-950/40 dark:bg-slate-950/40 light-mode:bg-white shadow-2xl transition-all duration-300">
                 <div class="px-4 py-2.5 bg-black/60 dark:bg-black/60 light-mode:bg-slate-100 border-b-2 border-white/20 light-mode:border-slate-300 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
@@ -637,26 +619,26 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-black/30 dark:bg-black/30 light-mode:bg-slate-50 border-b-2 border-white/20 light-mode:border-slate-300 text-center text-xs font-mono">
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Status</span>
                         <span class="px-2 py-0.5 rounded text-[11px] font-black ${statusColor}">${response.status}</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Time</span>
                         <span class="text-[11px] text-amber-400 dark:text-amber-400 light-mode:text-amber-600 font-bold">${duration} ms</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Size</span>
                         <span class="text-[11px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-bold">${sizeText}</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white col-span-2 sm:col-span-2 text-left px-3">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white col-span-2 sm:col-span-2 text-left px-3">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Content Type</span>
                         <span class="text-[11px] text-slate-300 dark:text-slate-300 light-mode:text-slate-600 truncate max-w-full font-semibold" title="${cleanContentType}">${cleanContentType}</span>
                     </div>
                     ${hintText ? `
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-500/30 bg-cyan-950/20 col-span-2 sm:col-span-1">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-500/30 bg-cyan-950/20 light-mode:bg-cyan-50 col-span-2 sm:col-span-1">
                         <span class="text-[9px] text-cyan-500 uppercase font-bold tracking-wider mb-0.5">Action Hint</span>
-                        <span class="text-[10px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-black tracking-tight uppercase text-center">${hintText}</span>
+                        <span class="text-[10px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-700 font-black tracking-tight uppercase text-center">${hintText}</span>
                     </div>
                     ` : ''}
                 </div>
@@ -666,7 +648,7 @@ if (detectedMediaUrl && (detectedMediaUrl.match(/\.(jpeg|jpg|gif|png|webp|mp4|mp
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3 px-4 py-3 bg-black/40 dark:bg-black/40 light-mode:bg-slate-50 border-t-2 border-white/20 light-mode:border-slate-300">
-                    <button type="button" id="copy-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <button type="button" id="copy-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-white/20 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
                         <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         <span>Copy Response</span>
                     </button>
@@ -755,7 +737,6 @@ function clearResponse(catIdx, epIdx, endpointType) {
     const responseDiv = document.getElementById(`response-${catIdx}-${epIdx}`);
 
     if (responseDiv) {
-        // Hanya hentikan audio/video di dalam card response endpoint tersebut
         const mediaElements = responseDiv.querySelectorAll('video, audio');
         mediaElements.forEach(media => {
             media.pause();
@@ -976,15 +957,12 @@ function loadApis() {
 
             html += `
             <div class="api-item border-t-2 border-white/20 light-mode:border-slate-300 hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors" 
-    data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
+                data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
              <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
              <div class="flex items-center gap-3 flex-1 min-w-0">
                <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
                 <div class="text-left flex-1 min-w-0">
-                   <!-- NAMA FITUR / JUDUL (JUDUL DI ATAS) -->
                    <p class="font-bold text-base text-white light-mode:text-slate-900 truncate">${item.name}</p>
-                 
-                  <!-- PATH ENDPOINT /api/... (PATH DI BAWAH) -->
                    <div class="flex items-center gap-2 mt-0.5">
                        <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
                        <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
@@ -996,9 +974,8 @@ function loadApis() {
                    ${SVG_PLUS}
                   </span>
                 </button>
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-50/50 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm">
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/40 light-mode:bg-slate-100 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm">
     
-    <!-- BOX DESKRIPSI BARU -->
     <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
         <div class="flex items-center gap-2 mb-1.5">
             <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -1016,7 +993,7 @@ function loadApis() {
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
                             <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/80 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
                             <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
                         </div>
                     </div>
@@ -1026,7 +1003,7 @@ function loadApis() {
                             <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">cURL Command</h4>
                             <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy cURL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/80 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
                             <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-300 light-mode:text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
                         </div>
                     </div>`;
@@ -1068,11 +1045,12 @@ function loadApis() {
                                 <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
                                     ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
                                 </label>
-                                <span class="text-[10px] text-slate-500 light-mode:text-slate-400 italic font-normal">${paramDesc}</span>
+                                <!-- Teks contoh parameter diperjelas kontras warnanya -->
+                                <span class="text-[11px] text-cyan-400 light-mode:text-cyan-700 font-medium code-font">${paramDesc}</span>
                             </div>`;
 
                         if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
                         } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
                             const defaultVal = pType.options[0] || '';
                             const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
@@ -1080,23 +1058,23 @@ function loadApis() {
                             html += `
                             <div class="relative w-full">
                                 <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                                    <span id="${uniqueId}-label" class="truncate text-slate-100 font-medium">${defaultVal}</span>
-                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 light-mode:text-cyan-700 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-800 font-medium">${defaultVal}</span>
+                                    <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                     </svg>
                                 </button>
                                 <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
                                 <div id="${uniqueId}-modal" class="select-modal-container hidden">
                                     <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10">
+                                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-white/10 light-mode:border-slate-200">
                                         <div class="flex items-center gap-2">
                                             <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                             </svg>
-                                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                                            <span class="text-xs font-bold text-cyan-400 light-mode:text-cyan-700 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
                                         </div>
-                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                        <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white light-mode:hover:text-slate-900 hover:bg-white/10 transition-colors">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                                             </svg>
@@ -1117,7 +1095,7 @@ function loadApis() {
                                 </div>
                             </div>`;
                         } else {
-                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 placeholder-slate-400 light-mode:placeholder-slate-500 focus:outline-none focus:border-cyan-500 code-font text-sm font-medium" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
                         }
                         html += `</div>`;
                     });
@@ -1127,14 +1105,14 @@ function loadApis() {
                             </div>
                             <div class="flex gap-3">
                                 <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
-                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-200 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
                             </div>
                         </form>
 
                         <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
                             <div>
-                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-500">Response</h5>
-                                <div class="bg-slate-950/80 light-mode:bg-slate-100 border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
+                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-600">Response</h5>
+                                <div class="bg-slate-950/80 light-mode:bg-white border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
                             </div>
                         </div>
                     </div>`;
