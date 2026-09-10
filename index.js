@@ -3016,6 +3016,29 @@ app.get('/docs', (req, res) => {
         background-color: #f1f5f9 !important;
         color: #0f172a !important;
     }
+
+    /* FIX: Nama endpoint & form light mode */
+    .light-mode .api-item p.text-white,
+    .light-mode .api-item p {
+        color: #0f172a !important;
+    }
+    .light-mode .api-item .bg-slate-950\/40,
+    .light-mode .api-item .bg-slate-900\/40,
+    .light-mode .api-item .bg-slate-900\/60 {
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+    }
+    .light-mode .api-item input[type="text"] {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+    .light-mode .api-item input[type="text"]::placeholder {
+        color: #64748b !important;
+    }
+    .light-mode .api-item code {
+        color: #0284c7 !important;
+    }
     
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
