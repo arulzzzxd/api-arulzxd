@@ -184,6 +184,7 @@ function initTheme() {
         themeToggleDarkIcon?.classList.remove('hidden');
         themeToggleLightIcon?.classList.add('hidden');
     }
+    
     updateThemeBackground(currentTheme);
     updateSocialBadges();
 }
@@ -1038,13 +1039,13 @@ function loadApis() {
                         <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
                             <div class="space-y-4 mb-4">`;
 
-                // --- 1. POTONGAN PERBAIKAN TEKS PARAMETER & CONTOH (Dark & Light Mode) ---
+                // --- PERBAIKAN POTONGAN SCRIPT.JS ---
 if (item.params) {
     Object.keys(item.params).forEach(paramName => {
         const pType = item.params[paramName];
         const isRequired = true; 
         
-        // Ambil tipe/deskripsi singkat parameter
+        // Ambil tipe/deskripsi singkat parameter (Memperbaiki kurung ganda)
         let rawDesc = (pType && pType.type) ? pType.type : (pType || paramName);
         if (pType && pType.desc) {
             rawDesc = `${pType.type || 'string'} (${pType.desc})`;
@@ -1072,34 +1073,31 @@ if (item.params) {
         html += `
         <div>
             <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-700 code-font">
+                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-800 code-font">
                     ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
                 </label>
-                <!-- PERBAIKAN WARNA TEKS KANAN: Dibuat cyan terang (Dark) dan cyan gelap (Light) agar jelas -->
                 <span class="text-[10px] text-cyan-400 light-mode:text-cyan-700 font-semibold font-mono tracking-tight break-all pl-2 text-right">${paramDesc}</span>
             </div>`;
 
         if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
         } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
             const defaultVal = pType.default || pType.options[0] || '';
             const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
-            
-            // Mengambil deskripsi khusus untuk ditaruh di bawah judul Modal Select
             const selectSubDesc = pType.desc || `Pilih salah satu opsi untuk parameter ${paramName}`;
 
             html += `
             <div class="relative w-full">
                 <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-900 font-medium">${defaultVal}</span>
+                <!-- FIX: Penambahan kelas warna text-slate-100 & light-mode:text-slate-900 agar nilai opsi selalu muncul dengan kontras jelas -->
+                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-900 font-semibold">${defaultVal}</span>
                     <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
                 <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
                 
-                <!-- 2. POTONGAN UNTUK MODAL SELECT BESERTA DESKRIPSI DI BAWAH JUDUL -->
                 <div id="${uniqueId}-modal" class="select-modal-container hidden">
                     <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
                     <div class="pb-3 mb-2 border-b border-white/10">
@@ -1116,7 +1114,6 @@ if (item.params) {
                                 </svg>
                             </button>
                         </div>
-                        <!-- DESKRIPSI DI BAWAH PILIH -->
                         <p class="text-[11px] text-slate-400 font-sans mt-1.5 pl-7 leading-relaxed">${selectSubDesc}</p>
                     </div>
                     <ul class="select-modal-list">`;
@@ -1134,7 +1131,7 @@ if (item.params) {
                 </div>
             </div>`;
         } else {
-            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
         }
         html += `</div>`;
     });

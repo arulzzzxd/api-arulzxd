@@ -3277,38 +3277,46 @@ app.get('/docs', (req, res) => {
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
     <!-- Welcome Popup -->
-    <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-      <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="bg-slate-900/90 border border-white/10 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md relative p-6 font-['Space_Grotesk'] text-slate-100 transition-all duration-300">
-          
-          <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5 focus:outline-none border border-white/5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-          
-          <div class="text-center mb-4">
-            <h1 class="text-xl sm:text-2xl font-extrabold text-white leading-tight tracking-wide">
-              Welcome to<br><span class="text-cyan-400">Arulz-XD API</span>
-            </h1>
-          </div>
-          
-          <div class="mb-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
-          </div>
-          
-          <div class="text-center text-slate-300 text-xs sm:text-sm mb-5 px-1 leading-relaxed">
-            <p>Halo! 👋 Selamat datang di Arulz-XD API. Terima kasih sudah berkunjung. API ini dibuat untuk membantu developer dengan berbagai fitur yang terus diperbarui. Silakan gunakan API Key di bawah ini.</p>
-          </div>
-          
-          <div class="mb-5 flex justify-center">
-            <div class="bg-black/30 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30">
-              <span class="font-bold text-xs sm:text-sm text-slate-200 tracking-wide">
-                apikey : <span id="welcomeApiKey" class="font-mono text-cyan-400 select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
-              </span>
-            </div>
-          </div>
+<div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <!-- Diubah menggunakan class glass-panel & light-mode adaptif -->
+    <div class="glass-panel border border-cyan-500/30 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md relative p-6 font-['Space_Grotesk'] text-slate-100 light-mode:text-slate-900 transition-all duration-300">
+      
+      <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors bg-white/5 light-mode:bg-slate-200 hover:bg-white/10 rounded-full p-1.5 focus:outline-none border border-white/5 light-mode:border-slate-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      
+      <div class="text-center mb-4">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-white light-mode:text-slate-900 leading-tight tracking-wide">
+          Welcome to<br><span class="text-cyan-400 light-mode:text-cyan-600">Arulz-XD API</span>
+        </h1>
+      </div>
+      
+      <div class="mb-4 rounded-xl overflow-hidden border border-white/10 light-mode:border-slate-300 bg-black/40 light-mode:bg-slate-100">
+        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
+      </div>
+      
+      <div class="text-center text-slate-300 light-mode:text-slate-700 text-xs sm:text-sm mb-5 px-1 leading-relaxed">
+        <p>Halo! 👋 Selamat datang di Arulz-XD API. Terima kasih sudah berkunjung. API ini dibuat untuk membantu developer dengan berbagai fitur yang terus diperbarui. Silakan gunakan API Key di bawah ini.</p>
+      </div>
+      
+      <div class="mb-5 flex justify-center">
+        <div class="bg-black/30 light-mode:bg-slate-200/60 rounded-full py-2 px-5 border-2 border-dashed border-cyan-500/30 light-mode:border-cyan-600/40">
+          <span class="font-bold text-xs sm:text-sm text-slate-200 light-mode:text-slate-800 tracking-wide">
+            apikey : <span id="welcomeApiKey" class="font-mono text-cyan-400 light-mode:text-cyan-700 select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
+          </span>
+        </div>
+      </div>
+      
+      <a href="/support" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all text-sm block text-center tracking-wider uppercase">
+        Donate Sekarang
+      </a>
+    </div>
+  </div>
+</div>
           
           <a href="/support" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all text-sm block text-center tracking-wider uppercase">
             Donate Sekarang

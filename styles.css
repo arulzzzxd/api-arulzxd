@@ -410,7 +410,7 @@ body.overflow-hidden {
     border-radius: 9999px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(6, 182, 212, 0.3); /* Warna Cyan saat di-hover */
+    background: rgba(6, 182, 212, 0.3);
 }
 
 /* Penyesuaian skema warna Light Mode */
@@ -494,7 +494,7 @@ body.overflow-hidden {
     align-items: center;
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
-    color: #e2e8f0; /* Teks Slate-200 terang */
+    color: #e2e8f0;
     font-size: 0.875rem;
     cursor: pointer;
     background-color: rgba(255, 255, 255, 0.03);
@@ -534,7 +534,7 @@ body.overflow-hidden {
     }
 }
 
-/* PERBAIKAN LIGHT MODE AGAR KONTRAST & TERANG (TAMBAHAN UTAMA) */
+/* PERBAIKAN LIGHT MODE AGAR KONTRAST & TERANG */
 body.light-mode .api-item p.text-white,
 body.light-mode .api-item p {
     color: #0f172a !important;
@@ -587,4 +587,81 @@ body.light-mode button[onclick*="clearResponse"] {
 body.light-mode button[onclick*="copyFromElement"]:hover,
 body.light-mode button[onclick*="clearResponse"]:hover {
     background-color: #cbd5e1 !important;
+}
+
+/* Menjamin teks di dalam box select terbaca di Light Mode */
+body.light-mode button[id*="custom-select"] span {
+    color: #0f172a !important;
+}
+
+body.light-mode button[id*="custom-select"] {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* PENYESUAIAN SIDEBAR & DROPDOWN DI LIGHT MODE */
+body.light-mode #bioDropdown {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: -10px 0 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode #bioDropdown .lang-btn {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+}
+
+body.light-mode #bioDropdown .lang-btn.active {
+    background-color: #06b6d4 !important;
+    color: #ffffff !important;
+}
+
+body.light-mode #bioDropdown .menu-link {
+    color: #1e293b !important;
+}
+
+body.light-mode #bioDropdown .menu-link:hover {
+    background-color: #f1f5f9 !important;
+}
+
+body.light-mode #bioDropdown .menu-link span {
+    color: #0f172a !important;
+}
+
+/* PENYESUAIAN CYBER POPUP MODAL DI LIGHT MODE */
+body.light-mode .cyber-popup-bg {
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+body.light-mode .double-border-cyan {
+    background: #f8fafc !important;
+    border-color: #0284c7 !important;
+    outline-color: #0284c7 !important;
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.15) !important;
+}
+
+body.light-mode .cyber-pill-capsule {
+    background: #f1f5f9 !important;
+    border-color: #0284c7 !important;
+    outline-color: #0284c7 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .select-modal-container {
+    background-color: #ffffff !important;
+    border-top: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .select-modal-item {
+    color: #0f172a !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .select-modal-item:hover {
+    background-color: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
 }
