@@ -574,3 +574,17 @@ body.light-mode .api-item input[type="text"]::placeholder {
 body.light-mode .api-item code {
     color: #0284c7 !important;
 }
+
+/* Perbaikan Tombol Copy & Bersihkan di Light Mode */
+body.light-mode button[onclick*="copyFromElement"],
+body.light-mode button[onclick*="clearResponse"] {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode button[onclick*="copyFromElement"]:hover,
+body.light-mode button[onclick*="clearResponse"]:hover {
+    background-color: #cbd5e1 !important;
+}
