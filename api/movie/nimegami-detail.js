@@ -23,46 +23,51 @@ class NimegamiDetail {
 
     const title = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
 
+    // Sinopsis
     let synopsis = "";
     $(".entry-content p").each((_, el) => {
       const text = $(el).text().trim();
-      if (text && !text.includes("Judul") && !text.includes("Japanese") && !synopsis) {
+      if (text && !text.includes("Judul") && !text.includes("Japanese") && !text.includes("Download") && !synopsis) {
         synopsis = text;
       }
     });
 
+    // Poster Gambar
     const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
 
     const episodesList = [];
+    let currentEpisode = null;
 
-    // Loop setiap box download episode/batch (elemen div berlatar biru di Nimegami)
-    $(".list-download, .download, .mctnx, .box-download").each((_, box) => {
-      const $box = $(box);
+    // Scan seluruh elemen anak di dalam entry-content atau area download
+    const $content = $(".entry-content, .download-area").length ? $(".entry-content, .download-area") : $("body");
 
-      // Ambil Judul Episode (misal: "BanG Dream! Ave Mujica Episode 1 Sub Indo")
-      const epTitle = $box.find(".title-download, .sub-title, h3, strong").first().text().trim();
-      if (!epTitle) return;
+    $content.find("h3, h4, p, div.title-download, div, tr").each((_, el) => {
+      const $el = $(el);
+      const text = $el.text().trim();
 
-      const resolutionsList = [];
+      // Detect Judul Episode (misal: "BanG Dream! Ave Mujica Episode 1 Sub Indo" atau "Tensei shitara Slime... Episode 1")
+      if (text.match(/Episode\s+\d+|Batch\s+Sub\s+Indo|Ep\s+\d+/i) && !text.match(/360p|480p|720p|1080p/i)) {
+        if (currentEpisode && currentEpisode.downloads.length > 0) {
+          episodesList.push(currentEpisode);
+        }
+        currentEpisode = {
+          episode: text,
+          downloads: []
+        };
+        return;
+      }
 
-      // Loop setiap baris resolusi di dalam box episode tersebut
-      $box.find(".row-download, .item-download, tr, p").each((_, row) => {
-        const $row = $(row);
-        const rowText = $row.text().trim();
-
-        // Deteksi resolusi (360p, 480p, 720p, 1080p)
-        const resMatch = rowText.match(/(360p|480p|720p|1080p)/i);
-        if (!resMatch) return;
-
+      // Detect Baris Resolusi (360p, 480p, 720p, 1080p)
+      const resMatch = text.match(/(360p|480p|720p|1080p)/i);
+      if (resMatch && currentEpisode) {
         const resolution = resMatch[0];
         const servers = [];
 
-        // Ambil link server download (MiteDrive, Berkasdrive, Usersdrive, dll)
-        $row.find("a").each((_, link) => {
+        $el.find("a").each((_, link) => {
           const href = $(link).attr("href");
           const serverName = $(link).text().trim();
 
-          if (href && serverName && !serverName.match(/360p|480p|720p|1080p/i)) {
+          if (href && serverName && !serverName.match(/360p|480p|720p|1080p/i) && !href.includes("#")) {
             servers.push({
               server: serverName,
               url: href
@@ -71,20 +76,27 @@ class NimegamiDetail {
         });
 
         if (servers.length > 0) {
-          resolutionsList.push({
-            resolution: resolution,
-            servers: servers
+          // Cari apakah resolusi sudah ada di episode aktif ini
+          let resGroup = currentEpisode.downloads.find(d => d.resolution.toLowerCase() === resolution.toLowerCase());
+          if (!resGroup) {
+            resGroup = { resolution: resolution, servers: [] };
+            currentEpisode.downloads.push(resGroup);
+          }
+
+          // Masukkan server tanpa duplikat
+          servers.forEach(s => {
+            if (!resGroup.servers.some(existing => existing.url === s.url)) {
+              resGroup.servers.push(s);
+            }
           });
         }
-      });
-
-      if (resolutionsList.length > 0) {
-        episodesList.push({
-          episode: epTitle,
-          downloads: resolutionsList
-        });
       }
     });
+
+    // Pindahkan episode terakhir jika ada
+    if (currentEpisode && currentEpisode.downloads.length > 0) {
+      episodesList.push(currentEpisode);
+    }
 
     return {
       title,
@@ -117,6 +129,7 @@ router.get('/', async (req, res) => {
       result: data
     });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({
       status: false,
       creator: "ArulzXD",
@@ -125,7 +138,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime beserta link unduhan terstruktur per episode, resolusi, dan server.";
+router.desc = "Mengambil detail anime dengan link unduhan terstruktur per episode, resolusi, dan server secara presisi.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
