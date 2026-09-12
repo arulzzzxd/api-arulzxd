@@ -1,7 +1,7 @@
 /**
  * ✦ Nama Scrape : HD Video Enhancer (Auto Aspect Ratio)
  * ✦ Author      : ArulzXD
- * ✦ Deskripsi   : Meningkatkan kualitas video ke HD (1080p) dengan mempertahankan aspek rasio asli video (16:9, 9:16, 1:1, dll).
+ * ✦ Deskripsi   : Meningkatkan kualitas video ke HD dengan otomatis mempertahankan aspek rasio asli (16:9, 9:16, 1:1, dll).
  */
 
 const express = require("express");
@@ -12,30 +12,52 @@ const path = require("path");
 const os = require("os");
 const fs = require("fs");
 
-// Set path executable ffmpeg secara statis
+// Set path executable ffmpeg & ffprobe
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
 const router = express.Router();
 
-// Middleware Multer untuk penanganan berkas sementara
 const upload = multer({
   dest: os.tmpdir(),
-  limits: { fileSize: 100 * 1024 * 1024 } // Batas maksimal video 100MB
+  limits: { fileSize: 50 * 1024 * 1024 } // Ditingkatkan aman ke 50MB
 });
 
+function getMetadata(inputPath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(inputPath, (err, metadata) => {
+      if (err) return reject(err);
+      resolve(metadata);
+    });
+  });
+}
+
 async function processHdVideo(inputPath, outputPath) {
+  // Ambil metadata dimensi video asli
+  const metadata = await getMetadata(inputPath);
+  const videoStream = metadata.streams.find(s => s.codec_type === 'video');
+
+  const width = videoStream ? videoStream.width : 0;
+  const height = videoStream ? videoStream.height : 0;
+
+  // Tentukan skala HD berdasarkan orientasi (Landscape vs Portrait/Square)
+  let scaleFilter = "scale=1920:-2"; // Default Landscape 16:9
+  if (height > width) {
+    scaleFilter = "scale=-2:1920"; // Portrait 9:16
+  } else if (width === height) {
+    scaleFilter = "scale=1080:1080"; // Square 1:1
+  }
+
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .outputOptions([
-        // Menyesuaikan sisi terpanjang ke 1080px & skala otomatis menjaga rasio asli (16:9, 9:16, 1:1, dll)
-        "-vf scale='if(gt(iw,ih),1080,-2)':'if(gt(iw,ih),-2,1080)':force_original_aspect_ratio=decrease,trunc(iw/2)*2:trunc(ih/2)*2",
-        "-c:v libx264",         // Codec Video H.264
-        "-preset fast",         // Kecepatan enkoding
-        "-crf 18",              // Kualitas HD lebih tajam
-        "-c:a aac",             // Codec Audio AAC
-        "-b:a 192k",            // Bitrate audio HD
-        "-pix_fmt yuv420p",     // Format piksel universal
-        "-movflags +faststart"  // Faststart untuk playback web
+        `-vf ${scaleFilter}`,    // Menjaga rasio asli & memastikan dimensi genap
+        "-c:v libx264",          // Codec Video H.264
+        "-preset ultrafast",     // Kecepatan maksimal agar tidak timeout di serverless
+        "-crf 23",               // Kualitas HD seimbang
+        "-c:a aac",              // Codec Audio AAC
+        "-b:a 128k",             // Bitrate audio
+        "-pix_fmt yuv420p",      // Format piksel universal
+        "-movflags +faststart"   // Playback web cepat
       ])
       .toFormat("mp4")
       .on("end", () => resolve(outputPath))
@@ -65,7 +87,6 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
     res.setHeader("Content-Disposition", `inline; filename="hd_${Date.now()}.mp4"`);
 
     return res.sendFile(outputPath, (err) => {
-      // Hapus berkas temporary setelah selesai dikirim atau gagal
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
 
@@ -75,11 +96,10 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
     });
 
   } catch (err) {
-    // Bersihkan berkas masukan jika terjadi eror
     if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
 
-    console.error("FFmpeg Processing Error:", err);
+    console.error("FFmpeg Processing Error:", err.message);
     return res.status(500).json({
       status: false,
       creator: "ArulzXD",
@@ -88,11 +108,11 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
   }
 });
 
-router.desc = "Meningkatkan kualitas video ke HD dengan otomatis mempertahankan aspek rasio asli (16:9, 9:16, 1:1, dll).";
+router.desc = "Meningkatkan kualitas video ke HD dengan mempertahankan aspek rasio asli (16:9, 9:16, 1:1, dll).";
 router.paramsConfig = {
   fileupload: {
     type: "file",
-    desc: "Berkas video yang akan ditingkatkan kualitasnya (max 100MB)"
+    desc: "Berkas video yang akan ditingkatkan kualitasnya"
   }
 };
 router.status = "ready";
