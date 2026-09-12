@@ -22,8 +22,7 @@ class NimegamiDetail {
     const $ = cheerio.load(html);
 
     const title = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
-    
-    // Ambil sinopsis dari paragraf pertama entry-content yang bukan metadata
+
     let synopsis = "";
     $(".entry-content p").each((_, el) => {
       const text = $(el).text().trim();
@@ -34,25 +33,56 @@ class NimegamiDetail {
 
     const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
 
-    const episodes = [];
-    const seenUrls = new Set();
+    const episodesList = [];
 
-    // 1. Coba tangkap link per episode jika berupa batch/list di dalam tabel/box download
-    $(".download, .mctnx, .entry-content, .list-eps").find("a").each((_, el) => {
-      const href = $(el).attr("href");
-      const text = $(el).text().trim();
+    // Loop setiap box download episode/batch (elemen div berlatar biru di Nimegami)
+    $(".list-download, .download, .mctnx, .box-download").each((_, box) => {
+      const $box = $(box);
 
-      if (href && text) {
-        // Filter agar mengambil link episode/server dan menghindari link eksternal atau nav utama
-        const isEpisodeLink = /episode|\bep\b|\b\d{1,3}\b/i.test(text) || href.includes("nimegami.id");
-        
-        if (!seenUrls.has(href) && !href.includes("#") && !href.endsWith("nimegami.id/")) {
-          seenUrls.add(href);
-          episodes.push({
-            title: text,
-            url: href
+      // Ambil Judul Episode (misal: "BanG Dream! Ave Mujica Episode 1 Sub Indo")
+      const epTitle = $box.find(".title-download, .sub-title, h3, strong").first().text().trim();
+      if (!epTitle) return;
+
+      const resolutionsList = [];
+
+      // Loop setiap baris resolusi di dalam box episode tersebut
+      $box.find(".row-download, .item-download, tr, p").each((_, row) => {
+        const $row = $(row);
+        const rowText = $row.text().trim();
+
+        // Deteksi resolusi (360p, 480p, 720p, 1080p)
+        const resMatch = rowText.match(/(360p|480p|720p|1080p)/i);
+        if (!resMatch) return;
+
+        const resolution = resMatch[0];
+        const servers = [];
+
+        // Ambil link server download (MiteDrive, Berkasdrive, Usersdrive, dll)
+        $row.find("a").each((_, link) => {
+          const href = $(link).attr("href");
+          const serverName = $(link).text().trim();
+
+          if (href && serverName && !serverName.match(/360p|480p|720p|1080p/i)) {
+            servers.push({
+              server: serverName,
+              url: href
+            });
+          }
+        });
+
+        if (servers.length > 0) {
+          resolutionsList.push({
+            resolution: resolution,
+            servers: servers
           });
         }
+      });
+
+      if (resolutionsList.length > 0) {
+        episodesList.push({
+          episode: epTitle,
+          downloads: resolutionsList
+        });
       }
     });
 
@@ -60,8 +90,8 @@ class NimegamiDetail {
       title,
       synopsis,
       poster,
-      total_episodes: episodes.length,
-      episodes: episodes
+      total_episodes: episodesList.length,
+      episodes: episodesList
     };
   }
 }
@@ -95,7 +125,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime beserta seluruh daftar link episode/download yang tersedia.";
+router.desc = "Mengambil detail anime beserta link unduhan terstruktur per episode, resolusi, dan server.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
