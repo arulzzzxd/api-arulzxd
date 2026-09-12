@@ -21,7 +21,8 @@ class NimegamiDetail {
     const html = await this._fetch(url);
     const $ = cheerio.load(html);
 
-    const title = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
+    const rawTitle = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
+    const cleanAnimeTitle = rawTitle.replace(/Sub Indo|BD|- Nimegami/gi, "").replace(/:.*$/g, "").trim();
 
     // Sinopsis
     let synopsis = "";
@@ -42,7 +43,7 @@ class NimegamiDetail {
 
       if (!href || !serverName) return;
 
-      // Filter khusus: Hanya ambil server yang bernama/mengandung "Berkasdrive"
+      // Filter khusus: Hanya ambil Berkasdrive
       if (!serverName.toLowerCase().includes("berkasdrive")) {
         return;
       }
@@ -50,19 +51,20 @@ class NimegamiDetail {
       let epName = "";
       let resolution = "Unknown";
 
-      // Metodologi 1: Parsing query parameter name dari URL Berkasdrive
+      // Metodologi Utama: Parse Query Parameter 'name' secara eksplisit
       try {
         const urlObj = new URL(href);
         const nameParam = urlObj.searchParams.get("name");
         if (nameParam) {
           const decodedName = decodeURIComponent(nameParam);
-          const epMatch = decodedName.match(/Ep_?(\d+)|Episode\s*(\d+)/i);
+          
+          // Cari pola nomor episode (contoh: Ep_01, Ep_18, Ep 20, S4_Ep_18)
+          const epMatch = decodedName.match(/Ep[_\s]*(\d+)/i);
           const resMatch = decodedName.match(/(360p|480p|720p|1080p)/i);
 
           if (epMatch) {
-            const epNum = parseInt(epMatch[1] || epMatch[2], 10);
-            const baseAnimeName = title.split(":")[0].replace(/Sub Indo|BD|- Nimegami/gi, "").trim();
-            epName = `${baseAnimeName} Episode ${epNum} Sub Indo`;
+            const epNum = parseInt(epMatch[1], 10);
+            epName = `${cleanAnimeTitle} Episode ${epNum} Sub Indo`;
           }
           if (resMatch) {
             resolution = resMatch[0];
@@ -70,13 +72,17 @@ class NimegamiDetail {
         }
       } catch (_) {}
 
-      // Metodologi 2: Fallback ke teks pembungkus jika nama dari URL tidak ditemukan
+      // Fallback: Jika parameter 'name' tidak memberikan nomor episode
       if (!epName) {
         const parentBoxText = $(el).closest(".list-download, .download, p, div").text().trim();
-        const epMatch = parentBoxText.match(/(?:Episode|Ep)\s*\d+|[^\n]+Episode \d+[^\n]*/i);
+        const epMatch = parentBoxText.match(/(?:Episode|Ep)\s*(\d+)/i);
         if (epMatch) {
-          epName = epMatch[0].trim();
+          const epNum = parseInt(epMatch[1], 10);
+          epName = `${cleanAnimeTitle} Episode ${epNum} Sub Indo`;
+        } else {
+          epName = `${cleanAnimeTitle} Batch Sub Indo`;
         }
+
         const resMatch = parentBoxText.match(/(360p|480p|720p|1080p)/i);
         if (resMatch) {
           resolution = resMatch[0];
@@ -103,14 +109,28 @@ class NimegamiDetail {
       }
     });
 
-    // Format output JSON
+    // Urutkan Episode secara numerik agar rapih (Episode 1, 2, ..., 20)
+    const sortedEpisodeKeys = Array.from(episodeMap.keys()).sort((a, b) => {
+      const numA = parseInt(a.match(/\d+/)?.[0] || 0, 10);
+      const numB = parseInt(b.match(/\d+/)?.[0] || 0, 10);
+      return numA - numB;
+    });
+
     const episodesList = [];
-    episodeMap.forEach((resMap, epTitle) => {
+    sortedEpisodeKeys.forEach(epTitle => {
+      const resMap = episodeMap.get(epTitle);
       const downloads = [];
-      resMap.forEach((servers, resName) => {
+
+      // Urutkan resolusi (360p -> 480p -> 720p -> 1080p)
+      const resOrder = ["360p", "480p", "720p", "1080p"];
+      const sortedResolutions = Array.from(resMap.keys()).sort((a, b) => {
+        return resOrder.indexOf(a) - resOrder.indexOf(b);
+      });
+
+      sortedResolutions.forEach(resName => {
         downloads.push({
           resolution: resName,
-          servers: servers
+          servers: resMap.get(resName)
         });
       });
 
@@ -121,7 +141,7 @@ class NimegamiDetail {
     });
 
     return {
-      title,
+      title: rawTitle,
       synopsis,
       poster,
       total_episodes: episodesList.length,
@@ -160,7 +180,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime dengan khusus memfilter dan mengambil link unduhan dari Berkasdrive per episode dan resolusi.";
+router.desc = "Mengambil detail anime dengan memfilter link Berkasdrive terpisah presisi per episode (1-20) dan resolusi.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
