@@ -1,7 +1,7 @@
 /**
  * ✦ Nama Scrape : Wink.ai Video Enhancer Ultra HD
  * ✦ Author      : ArulzXD
- * ✦ Deskripsi   : Meningkatkan kualitas video menjadi Ultra HD menggunakan API Wink AI (Meitu).
+ * ✦ Deskripsi   : Meningkatkan kualitas video menjadi Ultra HD menggunakan API Wink AI (Meitu AI).
  */
 
 const express = require("express");
@@ -9,14 +9,16 @@ const axios = require("axios");
 const FormData = require("form-data");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
-const fsp = require("node:fs/promises");
 const path = require("node:path");
+const os = require("node:os");
 const multer = require("multer");
 const { CookieJar } = require("tough-cookie");
-const { wrapper } = require("axios-cookiejar-support");
 
 const router = express.Router();
-const upload = multer();
+const upload = multer({
+  dest: os.tmpdir(),
+  limits: { fileSize: 100 * 1024 * 1024 }
+});
 
 const BASE_URL = "https://wink.ai";
 const STRATEGY_URL = "https://strategy.app.meitudata.com";
@@ -63,7 +65,9 @@ function traceHeaders() {
   };
 }
 
-function createApiInstance() {
+// Gunakan Dynamic Import untuk memuat wrapper dari axios-cookiejar-support (ESM)
+async function createApiInstance() {
+  const { wrapper } = await import("axios-cookiejar-support");
   const gnum = crypto.randomUUID();
   const jar = new CookieJar();
 
@@ -429,7 +433,7 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
   const originalName = file.originalname || "video.mp4";
 
   try {
-    const { api, gnum } = createApiInstance();
+    const { api, gnum } = await createApiInstance();
 
     const sign = await getMaatSign(api, gnum);
     const policy = await getUploadPolicy(sign);
@@ -449,7 +453,6 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
 
     const resultUrl = await waitResult(api, gnum, firstMsgId);
 
-    // Hapus berkas temporary
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     return res.json({
