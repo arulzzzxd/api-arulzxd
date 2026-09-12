@@ -36,31 +36,21 @@ class NimegamiDetail {
 
     const episodeMap = new Map();
 
-    // Khusus memindai area kontainer download untuk menghindari link sidebar / rekomendasi
     $(".entry-content a, .download a, .mctnx a").each((_, el) => {
       const href = $(el).attr("href");
       const serverName = $(el).text().trim();
 
       if (!href || !serverName) return;
 
-      // Filter link sampah (kategori, tutorial, komik, external nav)
-      if (
-        href.includes("category/") || 
-        href.includes("seasons/") || 
-        href.includes("type/") || 
-        href.includes("cara-download") || 
-        href.includes("myanimelist") || 
-        href.includes("play.google.com") ||
-        href.includes("rarlab.com") ||
-        href.includes("gomlab.com")
-      ) {
+      // Filter khusus: Hanya ambil server yang bernama/mengandung "Berkasdrive"
+      if (!serverName.toLowerCase().includes("berkasdrive")) {
         return;
       }
 
       let epName = "";
-      let resolution = "Unkown";
+      let resolution = "Unknown";
 
-      // Metodologi 1: Ekstraksi presisi dari query parameter name (misal: ?name=...Ep_01_(360p).mp4)
+      // Metodologi 1: Parsing query parameter name dari URL Berkasdrive
       try {
         const urlObj = new URL(href);
         const nameParam = urlObj.searchParams.get("name");
@@ -80,7 +70,7 @@ class NimegamiDetail {
         }
       } catch (_) {}
 
-      // Metodologi 2: Fallback ke penelusuran elemen teks pembungkus jika nama dari URL tidak tersedia
+      // Metodologi 2: Fallback ke teks pembungkus jika nama dari URL tidak ditemukan
       if (!epName) {
         const parentBoxText = $(el).closest(".list-download, .download, p, div").text().trim();
         const epMatch = parentBoxText.match(/(?:Episode|Ep)\s*\d+|[^\n]+Episode \d+[^\n]*/i);
@@ -93,7 +83,6 @@ class NimegamiDetail {
         }
       }
 
-      // Pastikan link valid dan memiliki grup episode
       if (epName) {
         if (!episodeMap.has(epName)) {
           episodeMap.set(epName, new Map());
@@ -114,7 +103,7 @@ class NimegamiDetail {
       }
     });
 
-    // Format menjadi hirarki JSON terstruktur
+    // Format output JSON
     const episodesList = [];
     episodeMap.forEach((resMap, epTitle) => {
       const downloads = [];
@@ -171,7 +160,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime dengan link unduhan terpisah per episode, resolusi, dan server secara presisi.";
+router.desc = "Mengambil detail anime dengan khusus memfilter dan mengambil link unduhan dari Berkasdrive per episode dan resolusi.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
