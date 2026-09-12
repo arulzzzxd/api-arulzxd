@@ -20,18 +20,33 @@ class NimegamiDetail {
     if (!url) throw new Error("URL parameter is required");
     const html = await this._fetch(url);
     const $ = cheerio.load(html);
+
     const title = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
     const synopsis = $(".entry-content p").first().text().trim();
-    const video = $("iframe").attr("src") || "";
-    const downloads = [];
-    $(".download a, .mctnx a, .entry-content a").each((_, el) => {
-      const href = $(el).attr("href");
-      const text = $(el).text().trim();
-      if (href && text && !href.includes("nimegami")) {
-        downloads.push({ server: text, url: href });
+    const poster = $(".entry-content img").first().attr("src") || "";
+
+    const episodes = [];
+
+    // Mengambil daftar episode dari elemen link/list yang mengarah ke halaman episode
+    $(".list-eps a, .eps-list a, .entry-content ul li a").each((_, el) => {
+      const epTitle = $(el).text().trim();
+      const epUrl = $(el).attr("href");
+
+      if (epUrl && epUrl.includes("nimegami") && epTitle) {
+        episodes.push({
+          title: epTitle,
+          url: epUrl
+        });
       }
     });
-    return { title, synopsis, video, downloads: downloads.slice(0, 6) };
+
+    return {
+      title,
+      synopsis,
+      poster,
+      total_episodes: episodes.length,
+      episodes: episodes
+    };
   }
 }
 
@@ -64,9 +79,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime, sinopsis, streaming video, dan link unduhan (6 link teratas).";
+router.desc = "Mengambil detail anime beserta daftar link episodenya.";
 router.paramsConfig = {
-  url: "wajib, URL detail dari nimegami"
+  url: "text (wajib, URL detail anime dari Nimegami)"
 };
 router.status = "ready";
 router.type = "free";
