@@ -32,7 +32,7 @@ class NimegamiDetail {
       }
     });
 
-    const poster = $el.find("img").attr("src");
+    const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
 
     const episodeMap = new Map();
 
@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
 
 router.desc = "Mengambil detail anime dengan struktur JSON episode yang ringkas dan mudah dibaca.";
 router.paramsConfig = {
-  url: "text (wajib, URL detail anime dari Nimegami)"
+  url: "URL detail anime dari Nimegami"
 };
 router.status = "ready";
 router.type = "free";
