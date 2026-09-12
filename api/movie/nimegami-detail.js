@@ -27,76 +27,109 @@ class NimegamiDetail {
     let synopsis = "";
     $(".entry-content p").each((_, el) => {
       const text = $(el).text().trim();
-      if (text && !text.includes("Judul") && !text.includes("Japanese") && !text.includes("Download") && !synopsis) {
+      if (text && !text.includes("Judul") && !text.includes("Japanese") && !synopsis) {
         synopsis = text;
       }
     });
 
-    // Poster Gambar
     const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
 
-    const episodesList = [];
-    let currentEpisode = null;
+    const episodeMap = new Map();
 
-    // Scan seluruh elemen anak di dalam entry-content atau area download
-    const $content = $(".entry-content, .download-area").length ? $(".entry-content, .download-area") : $("body");
+    // Khusus memindai area kontainer download untuk menghindari link sidebar / rekomendasi
+    $(".entry-content a, .download a, .mctnx a").each((_, el) => {
+      const href = $(el).attr("href");
+      const serverName = $(el).text().trim();
 
-    $content.find("h3, h4, p, div.title-download, div, tr").each((_, el) => {
-      const $el = $(el);
-      const text = $el.text().trim();
+      if (!href || !serverName) return;
 
-      // Detect Judul Episode (misal: "BanG Dream! Ave Mujica Episode 1 Sub Indo" atau "Tensei shitara Slime... Episode 1")
-      if (text.match(/Episode\s+\d+|Batch\s+Sub\s+Indo|Ep\s+\d+/i) && !text.match(/360p|480p|720p|1080p/i)) {
-        if (currentEpisode && currentEpisode.downloads.length > 0) {
-          episodesList.push(currentEpisode);
-        }
-        currentEpisode = {
-          episode: text,
-          downloads: []
-        };
+      // Filter link sampah (kategori, tutorial, komik, external nav)
+      if (
+        href.includes("category/") || 
+        href.includes("seasons/") || 
+        href.includes("type/") || 
+        href.includes("cara-download") || 
+        href.includes("myanimelist") || 
+        href.includes("play.google.com") ||
+        href.includes("rarlab.com") ||
+        href.includes("gomlab.com")
+      ) {
         return;
       }
 
-      // Detect Baris Resolusi (360p, 480p, 720p, 1080p)
-      const resMatch = text.match(/(360p|480p|720p|1080p)/i);
-      if (resMatch && currentEpisode) {
-        const resolution = resMatch[0];
-        const servers = [];
+      let epName = "";
+      let resolution = "Unkown";
 
-        $el.find("a").each((_, link) => {
-          const href = $(link).attr("href");
-          const serverName = $(link).text().trim();
+      // Metodologi 1: Ekstraksi presisi dari query parameter name (misal: ?name=...Ep_01_(360p).mp4)
+      try {
+        const urlObj = new URL(href);
+        const nameParam = urlObj.searchParams.get("name");
+        if (nameParam) {
+          const decodedName = decodeURIComponent(nameParam);
+          const epMatch = decodedName.match(/Ep_?(\d+)|Episode\s*(\d+)/i);
+          const resMatch = decodedName.match(/(360p|480p|720p|1080p)/i);
 
-          if (href && serverName && !serverName.match(/360p|480p|720p|1080p/i) && !href.includes("#")) {
-            servers.push({
-              server: serverName,
-              url: href
-            });
+          if (epMatch) {
+            const epNum = parseInt(epMatch[1] || epMatch[2], 10);
+            const baseAnimeName = title.split(":")[0].replace(/Sub Indo|BD|- Nimegami/gi, "").trim();
+            epName = `${baseAnimeName} Episode ${epNum} Sub Indo`;
           }
-        });
-
-        if (servers.length > 0) {
-          // Cari apakah resolusi sudah ada di episode aktif ini
-          let resGroup = currentEpisode.downloads.find(d => d.resolution.toLowerCase() === resolution.toLowerCase());
-          if (!resGroup) {
-            resGroup = { resolution: resolution, servers: [] };
-            currentEpisode.downloads.push(resGroup);
+          if (resMatch) {
+            resolution = resMatch[0];
           }
+        }
+      } catch (_) {}
 
-          // Masukkan server tanpa duplikat
-          servers.forEach(s => {
-            if (!resGroup.servers.some(existing => existing.url === s.url)) {
-              resGroup.servers.push(s);
-            }
+      // Metodologi 2: Fallback ke penelusuran elemen teks pembungkus jika nama dari URL tidak tersedia
+      if (!epName) {
+        const parentBoxText = $(el).closest(".list-download, .download, p, div").text().trim();
+        const epMatch = parentBoxText.match(/(?:Episode|Ep)\s*\d+|[^\n]+Episode \d+[^\n]*/i);
+        if (epMatch) {
+          epName = epMatch[0].trim();
+        }
+        const resMatch = parentBoxText.match(/(360p|480p|720p|1080p)/i);
+        if (resMatch) {
+          resolution = resMatch[0];
+        }
+      }
+
+      // Pastikan link valid dan memiliki grup episode
+      if (epName) {
+        if (!episodeMap.has(epName)) {
+          episodeMap.set(epName, new Map());
+        }
+
+        const resMap = episodeMap.get(epName);
+        if (!resMap.has(resolution)) {
+          resMap.set(resolution, []);
+        }
+
+        const servers = resMap.get(resolution);
+        if (!servers.some(s => s.url === href)) {
+          servers.push({
+            server: serverName,
+            url: href
           });
         }
       }
     });
 
-    // Pindahkan episode terakhir jika ada
-    if (currentEpisode && currentEpisode.downloads.length > 0) {
-      episodesList.push(currentEpisode);
-    }
+    // Format menjadi hirarki JSON terstruktur
+    const episodesList = [];
+    episodeMap.forEach((resMap, epTitle) => {
+      const downloads = [];
+      resMap.forEach((servers, resName) => {
+        downloads.push({
+          resolution: resName,
+          servers: servers
+        });
+      });
+
+      episodesList.push({
+        episode: epTitle,
+        downloads: downloads
+      });
+    });
 
     return {
       title,
@@ -138,7 +171,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime dengan link unduhan terstruktur per episode, resolusi, dan server secara presisi.";
+router.desc = "Mengambil detail anime dengan link unduhan terpisah per episode, resolusi, dan server secara presisi.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
