@@ -1,7 +1,7 @@
 /**
- * ✦ Nama Scrape : HD Video Upscaler / Enhancer (FFmpeg)
+ * ✦ Nama Scrape : HD Video Enhancer (Auto Aspect Ratio)
  * ✦ Author      : ArulzXD
- * ✦ Deskripsi   : Mengubah resolusi video menjadi Full HD (1080p) dan mengoptimalkan kualitas audio-video menggunakan fluent-ffmpeg.
+ * ✦ Deskripsi   : Meningkatkan kualitas video ke HD (1080p) dengan mempertahankan aspek rasio asli video (16:9, 9:16, 1:1, dll).
  */
 
 const express = require("express");
@@ -27,11 +27,11 @@ async function processHdVideo(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .outputOptions([
-        "-vf scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2", // Rescale ke 1080p tanpa merusak rasio
+        // Menyesuaikan sisi terpanjang ke 1080px & skala otomatis menjaga rasio asli (16:9, 9:16, 1:1, dll)
+        "-vf scale='if(gt(iw,ih),1080,-2)':'if(gt(iw,ih),-2,1080)':force_original_aspect_ratio=decrease,trunc(iw/2)*2:trunc(ih/2)*2",
         "-c:v libx264",         // Codec Video H.264
         "-preset fast",         // Kecepatan enkoding
-        "-crf 20",              // Constant Rate Factor (kualitas tinggi, makin kecil makin bagus)
-        "-b:v 4500k",           // Bitrate video target HD
+        "-crf 18",              // Kualitas HD lebih tajam
         "-c:a aac",             // Codec Audio AAC
         "-b:a 192k",            // Bitrate audio HD
         "-pix_fmt yuv420p",     // Format piksel universal
@@ -88,11 +88,11 @@ router.post("/", upload.single("fileupload"), async (req, res) => {
   }
 });
 
-router.desc = "Meningkatkan kualitas video menjadi Full HD (1080p) menggunakan FFmpeg.";
+router.desc = "Meningkatkan kualitas video ke HD dengan otomatis mempertahankan aspek rasio asli (16:9, 9:16, 1:1, dll).";
 router.paramsConfig = {
   fileupload: {
     type: "file",
-    desc: "Berkas video yang akan ditingkatkan menjadi HD (max 100MB)"
+    desc: "Berkas video yang akan ditingkatkan kualitasnya (max 100MB)"
   }
 };
 router.status = "ready";
