@@ -10,6 +10,7 @@
     "@napi-rs/canvas": "^1.0.5",
     "@google/genai": "^2.16.0",
     "axios": "^1.19.0",
+    "axios-cookiejar-support": "^7.0.0",
     "cheerio": "^1.2.0",
     "bcryptjs": "^2.4.3",
     "bcrypt": "^6.0.0",
