@@ -22,21 +22,37 @@ class NimegamiDetail {
     const $ = cheerio.load(html);
 
     const title = $("h1.entry-title, h2.entry-title").text().trim() || $("title").text().trim();
-    const synopsis = $(".entry-content p").first().text().trim();
-    const poster = $(".entry-content img").first().attr("src") || "";
+    
+    // Ambil sinopsis dari paragraf pertama entry-content yang bukan metadata
+    let synopsis = "";
+    $(".entry-content p").each((_, el) => {
+      const text = $(el).text().trim();
+      if (text && !text.includes("Judul") && !text.includes("Japanese") && !synopsis) {
+        synopsis = text;
+      }
+    });
+
+    const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
 
     const episodes = [];
+    const seenUrls = new Set();
 
-    // Mengambil daftar episode dari elemen link/list yang mengarah ke halaman episode
-    $(".list-eps a, .eps-list a, .entry-content ul li a").each((_, el) => {
-      const epTitle = $(el).text().trim();
-      const epUrl = $(el).attr("href");
+    // 1. Coba tangkap link per episode jika berupa batch/list di dalam tabel/box download
+    $(".download, .mctnx, .entry-content, .list-eps").find("a").each((_, el) => {
+      const href = $(el).attr("href");
+      const text = $(el).text().trim();
 
-      if (epUrl && epUrl.includes("nimegami") && epTitle) {
-        episodes.push({
-          title: epTitle,
-          url: epUrl
-        });
+      if (href && text) {
+        // Filter agar mengambil link episode/server dan menghindari link eksternal atau nav utama
+        const isEpisodeLink = /episode|\bep\b|\b\d{1,3}\b/i.test(text) || href.includes("nimegami.id");
+        
+        if (!seenUrls.has(href) && !href.includes("#") && !href.endsWith("nimegami.id/")) {
+          seenUrls.add(href);
+          episodes.push({
+            title: text,
+            url: href
+          });
+        }
       }
     });
 
@@ -79,7 +95,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Mengambil detail anime beserta daftar link episodenya.";
+router.desc = "Mengambil detail anime beserta seluruh daftar link episode/download yang tersedia.";
 router.paramsConfig = {
   url: "text (wajib, URL detail anime dari Nimegami)"
 };
