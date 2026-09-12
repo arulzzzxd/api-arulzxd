@@ -32,7 +32,7 @@ class NimegamiDetail {
       }
     });
 
-    const poster = $(".entry-content img").first().attr("src") || $(".post-thumbnail img").attr("src") || "";
+    const poster = $el.find("img").attr("src");
 
     const episodeMap = new Map();
 
