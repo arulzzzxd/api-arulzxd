@@ -2935,52 +2935,60 @@ app.get('/docs', (req, res) => {
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
     <style>
     :root {
-        --cyan-accent: #06b6d4;
-        --cyan-glow: rgba(6, 182, 212, 0.15);
-        --bg-dark: #090d16;
-        --card-bg: rgba(15, 23, 42, 0.6);
-        --border-color: rgba(51, 65, 85, 0.5);
+        --accent: #6366f1;
+        --accent-hover: #4f46e5;
+        --bg-main: #0f172a;
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
     }
 
     html.light {
-        --cyan-accent: #0284c7;
-        --cyan-glow: rgba(2, 132, 199, 0.1);
-        --bg-dark: #f8fafc;
-        --card-bg: rgba(255, 255, 255, 0.9);
-        --border-color: rgba(203, 213, 225, 0.8);
+        --accent: #4f46e5;
+        --accent-hover: #4338ca;
+        --bg-main: #f8fafc;
+        --card-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
     }
 
     html { scroll-behavior: smooth; }
     
     body {
         transition: background-color 0.2s ease, color 0.2s ease;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: var(--bg-dark);
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-main);
     }
 
     .code-font { font-family: 'JetBrains Mono', monospace; }
 
-    /* Lightweight Minimal Card */
+    /* Ultra Modern Clean SaaS Card */
     .glass-panel {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
-        border-radius: 14px;
-        transition: border-color 0.2s ease, transform 0.2s ease;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     
     .glass-panel:hover {
-        border-color: rgba(6, 182, 212, 0.4);
+        border-color: #475569;
+    }
+    .light-mode .glass-panel:hover {
+        border-color: #cbd5e1;
     }
 
     .light-mode { color: #0f172a !important; }
     .light-mode #mainTitle { color: #0f172a !important; }
     .light-mode #mainDescription { color: #475569 !important; }
-    .light-mode #stat-battery-title,
     .light-mode #stat-endpoints-title,
     .light-mode #stat-categories-title { color: #64748b !important; }
     .light-mode #siteFooter { color: #94a3b8 !important; border-color: #e2e8f0; }
@@ -2995,7 +3003,7 @@ app.get('/docs', (req, res) => {
     .light-mode .music-progress-bar-bg { background-color: #e2e8f0 !important; }
     
     .light-mode .music-btn-nav {
-        background-color: #f8fafc !important;
+        background-color: #f1f5f9 !important;
         border-color: #cbd5e1 !important;
         color: #334155 !important;
     }
@@ -3006,8 +3014,8 @@ app.get('/docs', (req, res) => {
     .light-mode .api-item .bg-slate-950\/40,
     .light-mode .api-item .bg-slate-900\/40,
     .light-mode .api-item .bg-slate-900\/60 {
-        background-color: #f1f5f9 !important;
-        border-color: #cbd5e1 !important;
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
     }
     .light-mode .api-item input[type="text"] {
         background-color: #ffffff !important;
@@ -3015,7 +3023,7 @@ app.get('/docs', (req, res) => {
         border-color: #cbd5e1 !important;
     }
     .light-mode .api-item input[type="text"]::placeholder { color: #94a3b8 !important; }
-    .light-mode .api-item code { color: #0284c7 !important; }
+    .light-mode .api-item code { color: #4f46e5 !important; }
     
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
@@ -3024,52 +3032,53 @@ app.get('/docs', (req, res) => {
         padding: 4px 10px;
         border-radius: 6px;
         background-color: transparent;
-        color: #94a3b8;
-        transition: all 0.2s ease;
+        color: var(--text-muted);
+        transition: all 0.15s ease;
     }
     .lang-btn.active {
-        background-color: #06b6d4;
-        color: #090d16;
+        background-color: var(--accent);
+        color: #ffffff;
     }
 
     .filter-btn {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
         padding: 6px 14px;
         border: 1px solid var(--border-color);
         background: var(--card-bg);
-        color: #94a3b8;
-        transition: all 0.2s ease;
-        border-radius: 10px;
+        color: var(--text-muted);
+        transition: all 0.15s ease;
+        border-radius: 9999px;
         white-space: nowrap;
         cursor: pointer;
     }
     .filter-btn:hover {
-        background: rgba(6, 182, 212, 0.1);
-        color: #06b6d4;
-        border-color: rgba(6, 182, 212, 0.4);
+        background: rgba(99, 102, 241, 0.08);
+        color: #6366f1;
+        border-color: rgba(99, 102, 241, 0.3);
     }
     .filter-btn.active {
-        background-color: #06b6d4 !important;
-        color: #090d16 !important;
-        border-color: #06b6d4 !important;
-        font-weight: 700;
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+        border-color: #6366f1 !important;
+        font-weight: 600;
     }
     
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Ultra Lightweight Loader Overlay */
+    /* Fast & Lightweight Loader Overlay */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background-color: #090d16;
+        background-color: #0f172a;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     #cyber-loader-overlay.fade-out {
@@ -3078,12 +3087,13 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    .loader-spinner {
-        width: 44 h-44;
-        border: 3px solid rgba(6, 182, 212, 0.15);
-        border-top-color: #06b6d4;
+    .clean-spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid #334155;
+        border-top-color: #6366f1;
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        animation: spin 0.6s linear infinite;
     }
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -3091,7 +3101,7 @@ app.get('/docs', (req, res) => {
     .animated-dots::after {
         content: '';
         display: inline-block;
-        width: 1.2em;
+        width: 1em;
         text-align: left;
         animation: dotsAnimation 1.5s steps(4, end) infinite;
     }
@@ -3102,52 +3112,51 @@ app.get('/docs', (req, res) => {
         75% { content: '...'; }
     }
 
-    .clean-progress-bar {
-        background: #06b6d4;
+    .saas-progress-bar {
+        background: #6366f1;
         transition: width 0.2s ease-out;
     }
 
     .modal-box {
-        background-color: #0f172a;
-        border: 1px solid rgba(6, 182, 212, 0.3);
+        background-color: #1e293b;
+        border: 1px solid #334155;
         border-radius: 20px;
     }
 
-    .btn-cyan-solid {
-        background: #06b6d4;
-        color: #090d16;
-        font-weight: 700;
-        transition: opacity 0.2s ease;
+    .btn-indigo {
+        background: #6366f1;
+        color: #ffffff;
+        font-weight: 600;
+        transition: background-color 0.15s ease;
     }
-    .btn-cyan-solid:hover { opacity: 0.9; }
+    .btn-indigo:hover { background: #4f46e5; }
 
     </style>
 </head>
-<body class="min-h-screen antialiased text-slate-200 relative">
+<body class="min-h-screen antialiased text-slate-100 relative">
 
-<!-- Lightweight Minimal Loader -->
+<!-- Lightweight SaaS Loader -->
 <div id="cyber-loader-overlay">
-    <div class="relative w-16 h-16 mb-4 flex items-center justify-center">
-        <div class="loader-spinner w-full h-full"></div>
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-full absolute object-cover">
+    <div class="mb-4">
+        <div class="clean-spinner"></div>
     </div>
 
     <div class="text-center px-4">
-        <div id="loader-title-text" class="text-xs font-bold tracking-widest uppercase text-cyan-400 code-font mb-1">
+        <div id="loader-title-text" class="text-xs font-semibold tracking-wide text-slate-200 code-font mb-1">
             Memuat Halaman<span class="animated-dots"></span>
         </div>
-        <div class="text-[10px] text-slate-500 font-mono tracking-wider">
-            SYSTEM INITIALIZING
+        <div class="text-[10px] text-slate-400 font-mono">
+            API SYSTEM READY
         </div>
     </div>
 
-    <div class="w-56 sm:w-64 mt-5">
-        <div class="flex items-center justify-between text-[11px] font-bold code-font mb-1.5">
-            <span class="text-slate-500 text-[9px]">STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-xs font-mono font-bold">0%</span>
+    <div class="w-48 sm:w-56 mt-4">
+        <div class="flex items-center justify-between text-[10px] font-medium code-font mb-1">
+            <span class="text-slate-400">Loading</span>
+            <span id="loader-percentage" class="text-indigo-400 font-bold">0%</span>
         </div>
-        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-            <div id="loader-progress-fill" class="h-full rounded-full clean-progress-bar w-0"></div>
+        <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div id="loader-progress-fill" class="h-full rounded-full saas-progress-bar w-0"></div>
         </div>
     </div>
 </div>
@@ -3156,39 +3165,39 @@ app.get('/docs', (req, res) => {
 
 <!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/75"></div>
+  <div class="fixed inset-0 bg-slate-950/70"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="modal-box w-full max-w-sm sm:max-w-md relative p-6 text-slate-100 light-mode:bg-white light-mode:text-slate-900 shadow-2xl">
+    <div class="modal-box w-full max-w-sm sm:max-w-md relative p-6 text-slate-100 light-mode:bg-white light-mode:text-slate-900 shadow-xl">
       
-      <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors bg-slate-800/60 light-mode:bg-slate-100 rounded-full p-1.5 focus:outline-none border border-slate-700">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors bg-slate-800 light-mode:bg-slate-100 rounded-full p-1.5 focus:outline-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
       
       <div class="text-center mb-4">
-        <h1 class="text-xl font-bold text-white light-mode:text-slate-900 tracking-wide font-mono">
-          Welcome to <span class="text-cyan-400">Arulz-XD API</span>
+        <h1 class="text-lg font-bold text-white light-mode:text-slate-900 tracking-tight">
+          Welcome to <span class="text-indigo-400">Arulz-XD API</span>
         </h1>
       </div>
       
-      <div class="mb-4 rounded-xl overflow-hidden border border-slate-800 light-mode:border-slate-200 bg-slate-950">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
+      <div class="mb-4 rounded-xl overflow-hidden border border-slate-700 light-mode:border-slate-200 bg-slate-900">
+        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-40" />
       </div>
       
-      <div class="text-center text-slate-400 light-mode:text-slate-600 text-xs mb-5 leading-relaxed">
-        <p>Halo! 👋 Selamat datang di Arulz-XD API. API ini dibuat untuk membantu developer dengan berbagai fitur yang terus diperbarui. Silakan gunakan API Key di bawah ini.</p>
+      <div class="text-center text-slate-300 light-mode:text-slate-600 text-xs mb-5 leading-relaxed">
+        <p>Halo! 👋 Selamat datang di Arulz-XD API. API ini siap membantu kebutuhan backend aplikasi kamu dengan performa cepat.</p>
       </div>
       
       <div class="mb-5 flex justify-center">
-        <div class="bg-slate-900 border border-slate-800 rounded-lg py-2 px-4 text-center">
-          <span class="font-semibold text-xs text-slate-300 light-mode:text-slate-700 font-mono">
-            apikey : <span id="welcomeApiKey" class="text-cyan-400 font-bold select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
+        <div class="bg-slate-900 border border-slate-700 rounded-lg py-2 px-4 text-center">
+          <span class="font-medium text-xs text-slate-300 light-mode:text-slate-700 font-mono">
+            apikey : <span id="welcomeApiKey" class="text-indigo-400 font-bold select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
       
-      <a href="/support" class="w-full btn-cyan-solid py-2.5 px-4 rounded-xl text-xs block text-center uppercase tracking-wider font-bold">
+      <a href="/support" class="w-full btn-indigo py-2.5 px-4 rounded-xl text-xs block text-center tracking-wide font-semibold">
         Donate Sekarang
       </a>
     </div>
@@ -3197,18 +3206,18 @@ app.get('/docs', (req, res) => {
     
 <!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-slate-950/80" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
     
-    <div class="w-full max-w-[400px] modal-box p-6 relative font-mono text-slate-200 my-auto shadow-2xl">
+    <div class="w-full max-w-[380px] modal-box p-5 relative font-sans text-slate-200 my-auto shadow-2xl">
         
-        <div class="flex items-center gap-4 mb-5">
-            <div class="relative w-16 h-16 flex-shrink-0">
+        <div class="flex items-center gap-3.5 mb-4">
+            <div class="relative w-14 h-14 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover border-2 border-cyan-400">
-                    <div class="absolute bottom-0 right-0 bg-slate-900 text-cyan-400 p-1 rounded-full border border-cyan-400">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover border border-slate-600">
+                    <div class="absolute bottom-0 right-0 bg-slate-800 text-slate-300 p-1 rounded-full border border-slate-600">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
                         </svg>
                     </div>
@@ -3216,56 +3225,56 @@ app.get('/docs', (req, res) => {
             </div>
 
             <div class="flex-1 min-w-0">
-                <div id="userName" class="text-sm font-bold text-cyan-400 truncate">loading...</div>
-                <div id="userEmail" class="text-[11px] text-slate-400 truncate mt-0.5">loading_email@gmail.com</div>
+                <div id="userName" class="text-sm font-semibold text-white truncate">loading...</div>
+                <div id="userEmail" class="text-xs text-slate-400 truncate">loading_email@gmail.com</div>
                 <div class="mt-1">
-                    <span id="userPlanText" class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">FREE</span>
+                    <span id="userPlanText" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-mono">FREE</span>
                 </div>
             </div>
         </div>
 
         <!-- Section 1: Api Key Kamu -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 mb-3">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Api Key Kamu :</div>
-            <div id="userApiKey" class="text-cyan-400 text-xs font-bold truncate mb-2">loading-key</div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mb-3">
+            <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">API KEY</div>
+            <div id="userApiKey" class="text-indigo-400 text-xs font-mono font-bold truncate mb-2">loading-key</div>
 
             <div id="vipCustomKeyBox" class="hidden mb-2">
                 <div class="flex gap-1.5">
                     <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200">
-                    <button onclick="saveCustomApiKey()" class="btn-cyan-solid text-[10px] px-2.5 rounded-lg uppercase">Simpan</button>
+                    <button onclick="saveCustomApiKey()" class="btn-indigo text-[10px] px-2.5 rounded-lg uppercase">Simpan</button>
                 </div>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full btn-cyan-solid text-xs py-1.5 rounded-lg uppercase tracking-wider">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full btn-indigo text-xs py-1.5 rounded-lg uppercase tracking-wide font-medium">
                 SALIN API KEY
             </button>
         </div>
 
         <!-- Section 2: Limit User -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 mb-3 text-center">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">LIMIT USER</div>
-            <div class="text-sm font-bold text-cyan-400">
-                <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mb-3 text-center">
+            <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-1">LIMIT USER</div>
+            <div class="text-sm font-bold text-white font-mono">
+                <span id="popupLimitUsed" class="text-indigo-400">0</span> / <span id="popupLimitMax" class="text-slate-400">100</span>
             </div>
         </div>
 
         <!-- Section 3: Request API Terakhir -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 mb-4">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">AKTIFITAS REQUEST TERAKHIR</div>
-            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto text-[10px]">
-                <div class="text-slate-500 text-center py-1">belum ada request</div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 mb-4">
+            <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-2">AKTIVITAS TERAKHIR</div>
+            <div id="activityLogsContainer" class="space-y-1 max-h-32 overflow-y-auto text-[10px]">
+                <div class="text-slate-500 text-center py-1 font-mono">belum ada request</div>
             </div>
         </div>
 
         <!-- Buttons Footer -->
         <div class="flex gap-2">
-            <a href="/upgrade-apikey" class="flex-1 btn-cyan-solid text-xs py-2 rounded-xl text-center uppercase tracking-wider">
+            <a href="/upgrade-apikey" class="flex-1 btn-indigo text-xs py-2 rounded-xl text-center uppercase tracking-wide font-medium">
                 UPGRADE
             </a>
-            <button onclick="closeProfilePopup()" class="flex-1 border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs py-2 rounded-xl uppercase">
+            <button onclick="closeProfilePopup()" class="flex-1 border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs py-2 rounded-xl uppercase font-medium">
                 TUTUP
             </button>
-            <a href="/auth/logout" class="border border-red-900/50 bg-red-950/30 text-red-400 hover:bg-red-900/50 font-bold text-xs px-3 py-2 rounded-xl flex items-center justify-center">
+            <a href="/auth/logout" class="border border-red-900/40 bg-red-950/20 text-red-400 hover:bg-red-900/40 text-xs px-3 py-2 rounded-xl flex items-center justify-center font-medium">
                 LOG OUT
             </a>
         </div>
@@ -3277,24 +3286,24 @@ app.get('/docs', (req, res) => {
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
     <!-- Header Actions -->
-    <div class="fixed top-6 right-6 z-40 flex items-center gap-3">
-        <button id="bioMenuBtn" class="flex items-center justify-center w-10 h-10 rounded-xl glass-panel text-slate-300 hover:text-white transition-all focus:outline-none">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div class="fixed top-5 right-5 z-40 flex items-center gap-2">
+        <button id="bioMenuBtn" class="flex items-center justify-center w-9 h-9 rounded-xl glass-panel text-slate-300 hover:text-white transition-all focus:outline-none">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
     </div>
 
     <!-- Sidebar Dropdown -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-64 bg-[#090d16] border-l border-slate-800 transform translate-x-full transition-transform duration-200 ease-in-out z-50 flex flex-col p-5 light-mode:bg-white light-mode:border-slate-200">
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex gap-1 border border-slate-800 rounded-lg p-0.5 bg-slate-950">
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-60 bg-[#0f172a] border-l border-slate-800 transform translate-x-full transition-transform duration-200 ease-in-out z-50 flex flex-col p-4 light-mode:bg-white light-mode:border-slate-200">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex gap-1 border border-slate-800 rounded-lg p-0.5 bg-slate-900">
                 <button id="lang-id" class="lang-btn active" onclick="setLanguage('id')">ID</button>
                 <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
             </div>
             
-            <div class="flex items-center gap-2">
-                <button id="themeToggle" class="p-2 rounded-lg border border-slate-800 bg-slate-900 text-cyan-400 light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:text-slate-900">
+            <div class="flex items-center gap-1.5">
+                <button id="themeToggle" class="p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:text-slate-900">
                     <svg id="theme-toggle-dark-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                     </svg>
@@ -3303,7 +3312,7 @@ app.get('/docs', (req, res) => {
                     </svg>
                 </button>
 
-                <button id="closeMenuBtn" class="text-slate-400 hover:text-white p-2 border border-slate-800 rounded-lg bg-slate-900">
+                <button id="closeMenuBtn" class="text-slate-400 hover:text-white p-1.5 border border-slate-800 rounded-lg bg-slate-900">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -3313,154 +3322,154 @@ app.get('/docs', (req, res) => {
 
         ${req.user ? `
         <div class="mb-4">
-            <button onclick="openProfilePopup()" class="w-full flex items-center gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-all text-left">
-                <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-cyan-400 object-cover">
+            <button onclick="openProfilePopup()" class="w-full flex items-center gap-2.5 bg-slate-900 p-2 rounded-xl border border-slate-800 hover:border-slate-700 transition-all text-left">
+                <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-7 h-7 rounded-full border border-slate-700 object-cover">
                 <div class="flex flex-col min-w-0 flex-1">
-                    <span class="text-[9px] text-cyan-400 font-mono uppercase">User Profile</span>
-                    <span class="truncate text-white font-bold text-xs">${req.user.username}</span>
+                    <span class="text-[9px] text-indigo-400 font-mono">PROFILE</span>
+                    <span class="truncate text-white font-medium text-xs">${req.user.username}</span>
                 </div>
             </button>
         </div>
         ` : `
         <div class="mb-4">
-            <a href="/login" class="w-full btn-cyan-solid py-2.5 rounded-xl text-xs block text-center uppercase tracking-wider">
-                Masuk ke Akun
+            <a href="/login" class="w-full btn-indigo py-2 rounded-xl text-xs block text-center uppercase tracking-wide font-semibold">
+                Masuk Akun
             </a>
         </div>
         `}
 
         <nav class="flex flex-col gap-1 text-xs font-medium text-slate-300 flex-1 overflow-y-auto scrollbar-hide">
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-1 pb-1 font-mono uppercase">Pages</div>
+            <div class="text-[10px] font-semibold text-slate-500 px-2 pt-1 pb-1 uppercase font-mono tracking-wider">Pages</div>
 
-            <a href="/" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <a href="/" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 <span>Dashboard</span>
             </a>
 
-            <a href="/docs" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <a href="/docs" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span>Docs</span>
             </a>
 
-            <a href="/store" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <a href="/store" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                 <span>Store</span>
             </a>
 
-            <a href="/changelog" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <a href="/changelog" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span>Changelog</span>
             </a>
 
-            <a href="/uploader" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <a href="/uploader" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span>Uploader</span>
             </a>
 
-            <a href="/pastecode" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            <a href="/pastecode" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
                 <span>Pastecode</span>
             </a>
 
-            <a href="/feedback" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <a href="/feedback" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 <span>Feedback</span>
             </a>
 
-            <a href="/status" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <a href="/status" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <span>Stats / Status</span>
             </a>
 
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 font-mono uppercase">Legal</div>
+            <div class="text-[10px] font-semibold text-slate-500 px-2 pt-2 pb-1 uppercase font-mono tracking-wider">Legal</div>
 
-            <a href="/privacy" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <a href="/privacy" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 <span>Privacy Policy</span>
             </a>
 
-            <a href="/support" class="menu-link flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <a href="/support" class="menu-link flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 <span>Support</span>
             </a>
         </nav>
     </div>
 
-    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30 transition-opacity"></div>
+    <div id="menuOverlay" class="fixed inset-0 bg-slate-950/50 hidden z-30 transition-opacity"></div>
 
     <div class="max-w-4xl mx-auto px-4 py-8 relative z-10">
         <header id="api" class="mb-8 text-center">
-            <div class="inline-flex items-center gap-2 bg-cyan-950/60 text-cyan-400 border border-cyan-800/60 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-4 font-mono">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> SYSTEM ONLINE
+            <div class="inline-flex items-center gap-2 bg-emerald-950/50 text-emerald-400 border border-emerald-800/50 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide mb-4 font-mono">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ALL SYSTEMS OPERATIONAL
             </div>
             
-            <div id="mainTitle" class="flex justify-center mb-2 min-h-[44px] items-center text-3xl md:text-4xl font-extrabold tracking-tight text-white">
-                <img src="https://readme-typing-svg.demolab.com?font=Plus+Jakarta+Sans&weight=700&size=26&pause=1000&color=06B6D4&center=true&vCenter=true&width=500&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services" alt="Typing SVG" class="mx-auto" />
+            <div id="mainTitle" class="flex justify-center mb-2 min-h-[40px] items-center text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+                <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=26&pause=1000&color=6366F1&center=true&vCenter=true&width=500&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services" alt="Typing SVG" class="mx-auto" />
             </div>
-            <p id="mainDescription" class="text-xs md:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
-              Jelajahi, uji, dan jalankan request secara langsung ke endpoint aktif.
+            <p id="mainDescription" class="text-xs md:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+              Jelajahi, uji, dan integrasikan berbagai endpoint API dengan performa tinggi.
             </p>
 
             <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="glass-panel p-3.5 text-center">
-                    <div id="liveClock" class="text-lg font-bold text-cyan-400 font-mono">00:00:00</div>
-                    <div id="liveDate" class="text-[9px] font-medium text-slate-500 mt-0.5 uppercase font-mono">Loading...</div>
+                <div class="glass-panel p-3 text-center">
+                    <div id="liveClock" class="text-base font-bold text-indigo-400 font-mono">00:00:00</div>
+                    <div id="liveDate" class="text-[9px] font-medium text-slate-400 mt-0.5 uppercase font-mono">Loading...</div>
                 </div>
                 
-                <div class="glass-panel p-3.5 text-center">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Limit Terpakai</span>
+                <div class="glass-panel p-3 text-center">
+                    <span class="text-[10px] font-medium uppercase tracking-wider text-slate-400 font-mono">Limit Terpakai</span>
                     <div class="flex items-baseline justify-center gap-1 mt-0.5 font-mono">
-                        <span id="userLimitUsed" class="text-lg font-bold text-cyan-400">0</span>
-                        <span class="text-slate-600 text-xs">/</span>
-                        <span id="userLimitMax" class="text-xs text-slate-500">100</span>
+                        <span id="userLimitUsed" class="text-base font-bold text-white">0</span>
+                        <span class="text-slate-500 text-xs">/</span>
+                        <span id="userLimitMax" class="text-xs text-slate-400">100</span>
                     </div>
                 </div>
                 
-                <div class="glass-panel p-3.5 text-center">
-                    <span id="stat-endpoints-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Endpoints</span>
-                    <div id="totalEndpoints" class="text-lg font-bold text-cyan-400 mt-0.5 font-mono">0</div>
+                <div class="glass-panel p-3 text-center">
+                    <span id="stat-endpoints-title" class="text-[10px] font-medium uppercase tracking-wider text-slate-400 font-mono">Endpoints</span>
+                    <div id="totalEndpoints" class="text-base font-bold text-white mt-0.5 font-mono">0</div>
                 </div>
                 
-                <div class="glass-panel p-3.5 text-center">
-                    <span id="stat-categories-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Kategori</span>
-                    <div id="totalCategories" class="text-lg font-bold text-cyan-400 mt-0.5 font-mono">0</div>
+                <div class="glass-panel p-3 text-center">
+                    <span id="stat-categories-title" class="text-[10px] font-medium uppercase tracking-wider text-slate-400 font-mono">Kategori</span>
+                    <div id="totalCategories" class="text-base font-bold text-white mt-0.5 font-mono">0</div>
                 </div>
             </div>
 
             <div class="glass-panel mt-3 p-3 flex flex-col sm:flex-row items-center justify-between gap-2">
-                <div class="flex items-center gap-2 text-xs text-cyan-400 font-mono">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                    <span class="underline">https://arulz-xd.my.id</span>
+                <div class="flex items-center gap-2 text-xs text-slate-300 font-mono">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    <span>https://arulz-xd.my.id</span>
                 </div>
-                <a href="/feedback" class="w-full sm:w-auto px-4 py-1.5 btn-cyan-solid text-[11px] uppercase rounded-lg text-center font-mono">
+                <a href="/feedback" class="w-full sm:w-auto px-3.5 py-1.5 btn-indigo text-[11px] rounded-lg text-center font-medium">
                     Request Feature
                 </a>
             </div>
 
             <div class="flex justify-center gap-3 mt-3">
-                <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex-1 glass-panel py-2.5 text-xs font-semibold text-slate-300 hover:text-cyan-400 transition-colors text-center font-mono">
+                <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex-1 glass-panel py-2 text-xs font-medium text-slate-300 hover:text-white transition-colors text-center font-sans">
                    Channel WhatsApp
                 </a>
-                <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" target="_blank" class="flex-1 glass-panel py-2.5 text-xs font-semibold text-slate-300 hover:text-cyan-400 transition-colors text-center font-mono">
+                <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" target="_blank" class="flex-1 glass-panel py-2 text-xs font-medium text-slate-300 hover:text-white transition-colors text-center font-sans">
                    Group WhatsApp
                 </a>
             </div>
 
             <!-- Music Player -->
-            <div class="music-player-card glass-panel mt-4 rounded-xl p-3.5 relative overflow-hidden">
+            <div class="music-player-card glass-panel mt-4 rounded-xl p-3 relative overflow-hidden">
                 <audio id="audioElement"></audio>
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <img id="musicCoverImg" src="" alt="Cover" class="w-11 h-11 rounded-lg bg-slate-900 object-cover flex-shrink-0 border border-slate-700">
+                        <img id="musicCoverImg" src="" alt="Cover" class="w-10 h-10 rounded-lg bg-slate-900 object-cover flex-shrink-0 border border-slate-700">
                         <div class="flex-1 min-w-0 text-left">
-                            <h3 id="musicTitle" class="music-text-title text-white font-bold text-xs truncate m-0 font-mono">Loading...</h3>
+                            <h3 id="musicTitle" class="music-text-title text-white font-medium text-xs truncate m-0">Loading...</h3>
                             <p id="musicArtist" class="music-text-artist text-slate-400 text-[10px] truncate mt-0.5">-</p>
-                            <div class="flex items-center gap-2 mt-1.5">
-                                <span id="currentTime" class="text-[9px] text-cyan-400 font-mono">0:00</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span id="currentTime" class="text-[9px] text-slate-400 font-mono">0:00</span>
                                 <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1 bg-slate-800 rounded-full relative cursor-pointer">
-                                    <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0"></div>
+                                    <div id="progressBar" class="h-full bg-indigo-500 rounded-full w-0"></div>
                                 </div>
-                                <span id="totalDuration" class="text-[9px] text-slate-500 font-mono">0:00</span>
+                                <span id="totalDuration" class="text-[9px] text-slate-400 font-mono">0:00</span>
                             </div>
                         </div>
                     </div>
@@ -3468,7 +3477,7 @@ app.get('/docs', (req, res) => {
                         <button id="prevBtn" class="music-btn-nav w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:text-white">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                         </button>
-                        <button id="playBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-500 text-slate-950 font-bold">
+                        <button id="playBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center rounded-lg btn-indigo text-white">
                             <svg id="playIcon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </button>
                         <button id="nextBtn" class="music-btn-nav w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:text-white">
@@ -3489,32 +3498,32 @@ app.get('/docs', (req, res) => {
                 <input 
                     type="text" 
                     id="searchInput" 
-                    placeholder="Cari endpoint berdasarkan nama, path, atau kategori..."
-                    class="w-full px-4 py-3 pl-10 text-xs rounded-xl focus:outline-none focus:border-cyan-400 transition-all font-mono glass-panel text-white placeholder-slate-500 light-mode:text-slate-900"
+                    placeholder="Cari endpoint API..."
+                    class="w-full px-4 py-2.5 pl-10 text-xs rounded-xl focus:outline-none focus:border-indigo-500 transition-all font-sans glass-panel text-white placeholder-slate-500 light-mode:text-slate-900"
                 >
                 <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-3 justify-start md:justify-center overflow-x-auto pb-1 scrollbar-hide"></div>
+            <div id="categoryFilters" class="flex flex-wrap gap-1.5 mt-3 justify-start md:justify-center overflow-x-auto pb-1 scrollbar-hide"></div>
         </div>
 
-        <div id="noResults" class="text-center py-10 hidden">
-            <h3 id="no-results-title" class="text-xs font-bold mb-1 text-slate-300 font-mono uppercase">Endpoint tidak ditemukan</h3>
+        <div id="noResults" class="text-center py-8 hidden">
+            <h3 id="no-results-title" class="text-xs font-semibold mb-1 text-slate-300 uppercase font-mono">Endpoint tidak ditemukan</h3>
             <p id="no-results-desc" class="text-[11px] text-slate-500">Coba gunakan kata kunci lain</p>
         </div>
 
         <div id="apiList" class="space-y-3"></div>
 
-        <footer id="siteFooter" class="mt-12 pt-5 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono tracking-wider uppercase">
+        <footer id="siteFooter" class="mt-12 pt-4 border-t border-slate-800 text-center text-[10px] text-slate-500 font-mono uppercase">
             © Arulz-XD REST API
         </footer>
     </div>
 
-    <div id="imageLightbox" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 cursor-zoom-out">
+    <div id="imageLightbox" class="fixed inset-0 bg-slate-950/90 z-[100] hidden flex items-center justify-center p-4 cursor-zoom-out">
         <div class="relative max-w-3xl max-h-[90vh] flex items-center justify-center">
             <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg border border-slate-700 object-contain" />
-            <button id="closeLightbox" class="absolute -top-10 right-0 text-slate-400 hover:text-white focus:outline-none text-xs font-mono">
+            <button id="closeLightbox" class="absolute -top-8 right-0 text-slate-400 hover:text-white focus:outline-none text-xs font-mono">
                 ✕ Close
             </button>
         </div>
@@ -3693,11 +3702,11 @@ app.get('/docs', (req, res) => {
                         '<div class="bg-slate-950 px-2 py-1 rounded text-slate-300 font-mono border border-slate-800">' + logText + '</div>'
                     ).join('');
                 } else {
-                    container.innerHTML = '<div class="text-slate-500 text-center py-1">Belum ada aktivitas request</div>';
+                    container.innerHTML = '<div class="text-slate-500 text-center py-1 font-mono">Belum ada aktivitas request</div>';
                 }
             })
             .catch(err => {
-                container.innerHTML = '<div class="text-red-400 text-center py-1">Gagal memuat aktivitas</div>';
+                container.innerHTML = '<div class="text-red-400 text-center py-1 font-mono">Gagal memuat aktivitas</div>';
             });
         }
 
@@ -3761,18 +3770,18 @@ app.get('/docs', (req, res) => {
                         showWelcomePopup();
                     }, 150);
                 }
-            }, 250);
+            }, 200);
         }
 
         const progressInterval = setInterval(() => {
             if (currentProgress < 90) {
-                const increment = Math.random() * 20 + 10;
+                const increment = Math.random() * 25 + 15;
                 updateProgress(currentProgress + increment);
             }
-        }, 80);
+        }, 60);
 
         window.addEventListener('load', finishLoader);
-        setTimeout(finishLoader, 1000);
+        setTimeout(finishLoader, 800);
 </script>
 
 </body>
