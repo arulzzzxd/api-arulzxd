@@ -2935,40 +2935,59 @@ app.get('/docs', (req, res) => {
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
     <style>
     :root {
         --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.25);
-        --bg-dark: #030712;
+        --neon-glow: rgba(0, 243, 255, 0.5);
+        --bg-dark: #020617;
+        --bg-card: rgba(6, 182, 212, 0.04);
+        --border-color: rgba(0, 243, 255, 0.25);
     }
 
     html.light {
         --neon-cyan: #0284c7;
-        --neon-glow: rgba(2, 132, 199, 0.15);
+        --neon-glow: rgba(2, 132, 199, 0.3);
         --bg-dark: #f8fafc;
+        --bg-card: rgba(255, 255, 255, 0.9);
+        --border-color: rgba(2, 132, 199, 0.3);
     }
 
-    html { scroll-behavior: smooth; }
-    
-    #themeBg { transition: background-color 0.3s ease; }
-    body { transition: background 0.25s ease, color 0.25s ease; }
-    
+    html {
+        scroll-behavior: smooth;
+    }
+
+    #themeBg {
+        transition: background-color 0.3s ease, background-image 0.3s ease;
+    }
+    body {
+        transition: background 0.25s ease, color 0.25s ease;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Cyber Panel Glassmorphism */
     .glass-panel {
-        background: rgba(11, 19, 41, 0.7);
+        background: rgba(3, 10, 24, 0.75);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(0, 243, 255, 0.12);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(0, 243, 255, 0.08), inset 0 0 12px rgba(0, 243, 255, 0.05);
+        position: relative;
+    }
+    .glass-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        opacity: 0.6;
     }
     
     .light-mode .glass-panel {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(2, 132, 199, 0.25);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     }
 
@@ -2978,20 +2997,20 @@ app.get('/docs', (req, res) => {
     .light-mode #stat-battery-title,
     .light-mode #stat-endpoints-title,
     .light-mode #stat-categories-title { color: #475569 !important; }
-    .light-mode #siteFooter { color: #64748b !important; border-color: rgba(0,0,0,0.06); }
+    .light-mode #siteFooter { color: #64748b !important; border-color: rgba(0,0,0,0.08); }
     .light-mode #no-results-title { color: #0f172a !important; }
 
     .light-mode .music-player-card {
         background: #ffffff !important;
-        border-color: rgba(0, 0, 0, 0.08) !important;
+        border-color: rgba(2, 132, 199, 0.2) !important;
     }
     .light-mode .music-text-title { color: #0f172a !important; }
     .light-mode .music-text-artist { color: #475569 !important; }
-    .light-mode .music-progress-bar-bg { background-color: rgba(0,0,0,0.06) !important; }
+    .light-mode .music-progress-bar-bg { background-color: rgba(0,0,0,0.08) !important; }
     
     .light-mode .music-btn-nav {
         background-color: #ffffff !important;
-        border-color: rgba(0,0,0,0.08) !important;
+        border-color: rgba(2, 132, 199, 0.2) !important;
         color: #1e293b !important;
     }
     .light-mode .music-btn-nav:hover {
@@ -2999,6 +3018,7 @@ app.get('/docs', (req, res) => {
         color: #0f172a !important;
     }
 
+    /* Light Mode Form Fixes */
     .light-mode .api-item p.text-white,
     .light-mode .api-item p { color: #0f172a !important; }
     .light-mode .api-item .bg-slate-950\/40,
@@ -3020,46 +3040,53 @@ app.get('/docs', (req, res) => {
         font-size: 11px;
         font-weight: bold;
         padding: 4px 12px;
-        border: 1px solid #1e293b;
-        background-color: #0f172a;
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        background-color: #030a1c;
         color: #94a3b8;
         transition: all 0.2s ease;
     }
     .lang-btn.active {
-        background-color: #06b6d4;
+        background-color: #00f3ff;
         color: #020617;
-        border-color: #06b6d4;
+        border-color: #00f3ff;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
     }
 
     .filter-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         padding: 8px 16px;
-        border: 1px solid rgba(6, 182, 212, 0.15);
-        background: rgba(6, 182, 212, 0.04);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        background: rgba(3, 10, 26, 0.7);
         color: #94a3b8;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         border-radius: 12px;
         white-space: nowrap;
         cursor: pointer;
+        backdrop-filter: blur(4px);
     }
     .filter-btn:hover {
-        background: rgba(6, 182, 212, 0.12);
-        color: #e2e8f0;
+        background: rgba(0, 243, 255, 0.15);
+        color: #00f3ff;
+        border-color: rgba(0, 243, 255, 0.5);
+        box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
     }
     .filter-btn.active {
-        background-color: #06b6d4 !important;
+        background-color: #00f3ff !important;
         color: #020617 !important;
-        border-color: #06b6d4 !important;
-        font-weight: bold;
-        box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+        border-color: #00f3ff !important;
+        font-weight: 800;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
     }
     .light-mode .filter-btn {
-        border-color: rgba(15, 23, 42, 0.08);
-        background: rgba(15, 23, 42, 0.03);
+        border-color: rgba(2, 132, 199, 0.2);
+        background: rgba(241, 245, 249, 0.8);
         color: #475569;
     }
-    .light-mode .filter-btn:hover { background: rgba(15, 23, 42, 0.06); }
+    .light-mode .filter-btn:hover {
+        background: rgba(2, 132, 199, 0.1);
+        color: #0284c7;
+    }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -3067,13 +3094,13 @@ app.get('/docs', (req, res) => {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background-color: var(--bg-dark);
+        background-color: #010613;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
     }
 
     #cyber-loader-overlay.fade-out {
@@ -3082,10 +3109,24 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
+    .scanner-beam {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 300%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.08), transparent);
+        animation: scanAnimation 4s infinite linear;
+    }
+    @keyframes scanAnimation {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+
     .hud-ring {
         position: relative;
-        width: 110px;
-        height: 110px;
+        width: 140px;
+        height: 140px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -3097,99 +3138,143 @@ app.get('/docs', (req, res) => {
         inset: 0;
         border-radius: 50%;
         border: 2px dashed var(--neon-cyan);
-        opacity: 0.6;
+        opacity: 0.7;
         animation: spinClockwise 10s linear infinite;
+        box-shadow: 0 0 20px var(--neon-glow);
     }
 
     .ring-middle {
         position: absolute;
-        inset: 8px;
+        inset: 10px;
         border-radius: 50%;
         border: 2px solid transparent;
         border-top-color: var(--neon-cyan);
         border-bottom-color: var(--neon-cyan);
-        animation: spinCounterClockwise 4s linear infinite;
+        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    }
+
+    .ring-inner {
+        position: absolute;
+        inset: 22px;
+        border-radius: 50%;
+        border: 1.5px dotted var(--neon-cyan);
+        opacity: 0.85;
+        animation: spinClockwise 6s linear infinite;
     }
 
     .hud-avatar {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid var(--neon-cyan);
+        box-shadow: 0 0 25px var(--neon-cyan);
         z-index: 10;
     }
 
     @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
     @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
 
+    .animated-dots::after {
+        content: '';
+        display: inline-block;
+        width: 1.5em;
+        text-align: left;
+        animation: dotsAnimation 1.5s steps(4, end) infinite;
+    }
+    @keyframes dotsAnimation {
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+    }
+
     .neon-progress-bar {
-        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
+        background: linear-gradient(90deg, #00f3ff, #3b82f6);
+        box-shadow: 0 0 15px var(--neon-cyan);
         transition: width 0.15s ease-out;
     }
 
     .cyber-popup-bg {
-      background-color: #010811;
-      background-image: radial-gradient(circle at 50% 30%, #031e36 0%, #010811 80%);
+        background-color: #010a17;
+        background-image: radial-gradient(circle at 50% 30%, #032545 0%, #010a17 85%);
     }
 
     .double-border-cyan {
-      background: #010d18;
-      border: 1px solid #00f3ff;
-      border-radius: 16px;
-      box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+        background: #021124;
+        border: 1.5px solid #00f3ff;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.25), inset 0 0 15px rgba(0, 243, 255, 0.05);
     }
 
     .cyber-pill-capsule {
-      background: #010a14;
-      border: 1px solid #00f3ff;
-      border-radius: 9999px;
+        background: #010d1c;
+        border: 1.5px solid #00f3ff;
+        border-radius: 9999px;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.25), inset 0 0 8px rgba(0, 243, 255, 0.2);
     }
 
     .gold-metallic-button {
-      background: linear-gradient(180deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-      border: 1px solid #fef08a;
-      color: #000000;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      transition: filter 0.2s ease;
+        background: linear-gradient(180deg, #fef08a 0%, #f59e0b 35%, #b45309 70%, #78350f 100%);
+        border: 1px solid #fef08a;
+        color: #000000;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+        transition: all 0.2s ease;
     }
 
-    .gold-metallic-button:hover { filter: brightness(1.1); }
+    .gold-metallic-button:hover {
+        filter: brightness(1.2);
+        box-shadow: 0 0 22px rgba(245, 158, 11, 0.7);
+    }
 
     .cyan-solid-header {
-      background-color: #00f3ff;
-      color: #010811;
-      font-weight: 800;
+        background: linear-gradient(90deg, #00f3ff, #0284c7);
+        color: #010811;
+        font-weight: 900;
+        box-shadow: 0 0 16px rgba(0, 243, 255, 0.7);
+    }
+
+    /* Cyber Ambient Glow Effects */
+    .neon-glow-cyan {
+        filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.6));
     }
     </style>
 </head>
-<body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative selection:bg-cyan-500 selection:text-slate-950">
+<body class="min-h-screen antialiased bg-[#020617] text-slate-100 relative">
 
 <div id="cyber-loader-overlay">
+    <div class="scanner-beam"></div>
+
     <div class="hud-ring mb-6">
         <div class="ring-outer"></div>
         <div class="ring-middle"></div>
+        <div class="ring-inner"></div>
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
     </div>
 
     <div class="text-center px-4">
-        <div id="loader-title-text" class="text-xs font-black tracking-widest uppercase text-cyan-400 code-font mb-1">
-            Memuat Halaman...
+        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1 neon-glow-cyan">
+            Memuat Halaman<span class="animated-dots"></span>
         </div>
-        <div class="text-[9px] text-slate-500 font-mono tracking-widest uppercase">
-            SYSTEM INITIALIZING
+        <div class="text-[10px] text-cyan-300/70 font-mono tracking-widest uppercase">
+            SYSTEM INITIALIZING // CORE GATEWAY
         </div>
     </div>
 
-    <div class="w-56 sm:w-72 mt-5">
-        <div class="flex items-center justify-between text-xs font-bold code-font mb-1.5">
-            <span class="text-slate-500 text-[9px]">STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-xs">0%</span>
+    <div class="w-64 sm:w-80 mt-6">
+        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
+            <span class="text-slate-400 text-[10px] tracking-wider">SYSTEM STATUS</span>
+            <span id="loader-percentage" class="text-cyan-400 text-sm font-mono font-extrabold">0%</span>
         </div>
-        <div class="w-full h-1.5 bg-slate-900 rounded-full border border-cyan-500/20 overflow-hidden">
+        <div class="w-full h-2.5 bg-slate-950/90 rounded-full border border-cyan-500/40 overflow-hidden p-0.5 shadow-[0_0_10px_rgba(0,243,255,0.2)]">
             <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
         </div>
+    </div>
+
+    <div class="absolute bottom-6 text-[10px] font-mono text-cyan-400/50 uppercase tracking-widest">
+        ARULZ-XD API v2.0 // CYBERPUNK EDITION
     </div>
 </div>
 
@@ -3197,39 +3282,39 @@ app.get('/docs', (req, res) => {
 
 <!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/75 backdrop-blur-md"></div>
+  <div class="fixed inset-0 bg-black/85 backdrop-blur-md"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="glass-panel border border-cyan-500/30 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md relative p-6 font-['Space_Grotesk'] text-slate-100 light-mode:text-slate-900 transition-all duration-300">
+    <div class="glass-panel border-2 border-cyan-400/50 rounded-2xl shadow-[0_0_50px_rgba(0,243,255,0.3)] w-full max-w-sm sm:max-w-md relative p-6 font-['Space_Grotesk'] text-slate-100 light-mode:text-slate-900 transition-all duration-300">
       
-      <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors bg-white/5 light-mode:bg-slate-200 hover:bg-white/10 rounded-full p-1.5 border border-white/5 light-mode:border-slate-300">
+      <button id="closePopupBtn" class="absolute top-4 right-4 text-cyan-400 hover:text-red-400 transition-colors bg-cyan-950/40 light-mode:bg-slate-200 hover:bg-red-950/50 rounded-full p-1.5 focus:outline-none border border-cyan-500/30">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
       
       <div class="text-center mb-4">
-        <h1 class="text-xl sm:text-2xl font-extrabold text-white light-mode:text-slate-900 leading-tight tracking-wide">
-          Welcome to<br><span class="text-cyan-400 light-mode:text-cyan-600">Arulz-XD API</span>
+        <h1 class="text-xl sm:text-2xl font-extrabold text-white light-mode:text-slate-900 leading-tight tracking-wide uppercase font-mono">
+          Welcome to<br><span class="text-cyan-400 light-mode:text-cyan-600 neon-glow-cyan">Arulz-XD API</span>
         </h1>
       </div>
       
-      <div class="mb-4 rounded-xl overflow-hidden border border-white/10 light-mode:border-slate-300 bg-black/40 light-mode:bg-slate-100">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
+      <div class="mb-4 rounded-xl overflow-hidden border border-cyan-500/30 light-mode:border-slate-300 bg-black/60 light-mode:bg-slate-100 shadow-lg">
+        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-48" />
       </div>
       
       <div class="text-center text-slate-300 light-mode:text-slate-700 text-xs sm:text-sm mb-5 px-1 leading-relaxed">
-        <p>Halo! 👋 Selamat datang di Arulz-XD API. Terima kasih sudah berkunjung. Silakan gunakan API Key di bawah ini untuk mengakses endpoint.</p>
+        <p>Halo! 👋 Selamat datang di Arulz-XD API. Terima kasih sudah berkunjung. API ini dibuat untuk membantu developer dengan berbagai fitur yang terus diperbarui. Silakan gunakan API Key di bawah ini.</p>
       </div>
       
       <div class="mb-5 flex justify-center">
-        <div class="bg-black/30 light-mode:bg-slate-200/60 rounded-full py-2 px-5 border border-dashed border-cyan-500/40">
-          <span class="font-bold text-xs sm:text-sm text-slate-200 light-mode:text-slate-800 tracking-wide">
-            apikey : <span id="welcomeApiKey" class="font-mono text-cyan-400 light-mode:text-cyan-700 select-all">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
+        <div class="cyber-pill-capsule py-2 px-5 text-center">
+          <span class="font-bold text-xs sm:text-sm text-slate-200 light-mode:text-slate-800 tracking-wide font-mono">
+            apikey : <span id="welcomeApiKey" class="text-cyan-400 light-mode:text-cyan-700 select-all font-extrabold">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
       
-      <a href="/support" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-extrabold py-3 px-6 rounded-xl shadow-lg transition-all text-xs block text-center tracking-wider uppercase">
+      <a href="/support" class="w-full gold-metallic-button text-black font-extrabold py-3 px-6 rounded-xl shadow-lg transition-all text-sm block text-center tracking-wider uppercase active:scale-95">
         Donate Sekarang
       </a>
     </div>
@@ -3238,111 +3323,145 @@ app.get('/docs', (req, res) => {
     
 <!-- User Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     
-    <div class="w-full max-w-[400px] cyber-popup-bg border border-cyan-400/60 rounded-3xl p-5 shadow-2xl relative font-mono text-cyan-400 my-auto">
+    <div class="w-full max-w-[420px] cyber-popup-bg border-2 border-cyan-400 rounded-[32px] p-5 sm:p-6 shadow-[0_0_50px_rgba(0,243,255,0.45)] relative font-mono text-cyan-400 my-auto">
         
-        <div class="flex items-center justify-between mb-5 gap-3">
-            <div class="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+        <div class="flex items-center justify-between mb-5 gap-2">
+            <div class="relative w-20 h-20 sm:w-22 sm:h-22 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border border-cyan-400 overflow-hidden">
+                    <div class="w-full h-full rounded-full p-[3px] border-2 border-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.8)] overflow-hidden">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
-                    <div class="absolute bottom-0 right-0 bg-[#010811] text-cyan-400 p-1 rounded-full border border-cyan-400">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="absolute bottom-0 right-0 bg-[#010811] text-cyan-400 p-1.5 rounded-full border border-cyan-400 shadow-[0_0_12px_rgba(0,243,255,0.9)]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
-                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2.5"/>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-1 flex flex-col gap-2 min-w-0">
-                <div class="cyber-pill-capsule py-1 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-bold text-cyan-300 tracking-wider">loading...</span>
+            <div class="flex-1 flex flex-col gap-2.5 min-w-0 px-2">
+                <div class="cyber-pill-capsule py-1.5 px-3.5 text-center truncate">
+                    <span id="userName" class="text-xs font-extrabold text-cyan-300 tracking-widest">loading...</span>
                 </div>
-                <div class="cyber-pill-capsule py-1 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] text-cyan-300 tracking-wider">loading_email@gmail.com</span>
+                <div class="cyber-pill-capsule py-1.5 px-3.5 text-center truncate">
+                    <span id="userEmail" class="text-[11px] text-cyan-300 tracking-wider">loading_email@gmail.com</span>
                 </div>
             </div>
 
-            <div id="planBoxContainer" class="relative w-16 h-24 flex flex-col items-center justify-center flex-shrink-0">
-                <svg class="w-full h-full" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div id="planBoxContainer" class="relative w-20 h-28 flex flex-col items-center justify-center flex-shrink-0">
+                <svg class="w-full h-full filter drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#00f3ff" />
-                            <stop offset="100%" stop-color="#38bdf8" />
+                            <stop offset="50%" stop-color="#38bdf8" />
+                            <stop offset="100%" stop-color="#c084fc" />
+                        </linearGradient>
+
+                        <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#4ade80" />
+                            <stop offset="100%" stop-color="#16a34a" />
                         </linearGradient>
                     </defs>
 
-                    <text x="50" y="16" fill="#00f3ff" font-size="9" font-weight="800" font-family="monospace" text-anchor="middle">USER PLAN</text>
-                    <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2" stroke-linejoin="round"/>
-                    <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="18" font-weight="900" font-family="sans-serif" text-anchor="middle">FREE</text>
+                    <text x="50" y="14" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">USER</text>
+                    <text x="50" y="24" fill="#00f3ff" font-size="9" font-weight="900" font-family="monospace" text-anchor="middle" letter-spacing="0.5">PLAN</text>
+
+                    <path d="M 20 31 L 8 47 L 18 80 L 25 68 L 20 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+                    <path d="M 20 31 L 8 47 L 18 80" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round"/>
+
+                    <path d="M 80 31 L 92 47 L 82 80 L 75 68 L 80 48 Z" fill="url(#cyberGrad)" opacity="0.95"/>
+                    <path d="M 80 31 L 92 47 L 82 80" stroke="#c084fc" stroke-width="1.5" stroke-linejoin="round"/>
+
+                    <path d="M 50 40 L 76 49 L 78 82 L 50 112 L 22 82 L 24 49 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+
+                    <path d="M 50 46 L 71 53 L 73 79 L 50 104 L 27 79 L 29 53 Z" fill="#020d1a" stroke="url(#cyberGrad)" stroke-width="1.5" stroke-linejoin="round"/>
+
+                    <path d="M 42 41 L 50 48 L 58 41 L 58 46 L 50 53 L 42 46 Z" fill="url(#greenGrad)" stroke="#22c55e" stroke-width="0.8"/>
+
+                    <text id="userPlanText" x="50" y="80" fill="#00f3ff" font-size="20" font-weight="900" font-family="sans-serif" text-anchor="middle" letter-spacing="1">FREE</text>
                 </svg>
             </div>
         </div>
 
         <!-- Section 1: Api Key Kamu -->
-        <div class="double-border-cyan rounded-xl p-3 mb-3 relative">
-            <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[9px] font-bold text-cyan-300 border border-cyan-400 bg-[#010811] px-2 py-0.5 rounded">Api Key Kamu :</span>
+        <div class="double-border-cyan rounded-2xl p-3.5 mb-4 relative">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-extrabold text-cyan-300 border border-cyan-400 bg-[#010811] px-2.5 py-0.5 rounded-md uppercase tracking-wider">Api Key Kamu :</span>
+                <svg class="w-20 h-4 text-cyan-400 opacity-80" viewBox="0 0 100 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M0 10 L60 10 L75 2 L90 2" />
+                    <circle cx="92" cy="2" r="2" fill="currentColor"/>
+                    <circle cx="98" cy="2" r="1.5" fill="#fcd34d"/>
+                </svg>
             </div>
             
-            <div class="cyber-pill-capsule text-cyan-200 text-xs font-bold py-1.5 px-3 truncate mb-2.5 text-center tracking-wider">
+            <div class="cyber-pill-capsule text-cyan-200 text-xs font-bold py-2 px-3 truncate mb-3 text-center tracking-wider">
                 <span id="userApiKey">loading-key</span>
             </div>
 
-            <div id="vipCustomKeyBox" class="hidden mb-2.5">
+            <!-- Fitur Custom Api Key Khusus VIP User -->
+            <div id="vipCustomKeyBox" class="hidden mb-3">
                 <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#010a14] border border-cyan-400 rounded-lg px-2.5 py-1 text-xs text-cyan-300 placeholder-cyan-700 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="gold-metallic-button text-[9px] px-2.5 rounded-lg uppercase font-black whitespace-nowrap">SIMPAN</button>
+                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#010a14] border border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-cyan-300 placeholder-cyan-700 focus:outline-none font-bold">
+                    <button onclick="saveCustomApiKey()" class="gold-metallic-button text-[10px] px-3 rounded-xl uppercase font-extrabold whitespace-nowrap">SIMPAN</button>
                 </div>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-metallic-button text-xs py-1.5 rounded-lg uppercase tracking-wider active:scale-95 transition-all">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-metallic-button text-xs py-2.5 rounded-xl uppercase tracking-widest active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
         <!-- Section 2: Limit User -->
-        <div class="double-border-cyan rounded-xl p-3 mb-3 text-center relative">
-            <div class="w-full cyan-solid-header text-[10px] py-0.5 rounded uppercase tracking-wider mb-2">
+        <div class="double-border-cyan rounded-2xl p-3.5 mb-4 text-center relative">
+            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3">
                 LIMIT USER
             </div>
+            
+            <div class="absolute right-3 top-2 pointer-events-none opacity-40">
+                <svg class="w-12 h-6 text-cyan-400" viewBox="0 0 50 30" fill="none" stroke="currentColor">
+                    <path d="M0 15 L25 15 L35 5 L45 5" stroke-width="1.5"/>
+                    <circle cx="47" cy="5" r="2" fill="currentColor"/>
+                </svg>
+            </div>
+
             <div class="py-0.5">
-                <span class="inline-block cyber-pill-capsule text-cyan-300 px-5 py-0.5 text-xs font-bold tracking-widest">
+                <span class="inline-block cyber-pill-capsule text-cyan-300 px-6 py-1.5 text-sm font-extrabold tracking-widest">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
                 </span>
             </div>
         </div>
 
         <!-- Section 3: Aktifitas Request API Terakhir -->
-        <div class="double-border-cyan rounded-xl p-3 mb-4">
-            <div class="w-full cyan-solid-header text-[10px] py-0.5 rounded uppercase tracking-wider mb-2 text-center">
+        <div class="double-border-cyan rounded-2xl p-3.5 mb-4">
+            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3 text-center">
                 AKTIFITAS REQUEST API TERAKHIR
             </div>
             
-            <div id="activityLogsContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                <div class="cyber-pill-capsule text-cyan-300 text-[9px] py-1 px-2.5 text-center truncate">
+            <div id="activityLogsContainer" class="space-y-2 max-h-44 overflow-y-auto pr-1">
+                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
                     belum ada request
                 </div>
             </div>
         </div>
 
         <!-- Buttons Footer -->
-        <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full gold-metallic-button text-xs py-2 rounded-lg flex items-center justify-center gap-1.5 uppercase tracking-wider active:scale-95 transition-all">
+        <div class="space-y-2.5">
+            <a href="/upgrade-apikey" class="w-full gold-metallic-button text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all">
                 <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                 UPGRADE
             </a>
 
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-[#03203c] text-cyan-300 font-bold text-xs py-1.5 uppercase tracking-wider transition-all active:scale-95">
+                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-[#03203c] text-cyan-300 font-bold text-xs py-2 uppercase tracking-widest transition-all active:scale-95">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 border border-red-500/80 bg-[#140306] hover:bg-red-950 text-red-400 font-bold text-xs py-1.5 rounded-full flex items-center justify-center gap-1 uppercase tracking-wider transition-all active:scale-95">
+                <a href="/auth/logout" class="flex-1 border border-red-500/80 bg-[#140306] hover:bg-red-950 text-red-400 font-bold text-xs py-2 rounded-full flex items-center justify-center gap-1.5 uppercase tracking-widest transition-all active:scale-95">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     LOG OUT
                 </a>
             </div>
@@ -3356,7 +3475,7 @@ app.get('/docs', (req, res) => {
 
     <!-- Header Actions -->
     <div class="fixed top-6 right-6 z-40 flex items-center gap-3">
-        <button id="bioMenuBtn" class="flex items-center justify-center w-10 h-10 rounded-xl glass-panel text-slate-300 hover:text-white shadow-lg transition-all active:scale-95 border border-white/5">
+        <button id="bioMenuBtn" class="flex items-center justify-center w-11 h-11 rounded-xl glass-panel text-cyan-400 hover:text-white shadow-[0_0_15px_rgba(0,243,255,0.2)] transition-all active:scale-95 focus:outline-none light-mode:text-slate-700 light-mode:hover:text-slate-900 border border-cyan-500/30">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -3364,15 +3483,15 @@ app.get('/docs', (req, res) => {
     </div>
 
     <!-- Sidebar Dropdown -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-[#060c18] border-l border-white/5 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-6 font-['Space_Grotesk'] light-mode:bg-white light-mode:border-slate-200">
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-[#020a17] border-l border-cyan-500/30 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-[0_0_40px_rgba(0,243,255,0.2)] flex flex-col p-6 font-['Space_Grotesk'] light-mode:bg-white light-mode:border-slate-200">
         <div class="flex items-center justify-between mb-5">
-            <div class="flex gap-0 border border-white/10 rounded-lg p-0.5 bg-black/40">
+            <div class="flex gap-0 border border-cyan-500/30 rounded-lg p-0.5 bg-black/50">
                 <button id="lang-id" class="lang-btn rounded-md active" onclick="setLanguage('id')">ID</button>
                 <button id="lang-en" class="lang-btn rounded-md" onclick="setLanguage('en')">EN</button>
             </div>
             
             <div class="flex items-center gap-1.5">
-                <button id="themeToggle" class="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 border border-white/10 bg-slate-900/50 text-white light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:text-slate-900">
+                <button id="themeToggle" class="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 focus:outline-none border border-cyan-500/30 bg-slate-900/60 text-cyan-400 light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:text-slate-900">
                     <svg id="theme-toggle-dark-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                     </svg>
@@ -3381,7 +3500,7 @@ app.get('/docs', (req, res) => {
                     </svg>
                 </button>
 
-                <button id="closeMenuBtn" class="text-white hover:text-red-400 transition-colors p-1.5 border border-white/10 rounded bg-slate-900/40 light-mode:text-slate-700 light-mode:bg-slate-100 light-mode:border-slate-300">
+                <button id="closeMenuBtn" class="text-cyan-400 hover:text-red-400 transition-colors p-1.5 border border-cyan-500/30 rounded bg-slate-900/40 light-mode:text-slate-700 light-mode:bg-slate-100 light-mode:border-slate-300 light-mode:hover:text-red-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -3391,15 +3510,15 @@ app.get('/docs', (req, res) => {
 
         ${req.user ? `
         <div class="mb-4 flex flex-col antialiased font-['Space_Grotesk']">
-            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg w-full">
+            <button onclick="openProfilePopup()" class="group relative flex items-center gap-3 bg-slate-950/90 text-white font-bold p-3 rounded-xl transition-all duration-300 text-xs tracking-wider uppercase overflow-hidden active:scale-95 border border-cyan-500/30 hover:border-cyan-400 shadow-[0_0_15px_rgba(0,243,255,0.15)] w-full">
                 <div class="relative flex-shrink-0 z-10">
-                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm">
+                    <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-cyan-400/50 object-cover shadow-sm">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-950 rounded-full"></span>
                 </div>
                 
                 <div class="flex flex-col text-left min-w-0 z-10">
                     <span class="text-[8px] text-cyan-400 font-mono tracking-widest opacity-90">PROFILE USER</span>
-                    <span class="truncate text-white font-black tracking-wide normal-case text-xs">${req.user.username}</span>
+                    <span class="truncate text-white font-black tracking-wide normal-case text-xs shadow-sm">${req.user.username}</span>
                 </div>
 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 ml-auto text-cyan-400 opacity-90 z-10 transition-transform group-hover:translate-x-1">
@@ -3409,167 +3528,187 @@ app.get('/docs', (req, res) => {
         </div>
         ` : `
         <div class="mb-3 flex flex-col gap-2">
-            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-extrabold p-3 rounded-xl text-xs uppercase tracking-wider transition-all">
+            <a href="/login" class="flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white font-bold p-3 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
                 <span>Masuk ke Akun</span>
             </a>
         </div>
         `}
 
-        <nav class="flex flex-col gap-1 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-2 pb-1 tracking-widest">PAGES</div>
+        <nav class="flex flex-col gap-1.5 text-xs font-semibold tracking-wider uppercase text-slate-300 flex-1 py-1 overflow-y-auto scrollbar-hide">
+    <div class="text-[10px] font-bold text-cyan-400/70 px-2 pt-2 pb-1 tracking-widest font-mono">PAGES</div>
 
-            <a href="/" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
-                        <path d="M3 11l9-9 9 9v11H3V11z" stroke="#22d3ee" stroke-width="1.5" stroke-linejoin="round" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Dashboard</span>
-            </a>
+    <a href="/" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(0, 243, 255, 0.8));">
+                <path d="M3 11l9-9 9 9v11H3V11z" stroke="#00f3ff" stroke-width="1.5" stroke-linejoin="round" />
+                <path d="M19 8v-3h-2v1.5M10 16h4v6h-4v-6z" stroke="#00f3ff" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M7 13v6M9 13v6M7 16h2" stroke="#00f3ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M14 13v6l1.5-1.5 1.5 1.5v-6" stroke="#00f3ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 5v3M10 8h4" stroke="#00f3ff" stroke-width="0.5" stroke-linecap="round" />
+                <circle cx="12" cy="5.5" r="0.5" fill="#00f3ff" />
+                <circle cx="9" cy="9" r="0.4" fill="#00f3ff" />
+                <circle cx="15" cy="9" r="0.4" fill="#00f3ff" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Dashboard</span>
+    </a>
 
-            <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
-                        <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#22d3ee" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Docs</span>
-            </a>
+    <a href="/docs" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 3px rgba(0, 243, 255, 0.8));">
+                <path d="M2 5c0-1.1.9-2 2-2h6.5l1.5 1.5L13.5 3H20c1.1 0 2 .9 2 2v13c0 1.1-.9 2-2 2h-6.5L12 18.5 10.5 20H4c-1.1 0-2-.9-2-2V5z" stroke="#00f3ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 6.5C3 5.7 3.7 5 4.5 5H11v13H4.5C3.7 18 3 17.3 3 16.5V6.5zM21 6.5c0-.8-.7-1.5-1.5-1.5H13v13h6.5c.8 0 1.5-.7 1.5-1.5V6.5z" stroke="#00f3ff" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M12 4v14.5" stroke="#00f3ff" stroke-width="1.2" stroke-linecap="round"/>
+                <rect x="5.5" y="8" width="4.5" height="6.5" rx="0.8" stroke="#00f3ff" stroke-width="0.9" fill="none"/>
+                <line x1="6.5" y1="10" x2="9" y2="10" stroke="#00f3ff" stroke-width="0.7" stroke-linecap="round"/>
+                <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="#00f3ff" stroke-width="0.7" stroke-linecap="round"/>
+                <text x="16.8" y="11" fill="#00f3ff" font-size="2.6" font-weight="900" font-family="sans-serif" text-anchor="middle">DOCS</text>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Docs</span>
+    </a>
 
-            <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Store</span>
-            </a>
+    <a href="/store" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M4.756 5.272h15.744l-1.38 6.21a2.25 2.25 0 01-2.195 1.762H7.27a2.25 2.25 0 01-2.196-1.762L3.636 3.835M7.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10.5 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                <polygon points="12,5.5 13.09,7.71 15.54,8.07 13.77,9.8 14.19,12.24 12,11.09 9.81,12.24 10.23,9.8 8.46,8.07 10.91,7.71" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Store</span>
+    </a>
 
-            <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Changelog</span>
-            </a>
+    <a href="/changelog" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Changelog</span>
+    </a>
 
-            <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Uploader</span>
-            </a>
+    <a href="/uploader" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Uploader</span>
+    </a>
 
-            <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Pastecode</span>
-            </a>
+    <a href="/pastecode" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Pastecode</span>
+    </a>
 
-            <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Feedback</span>
-            </a>
+    <a href="/feedback" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8.5h1.5A2.5 2.5 0 0 1 21 11v5a2.5 2.5 0 0 1-2.5 2.5H17v2.5l-3-2.5h-1" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 3.5h10A2.5 2.5 0 0 1 18 6v7a2.5 2.5 0 0 1-2.5 2.5H8.5L5 18.5V15.5H5.5A2.5 2.5 0 0 1 3 13V6a2.5 2.5 0 0 1 2.5-2.5Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h1.5l1-2 1.5 4 1.5-3h1" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Feedback</span>
+    </a>
 
-            <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Stats / Status</span>
-            </a>
+    <a href="/status" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="3" y="10.5" width="18" height="6" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5v2M3 20.5h6.5m5 0H21"/>
+                <circle cx="12" cy="20.5" r="1.5"/>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Stats / Status</span>
+    </a>
 
-            <div class="text-[10px] font-bold text-slate-500 px-2 pt-3 pb-1 tracking-widest">LEGAL</div>
+    <div class="text-[10px] font-bold text-cyan-400/70 px-2 pt-3 pb-1 tracking-widest font-mono">LEGAL</div>
 
-            <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Privacy Policy</span>
-            </a>
+    <a href="/privacy" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.25c-3.6 0-6.818 1.433-9.176 3.766A.75.75 0 0 0 2.6 6.58C3.12 11.95 6.35 18.08 12 21.75c5.65-3.67 8.88-9.8 9.4-15.17a.75.75 0 0 0-.224-.564A12.986 12.986 0 0 0 12 2.25Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 8h2.8a2.2 2.2 0 0 1 0 4.4H10V8Zm0 0v8" />
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Privacy Policy</span>
+    </a>
 
-            <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-cyan-950/30 transition-all">
-                <div class="w-7 h-7 rounded-lg bg-cyan-950/40 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-400/50 shrink-0">
-                    <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors">Support</span>
-            </a>
-        </nav>
+    <a href="/support" class="menu-link group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-cyan-950/40 transition-all duration-300">
+        <div class="w-8 h-8 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-center group-hover:border-cyan-400/60 group-hover:shadow-[0_0_12px_rgba(0,243,255,0.3)] transition-all shrink-0">
+            <svg class="w-4 h-4 text-cyan-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M22 6v6m-3-3h6m-13 1h2m-2 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 14.5a3 3 0 0 1-4.8 2.4l-1.2 1.2a1 1 0 0 1-1.4-1.4l1.2-1.2A3 3 0 1 1 16 14.5Zm0 0V21a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <span class="font-medium text-cyan-100 group-hover:text-cyan-400 transition-colors duration-300">Support</span>
+      </a>
+     </nav>
     </div>
 
-    <div id="menuOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden z-30 transition-opacity duration-300"></div>
+    <div id="menuOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-30 transition-opacity duration-300"></div>
 
     <div class="max-w-5xl mx-auto px-4 py-8 relative z-10">
         <header id="api" class="mb-10 text-center">
             <div class="flex items-center justify-center gap-3 mb-3">
-                <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 light-mode:bg-cyan-100 light-mode:text-cyan-700">
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span> ONLINE
+                <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-2 shadow-[0_0_12px_rgba(0,243,255,0.25)] light-mode:bg-cyan-100 light-mode:text-cyan-700 font-mono">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> ONLINE SYSTEM
                 </span>
             </div>
             
             <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-4xl md:text-5xl font-extrabold tracking-tight text-white"><img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Free+REST+API+Services;Developer+Friendly+API" alt="Typing SVG" class="mx-auto" /></div>
-            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-400 max-w-xl mx-auto leading-relaxed">
+            <p id="mainDescription" class="text-sm md:text-base font-normal tracking-wide text-slate-300 max-w-xl mx-auto leading-relaxed">
               Jelajahi, uji, dan jalankan request secara langsung ke endpoint aktif.
             </p>
 
             <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
+                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-2xl shadow-lg border border-cyan-500/30">
                     <div class="text-center font-['Space_Grotesk']">
-                        <div id="liveClock" class="text-xl md:text-2xl font-extrabold tracking-wider text-cyan-400 light-mode:text-cyan-600 font-mono">
+                        <div id="liveClock" class="text-xl md:text-2xl font-extrabold tracking-wider text-cyan-400 light-mode:text-cyan-600 font-mono neon-glow-cyan">
                             00:00:00
                         </div>
-                        <div id="liveDate" class="text-[9px] font-bold opacity-60 tracking-wide mt-1 uppercase">
+                        <div id="liveDate" class="text-[9px] font-bold opacity-75 tracking-wider mt-1 uppercase font-mono text-cyan-300">
                             Loading...
                         </div>
                     </div>
                 </div>
                 
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Limit Terpakai</span>
-                    <div class="flex items-baseline gap-0.5 mt-0.5">
-                        <span id="userLimitUsed" class="text-2xl font-black text-cyan-400">0</span>
+                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-2xl shadow-lg border border-cyan-500/30">
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 text-center font-mono">Limit Terpakai</span>
+                    <div class="flex items-baseline gap-0.5 mt-0.5 font-mono">
+                        <span id="userLimitUsed" class="text-2xl font-black text-cyan-400 neon-glow-cyan">0</span>
                         <span class="text-slate-500 font-bold text-xs">/</span>
                         <span id="userLimitMax" class="text-xs font-bold text-slate-400">100</span>
                     </div>
-                    <span id="userLimitBadge" class="text-[8px] font-bold px-1.5 py-0.5 mt-1 rounded bg-slate-900 text-slate-400 uppercase tracking-widest border border-white/5">FREE</span>
+                    <span id="userLimitBadge" class="text-[8px] font-extrabold px-2 py-0.5 mt-1 rounded bg-slate-900 text-cyan-400 uppercase tracking-widest border border-cyan-500/30 font-mono">FREE</span>
                 </div>
                 
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span id="stat-endpoints-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Endpoint</span>
-                    <span id="totalEndpoints" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600">0</span>
+                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-2xl shadow-lg border border-cyan-500/30">
+                    <span id="stat-endpoints-title" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono">Total Endpoint</span>
+                    <span id="totalEndpoints" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600 font-mono neon-glow-cyan">0</span>
                 </div>
                 
-                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-xl shadow-lg border border-white/5">
-                    <span id="stat-categories-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Kategori</span>
-                    <span id="totalCategories" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600">0</span>
+                <div class="glass-panel flex flex-col items-center justify-center p-4 rounded-2xl shadow-lg border border-cyan-500/30">
+                    <span id="stat-categories-title" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 font-mono">Total Kategori</span>
+                    <span id="totalCategories" class="text-2xl font-black text-cyan-400 mt-0.5 light-mode:text-cyan-600 font-mono neon-glow-cyan">0</span>
                 </div>
             </div>
 
-            <div class="glass-panel max-w-4xl mx-auto mt-4 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/10">
+            <div class="glass-panel max-w-4xl mx-auto mt-4 p-3.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-cyan-500/30">
                 <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 light-mode:text-cyan-700 font-mono">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                     </svg>
-                    <span class="underline break-all font-semibold">https://arulz-xd.my.id</span>
+                    <span class="underline break-all font-semibold tracking-wide">https://arulz-xd.my.id</span>
                 </div>
                 <a href="/feedback" 
-                   class="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-[11px] uppercase rounded-lg shadow-md transition-all light-mode:text-white text-center flex items-center justify-center gap-1.5">
+                   class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-[11px] uppercase rounded-xl shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all active:scale-95 light-mode:text-white text-center flex items-center justify-center gap-1.5 tracking-wider font-mono">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
@@ -3580,7 +3719,7 @@ app.get('/docs', (req, res) => {
             <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
                 <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" 
                    target="_blank" 
-                   class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
+                   class="flex-1 glass-panel py-3 rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-cyan-500/10 transition-all text-center flex items-center justify-center gap-2 border border-cyan-500/30 text-slate-200 hover:text-cyan-400 font-mono">
                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l.08-.08a2.25 2.25 0 013.182 0l.397.397m-1.397-1.398a2.25 2.25 0 00-3.182 0l-3.472 3.472a2.25 2.25 0 000 3.181l.08.08a2.25 2.25 0 003.181 0l3.472-3.472a2.25 2.25 0 000-3.181c-.074-.074-.154-.14-.237-.196zm7.708-.943a2.25 2.25 0 00-3.182 0l-.397.397m1.397-1.397a2.25 2.25 0 013.182 0l3.472 3.473a2.25 2.25 0 010 3.182l-.08.08a2.25 2.25 0 01-3.181 0l-3.472-3.472a2.25 2.25 0 010-3.181c.074-.074.154-.14.237-.196z" />
                    </svg>
@@ -3588,7 +3727,7 @@ app.get('/docs', (req, res) => {
                 </a>
                 <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" 
                    target="_blank" 
-                   class="flex-1 glass-panel py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-all text-center flex items-center justify-center gap-2 border border-white/5 text-slate-300">
+                   class="flex-1 glass-panel py-3 rounded-2xl text-xs font-bold uppercase tracking-wider hover:bg-cyan-500/10 transition-all text-center flex items-center justify-center gap-2 border border-cyan-500/30 text-slate-200 hover:text-cyan-400 font-mono">
                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zm0 0l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.998 5.998 0 00-12 0m12 0a5.998 5.998 0 00-12 0" />
                    </svg>
@@ -3596,41 +3735,41 @@ app.get('/docs', (req, res) => {
                 </a>
             </div>
 
-            <div class="music-player-card glass-panel mt-6 max-w-2xl mx-auto rounded-2xl p-4 shadow-xl relative overflow-hidden border border-white/5">
+            <div class="music-player-card glass-panel mt-6 max-w-2xl mx-auto rounded-2xl p-4 shadow-xl relative overflow-hidden border border-cyan-500/30">
                 <audio id="audioElement"></audio>
                 <div class="flex items-center justify-between gap-4">
                     <div class="flex items-center gap-4 flex-1 min-w-0">
-                        <div class="relative w-12 h-12 rounded-xl overflow-hidden bg-black/50 flex-shrink-0 border border-white/10">
+                        <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-black/60 flex-shrink-0 border border-cyan-500/40 shadow-md">
                             <img id="musicCoverImg" src="" alt="Cover" class="w-full h-full object-cover">
                         </div>
                         <div class="flex-1 min-w-0 text-left">
-                            <h3 id="musicTitle" class="music-text-title text-white font-bold text-[13px] tracking-wide truncate m-0 uppercase">Loading...</h3>
+                            <h3 id="musicTitle" class="music-text-title text-white font-bold text-[13px] tracking-wide truncate m-0 uppercase font-mono">Loading...</h3>
                             <p id="musicArtist" class="music-text-artist text-slate-400 text-[11px] font-medium truncate mt-0.5">-</p>
                             <div class="flex items-center gap-2 mt-2">
-                                <span id="currentTime" class="text-[9px] text-slate-400 font-mono w-7 text-left">0:00</span>
-                                <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1 bg-white/10 rounded-full relative cursor-pointer">
-                                    <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-300"></div>
+                                <span id="currentTime" class="text-[9px] text-cyan-400 font-mono w-7 text-left">0:00</span>
+                                <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1 bg-cyan-950/60 rounded-full relative cursor-pointer border border-cyan-500/20">
+                                    <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-300 shadow-[0_0_8px_rgba(0,243,255,0.8)]"></div>
                                 </div>
                                 <span id="totalDuration" class="text-[9px] text-slate-400 font-mono w-7 text-right">0:00</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-1 flex-shrink-0">
-                        <button id="prevBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all border border-white/5">
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <button id="prevBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-cyan-400 hover:text-white transition-all active:scale-95 border border-cyan-500/30">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                         </button>
-                        <button id="playBtn" class="music-btn-nav w-9 h-9 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all border border-white/5">
+                        <button id="playBtn" class="music-btn-nav w-10 h-10 flex items-center justify-center glass-panel rounded-lg text-cyan-400 hover:text-white transition-all active:scale-95 border border-cyan-500/30 shadow-[0_0_12px_rgba(0,243,255,0.3)]">
                             <svg id="playIcon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </button>
-                        <button id="nextBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all border border-white/5">
+                        <button id="nextBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-cyan-400 hover:text-white transition-all active:scale-95 border border-cyan-500/30">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/></svg>
                         </button>
-                        <button id="playlistToggleBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-slate-300 hover:text-white transition-all border border-white/5">
+                        <button id="playlistToggleBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center glass-panel rounded-lg text-cyan-400 hover:text-white transition-all active:scale-95 border border-cyan-500/30">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                         </button>
                     </div>
                 </div>
-                <div id="playlistPanel" class="music-playlist-border hidden mt-4 pt-4 border-t border-white/10 max-h-40 overflow-y-auto space-y-1 light-mode:border-slate-200"></div>
+                <div id="playlistPanel" class="music-playlist-border hidden mt-4 pt-4 border-t border-cyan-500/20 max-h-40 overflow-y-auto space-y-1 light-mode:border-slate-200"></div>
             </div>
             
         </header>
@@ -3641,36 +3780,36 @@ app.get('/docs', (req, res) => {
                     type="text" 
                     id="searchInput" 
                     placeholder="Cari endpoint berdasarkan nama, path, atau kategori..."
-                    class="search-input w-full px-4 py-3 pl-11 text-xs rounded-xl focus:outline-none focus:border-cyan-500 transition-all font-mono glass-panel border border-white/5 text-white placeholder-slate-400 light-mode:text-slate-900 light-mode:placeholder-slate-500 light-mode:focus:border-cyan-600"
+                    class="search-input w-full px-5 py-4 pl-12 text-xs rounded-2xl focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(0,243,255,0.35)] transition-all font-mono glass-panel border border-cyan-500/30 text-white placeholder-slate-400 light-mode:text-slate-900 light-mode:placeholder-slate-500 light-mode:focus:border-cyan-600"
                 >
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide max-w-4xl mx-auto"></div>
+            <div id="categoryFilters" class="flex flex-wrap gap-2.5 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide max-w-4xl mx-auto"></div>
         </div>
 
         <div id="noResults" class="text-center py-12 hidden">
             <div class="flex justify-center mb-3">
-                <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 text-amber-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
             </div>
-            <h3 id="no-results-title" class="text-sm font-bold mb-1 text-white">Endpoint tidak ditemukan</h3>
+            <h3 id="no-results-title" class="text-sm font-bold mb-1 text-white font-mono uppercase tracking-wider">Endpoint tidak ditemukan</h3>
             <p id="no-results-desc" class="text-xs text-slate-400 light-mode:text-slate-500">Coba gunakan kata kunci lain</p>
         </div>
 
         <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
 
-        <footer id="siteFooter" class="mt-16 pt-6 border-t border-white/5 text-center text-[11px] text-slate-500">
-            © Arulz-XD
+        <footer id="siteFooter" class="mt-16 pt-6 border-t border-cyan-500/20 text-center text-[11px] text-slate-500 font-mono tracking-widest uppercase">
+            © Arulz-XD REST API
         </footer>
     </div>
 
-    <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 cursor-zoom-out">
+    <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-md cursor-zoom-out">
         <div class="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
-            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain" />
-            <button id="closeLightbox" class="absolute -top-12 right-0 text-white hover:text-cyan-400 transition-colors focus:outline-none flex items-center gap-1 bg-black/50 px-3 py-1.5 rounded-lg border border-white/10 text-xs font-mono">
+            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-xl shadow-[0_0_30px_rgba(0,243,255,0.4)] object-contain scale-95 transition-transform duration-300 border border-cyan-500/30" />
+            <button id="closeLightbox" class="absolute -top-12 right-0 text-cyan-400 hover:text-white transition-colors focus:outline-none flex items-center gap-1 bg-black/60 px-3 py-1.5 rounded-lg border border-cyan-500/30 text-xs font-mono">
                 ✕ Close
             </button>
         </div>
@@ -3789,12 +3928,13 @@ app.get('/docs', (req, res) => {
                     text: text,
                     background: '#0b1329',
                     color: '#f8fafc',
+                    border: '1px solid rgba(6, 182, 212, 0.3)',
                     confirmButtonText: 'OKE',
                     customClass: {
-                        popup: 'rounded-2xl border border-cyan-500/30',
-                        title: 'text-cyan-400 font-extrabold font-["Space_Grotesk"]',
+                        popup: 'rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.25)] border border-cyan-500/30',
+                        title: 'text-cyan-400 font-extrabold tracking-wide font-["Space_Grotesk"]',
                         htmlContainer: 'text-slate-300 text-xs font-["Space_Grotesk"]',
-                        confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-slate-950 font-bold px-6 py-2 rounded-xl text-xs border-0'
+                        confirmButton: 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl uppercase tracking-wider text-xs border-0 shadow-lg shadow-cyan-500/20'
                     }
                 });
             };
@@ -3871,20 +4011,20 @@ app.get('/docs', (req, res) => {
           .then(resData => {
               if (resData.status && resData.data && resData.data.length > 0) {
                   container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[9px] py-1 px-2.5 text-center truncate">' +
+                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
                         logText +
                     '</div>'
                 ).join('');
             } else {
                 container.innerHTML = 
-                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[9px] py-1.5 px-2.5 text-center">' +
+                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
                         'Belum ada aktivitas request' +
                     '</div>';
             }
         })
         .catch(err => {
             container.innerHTML = 
-                '<div class="cyber-pill-capsule text-red-400 font-mono text-[9px] py-1.5 px-2.5 text-center">' +
+                '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
                     'Gagal memuat aktivitas' +
                 '</div>';
           });
@@ -3922,7 +4062,7 @@ app.get('/docs', (req, res) => {
         const pageName = getPageDisplayName();
         const loaderTitleEl = document.getElementById('loader-title-text');
         if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = 'Memuat ' + pageName + '...';
+            loaderTitleEl.innerHTML = 'Memuat ' + pageName + '<span class="animated-dots"></span>';
         }
 
         let currentProgress = 0;
@@ -3948,26 +4088,28 @@ app.get('/docs', (req, res) => {
                     loaderOverlay.classList.add('fade-out');
                     setTimeout(() => {
                         showWelcomePopup();
-                    }, 150);
+                    }, 200);
                 }
-            }, 300);
+            }, 400);
         }
 
         const progressInterval = setInterval(() => {
-            if (currentProgress < 90) {
-                const increment = Math.random() * 20 + 10;
+            if (currentProgress < 85) {
+                const increment = Math.random() * 12 + 5;
                 updateProgress(currentProgress + increment);
             }
-        }, 80);
+        }, 120);
 
         window.addEventListener('load', finishLoader);
-        setTimeout(finishLoader, 1000);
+
+        setTimeout(finishLoader, 1500);
 </script>
 
 </body>
 </html>
     `);
 });
+
 
 if (require.main === module) {
   app.listen(PORT, () => {
