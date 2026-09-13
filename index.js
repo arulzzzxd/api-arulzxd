@@ -3754,7 +3754,7 @@ app.get('/docs', (req, res) => {
                 showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
                 if (userAvatarImg) userAvatarImg.src = oldSrc;
                 if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-            } fontinally {
+            } finally {
                 if (userAvatarImg) userAvatarImg.style.opacity = '1';
                 if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
                 input.value = '';
