@@ -2967,7 +2967,7 @@ app.get('/docs', (req, res) => {
     .font-orbitron { font-family: 'Orbitron', sans-serif; }
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
 
-    /* Canvas Grid Lines */
+    /* Background Grid */
     #themeBg {
         transition: all 0.5s ease;
         background-color: var(--bg-cyber);
@@ -2985,7 +2985,7 @@ app.get('/docs', (req, res) => {
             linear-gradient(90deg, rgba(2, 132, 199, 0.05) 1px, transparent 1px);
     }
 
-    /* Cyber Card Box Styling */
+    /* Cyber Card Styling */
     .cyber-card {
         background: var(--card-cyber);
         border: 1px solid var(--border-cyber);
@@ -3009,12 +3009,11 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
-    /* Glow Text */
     .text-glow-cyan {
         text-shadow: 0 0 12px var(--cyan-glow), 0 0 24px var(--cyan-shadow);
     }
 
-    /* Override Light Mode Elements */
+    /* Light Mode Overrides */
     .light-mode { color: #0f172a !important; }
     .light-mode #mainTitle, .light-mode #mainDescription { color: #0f172a !important; }
     .light-mode #stat-battery-title,
@@ -3114,7 +3113,7 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Loader Screen Overlay */
+    /* Loader */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3152,7 +3151,7 @@ app.get('/docs', (req, res) => {
         transition: width 0.2s ease-out;
     }
 
-    /* Modal Styling */
+    /* Modals */
     .cyber-popup-bg {
         background-color: #010a17;
         background-image: radial-gradient(circle at 50% 0%, #03203c 0%, #010a17 80%);
@@ -3377,55 +3376,105 @@ app.get('/docs', (req, res) => {
         </div>
     </header>
 
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-[#010814] border-l border-cyan-500/30 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-6 font-['Rajdhani']">
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex border border-cyan-500/30 rounded-lg p-0.5 bg-black/40">
-                <button id="lang-id" class="lang-btn rounded-md active" onclick="setLanguage('id')">ID</button>
-                <button id="lang-en" class="lang-btn rounded-md" onclick="setLanguage('en')">EN</button>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button id="themeToggle" class="w-9 h-9 rounded-lg border border-cyan-500/30 bg-slate-900/60 text-cyan-400 flex items-center justify-center">
-                    <svg id="theme-toggle-dark-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                </button>
-
-                <button id="closeMenuBtn" class="text-white hover:text-red-400 p-2 border border-cyan-500/20 rounded-lg bg-slate-900/60">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        </div>
-
-        ${req.user ? `
-        <div class="mb-4">
-            <button onclick="openProfilePopup()" class="w-full flex items-center gap-3 bg-slate-950/80 text-white font-bold p-3 rounded-xl border border-cyan-500/30 hover:border-cyan-400 transition-all text-xs tracking-wider">
-                <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-8 h-8 rounded-full border border-cyan-400 object-cover">
-                <div class="flex flex-col text-left truncate">
-                    <span class="text-[9px] text-cyan-400 font-mono">ACCOUNT</span>
-                    <span class="truncate font-extrabold text-white text-xs">${req.user.username}</span>
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#fdfbf7] border-l border-amber-900/10 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 font-['Rajdhani'] text-stone-800 overflow-y-auto scrollbar-hide">
+        
+        <div class="flex items-center justify-between pb-4 mb-3 border-b border-stone-200">
+            ${req.user ? `
+            <button onclick="openProfilePopup()" class="flex items-center gap-3 text-left focus:outline-none group">
+                <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-9 h-9 rounded-xl border border-stone-300 object-cover shadow-sm">
+                <div class="flex flex-col min-w-0">
+                    <span class="text-sm font-bold text-stone-900 truncate group-hover:text-amber-700 transition-colors">${req.user.username}</span>
+                    <span class="text-[10px] text-stone-500 font-mono tracking-wider uppercase">Free Plan</span>
                 </div>
             </button>
-        </div>
-        ` : `
-        <div class="mb-4">
-            <a href="/login" class="flex items-center justify-center bg-gradient-to-r from-cyan-500 to-sky-400 text-slate-950 font-black p-3 rounded-xl text-xs uppercase tracking-wider font-orbitron">
-                Masuk ke Akun
-            </a>
-        </div>
-        `}
+            ` : `
+            <div class="flex items-center gap-2">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" class="w-8 h-8 rounded-lg object-cover">
+                <span class="font-orbitron font-extrabold text-stone-900 text-sm">ArulzApis</span>
+            </div>
+            `}
 
-        <nav class="flex flex-col gap-2 text-xs font-bold uppercase tracking-wider text-slate-300 flex-1 overflow-y-auto scrollbar-hide">
-            <a href="/" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Dashboard</a>
-            <a href="/docs" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Docs</a>
-            <a href="/store" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Store</a>
-            <a href="/changelog" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Changelog</a>
-            <a href="/uploader" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Uploader</a>
-            <a href="/pastecode" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Pastecode</a>
-            <a href="/feedback" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Feedback</a>
-            <a href="/status" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Status Server</a>
-            <a href="/privacy" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Privacy Policy</a>
-            <a href="/support" class="menu-link p-3 rounded-xl bg-cyan-950/20 hover:bg-cyan-950/50 border border-cyan-500/20 text-cyan-300">Support</a>
+            <div class="flex items-center gap-2">
+                <div class="flex border border-stone-200 rounded-lg p-0.5 bg-stone-100">
+                    <button id="lang-id" class="lang-btn rounded-md text-[10px] font-bold px-2 py-0.5 text-stone-600 active" onclick="setLanguage('id')">ID</button>
+                    <button id="lang-en" class="lang-btn rounded-md text-[10px] font-bold px-2 py-0.5 text-stone-600" onclick="setLanguage('en')">EN</button>
+                </div>
+                <button id="closeMenuBtn" class="text-stone-500 hover:text-stone-900 p-1.5 rounded-lg hover:bg-stone-200/60 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <nav class="flex flex-col gap-5 text-stone-700 text-xs font-semibold tracking-wide flex-1">
+            
+            <div>
+                <span class="text-[10px] font-orbitron font-bold text-stone-400 tracking-wider uppercase block mb-2 px-2">OVERVIEW</span>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-stone-200/70 text-stone-900 font-bold transition-all">
+                        <svg class="w-4 h-4 text-stone-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/docs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        <span>Docs</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <span class="text-[10px] font-orbitron font-bold text-stone-400 tracking-wider uppercase block mb-2 px-2">PAGES</span>
+                <div class="space-y-1">
+                    <a href="/store" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                        <span>Store / Buy Plan</span>
+                    </a>
+                    <a href="/uploader" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span>Uploader</span>
+                    </a>
+                    <a href="/pastecode" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                        <span>Pastecode Snippet</span>
+                    </a>
+                    <a href="/changelog" class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Changelog</span>
+                        </div>
+                        <span class="bg-stone-200 text-stone-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-stone-300">New</span>
+                    </a>
+                    <a href="/feedback" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        <span>Feedback</span>
+                    </a>
+                    <a href="/status" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Server Status</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <span class="text-[10px] font-orbitron font-bold text-stone-400 tracking-wider uppercase block mb-2 px-2">LEGAL</span>
+                <div class="space-y-1">
+                    <a href="/privacy" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l9-4 9 4v6c0 5.551-3.957 10.743-9 12-5.043-1.257-9-6.449-9-12V6z"/></svg>
+                        <span>Privacy Policy</span>
+                    </a>
+                    <a href="/support" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-200/50 text-stone-700 transition-all">
+                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <span>Support</span>
+                    </a>
+                </div>
+            </div>
         </nav>
+
+        <div class="mt-auto pt-4">
+            <div class="w-full h-28 rounded-2xl overflow-hidden border border-stone-200 shadow-sm relative">
+                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Sidebar Anime Footer" class="w-full h-full object-cover">
+            </div>
+        </div>
+
     </div>
 
     <div id="menuOverlay" class="fixed inset-0 bg-black/70 hidden z-30"></div>
@@ -3867,6 +3916,7 @@ app.get('/docs', (req, res) => {
 </html>
     `);
 });
+
 
 if (require.main === module) {
   app.listen(PORT, () => {
