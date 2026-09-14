@@ -2931,7 +2931,7 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>API-ARULZXD // CYBER CORE v2.0</title>
+    <title>API-ARULZXD // CYBER DASHBOARD v2.0</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2941,95 +2941,88 @@ app.get('/docs', (req, res) => {
     <style>
     :root {
         --cyan-glow: #00f3ff;
-        --cyan-shadow: rgba(0, 243, 255, 0.4);
-        --bg-cyber: #010610;
-        --panel-bg: rgba(4, 15, 30, 0.65);
-        --panel-border: rgba(0, 243, 255, 0.25);
+        --cyan-dark: #0099b0;
+        --cyan-shadow: rgba(0, 243, 255, 0.45);
+        --bg-cyber: #020712;
+        --card-cyber: rgba(4, 16, 35, 0.85);
+        --border-cyber: rgba(0, 243, 255, 0.3);
     }
 
     html.light {
         --cyan-glow: #0284c7;
-        --cyan-shadow: rgba(2, 132, 199, 0.3);
-        --bg-cyber: #f1f5f9;
-        --panel-bg: rgba(255, 255, 255, 0.85);
-        --panel-border: rgba(2, 132, 199, 0.25);
+        --cyan-dark: #0369a1;
+        --cyan-shadow: rgba(2, 132, 199, 0.25);
+        --bg-cyber: #f8fafc;
+        --card-cyber: rgba(255, 255, 255, 0.9);
+        --border-cyber: rgba(2, 132, 199, 0.3);
     }
 
     body {
         font-family: 'Rajdhani', sans-serif;
         background-color: var(--bg-cyber);
-        color: #e2e8f0;
+        color: #f1f5f9;
         overflow-x: hidden;
     }
 
     .font-orbitron { font-family: 'Orbitron', sans-serif; }
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
 
-    /* Cyber Matrix Canvas Grid Background */
+    /* Canvas Grid Lines */
     #themeBg {
         transition: all 0.5s ease;
         background-color: var(--bg-cyber);
         background-image: 
-            radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.15) 0%, transparent 70%),
+            radial-gradient(circle at 50% 10%, rgba(0, 243, 255, 0.18) 0%, transparent 60%),
             linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
             linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-        background-size: 100% 100%, 40px 40px, 40px 40px;
-        background-position: center top;
+        background-size: 100% 100%, 35px 35px, 35px 35px;
     }
 
     html.light #themeBg {
         background-image: 
-            radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.1) 0%, transparent 70%),
-            linear-gradient(rgba(2, 132, 199, 0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(2, 132, 199, 0.06) 1px, transparent 1px);
-        background-size: 100% 100%, 40px 40px, 40px 40px;
+            radial-gradient(circle at 50% 10%, rgba(2, 132, 199, 0.1) 0%, transparent 60%),
+            linear-gradient(rgba(2, 132, 199, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(2, 132, 199, 0.05) 1px, transparent 1px);
     }
 
-    /* Cyber Panel Glassmorphism */
-    .cyber-hud-card {
-        background: var(--panel-bg);
-        border: 1px solid var(--panel-border);
+    /* Cyber Card Box Styling */
+    .cyber-card {
+        background: var(--card-cyber);
+        border: 1px solid var(--border-cyber);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-radius: 16px;
-        position: relative;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 243, 255, 0.05);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
-    .cyber-hud-card:hover {
+    .cyber-card:hover {
         border-color: var(--cyan-glow);
-        box-shadow: 0 0 25px var(--cyan-shadow);
+        box-shadow: 0 0 25px var(--cyan-shadow), inset 0 0 20px rgba(0, 243, 255, 0.1);
     }
 
-    /* HUD Corner Accents */
-    .hud-corner {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        border-color: var(--cyan-glow);
-        pointer-events: none;
+    .stat-cyber-widget {
+        background: rgba(3, 14, 30, 0.9);
+        border: 1px solid var(--border-cyber);
+        border-left: 4px solid var(--cyan-glow);
+        border-radius: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
-    .hud-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 12px; }
-    .hud-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; border-top-right-radius: 12px; }
-    .hud-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: 12px; }
-    .hud-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 12px; }
 
-    /* Neon Glow Texts */
+    /* Glow Text */
     .text-glow-cyan {
-        text-shadow: 0 0 10px var(--cyan-glow), 0 0 20px var(--cyan-shadow);
+        text-shadow: 0 0 12px var(--cyan-glow), 0 0 24px var(--cyan-shadow);
     }
 
-    /* Override Light Mode Dynamic Elements */
-    .light-mode {
-        color: #0f172a !important;
-    }
+    /* Override Light Mode Elements */
+    .light-mode { color: #0f172a !important; }
     .light-mode #mainTitle, .light-mode #mainDescription { color: #0f172a !important; }
     .light-mode #stat-battery-title,
     .light-mode #stat-endpoints-title,
     .light-mode #stat-categories-title { color: #475569 !important; }
     .light-mode #siteFooter { color: #64748b !important; border-color: rgba(0,0,0,0.1); }
     .light-mode #no-results-title { color: #0f172a !important; }
+    .light-mode .stat-cyber-widget { background: #ffffff !important; border-color: rgba(2, 132, 199, 0.25) !important; }
 
     .light-mode .music-player-card {
         background: #ffffff !important;
@@ -3037,20 +3030,14 @@ app.get('/docs', (req, res) => {
     }
     .light-mode .music-text-title { color: #0f172a !important; }
     .light-mode .music-text-artist { color: #475569 !important; }
-    .light-mode .music-progress-bar-bg { background-color: rgba(0,0,0,0.1) !important; }
-    
+    .light-mode .music-progress-bar-bg { background-color: rgba(0,0,0,0.08) !important; }
     .light-mode .music-btn-nav {
         background-color: #ffffff !important;
         border-color: rgba(2, 132, 199, 0.2) !important;
         color: #0f172a !important;
     }
-    .light-mode .music-btn-nav:hover {
-        background-color: #e2e8f0 !important;
-    }
 
-    .light-mode .api-item p, .light-mode .api-item p.text-white {
-        color: #0f172a !important;
-    }
+    .light-mode .api-item p, .light-mode .api-item p.text-white { color: #0f172a !important; }
     .light-mode .api-item .bg-slate-950\/40,
     .light-mode .api-item .bg-slate-900\/40,
     .light-mode .api-item .bg-slate-900\/60 {
@@ -3062,27 +3049,22 @@ app.get('/docs', (req, res) => {
         color: #0f172a !important;
         border-color: #cbd5e1 !important;
     }
-    .light-mode .api-item input[type="text"]::placeholder {
-        color: #64748b !important;
-    }
-    .light-mode .api-item code {
-        color: #0284c7 !important;
-    }
+    .light-mode .api-item code { color: #0284c7 !important; }
 
-    /* Buttons Style */
+    /* Buttons */
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         font-weight: 700;
         padding: 4px 12px;
-        border: 1px solid rgba(0, 243, 255, 0.2);
+        border: 1px solid rgba(0, 243, 255, 0.3);
         background-color: rgba(3, 10, 24, 0.8);
         color: #94a3b8;
         transition: all 0.2s ease;
     }
     .lang-btn.active {
         background-color: #00f3ff;
-        color: #010610;
+        color: #020712;
         border-color: #00f3ff;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
     }
@@ -3090,7 +3072,6 @@ app.get('/docs', (req, res) => {
         background-color: #0284c7;
         color: #ffffff;
         border-color: #0284c7;
-        box-shadow: 0 0 10px rgba(2, 132, 199, 0.3);
     }
 
     .filter-btn {
@@ -3102,19 +3083,19 @@ app.get('/docs', (req, res) => {
         background: rgba(0, 243, 255, 0.05);
         color: #94a3b8;
         transition: all 0.3s ease;
-        border-radius: 10px;
+        border-radius: 9999px;
         white-space: nowrap;
         cursor: pointer;
     }
     .filter-btn:hover {
-        background: rgba(0, 243, 255, 0.15);
+        background: rgba(0, 243, 255, 0.18);
         color: #00f3ff;
         border-color: #00f3ff;
-        box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
     }
     .filter-btn.active {
         background: #00f3ff !important;
-        color: #010610 !important;
+        color: #020712 !important;
         border-color: #00f3ff !important;
         font-weight: 800;
         box-shadow: 0 0 20px rgba(0, 243, 255, 0.6) !important;
@@ -3128,23 +3109,22 @@ app.get('/docs', (req, res) => {
         background: #0284c7 !important;
         color: #ffffff !important;
         border-color: #0284c7 !important;
-        box-shadow: 0 0 15px rgba(2, 132, 199, 0.4) !important;
     }
 
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Cyber Loader Animation Overlay */
+    /* Loader Screen Overlay */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background-color: #010610;
+        background-color: #020712;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: opacity 0.6s ease, visibility 0.6s ease;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
     #cyber-loader-overlay.fade-out {
@@ -3154,18 +3134,16 @@ app.get('/docs', (req, res) => {
     }
 
     .hud-radar {
-        width: 130px;
-        height: 130px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
         border: 2px dashed #00f3ff;
-        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        animation: radarRotate 8s linear infinite;
-        box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        animation: radarRotate 7s linear infinite;
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.25);
     }
-
     @keyframes radarRotate { 100% { transform: rotate(360deg); } }
 
     .neon-progress-bar {
@@ -3174,7 +3152,7 @@ app.get('/docs', (req, res) => {
         transition: width 0.2s ease-out;
     }
 
-    /* Modal Cyber Elements */
+    /* Modal Styling */
     .cyber-popup-bg {
         background-color: #010a17;
         background-image: radial-gradient(circle at 50% 0%, #03203c 0%, #010a17 80%);
@@ -3200,34 +3178,28 @@ app.get('/docs', (req, res) => {
         letter-spacing: 1px;
         box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
     }
-
-    .gold-metallic-button:hover {
-        filter: brightness(1.15);
-        box-shadow: 0 0 25px rgba(245, 158, 11, 0.7);
-    }
+    .gold-metallic-button:hover { filter: brightness(1.15); }
 
     .cyan-solid-header {
         background-color: #00f3ff;
-        color: #010610;
+        color: #010712;
         font-weight: 900;
-        box-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
     }
     </style>
 </head>
 <body class="min-h-screen antialiased text-slate-100 relative">
 
-<!-- HUD Loader Screen Overlay -->
 <div id="cyber-loader-overlay">
     <div class="hud-radar mb-6">
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-16 h-16 rounded-full object-cover border-2 border-cyan-400 shadow-[0_0_20px_#00f3ff]">
+        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-cyan-400 shadow-[0_0_20px_#00f3ff]">
     </div>
 
     <div class="text-center">
         <div id="loader-title-text" class="text-xs font-orbitron font-extrabold tracking-widest uppercase text-cyan-400 mb-1 text-glow-cyan">
-            INITIALIZING GATEWAY...
+            INITIALIZING CORE...
         </div>
         <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            ARULZ-XD API v2.0 // REST SYSTEM CORE
+            ARULZ-XD API v2.0 // REST SYSTEM GATEWAY
         </div>
     </div>
 
@@ -3244,14 +3216,11 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Welcome Popup Modal -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/85 backdrop-blur-md"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="cyber-hud-card p-6 w-full max-w-md relative font-['Rajdhani'] text-slate-100 border border-cyan-500/40">
-      <div class="hud-corner hud-tl"></div><div class="hud-corner hud-tr"></div>
-      <div class="hud-corner hud-bl"></div><div class="hud-corner hud-br"></div>
-
+    <div class="cyber-card p-6 w-full max-w-md relative font-['Rajdhani'] text-slate-100 border border-cyan-500/40">
+      
       <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors bg-white/5 rounded-full p-1.5 focus:outline-none border border-cyan-500/20">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -3287,7 +3256,6 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
-<!-- Profile Pop-up Modal -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3391,18 +3359,17 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-    <!-- Navigation Header Bar -->
     <header class="max-w-6xl mx-auto px-4 pt-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-xl border border-cyan-400/50 shadow-[0_0_15px_rgba(0,243,255,0.4)]">
             <div>
                 <span class="text-xs font-orbitron font-extrabold text-cyan-400 tracking-wider block text-glow-cyan">ARULZ-XD API</span>
-                <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Core Gateway v2.0</span>
+                <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Rest API Gateway</span>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <button id="bioMenuBtn" class="cyber-hud-card w-10 h-10 flex items-center justify-center text-cyan-400 hover:text-white transition-all active:scale-95 focus:outline-none">
+            <button id="bioMenuBtn" class="cyber-card w-10 h-10 flex items-center justify-center text-cyan-400 hover:text-white transition-all active:scale-95 focus:outline-none">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
@@ -3410,7 +3377,6 @@ app.get('/docs', (req, res) => {
         </div>
     </header>
 
-    <!-- Sidebar Menu Dropdown -->
     <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-[#010814] border-l border-cyan-500/30 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-6 font-['Rajdhani']">
         <div class="flex items-center justify-between mb-6">
             <div class="flex border border-cyan-500/30 rounded-lg p-0.5 bg-black/40">
@@ -3464,141 +3430,144 @@ app.get('/docs', (req, res) => {
 
     <div id="menuOverlay" class="fixed inset-0 bg-black/70 hidden z-30"></div>
 
-    <!-- Main Container Content -->
-    <main class="max-w-5xl mx-auto px-4 py-8 relative z-10">
-        <header id="api" class="mb-10 text-center">
-            
-            <div id="mainTitle" class="flex justify-center mb-3 min-h-[50px] items-center text-3xl md:text-4xl font-orbitron font-extrabold text-white tracking-wide">
-                <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=800&size=26&pause=1000&color=00F3FF&center=true&vCenter=true&width=600&lines=ArulzXD+API+Core;Fast+%26+Reliable+Endpoints;Cyber REST+Gateway" alt="Typing Header" class="mx-auto" />
-            </div>
-            
-            <p id="mainDescription" class="text-sm font-medium tracking-wide text-slate-400 max-w-xl mx-auto">
-                Jelajahi dan jalankan pengujian endpoint API berkecepatan tinggi secara real-time.
-            </p>
-
-            <!-- Server Stat Dashboard Widgets -->
-            <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                <div class="cyber-hud-card p-4 text-center">
-                    <div class="hud-corner hud-tl"></div><div class="hud-corner hud-br"></div>
-                    <div id="liveClock" class="text-xl font-orbitron font-black text-cyan-400 text-glow-cyan">00:00:00</div>
-                    <div id="liveDate" class="text-[10px] text-slate-400 font-mono mt-1 uppercase">Loading...</div>
-                </div>
+    <main class="max-w-5xl mx-auto px-4 py-6 relative z-10">
+        
+        <div class="cyber-card relative overflow-hidden mb-8 border-2 border-cyan-500/40 shadow-[0_0_30px_rgba(0,243,255,0.25)] rounded-2xl">
+            <div class="relative w-full h-52 md:h-64 overflow-hidden bg-black">
+                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Cyberpunk Banner GIF" class="w-full h-full object-cover opacity-60 scale-105 transition-transform duration-700 hover:scale-100" />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#020712] via-black/40 to-transparent"></div>
                 
-                <div class="cyber-hud-card p-4 text-center">
-                    <div class="hud-corner hud-tl"></div><div class="hud-corner hud-br"></div>
-                    <span class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest block">Limit Terpakai</span>
-                    <div class="flex items-baseline justify-center gap-1 mt-1">
-                        <span id="userLimitUsed" class="text-2xl font-orbitron font-black text-cyan-400">0</span>
-                        <span class="text-slate-500 text-xs font-bold">/</span>
-                        <span id="userLimitMax" class="text-xs font-bold text-slate-400">100</span>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                    <span class="bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-orbitron font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-2 backdrop-blur-md shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                        REST API DASHBOARD
+                    </span>
+                    <div id="mainTitle" class="flex justify-center min-h-[45px] items-center text-2xl md:text-4xl font-orbitron font-black text-white tracking-wider">
+                        <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=800&size=24&pause=1000&color=00F3FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%26+Reliable+Endpoints;Cyber REST+Gateway" alt="Typing Header" class="mx-auto" />
                     </div>
-                    <span id="userLimitBadge" class="inline-block text-[8px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-900 text-cyan-400 border border-cyan-500/30 uppercase">FREE</span>
+                    <p id="mainDescription" class="text-xs md:text-sm font-medium tracking-wide text-slate-300 max-w-lg mt-1">
+                        Jelajahi dan jalankan pengujian endpoint API berkecepatan tinggi secara real-time.
+                    </p>
                 </div>
-                
-                <div class="cyber-hud-card p-4 text-center">
-                    <div class="hud-corner hud-tl"></div><div class="hud-corner hud-br"></div>
-                    <span id="stat-endpoints-title" class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest block">Total Endpoint</span>
-                    <span id="totalEndpoints" class="text-2xl font-orbitron font-black text-cyan-400 mt-1 block text-glow-cyan">0</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-cyber-widget p-4 flex flex-col justify-between">
+                <span class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">REALTIME CLOCK</span>
+                <div id="liveClock" class="text-xl md:text-2xl font-orbitron font-black text-cyan-400 mt-2 text-glow-cyan">00:00:00</div>
+                <div id="liveDate" class="text-[9px] text-slate-400 font-mono uppercase mt-1">Loading...</div>
+            </div>
+
+            <div class="stat-cyber-widget p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">LIMIT USAGE</span>
+                    <span id="userLimitBadge" class="text-[8px] font-bold px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/40">FREE</span>
                 </div>
-                
-                <div class="cyber-hud-card p-4 text-center">
-                    <div class="hud-corner hud-tl"></div><div class="hud-corner hud-br"></div>
-                    <span id="stat-categories-title" class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest block">Total Kategori</span>
-                    <span id="totalCategories" class="text-2xl font-orbitron font-black text-cyan-400 mt-1 block text-glow-cyan">0</span>
+                <div class="flex items-baseline gap-1 mt-2">
+                    <span id="userLimitUsed" class="text-2xl font-orbitron font-black text-cyan-400 text-glow-cyan">0</span>
+                    <span class="text-slate-500 text-xs font-bold">/</span>
+                    <span id="userLimitMax" class="text-xs font-bold text-slate-400">100</span>
                 </div>
             </div>
 
-            <!-- Banner Link Domain -->
-            <div class="cyber-hud-card max-w-4xl mx-auto mt-4 p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="stat-cyber-widget p-4 flex flex-col justify-between">
+                <span id="stat-endpoints-title" class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">TOTAL ENDPOINTS</span>
+                <span id="totalEndpoints" class="text-2xl font-orbitron font-black text-cyan-400 mt-2 block text-glow-cyan">0</span>
+            </div>
+
+            <div class="stat-cyber-widget p-4 flex flex-col justify-between">
+                <span id="stat-categories-title" class="text-[10px] font-orbitron text-slate-400 uppercase tracking-widest">TOTAL CATEGORIES</span>
+                <span id="totalCategories" class="text-2xl font-orbitron font-black text-cyan-400 mt-2 block text-glow-cyan">0</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="cyber-card p-4 md:col-span-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-cyan-500/30">
                 <div class="flex items-center gap-2 text-xs md:text-sm text-cyan-400 font-mono">
-                    <span class="underline font-bold">https://arulz-xd.my.id</span>
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                    </svg>
+                    <span class="underline font-bold tracking-wide">https://arulz-xd.my.id</span>
                 </div>
-                <a href="/feedback" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-sky-400 hover:brightness-110 text-slate-950 font-black text-[11px] uppercase rounded-xl shadow-lg shadow-cyan-500/20 transition-all font-orbitron text-center">
+                <a href="/feedback" class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-sky-400 hover:brightness-110 text-slate-950 font-black text-[11px] uppercase rounded-xl shadow-lg shadow-cyan-500/20 transition-all font-orbitron text-center">
                     Request Feature
                 </a>
             </div>
 
-            <!-- Social Links -->
-            <div class="flex justify-center gap-4 mt-4 max-w-4xl mx-auto">
-                <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex-1 cyber-hud-card py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-200 hover:text-cyan-400">
-                   Channel WhatsApp
+            <div class="flex gap-2">
+                <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex-1 cyber-card py-3 text-[11px] font-bold uppercase tracking-wider text-center text-slate-200 hover:text-cyan-400 flex items-center justify-center">
+                   Channel WA
                 </a>
-                <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" target="_blank" class="flex-1 cyber-hud-card py-3 text-xs font-bold uppercase tracking-wider text-center text-slate-200 hover:text-cyan-400">
-                   Group Community
+                <a href="https://chat.whatsapp.com/LBeGqVsmDBb6j29ysuusd9" target="_blank" class="flex-1 cyber-card py-3 text-[11px] font-bold uppercase tracking-wider text-center text-slate-200 hover:text-cyan-400 flex items-center justify-center">
+                   Group WA
                 </a>
             </div>
+        </div>
 
-            <!-- Cyber Audio Music Player Widget -->
-            <div class="music-player-card cyber-hud-card mt-6 max-w-2xl mx-auto p-4 relative overflow-hidden">
-                <div class="hud-corner hud-tl"></div><div class="hud-corner hud-tr"></div>
-                <div class="hud-corner hud-bl"></div><div class="hud-corner hud-br"></div>
-                <audio id="audioElement"></audio>
-                <div class="flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 flex-1 min-w-0">
-                        <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-black/80 flex-shrink-0 border border-cyan-500/40">
-                            <img id="musicCoverImg" src="" alt="Cover" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1 min-w-0 text-left">
-                            <h3 id="musicTitle" class="music-text-title text-white font-orbitron font-bold text-xs tracking-wide truncate uppercase">Loading...</h3>
-                            <p id="musicArtist" class="music-text-artist text-slate-400 text-[11px] font-mono truncate mt-0.5">-</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span id="currentTime" class="text-[9px] text-slate-400 font-mono">0:00</span>
-                                <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1.5 bg-slate-900 rounded-full relative cursor-pointer overflow-hidden border border-cyan-500/20">
-                                    <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-300"></div>
-                                </div>
-                                <span id="totalDuration" class="text-[9px] text-slate-400 font-mono">0:00</span>
-                            </div>
-                        </div>
+        <div class="music-player-card cyber-card mb-8 p-4 relative overflow-hidden border-cyan-500/40">
+            <audio id="audioElement"></audio>
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4 flex-1 min-w-0">
+                    <div class="relative w-12 h-12 rounded-xl overflow-hidden bg-black flex-shrink-0 border border-cyan-400/50">
+                        <img id="musicCoverImg" src="" alt="Cover" class="w-full h-full object-cover">
                     </div>
-                    <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button id="prevBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-hud-card text-slate-300 hover:text-cyan-400">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                        </button>
-                        <button id="playBtn" class="music-btn-nav w-10 h-10 flex items-center justify-center cyber-hud-card text-slate-300 hover:text-cyan-400 border-cyan-400/50">
-                            <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </button>
-                        <button id="nextBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-hud-card text-slate-300 hover:text-cyan-400">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/></svg>
-                        </button>
-                        <button id="playlistToggleBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-hud-card text-slate-300 hover:text-cyan-400">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                        </button>
+                    <div class="flex-1 min-w-0 text-left">
+                        <h3 id="musicTitle" class="music-text-title text-white font-orbitron font-bold text-xs tracking-wide truncate uppercase">Loading...</h3>
+                        <p id="musicArtist" class="music-text-artist text-slate-400 text-[10px] font-mono truncate mt-0.5">-</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span id="currentTime" class="text-[9px] text-slate-400 font-mono">0:00</span>
+                            <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1.5 bg-slate-900 rounded-full relative cursor-pointer overflow-hidden border border-cyan-500/20">
+                                <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-300"></div>
+                            </div>
+                            <span id="totalDuration" class="text-[9px] text-slate-400 font-mono">0:00</span>
+                        </div>
                     </div>
                 </div>
-                <div id="playlistPanel" class="hidden mt-4 pt-4 border-t border-cyan-500/20 max-h-40 overflow-y-auto space-y-1"></div>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <button id="prevBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-card text-slate-300 hover:text-cyan-400">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    <button id="playBtn" class="music-btn-nav w-9 h-9 flex items-center justify-center cyber-card text-slate-300 hover:text-cyan-400 border-cyan-400/50">
+                        <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    <button id="nextBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-card text-slate-300 hover:text-cyan-400">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/></svg>
+                    </button>
+                    <button id="playlistToggleBtn" class="music-btn-nav w-8 h-8 flex items-center justify-center cyber-card text-slate-300 hover:text-cyan-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </div>
             </div>
-        </header>
+            <div id="playlistPanel" class="hidden mt-4 pt-4 border-t border-cyan-500/20 max-h-40 overflow-y-auto space-y-1"></div>
+        </div>
 
-        <!-- Search Input Bar & Category Filter Bar -->
-        <div class="mb-8 max-w-4xl mx-auto">
+        <div class="mb-8">
             <div class="relative">
                 <input 
                     type="text" 
                     id="searchInput" 
-                    placeholder="Search endpoints path or category..."
-                    class="search-input w-full px-5 py-4 pl-12 text-xs font-mono rounded-2xl focus:outline-none focus:border-cyan-400 transition-all cyber-hud-card text-white placeholder-slate-500"
+                    placeholder="Cari endpoint berdasarkan nama, path, atau kategori..."
+                    class="search-input w-full px-5 py-4 pl-12 text-xs font-mono rounded-2xl focus:outline-none focus:border-cyan-400 transition-all cyber-card text-white placeholder-slate-500 shadow-[0_0_20px_rgba(0,243,255,0.1)]"
                 >
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-center overflow-x-auto pb-2 scrollbar-hide"></div>
+            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-4 justify-start md:justify-center overflow-x-auto pb-2 scrollbar-hide"></div>
         </div>
 
         <div id="noResults" class="text-center py-12 hidden">
             <h3 id="no-results-title" class="text-sm font-orbitron font-bold text-white mb-1">Endpoint Tidak Ditemukan</h3>
-            <p id="no-results-desc" class="text-xs text-slate-400">Gunakan kata kunci pencarian yang lain.</p>
+            <p id="no-results-desc" class="text-xs text-slate-400">Coba gunakan kata kunci pencarian yang lain.</p>
         </div>
 
-        <!-- Render Target Dynamic List Endpoint -->
-        <div id="apiList" class="space-y-4 max-w-4xl mx-auto"></div>
+        <div id="apiList" class="space-y-4"></div>
 
         <footer id="siteFooter" class="mt-16 pt-6 border-t border-cyan-500/20 text-center text-[10px] font-mono tracking-widest text-slate-500">
             © 2026 ARULZ-XD API REST CORE // ALL SYSTEM OPERATIONAL
         </footer>
     </main>
 
-    <!-- Lightbox Modal preview gambar -->
     <div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-md">
         <div class="relative max-w-4xl max-h-[90vh]">
             <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain" />
@@ -3898,7 +3867,6 @@ app.get('/docs', (req, res) => {
 </html>
     `);
 });
-
 
 if (require.main === module) {
   app.listen(PORT, () => {
