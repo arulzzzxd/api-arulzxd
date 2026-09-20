@@ -2931,366 +2931,214 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Documentation - ArulzXD API</title>
+    <title>Documentation - ArulzXD Api</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="min-h-screen antialiased text-slate-100 relative bg-[#050b14]">
+<body class="min-h-screen text-slate-900 relative pb-12">
 
+<!-- LOADER OVERLAY -->
 <div id="cyber-loader-overlay">
-    <div class="hud-radar mb-6">
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-cyan-400 shadow-[0_0_20px_#00f3ff]">
-    </div>
-    <div class="text-center">
-        <div id="loader-title-text" class="text-xs font-orbitron font-extrabold tracking-widest uppercase text-cyan-400 mb-1 text-glow-cyan">
-            INITIALIZING SYSTEM...
-        </div>
-        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            ARULZ-XD API v2.0 // REST SYSTEM
-        </div>
-    </div>
-    <div class="w-64 mt-6">
-        <div class="flex items-center justify-between text-[11px] font-mono mb-2">
-            <span class="text-slate-400">LOADING DATA</span>
-            <span id="loader-percentage" class="text-cyan-400 font-bold">0%</span>
-        </div>
-        <div class="w-full h-1.5 bg-slate-900 rounded-full border border-cyan-500/30 overflow-hidden">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-        </div>
+    <div class="w-12 h-12 border-4 border-black border-t-yellow-400 rounded-full animate-spin mb-3"></div>
+    <div id="loader-title-text" class="text-xs font-black font-mono tracking-widest text-black">
+        LOADING DATA...
     </div>
 </div>
 
-<div id="themeBg" class="fixed inset-0 -z-10"></div>
-
-<!-- POPUP WELCOME -->
-<div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/85 backdrop-blur-md"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="cyber-card p-6 w-full max-w-md relative font-mono text-slate-100 border border-cyan-500/40">
-      <button id="closePopupBtn" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors bg-white/5 rounded-full p-1.5 focus:outline-none border border-cyan-500/20">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-      <div class="text-center mb-4">
-        <h1 class="text-xl font-orbitron font-black text-white leading-tight">
-          WELCOME TO <span class="text-cyan-400 text-glow-cyan">ARULZ-XD API</span>
-        </h1>
-      </div>
-      <div class="mb-4 rounded-xl overflow-hidden border border-cyan-500/30 bg-black/60 relative">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
-      </div>
-      <p class="text-center text-slate-300 text-xs mb-5 font-medium">
-        Gunakan API Key di bawah ini untuk menguji endpoint secara gratis:
-      </p>
-      <div class="mb-5 flex justify-center">
-        <div class="cyber-pill-capsule py-2 px-5 text-center shadow-[0_0_15px_rgba(0,243,255,0.2)]">
-          <span class="font-bold text-xs text-slate-200 font-mono">
-            APIKEY : <span id="welcomeApiKey" class="font-mono text-cyan-400 select-all font-extrabold">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
-          </span>
-        </div>
-      </div>
-      <a href="/support" class="w-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black py-3 px-6 rounded-xl shadow-lg transition-all text-xs block text-center uppercase tracking-widest font-orbitron">
-        Donate Sekarang
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- POPUP PROFILE -->
-<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="w-full max-w-[410px] cyber-popup-bg border-2 border-cyan-400 rounded-3xl p-5 shadow-[0_0_50px_rgba(0,243,255,0.4)] relative font-mono text-cyan-400 my-auto">
-        <div class="flex items-center justify-between mb-5 gap-2">
-            <div class="relative w-20 h-20 flex-shrink-0">
-                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border-2 border-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.8)] overflow-hidden">
-                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
-                    </div>
-                </div>
-            </div>
-            <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-bold text-cyan-300">loading...</span>
-                </div>
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] text-cyan-400">loading_email@gmail.com</span>
-                </div>
-            </div>
-            <div id="planBoxContainer" class="relative w-20 h-24 flex flex-col items-center justify-center flex-shrink-0">
-                <svg class="w-full h-full filter drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]" viewBox="0 0 100 130" fill="none">
-                    <text x="50" y="20" fill="#00f3ff" font-size="10" font-weight="900" text-anchor="middle">USER</text>
-                    <path d="M 50 35 L 80 45 L 80 85 L 50 110 L 20 85 L 20 45 Z" fill="#010811" stroke="#00f3ff" stroke-width="2.5"/>
-                    <text id="userPlanText" x="50" y="78" fill="#00f3ff" font-size="18" font-weight="900" text-anchor="middle">FREE</text>
-                </svg>
-            </div>
-        </div>
-
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 relative">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold text-cyan-300 border border-cyan-400 bg-[#010811] px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
-            </div>
-            <div class="cyber-pill-capsule text-cyan-200 text-xs font-bold py-1.5 px-3 truncate mb-3 text-center">
-                <span id="userApiKey">loading-key</span>
-            </div>
-            <div id="vipCustomKeyBox" class="hidden mb-3">
-                <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#010a14] border border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-cyan-300 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="gold-metallic-button text-[10px] px-3 rounded-xl uppercase font-extrabold">SIMPAN</button>
-                </div>
-            </div>
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-cyan-400 text-slate-950 text-xs py-2 rounded-xl font-bold uppercase tracking-widest active:scale-95 transition-all">
-                SALIN API KEY
-            </button>
-        </div>
-
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 text-center relative">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3">
-                LIMIT USER
-            </div>
-            <span class="inline-block cyber-pill-capsule text-cyan-300 px-6 py-1 text-xs font-bold tracking-widest">
-                <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
-            </span>
-        </div>
-
-        <div class="double-border-cyan rounded-2xl p-3 mb-4">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3 text-center">
-                AKTIFITAS REQUEST API TERAKHIR
-            </div>
-            <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
-                    belum ada request
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full bg-amber-400 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest transition-all">
-                UPGRADE VIP
-            </a>
-            <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-[#03203c] text-cyan-300 font-bold text-xs py-2 uppercase tracking-widest transition-all">
-                    TUTUP
-                </button>
-                <a href="/auth/logout" class="flex-1 border border-red-500/80 bg-[#140306] hover:bg-red-950 text-red-400 font-bold text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all">
-                    LOG OUT
-                </a>
-            </div>
-        </div>
-    </div>
-  </div>
-</div>
-
-<div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
-
-<!-- HEADER (SIDEBAR TRIGGER & WHATSAPP) -->
-<header class="max-w-2xl mx-auto px-4 pt-4 flex items-center justify-between">
-    <button id="bioMenuBtn" class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-950 text-slate-200 hover:border-cyan-400 hover:text-cyan-400 transition-all active:scale-95 shadow-md">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+<!-- HEADER / NAVBAR -->
+<header class="max-w-4xl mx-auto px-4 pt-4 pb-2 flex items-center justify-between">
+    <button id="bioMenuBtn" class="w-10 h-10 flex items-center justify-center bg-white border-2 border-black rounded-xl shadow-neo font-bold text-black hover:bg-yellow-300 transition-all active:translate-x-0.5 active:translate-y-0.5">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
     </button>
-    <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-slate-900 bg-slate-950 text-emerald-400 hover:border-emerald-400 transition-all shadow-md">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.761.459 3.479 1.332 4.992l-1.416 5.17 5.292-1.388c1.458.796 3.102 1.215 4.78 1.216h.004c5.507 0 9.99-4.478 9.99-9.985 0-2.667-1.038-5.175-2.926-7.063a9.923 9.923 0 0 0-7.066-2.926z"/>
+    <a href="https://wa.me/" target="_blank" class="w-10 h-10 flex items-center justify-center bg-emerald-100 border-2 border-black rounded-xl shadow-neo text-emerald-800 hover:bg-emerald-300 transition-all">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.012 2c-5.506 0-9.989 4.478-9.989 9.984 0 1.761.459 3.477 1.332 4.992l-1.415 5.17 5.291-1.387c1.464.798 3.116 1.218 4.781 1.218 5.507 0 9.99-4.478 9.99-9.986 0-2.668-1.038-5.176-2.925-7.063-1.888-1.888-4.397-2.928-7.065-2.928zm5.666 14.175c-.241.677-1.387 1.309-1.921 1.383-.498.069-1.148.1-3.328-.804-2.788-1.156-4.577-3.987-4.717-4.175-.138-.188-1.127-1.501-1.127-2.863 0-1.362.712-2.032.966-2.308.254-.276.552-.345.736-.345.184 0 .368.001.529.009.173.008.403-.065.633.486.241.576.817 2.002.887 2.146.069.144.115.311.023.495-.092.184-.138.299-.276.46-.138.161-.291.36-.415.483-.138.138-.282.288-.121.564.161.276.717 1.183 1.541 1.917 1.062.946 1.957 1.239 2.233 1.377.276.138.437.115.598-.069.161-.184.69-.804.874-1.08.184-.276.368-.23.621-.138.253.092 1.61.759 1.886.897.276.138.46.207.529.322.069.115.069.667-.172 1.344z"/>
         </svg>
     </a>
 </header>
 
-<!-- SIDEBAR MENU LEFT (SESUAI DESAIN STYLERA BANNER) -->
-<div id="bioDropdown" class="fixed top-0 left-0 h-full w-80 bg-[#070d19] border-r-2 border-slate-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 font-mono text-slate-200 overflow-y-auto scrollbar-hide">
-    
-    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs">⚡</span>
-            <span class="font-orbitron font-extrabold text-white text-sm tracking-wider">ARULZ-XD</span>
-        </div>
-        <button id="closeMenuBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+<main class="max-w-4xl mx-auto px-4 py-2">
+    <!-- JUDUL UTAMA -->
+    <div class="mb-4">
+        <h1 class="text-2xl font-black text-black font-mono tracking-tight">Documentation</h1>
+        <p class="text-xs font-mono text-stone-600">Total <span id="headerTotalEndpoints">0</span> endpoint dari ArulzXD Api.</p>
     </div>
 
-    <!-- SIDEBAR BANNER YELLOW NEON -->
-    <div class="mb-4 rounded-xl border-2 border-slate-900 bg-amber-400 overflow-hidden shadow-md text-slate-950">
-        <div class="px-3 py-1 flex items-center justify-between border-b border-slate-950/20 text-[10px] font-black tracking-widest uppercase">
-            <span>BANNER</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.76 1.76 0 013 12c0-.662.38-1.236.936-1.516"/></svg>
-        </div>
-        <div class="h-32 bg-slate-950 relative overflow-hidden">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" class="w-full h-full object-cover opacity-80" alt="Sidebar Anime">
-        </div>
-    </div>
-
-    <!-- SIDEBAR NAVIGATION STYLED BUTTONS -->
-    <nav class="flex flex-col gap-2 text-xs font-bold tracking-wide flex-1">
-        <a href="/" class="style-sidebar-btn active">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            <span>BACK TO DASHBOARD</span>
-        </a>
-        <a href="/docs" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            <span>DOCS</span>
-        </a>
-        <a href="/status" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <span>MONITORING</span>
-        </a>
-        <a href="/uploader" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            <span>UPLOADER</span>
-        </a>
-        <a href="/support" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            <span>DONATE</span>
-        </a>
-        <a href="/feedback" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-4a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-            <span>REQUEST FITUR</span>
-        </a>
-        <a href="/privacy" class="style-sidebar-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>TENTANG KAMI</span>
-        </a>
-    </nav>
-
-    <div class="mt-auto pt-3 border-t border-slate-800 text-[10px] text-slate-500 font-mono text-center">
-        ArulzXD ® 2026
-    </div>
-</div>
-
-<div id="menuOverlay" class="fixed inset-0 bg-black/70 hidden z-30"></div>
-
-<!-- MAIN CONTENT CONTAINER -->
-<main class="max-w-2xl mx-auto px-4 py-4 relative z-10 font-mono">
-    
-    <!-- HEADER TITLE & SUBTITLE -->
-    <div class="mb-5">
-        <h1 class="text-2xl font-orbitron font-black text-slate-100 tracking-tight">Documentation</h1>
-        <p class="text-xs text-slate-400 mt-1">Total <span id="totalEndpoints" class="text-cyan-400 font-bold">0</span> endpoint dari ArulzXD Api.</p>
-    </div>
-
-    <!-- MAIN BANNER YELLOW NEON STYLE (SAMA SEPERTI DI GAMBAR) -->
-    <div class="style-card-banner mb-5">
-        <div class="bg-amber-400 text-slate-950 px-3 py-1.5 flex items-center justify-between text-[11px] font-black uppercase tracking-wider">
-            <span>BANNER</span>
-            <div class="flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.76 1.76 0 013 12c0-.662.38-1.236.936-1.516"/></svg>
-                <div class="flex gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-950/40"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-950/40"></span>
-                </div>
+    <!-- BANNER CARD -->
+    <div class="neo-card bg-yellow-400 p-0 overflow-hidden mb-5">
+        <div class="px-4 py-2 border-b-2 border-black flex items-center justify-between">
+            <span class="text-xs font-black font-mono tracking-wider text-black">BANNER</span>
+            <div class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-black"></span>
+                <span class="w-2 h-2 rounded-full bg-black/40"></span>
+                <span class="w-2 h-2 rounded-full bg-black/20"></span>
             </div>
         </div>
-        <div class="relative h-44 sm:h-48 bg-slate-950 overflow-hidden">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" class="w-full h-full object-cover opacity-85" alt="Banner Image">
-            <div class="absolute inset-x-0 bottom-0 bg-slate-950/80 backdrop-blur-sm p-3 border-t border-slate-800">
-                <div class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">POWERED - ARULZXD</div>
-                <div class="text-xs text-slate-300 font-medium mt-0.5">Rest Api With Many Features.</div>
+        <div class="relative h-44 sm:h-52 bg-stone-900 overflow-hidden">
+            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Banner" class="w-full h-full object-cover opacity-80" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-4">
+                <h2 class="text-sm font-black font-mono text-white tracking-widest uppercase">POWERED - ARULZXD</h2>
+                <p class="text-[11px] font-mono text-stone-300">Rest Api With Many Features.</p>
             </div>
         </div>
     </div>
 
-    <!-- NAVIGATION CAPSULE GRID (4 ITEM DENGAN OUTLINE DUA KOLOM) -->
-    <div class="style-nav-box mb-5 p-3">
-        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">NAVIGATION</div>
-        <div class="grid grid-cols-2 gap-2.5">
-            <a href="/docs" class="style-nav-pill">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                <span id="navEndpointCount">0 Endpoint</span>
+    <!-- NAVIGATION GRID -->
+    <div class="neo-card bg-white p-4 mb-5">
+        <span class="text-[10px] font-black font-mono text-stone-500 uppercase tracking-widest block mb-3">NAVIGATION</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="neo-button bg-stone-50 py-2.5 px-4 flex items-center gap-3">
+                <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+                <span class="text-xs font-bold font-mono text-black"><span id="navEndpointCount">0</span> Endpoint</span>
+            </div>
+            <a href="/support" class="neo-button bg-stone-50 py-2.5 px-4 flex items-center gap-3">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M12 18h.01"/></svg>
+                <span class="text-xs font-bold font-mono text-black">F.A.Q</span>
             </a>
-            <a href="/support" class="style-nav-pill">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>F.A.Q</span>
+            <a href="/status" class="neo-button bg-stone-50 py-2.5 px-4 flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                <span class="text-xs font-bold font-mono text-black">System Status</span>
             </a>
-            <a href="/status" class="style-nav-pill">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                <span>System Status</span>
+            <a href="javascript:void(0)" onclick="openProfilePopup()" class="neo-button bg-stone-50 py-2.5 px-4 flex items-center gap-3">
+                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-xs font-bold font-mono text-black">Live Request</span>
             </a>
-            <div onclick="if(typeof openProfilePopup==='function') openProfilePopup()" class="style-nav-pill cursor-pointer">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Live Request</span>
-            </div>
         </div>
     </div>
 
-    <!-- SEARCH INPUT (SESUAI GAMBAR DENGAN OUTLINE CAPSULE) -->
-    <div class="mb-5">
-        <div class="relative">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="Cari endpoint atau kategori..."
-                class="w-full px-4 py-3 pl-10 text-xs font-mono rounded-xl bg-[#080e1a] border-2 border-slate-800 focus:border-cyan-400 text-white placeholder-slate-500 focus:outline-none transition-all shadow-inner"
-            >
-            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-        </div>
-        <div id="categoryFilters" class="flex flex-wrap gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
+    <!-- SEARCH INPUT -->
+    <div class="relative mb-5">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Cari endpoint atau kategori..."
+            class="w-full bg-white border-2 border-black rounded-2xl px-11 py-3.5 text-xs font-mono text-black placeholder-stone-400 shadow-neo focus:outline-none focus:bg-yellow-50 transition-all"
+        >
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
     </div>
 
-    <!-- PLAYER MUSIK FITUR -->
-    <div class="music-player-card cyber-card mb-5 p-3.5 relative overflow-hidden border-2 border-slate-800 bg-[#080e1a]">
-        <audio id="audioElement"></audio>
-        <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-                <div class="relative w-10 h-10 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-slate-800">
-                    <img id="musicCoverImg" src="" alt="Cover" class="w-full h-full object-cover">
-                </div>
-                <div class="flex-1 min-w-0 text-left">
-                    <h3 id="musicTitle" class="music-text-title text-white font-bold text-xs tracking-wide truncate">Loading...</h3>
-                    <p id="musicArtist" class="music-text-artist text-slate-400 text-[10px] font-mono truncate">-</p>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span id="currentTime" class="text-[9px] text-slate-500 font-mono">0:00</span>
-                        <div id="progressContainer" class="music-progress-bar-bg flex-1 h-1 bg-slate-900 rounded-full relative cursor-pointer overflow-hidden border border-slate-800">
-                            <div id="progressBar" class="h-full bg-cyan-400 rounded-full w-0"></div>
-                        </div>
-                        <span id="totalDuration" class="text-[9px] text-slate-500 font-mono">0:00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center gap-1 flex-shrink-0">
-                <button id="prevBtn" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800">
-                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                </button>
-                <button id="playBtn" class="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-400 text-slate-950 hover:bg-cyan-300 border border-cyan-400 font-bold">
-                    <svg id="playIcon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </button>
-                <button id="nextBtn" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/></svg>
-                </button>
-            </div>
-        </div>
-        <div id="playlistPanel" class="hidden mt-3 pt-3 border-t border-slate-800 max-h-36 overflow-y-auto space-y-1"></div>
+    <div id="categoryFilters" class="hidden"></div>
+
+    <div id="noResults" class="neo-card bg-white text-center py-8 hidden">
+        <h3 id="no-results-title" class="text-xs font-mono font-bold text-black uppercase mb-1">Endpoint Tidak Ditemukan</h3>
+        <p id="no-results-desc" class="text-[11px] font-mono text-stone-500">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- LIST ENDPOINT / KATEGORI (RENDERED DARI SCRIPT.JS) -->
-    <div id="noResults" class="text-center py-8 hidden">
-        <h3 id="no-results-title" class="text-xs font-bold text-slate-300 mb-1">Endpoint Tidak Ditemukan</h3>
-        <p id="no-results-desc" class="text-[11px] text-slate-500">Coba kata kunci pencarian yang lain.</p>
-    </div>
-
+    <!-- API LIST CONTAINER -->
     <div id="apiList" class="space-y-3"></div>
 
-    <footer id="siteFooter" class="mt-12 pt-4 border-t border-slate-800 text-center text-[10px] font-mono tracking-widest text-slate-500">
-        Stylera / ArulzXD ® 2026
-    </footer>
+    <!-- DUMMY BINDING BILA DIBUTUHKAN SCRIPT -->
+    <div class="hidden">
+        <span id="totalEndpoints">0</span>
+        <span id="totalCategories">0</span>
+        <span id="userLimitUsed">0</span>
+        <span id="userLimitMax">100</span>
+        <span id="userLimitBadge">FREE</span>
+        <span id="liveClock">00:00:00</span>
+        <span id="liveDate">Date</span>
+    </div>
 </main>
 
-<div id="imageLightbox" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-md">
-    <div class="relative max-w-4xl max-h-[90vh]">
-        <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain" />
-        <button id="closeLightbox" class="absolute -top-10 right-0 text-white font-mono text-xs bg-black/60 px-3 py-1 rounded border border-cyan-500/30">✕ Close</button>
+<!-- SIDEBAR DRAWER -->
+<div id="bioDropdown" class="fixed top-0 left-0 h-full w-72 bg-white border-r-2 border-black transform -translate-x-full transition-transform duration-300 ease-in-out z-50 p-4 font-mono text-black overflow-y-auto flex flex-col justify-between shadow-2xl">
+    <div>
+        <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-black">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-yellow-400 border-2 border-black rounded-lg flex items-center justify-center font-black text-xs">⚡</div>
+                <span class="font-black text-sm uppercase">STYLERA API</span>
+            </div>
+            <button id="closeMenuBtn" class="p-1 hover:bg-stone-100 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div class="neo-card bg-yellow-400 p-0 overflow-hidden mb-4">
+            <div class="px-3 py-1.5 border-b-2 border-black text-[10px] font-black uppercase">BANNER</div>
+            <img src="https://arulz-xd.my.id/files/K4Sf61.png" class="w-full h-24 object-cover" />
+        </div>
+
+        <nav class="space-y-2">
+            <a href="/" class="neo-button bg-black text-white py-2 px-3 text-xs font-bold block">
+                <span>&#9638; BACK TO DASHBOARD</span>
+            </a>
+            <a href="/docs" class="neo-button bg-black text-white py-2 px-3 text-xs font-bold block">
+                <span>&#10022; DOCS</span>
+            </a>
+            <a href="/status" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#128200; MONITORING</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openProfilePopup()" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#9889; LIVE REQUEST</span>
+            </a>
+            <a href="/uploader" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#128228; UPLOADER</span>
+            </a>
+            <a href="/store" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#10084; DONATE</span>
+            </a>
+            <a href="/feedback" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#128161; REQUEST FITUR</span>
+            </a>
+            <a href="/support" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#8505; TENTANG KAMI</span>
+            </a>
+            <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="neo-button bg-white text-black py-2 px-3 text-xs font-bold block">
+                <span>&#128227; FOLLOW CHANNEL</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="pt-4 border-t-2 border-black text-[10px] font-mono text-stone-500">
+        Stylera &copy; 2026
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
+<div id="menuOverlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+<!-- PROFILE POPUP -->
+<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="w-full max-w-md neo-card bg-white p-5 relative font-mono text-black">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-black">
+                <span class="font-black text-sm uppercase">USER PROFILE</span>
+                <button onclick="closeProfilePopup()" class="font-bold text-xs bg-red-400 border-2 border-black px-2 py-0.5 rounded-md">X</button>
+            </div>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-12 h-12 rounded-xl border-2 border-black object-cover" />
+                <div>
+                    <h3 id="userName" class="font-black text-sm">User</h3>
+                    <p id="userEmail" class="text-[10px] text-stone-500">email@gmail.com</p>
+                    <span id="userPlanText" class="inline-block mt-1 bg-yellow-300 border border-black px-2 py-0.5 text-[9px] font-black uppercase">FREE</span>
+                </div>
+            </div>
+
+            <div class="bg-stone-50 border-2 border-black rounded-xl p-3 mb-3">
+                <div class="text-[10px] font-bold text-stone-500 uppercase mb-1">API KEY:</div>
+                <div id="userApiKey" class="text-xs font-bold text-black break-all mb-2">loading-key</div>
+                <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full neo-button bg-yellow-400 text-black py-1.5 text-xs font-bold">SALIN API KEY</button>
+            </div>
+
+            <div class="bg-stone-50 border-2 border-black rounded-xl p-3 mb-4 flex justify-between items-center text-xs font-bold">
+                <span>LIMIT DIGUNAKAN:</span>
+                <span class="bg-black text-white px-2 py-0.5 rounded-md"><span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span></span>
+            </div>
+
+            <a href="/auth/logout" class="block text-center neo-button bg-red-400 text-black py-2 text-xs font-bold">LOGOUT</a>
+        </div>
+    </div>
+</div>
+
+<div id="welcomePopup" class="hidden"></div>
+<div id="toast" class="fixed top-4 right-4 z-[99999] space-y-2 pointer-events-none"></div>
 
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
@@ -3299,158 +3147,28 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-        function copyText(text, label) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert((label || 'Teks') + ' berhasil disalin!');
-                });
-            }
+    function openProfilePopup() {
+        document.getElementById('profilePopup').classList.remove('hidden');
+        if (typeof fetchUserProfile === 'function') fetchUserProfile();
+    }
+    function closeProfilePopup() {
+        document.getElementById('profilePopup').classList.add('hidden');
+    }
+    function copyText(text, label) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert((label || 'Teks') + ' berhasil disalin!');
+            });
         }
-
-        function openProfilePopup() {
-            document.getElementById('profilePopup').classList.remove('hidden');
-            fetchUserProfile();
-        }
-
-        function closeProfilePopup() {
-            document.getElementById('profilePopup').classList.add('hidden');
-        }
-
-        function showWelcomePopup() {
-            const popup = document.getElementById('welcomePopup');
-            const closeBtn = document.getElementById('closePopupBtn');
-            if (popup) {
-                popup.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    popup.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                };
-            }
-        }
-
-        function setRoleTheme(roleName) {
-            const planText = document.getElementById('userPlanText');
-            const vipCustomBox = document.getElementById('vipCustomKeyBox');
-            if (!planText) return;
-
-            const role = (roleName || '').toLowerCase();
-            if (role.includes('vip')) {
-                planText.textContent = 'VIP';
-                if (vipCustomBox) vipCustomBox.classList.remove('hidden');
-            } else if (role.includes('premium')) {
-                planText.textContent = 'PREM';
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
-            } else {
-                planText.textContent = 'FREE';
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
-            }
-        }
-
-        async function saveCustomApiKey() {
-            const input = document.getElementById('customApiKeyInput');
-            if (!input || !input.value.trim()) {
-                alert('Ketik API Key kustom!');
-                return;
-            }
-            try {
-                const response = await fetch('/api/user/custom-apikey', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customKey: input.value.trim() })
-                });
-                const resData = await response.json();
-                if (resData.status) {
-                    alert(resData.message);
-                    document.getElementById('userApiKey').innerText = resData.apikey;
-                    input.value = '';
-                } else {
-                    alert(resData.message || 'Gagal menyimpan.');
-                }
-            } catch (err) {
-                alert('Kesalahan koneksi.');
-            }
-        }
-
-        async function uploadAvatarFile(input) {
-            if (!input.files || !input.files[0]) return;
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            try {
-                const response = await fetch('/api/user/update-avatar', { method: 'POST', body: formData });
-                const result = await response.json();
-                if (result.status) {
-                    document.querySelectorAll('#userAvatar').forEach(img => img.src = result.avatar);
-                    alert('Avatar berhasil diperbarui!');
-                } else {
-                    alert(result.message || 'Gagal update avatar.');
-                }
-            } catch (error) {
-                alert('Gagal mengunggah.');
-            }
-        }
-
-        function fetchUserProfile() {
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        document.querySelectorAll('#userAvatar').forEach(img => img.src = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png');
-                        document.getElementById('userName').innerText = data.user.username || 'User';
-                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        document.getElementById('userApiKey').innerText = data.user.apikey || '';
-                        setRoleTheme(data.user.role || 'Free User');
-                    }
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchUserProfile();
-        });
-
-        let currentProgress = 0;
-        let hasFinishedLoading = false;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
-        const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        function finishLoader() {
-            if (hasFinishedLoading) return;
-            hasFinishedLoading = true;
-            clearInterval(progressInterval);
-            updateProgress(100);
-
-            setTimeout(() => {
-                if (loaderOverlay) {
-                    loaderOverlay.classList.add('fade-out');
-                    setTimeout(() => {
-                        showWelcomePopup();
-                    }, 200);
-                }
-            }, 300);
-        }
-
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                updateProgress(currentProgress + 15);
-            }
-        }, 100);
-
-        window.addEventListener('load', finishLoader);
-        setTimeout(finishLoader, 1200);
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const loader = document.getElementById('cyber-loader-overlay');
+        if (loader) setTimeout(() => loader.style.display = 'none', 400);
+    });
 </script>
 </body>
-</html>`);
+</html>
+    `);
 });
 
 if (require.main === module) {
