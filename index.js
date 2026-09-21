@@ -2931,7 +2931,7 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Arulzxd API // DASHBOARD</title>
+    <title>API-ARULZXD // NEO DASHBOARD</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2971,7 +2971,7 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 3px 0px #18181b;
     }
 
-    /* Penyesuaian API List / Accordion agar Render script.js Bekerja Normal */
+    /* Override gaya elemen API list agar cocok dengan tema Neo-Brutalist & script.js */
     #apiList .category-card, 
     #apiList .api-item,
     .category-card {
@@ -2980,7 +2980,7 @@ app.get('/docs', (req, res) => {
         border-radius: 16px !important;
         box-shadow: 0 3px 0px #18181b !important;
         color: #18181b !important;
-        overflow: hidden;
+        margin-bottom: 12px !important;
     }
 
     #apiList .category-header {
@@ -3009,7 +3009,7 @@ app.get('/docs', (req, res) => {
         font-weight: 700 !important;
     }
 
-    /* Buttons & Filter Pills */
+    /* Buttons & Language Selector */
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
@@ -3090,9 +3090,21 @@ app.get('/docs', (req, res) => {
         border: 2px solid #18181b;
         border-radius: 9999px;
     }
+
+    .gold-metallic-button {
+        background: #18181b;
+        border: 2px solid #18181b;
+        color: #ffffff;
+        font-weight: 800;
+        border-radius: 12px;
+    }
+    .gold-metallic-button:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body class="min-h-screen antialiased text-slate-900 relative">
+
+<!-- ELEMENT BACKGROUND (Diperlukan oleh script.js) -->
+<div id="themeBg" class="fixed inset-0 -z-10"></div>
 
 <!-- LOADER -->
 <div id="cyber-loader-overlay">
@@ -3281,9 +3293,15 @@ app.get('/docs', (req, res) => {
                 <span class="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">STYLERA</span>
             </div>
 
-            <button id="closeMenuBtn" class="w-8 h-8 rounded-xl bg-white border-2 border-zinc-900 shadow-[0_2px_0px_#18181b] flex items-center justify-center text-zinc-900 font-bold">
-                ✕
-            </button>
+            <div class="flex items-center gap-2">
+                <div class="flex border-2 border-zinc-900 rounded-xl p-0.5 bg-white shadow-[0_2px_0px_#18181b]">
+                    <button id="lang-id" class="lang-btn rounded-lg text-[10px] font-bold px-2 py-0.5 active" onclick="setLanguage('id')">ID</button>
+                    <button id="lang-en" class="lang-btn rounded-lg text-[10px] font-bold px-2 py-0.5" onclick="setLanguage('en')">EN</button>
+                </div>
+                <button id="closeMenuBtn" class="w-8 h-8 rounded-xl bg-white border-2 border-zinc-900 shadow-[0_2px_0px_#18181b] flex items-center justify-center text-zinc-900 font-bold">
+                    ✕
+                </button>
+            </div>
         </div>
 
         <div class="border-2 border-zinc-900 bg-amber-300 rounded-2xl p-2.5 mb-4 shadow-[0_3px_0px_#18181b]">
@@ -3380,7 +3398,7 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-        <!-- HIDDEN MUSIC PLAYER CONTROLS (Memastikan script.js tidak bermasalah) -->
+        <!-- MUSIC PLAYER CONTROLS (Wajib Ada Untuk script.js) -->
         <div class="music-player-card hidden">
             <audio id="audioElement"></audio>
             <img id="musicCoverImg" src="" alt="Cover">
@@ -3403,7 +3421,7 @@ app.get('/docs', (req, res) => {
                     type="text" 
                     id="searchInput" 
                     placeholder="Cari Endpoint Atau Kategori...."
-                    class="w-full px-4 py-3 pl-11 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#f7f4ea] focus:outline-none focus:bg-white transition-all text-zinc-900 placeholder-zinc-500 shadow-[0_3px_0px_#18181b]"
+                    class="search-input w-full px-4 py-3 pl-11 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#f7f4ea] focus:outline-none focus:bg-white transition-all text-zinc-900 placeholder-zinc-500 shadow-[0_3px_0px_#18181b]"
                 >
                 <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -3417,7 +3435,7 @@ app.get('/docs', (req, res) => {
             <p id="no-results-desc" class="text-xs text-zinc-600 font-semibold">Coba gunakan kata kunci pencarian yang lain.</p>
         </div>
 
-        <!-- ACCORDION CONTAINER DENGAN DYNAMIC JS RENDER -->
+        <!-- CONTAINER RENDER ENDPOINT & ACCORDION KATEGORI -->
         <div id="apiList" class="space-y-3"></div>
 
         <footer id="siteFooter" class="mt-12 pt-4 border-t-2 border-zinc-900 text-center text-[10px] font-mono tracking-wider font-bold text-zinc-600">
@@ -3439,6 +3457,16 @@ app.get('/docs', (req, res) => {
 <script class="notranslate" translate="no">
     window.musicPlaylist = ${JSON.stringify(playlist)};
     const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
+    
+    // Fungsi Bahasa bawaan agar skrip switcher bekerja tanpa error
+    function setLanguage(lang) {
+        if (typeof window.switchLanguage === 'function') {
+            window.switchLanguage(lang);
+        }
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById('lang-' + lang);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
 </script>
 <script src="script.js"></script>
 
