@@ -2971,35 +2971,45 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 3px 0px #18181b;
     }
 
-    /* Override gaya elemen API list agar cocok dengan tema baru */
-    .api-item, .category-card {
+    /* Penyesuaian API List / Accordion agar Render script.js Bekerja Normal */
+    #apiList .category-card, 
+    #apiList .api-item,
+    .category-card {
         background-color: #f7f4eb !important;
         border: 2px solid #18181b !important;
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         box-shadow: 0 3px 0px #18181b !important;
         color: #18181b !important;
-        margin-bottom: 12px !important;
+        overflow: hidden;
     }
 
-    .api-item p, .api-item h3, .api-item span, .api-item label {
+    #apiList .category-header {
+        background-color: #f7f4eb !important;
+        color: #18181b !important;
+        font-weight: 800 !important;
+        padding: 12px 16px !important;
+        cursor: pointer;
+    }
+
+    #apiList p, #apiList h3, #apiList span, #apiList label, #apiList code {
         color: #18181b !important;
     }
 
-    .api-item input[type="text"], .api-item input, .api-item select {
+    #apiList input[type="text"], #apiList input, #apiList select {
         background-color: #ffffff !important;
         color: #18181b !important;
         border: 1.5px solid #18181b !important;
         border-radius: 10px !important;
     }
 
-    .api-item button, .api-item .execute-btn {
+    #apiList button, #apiList .execute-btn {
         background-color: #18181b !important;
         color: #ffffff !important;
         border-radius: 10px !important;
         font-weight: 700 !important;
     }
 
-    /* Buttons & Pills */
+    /* Buttons & Filter Pills */
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
@@ -3019,7 +3029,7 @@ app.get('/docs', (req, res) => {
     .filter-btn {
         font-size: 11px;
         font-weight: 800;
-        padding: 8px 18px;
+        padding: 6px 14px;
         border: 2px solid #18181b;
         background: #ffffff;
         color: #18181b;
@@ -3037,7 +3047,7 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Loader */
+    /* Loader Overlay */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3057,8 +3067,8 @@ app.get('/docs', (req, res) => {
     }
 
     .hud-radar {
-        width: 100px;
-        height: 100px;
+        width: 90px;
+        height: 90px;
         border-radius: 50%;
         border: 3px solid #18181b;
         display: flex;
@@ -3080,15 +3090,6 @@ app.get('/docs', (req, res) => {
         border: 2px solid #18181b;
         border-radius: 9999px;
     }
-
-    .gold-metallic-button {
-        background: #18181b;
-        border: 2px solid #18181b;
-        color: #ffffff;
-        font-weight: 800;
-        border-radius: 12px;
-    }
-    .gold-metallic-button:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body class="min-h-screen antialiased text-slate-900 relative">
@@ -3271,7 +3272,7 @@ app.get('/docs', (req, res) => {
         </div>
     </header>
 
-    <!-- SIDEBAR DRAWER (STYLERA MODEL ACCORDING TO IMAGE) -->
+    <!-- SIDEBAR DRAWER -->
     <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#fbf8ef] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 font-['Plus_Jakarta_Sans'] text-zinc-900 overflow-y-auto scrollbar-hide">
         
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
@@ -3285,7 +3286,6 @@ app.get('/docs', (req, res) => {
             </button>
         </div>
 
-        <!-- BANNER CARD INSIDE DRAWER -->
         <div class="border-2 border-zinc-900 bg-amber-300 rounded-2xl p-2.5 mb-4 shadow-[0_3px_0px_#18181b]">
             <div class="flex items-center justify-between mb-1.5">
                 <span class="text-[10px] font-black uppercase text-zinc-900 tracking-wider">BANNER</span>
@@ -3337,7 +3337,7 @@ app.get('/docs', (req, res) => {
 
     <main class="max-w-md mx-auto px-4 py-4 relative z-10">
         
-        <!-- BANNER GRAPHIC MATCHING IMAGE -->
+        <!-- BANNER GRAPHIC -->
         <div class="brutal-card overflow-hidden mb-5 border-2 border-zinc-900 shadow-[0_4px_0px_#18181b] rounded-2xl bg-white p-1">
             <div class="relative w-full h-44 rounded-xl overflow-hidden bg-black">
                 <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Anime Banner" class="w-full h-full object-cover" />
@@ -3349,12 +3349,12 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-        <!-- 4 STAT WIDGETS MATCHING IMAGE EXACTLY -->
+        <!-- 4 STAT WIDGETS -->
         <div class="grid grid-cols-2 gap-3 mb-5">
             <div class="brutal-widget p-3 flex flex-col justify-between">
                 <span class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">REAL-TIME CLOCK</span>
-                <div id="liveClock" class="text-xl font-black text-zinc-900 mt-1">18:18:18</div>
-                <div id="liveDate" class="text-[8px] text-zinc-600 font-extrabold uppercase mt-0.5">SENIN, 21, SEPTEMBER 2026</div>
+                <div id="liveClock" class="text-xl font-black text-zinc-900 mt-1">00:00:00</div>
+                <div id="liveDate" class="text-[8px] text-zinc-600 font-extrabold uppercase mt-0.5">Loading...</div>
             </div>
 
             <div class="brutal-widget p-3 flex flex-col justify-between">
@@ -3371,16 +3371,16 @@ app.get('/docs', (req, res) => {
 
             <div class="brutal-widget p-3 flex flex-col justify-between">
                 <span id="stat-endpoints-title" class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">TOTAL ENDPOINT</span>
-                <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 mt-1 block">999</span>
+                <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 mt-1 block">0</span>
             </div>
 
             <div class="brutal-widget p-3 flex flex-col justify-between">
                 <span id="stat-categories-title" class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">TOTAL KATEGORI</span>
-                <span id="totalCategories" class="text-2xl font-black text-zinc-900 mt-1 block">16</span>
+                <span id="totalCategories" class="text-2xl font-black text-zinc-900 mt-1 block">0</span>
             </div>
         </div>
 
-        <!-- HIDDEN MUSIC PLAYER (Kept for script functionality) -->
+        <!-- HIDDEN MUSIC PLAYER CONTROLS (Memastikan script.js tidak bermasalah) -->
         <div class="music-player-card hidden">
             <audio id="audioElement"></audio>
             <img id="musicCoverImg" src="" alt="Cover">
@@ -3396,7 +3396,7 @@ app.get('/docs', (req, res) => {
             <div id="playlistPanel"></div>
         </div>
 
-        <!-- SEARCH INPUT MATCHING IMAGE -->
+        <!-- SEARCH INPUT -->
         <div class="mb-5">
             <div class="relative">
                 <input 
@@ -3417,7 +3417,7 @@ app.get('/docs', (req, res) => {
             <p id="no-results-desc" class="text-xs text-zinc-600 font-semibold">Coba gunakan kata kunci pencarian yang lain.</p>
         </div>
 
-        <!-- ACCORDION / API LIST CONTAINER -->
+        <!-- ACCORDION CONTAINER DENGAN DYNAMIC JS RENDER -->
         <div id="apiList" class="space-y-3"></div>
 
         <footer id="siteFooter" class="mt-12 pt-4 border-t-2 border-zinc-900 text-center text-[10px] font-mono tracking-wider font-bold text-zinc-600">
