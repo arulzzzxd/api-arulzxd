@@ -902,7 +902,7 @@ function selectCustomOption(uniqueId, value, catIdx, epIdx, method, path, epType
 function loadApis() {
     const apiList = document.getElementById('apiList');
     if (!apiData || !apiData.categories) {
-        if (apiList) apiList.innerHTML = '<p class="text-center font-mono text-xs">Data API tidak ditemukan.</p>';
+        apiList.innerHTML = '<p class="text-center">No API data loaded.</p>';
         return;
     }
 
@@ -910,45 +910,40 @@ function loadApis() {
     totalCategories = apiData.categories.length;
     apiData.categories.forEach(category => { totalEndpoints += category.items.length; });
 
-    // Update elemen counter
-    const headerTotal = document.getElementById('headerTotalEndpoints');
-    const navTotal = document.getElementById('navEndpointCount');
-    if (headerTotal) headerTotal.textContent = totalEndpoints;
-    if (navTotal) navTotal.textContent = totalEndpoints;
-
     updateTotalEndpoints();
     updateTotalCategories();
     renderCategoryFilters();
 
-    let html = '';
-    
-    // Warna indikator titik pada kategori
-    const dotColors = [
-        'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 
-        'bg-rose-500', 'bg-purple-500', 'bg-indigo-500', 'bg-cyan-500'
-    ];
+    const isLightMode = body.classList.contains('light-mode');
+    const pathColorClass = isLightMode ? 'text-cyan-700' : 'text-cyan-200';
+    const subTextColorClass = isLightMode ? 'text-slate-600' : 'opacity-70';
 
+    let html = '';
     apiData.categories.forEach((category, catIdx) => {
         const catNameLower = category.name.toLowerCase();
-        const dotColor = dotColors[catIdx % dotColors.length];
+        let iconSvg = categoryIcons.default;
+        for (const [key, svg] of Object.entries(categoryIcons)) {
+            if (catNameLower.includes(key)) { iconSvg = svg; break; }
+        }
 
         html += `
         <div class="category-group" data-category="${catNameLower}">
-            <div class="neo-card bg-white overflow-hidden mb-3">
-                <button onclick="toggleCategory(${catIdx})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-stone-50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <span class="w-2.5 h-2.5 rounded-full ${dotColor} border border-black"></span>
-                        <h3 class="font-black text-xs font-mono text-black uppercase tracking-wide">${category.name}</h3>
+            <div class="glass-panel border rounded-xl overflow-hidden shadow-lg mb-4">
+                <button onclick="toggleCategory(${catIdx})" class="w-full px-4 py-4 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 flex items-center justify-center bg-slate-950/40 light-mode:bg-slate-200/50 rounded-xl border border-white/10 light-mode:border-slate-300 shadow-inner flex-shrink-0">
+                            ${iconSvg}
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-sm tracking-widest text-cyan-400 light-mode:text-cyan-600 uppercase font-['Space_Grotesk']">${category.name}</h3>
+                            <p class="text-[11px] code-font ${subTextColorClass}">${category.items.length} ${i18n[currentLang].endpointsCount}</p>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[11px] font-bold font-mono text-stone-500">${category.items.length}</span>
-                        <svg id="cat-icon-${catIdx}" class="w-4 h-4 text-black transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-                        </svg>
-                    </div>
+                    <svg id="cat-icon-${catIdx}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
                 </button>
-                
-                <div id="cat-${catIdx}" class="hidden border-t-2 border-black divide-y-2 divide-black bg-stone-50">`;
+                <div id="cat-${catIdx}" class="hidden">`;
 
         category.items.forEach((item, epIdx) => {
             const method = item.methods && item.methods.length ? item.methods[0] : 'GET';
@@ -963,178 +958,203 @@ function loadApis() {
 
             let badgeTypeHtml = '';
             if (epType === 'vip') {
-                badgeTypeHtml = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-purple-200 text-purple-900 border border-black font-black uppercase tracking-wider">VIP</span>`;
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold uppercase tracking-wider animate-pulse">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8.25l-7 11.5-7-11.5L9.25 3h5.5L19 8.25z"/></svg> VIP
+                </span>`;
             } else if (epType === 'premium') {
-                badgeTypeHtml = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-amber-200 text-amber-900 border border-black font-black uppercase tracking-wider">PREMIUM</span>`;
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold uppercase tracking-wider animate-pulse">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg> PREMIUM
+                </span>`;
             } else {
-                badgeTypeHtml = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-blue-200 text-blue-900 border border-black font-black uppercase tracking-wider">FREE</span>`;
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> FREE
+                </span>`;
             }
 
             html += `
-            <div class="api-item p-3.5" 
-                 data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
-                
-                <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full text-left flex items-center justify-between">
-                    <div class="flex-1 min-w-0 pr-2">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <span class="bg-black text-white px-1.5 py-0.5 rounded text-[9px] font-black font-mono">${method}</span>
-                            <span class="font-bold text-xs font-mono text-black truncate">${item.name}</span>
-                            <span class="px-1.5 py-0.5 text-[9px] font-mono rounded ${statusClass} font-bold">${statusText}</span>
-                            ${badgeTypeHtml}
-                        </div>
-                        <p class="code-font text-[11px] text-stone-600 truncate">${path}</p>
-                    </div>
-                    <span id="ep-icon-${catIdx}-${epIdx}" class="text-black font-black flex-shrink-0">
-                        ${SVG_PLUS}
-                    </span>
+            <div class="api-item border-t-2 border-white/20 light-mode:border-slate-300 hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors" 
+    data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
+             <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
+             <div class="flex items-center gap-3 flex-1 min-w-0">
+               <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
+                <div class="text-left flex-1 min-w-0">
+                   <!-- NAMA FITUR / JUDUL (JUDUL DI ATAS) -->
+<p class="font-bold text-base text-slate-100 dark:text-slate-100 light-mode:text-slate-900 truncate">${item.name}</p>
+                 
+                  <!-- PATH ENDPOINT /api/... (PATH DI BAWAH) -->
+                   <div class="flex items-center gap-2 mt-0.5">
+                       <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
+                       <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
+                      ${badgeTypeHtml}
+                   </div>
+                  </div>
+                </div>
+                <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
+                   ${SVG_PLUS}
+                  </span>
                 </button>
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/80 dark:bg-slate-950/80 light-mode:bg-slate-100 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm transition-colors">
+    
+    <!-- BOX DESKRIPSI BARU -->
+    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+        <div class="flex items-center gap-2 mb-1.5">
+            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
+            </svg>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+        </div>
+        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+            ${item.desc}
+        </p>
+    </div>
 
-                <div id="ep-${catIdx}-${epIdx}" class="hidden mt-3 pt-3 border-t-2 border-dashed border-stone-300">
-                    
-                    <!-- BOX DESKRIPSI -->
-                    <div class="bg-white border-2 border-black rounded-xl p-3 mb-3">
-                        <span class="text-[10px] font-black font-mono text-stone-400 block mb-1 uppercase">DESKRIPSI ENDPOINT</span>
-                        <p class="text-xs font-mono text-black leading-relaxed">${item.desc}</p>
+    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
+                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
+                        </div>
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
+                        </div>
                     </div>
 
-                    <!-- LIVE URL -->
-                    <div class="mb-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-[10px] font-black font-mono text-stone-500 uppercase">REQUEST URL:</span>
-                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="text-[10px] font-mono font-bold underline text-black">Copy URL</button>
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">cURL Command</h4>
+                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy cURL</button>
                         </div>
-                        <div class="bg-white border-2 border-black p-2.5 rounded-xl">
-                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-black font-bold break-all">${BASE_URL}${path}</code>
-                        </div>
-                    </div>
-
-                    <!-- LIVE CURL -->
-                    <div class="mb-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-[10px] font-black font-mono text-stone-500 uppercase">cURL Command:</span>
-                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="text-[10px] font-mono font-bold underline text-black">Copy cURL</button>
-                        </div>
-                        <div class="bg-white border-2 border-black p-2.5 rounded-xl">
-                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-stone-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
+                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-300 light-mode:text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
                         </div>
                     </div>`;
 
             if (item.status === 'ready' || item.status === 'update') {
                 html += `
-                    <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
-                        <div class="space-y-3 mb-3">`;
+                    <div>
+                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 mb-3">Parameter</h4>
+                        <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                            <div class="space-y-4 mb-4">`;
 
-                if (item.params) {
-                    Object.keys(item.params).forEach(paramName => {
-                        const pType = item.params[paramName];
-                        const isRequired = true;
+                // --- PERBAIKAN POTONGAN SCRIPT.JS ---
+if (item.params) {
+    Object.keys(item.params).forEach(paramName => {
+        const pType = item.params[paramName];
+        const isRequired = true; 
 
-                        let rawDesc = (pType && pType.type) ? pType.type : (pType || paramName);
-                        if (pType && pType.desc) {
-                            rawDesc = `${pType.type || 'string'} (${pType.desc})`;
-                        }
-                        let paramDesc = rawDesc;
+        // Ambil tipe/deskripsi singkat parameter (Memperbaiki kurung ganda)
+        let rawDesc = (pType && pType.type) ? pType.type : (pType || paramName);
+        if (pType && pType.desc) {
+            rawDesc = `${pType.type || 'string'} (${pType.desc})`;
+        }
+        let paramDesc = rawDesc;
 
-                        let inputValue = '';
-                        let inputPlaceholder = `Masukkan ${paramName}`;
+        let inputValue = '';
+        let inputPlaceholder = `Masukkan ${paramName}`;
 
-                        if (paramName.toLowerCase() === 'apikey') {
-                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+        if (paramName.toLowerCase() === 'apikey') {
+            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
 
-                            if (epType === 'vip') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey VIP';
-                            } else if (epType === 'premium') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey Premium';
-                            } else {
-                                inputValue = isUserLoggedIn ? displayApiKey : '';
-                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-                            }
-                        }
+            if (epType === 'vip') {
+                inputValue = ''; 
+                inputPlaceholder = 'Masukkan apikey VIP';
+            } else if (epType === 'premium') {
+                inputValue = ''; 
+                inputPlaceholder = 'Masukkan apikey Premium';
+            } else {
+                inputValue = isUserLoggedIn ? displayApiKey : '';
+                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
+            }
+        }
 
-                        html += `
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="block text-xs font-bold font-mono text-black">
-                                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
-                                </label>
-                                <span class="text-[9px] font-mono text-stone-500">${paramDesc}</span>
-                            </div>`;
+        html += `
+        <div>
+            <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-800 code-font">
+                    ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
+                </label>
+                <span class="text-[10px] text-cyan-400 light-mode:text-cyan-700 font-semibold font-mono tracking-tight break-all pl-2 text-right">${paramDesc}</span>
+            </div>`;
 
-                        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full bg-white border-2 border-black rounded-xl p-2 text-xs font-mono text-black cursor-pointer" ${isRequired ? 'required' : ''}>`;
-                        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
-                            const defaultVal = pType.default || pType.options[0] || '';
-                            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
-                            const selectSubDesc = pType.desc || `Pilih salah satu opsi untuk parameter ${paramName}`;
+        if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
+            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+        } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
+            const defaultVal = pType.default || pType.options[0] || '';
+            const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
+            const selectSubDesc = pType.desc || `Pilih salah satu opsi untuk parameter ${paramName}`;
 
-                            html += `
-                            <div class="relative w-full">
-                                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-black text-black font-bold flex items-center justify-between code-font text-xs">
-                                    <span id="${uniqueId}-label" class="truncate">${defaultVal}</span>
-                                    <svg class="w-4 h-4 text-black flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                
-                                <div id="${uniqueId}-modal" class="select-modal-container hidden">
-                                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                    <div class="pb-2 mb-2 border-b-2 border-black">
-                                        <span class="text-xs font-black text-black uppercase font-mono">PILIH ${paramName.toUpperCase()}</span>
-                                        <p class="text-[10px] font-mono text-stone-500 mt-0.5">${selectSubDesc}</p>
-                                    </div>
-                                    <ul class="space-y-1.5">`;
+            html += `
+            <div class="relative w-full">
+                <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
+                <!-- FIX: Penambahan kelas warna text-slate-100 & light-mode:text-slate-900 agar nilai opsi selalu muncul dengan kontras jelas -->
+                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
+                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-900 font-semibold">${defaultVal}</span>
+                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div id="${uniqueId}-overlay" class="select-modal-overlay hidden" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                
+                <div id="${uniqueId}-modal" class="select-modal-container hidden">
+                    <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
+                    <div class="pb-3 mb-2 border-b border-white/10">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                            </div>
+                            <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 font-sans mt-1.5 pl-7 leading-relaxed">${selectSubDesc}</p>
+                    </div>
+                    <ul class="select-modal-list">`;
 
-                            pType.options.forEach(opt => {
-                                const isSelected = opt === defaultVal ? 'selected' : '';
-                                html += `
-                                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
-                                        <span>${opt}</span>
-                                    </li>`;
-                            });
+            pType.options.forEach(opt => {
+                const isSelected = opt === defaultVal ? 'selected' : '';
+                html += `
+                    <li class="select-modal-item ${isSelected}" onclick="selectCustomOption('${uniqueId}', '${opt}', ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
+                        <span>${opt}</span>
+                    </li>`;
+            });
 
-                            html += `
-                                    </ul>
-                                </div>
-                            </div>`;
-                        } else {
-                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full bg-white border-2 border-black rounded-xl px-3 py-2 text-xs font-mono text-black focus:outline-none focus:bg-yellow-50" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
-                        }
-                        html += `</div>`;
-                    });
-                }
+            html += `
+                    </ul>
+                </div>
+            </div>`;
+        } else {
+            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+        }
+        html += `</div>`;
+    });
+}
 
                 html += `
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="submit" class="neo-button bg-yellow-400 text-black px-4 py-2 font-mono font-bold text-xs uppercase">EKSEKUSI</button>
-                            <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="neo-button bg-white text-black px-4 py-2 font-mono font-bold text-xs uppercase">BERSIHKAN</button>
-                        </div>
-                    </form>
+                            </div>
+                            <div class="flex gap-3">
+                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                            </div>
+                        </form>
 
-                    <!-- RESPONSE CONTAINER -->
-                    <div id="response-${catIdx}-${epIdx}" class="hidden mt-3">
-                        <div class="bg-white border-2 border-black rounded-xl p-3">
-                            <span class="text-[10px] font-black font-mono text-stone-400 uppercase block mb-2">RESPONSE:</span>
-                            <div id="response-content-${catIdx}-${epIdx}"></div>
+                        <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
+                            <div>
+                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-500">Response</h5>
+                                <div class="bg-slate-950/80 light-mode:bg-slate-100 border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
+                            </div>
                         </div>
                     </div>`;
             } else {
-                html += `<div class="px-3 py-2 bg-red-100 border-2 border-black rounded-xl text-xs font-mono font-bold text-red-700">${i18n[currentLang].endpointNotAvailable}</div>`;
+                html += `<div class="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-medium">${i18n[currentLang].endpointNotAvailable}</div>`;
             }
-
             html += `</div></div>`;
         });
-
-        html += `
-                </div>
-            </div>
-        </div>`;
+        html += `</div></div></div>`;
     });
-
     apiList.innerHTML = html;
     allApiElements = Array.from(document.querySelectorAll('.api-item'));
 }
