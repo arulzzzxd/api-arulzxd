@@ -2767,7 +2767,8 @@ const logApiActivity = async (req, res, next) => {
                         },
                         $push: { 
                             log: { 
-                                $each: [newLogItem],$position: 0,
+                                $each: [newLogItem], 
+                                $position: 0,
                             } 
                         }
                     },
@@ -2930,90 +2931,107 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>API-ARULZXD // STYLERA DASHBOARD v2.0</title>
+    <title>Arulzxd API // DASHBOARD</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
     <style>
     :root {
-        --bg-main: #fbf7ee;
-        --card-bg: #f5eedc;
-        --border-color: #111111;
-        --text-color: #111111;
-        --yellow-accent: #facc15;
+        --bg-main: #fbf8ef;
+        --card-bg: #f5f2e8;
+        --card-border: #18181b;
+        --text-main: #18181b;
     }
 
     body {
         font-family: 'Plus Jakarta Sans', sans-serif;
         background-color: var(--bg-main);
-        color: var(--text-color);
+        color: var(--text-main);
         overflow-x: hidden;
     }
 
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
 
-    /* Neo-Brutalism Retro Card Styling */
-    .retro-card {
-        background: var(--card-bg);
-        border: 2.5px solid var(--border-color);
+    /* Custom Border Neo-Brutalism Light */
+    .brutal-card {
+        background-color: var(--card-bg);
+        border: 2px solid var(--card-border);
         border-radius: 20px;
-        box-shadow: 4px 4px 0px var(--border-color);
+        box-shadow: 0 4px 0px #18181b;
         transition: all 0.2s ease;
     }
 
-    .retro-btn {
-        background: #ffffff;
-        border: 2px solid var(--border-color);
-        border-radius: 12px;
-        box-shadow: 3px 3px 0px var(--border-color);
-        font-weight: 800;
-        transition: all 0.15s ease;
-    }
-    .retro-btn:active {
-        transform: translate(2px, 2px);
-        box-shadow: 1px 1px 0px var(--border-color);
-    }
-
-    .stat-retro-widget {
-        background: var(--card-bg);
-        border: 2.5px solid var(--border-color);
+    .brutal-widget {
+        background-color: #f7f4eb;
+        border: 2px solid #18181b;
         border-radius: 18px;
-        box-shadow: 3.5px 3.5px 0px var(--border-color);
+        box-shadow: 0 3px 0px #18181b;
     }
 
+    /* Override gaya elemen API list agar cocok dengan tema baru */
+    .api-item, .category-card {
+        background-color: #f7f4eb !important;
+        border: 2px solid #18181b !important;
+        border-radius: 18px !important;
+        box-shadow: 0 3px 0px #18181b !important;
+        color: #18181b !important;
+        margin-bottom: 12px !important;
+    }
+
+    .api-item p, .api-item h3, .api-item span, .api-item label {
+        color: #18181b !important;
+    }
+
+    .api-item input[type="text"], .api-item input, .api-item select {
+        background-color: #ffffff !important;
+        color: #18181b !important;
+        border: 1.5px solid #18181b !important;
+        border-radius: 10px !important;
+    }
+
+    .api-item button, .api-item .execute-btn {
+        background-color: #18181b !important;
+        color: #ffffff !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    /* Buttons & Pills */
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px;
         font-weight: 800;
-        padding: 4px 12px;
-        border: 2px solid var(--border-color);
+        padding: 4px 10px;
+        border: 1.5px solid #18181b;
         background-color: #ffffff;
-        color: #111111;
+        color: #18181b;
+        border-radius: 8px;
         transition: all 0.2s ease;
     }
     .lang-btn.active {
-        background-color: var(--yellow-accent);
-        color: #111111;
+        background-color: #18181b;
+        color: #ffffff;
     }
 
     .filter-btn {
         font-size: 11px;
         font-weight: 800;
         padding: 8px 18px;
-        border: 2px solid var(--border-color);
+        border: 2px solid #18181b;
         background: #ffffff;
-        color: #111111;
+        color: #18181b;
+        transition: all 0.2s ease;
         border-radius: 9999px;
-        box-shadow: 2px 2px 0px var(--border-color);
         white-space: nowrap;
         cursor: pointer;
+        box-shadow: 0 2px 0px #18181b;
     }
-    .filter-btn.active {
-        background: var(--yellow-accent) !important;
-        box-shadow: 3px 3px 0px var(--border-color) !important;
+    .filter-btn:hover, .filter-btn.active {
+        background: #18181b !important;
+        color: #ffffff !important;
     }
 
     .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -3024,7 +3042,7 @@ app.get('/docs', (req, res) => {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background-color: var(--bg-main);
+        background-color: #fbf8ef;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -3042,213 +3060,188 @@ app.get('/docs', (req, res) => {
         width: 100px;
         height: 100px;
         border-radius: 50%;
-        border: 3px solid #111;
+        border: 3px solid #18181b;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #ffffff;
-        box-shadow: 4px 4px 0px #111;
-    }
-
-    .neon-progress-bar {
-        background: #111111;
-        transition: width 0.2s ease-out;
+        box-shadow: 0 4px 0px #18181b;
     }
 
     /* Modals */
-    .retro-popup-bg {
-        background-color: var(--bg-main);
-        border: 3px solid #111;
-        box-shadow: 8px 8px 0px #111;
+    .cyber-popup-bg {
+        background-color: #fbf8ef;
+        border: 3px solid #18181b;
+        box-shadow: 0 10px 0px #18181b;
     }
 
     .cyber-pill-capsule {
         background: #ffffff;
-        border: 2px solid #111;
+        border: 2px solid #18181b;
         border-radius: 9999px;
-        box-shadow: 2px 2px 0px #111;
     }
 
     .gold-metallic-button {
-        background: var(--yellow-accent);
-        border: 2px solid #111;
-        color: #111;
-        font-weight: 900;
-        box-shadow: 3px 3px 0px #111;
+        background: #18181b;
+        border: 2px solid #18181b;
+        color: #ffffff;
+        font-weight: 800;
+        border-radius: 12px;
     }
-    .gold-metallic-button:hover { filter: brightness(1.05); }
-
-    /* Styles Override Api List item Retro Theme */
-    .api-item {
-        background: var(--card-bg) !important;
-        border: 2.5px solid #111 !important;
-        border-radius: 16px !important;
-        box-shadow: 3.5px 3.5px 0px #111 !important;
-        color: #111 !important;
-    }
-    .api-item p, .api-item span, .api-item div {
-        color: #111 !important;
-    }
-    .api-item input[type="text"] {
-        background-color: #ffffff !important;
-        color: #111 !important;
-        border: 2px solid #111 !important;
-        border-radius: 10px !important;
-    }
+    .gold-metallic-button:hover { filter: brightness(1.2); }
     </style>
 </head>
-<body class="min-h-screen antialiased text-stone-900 relative">
+<body class="min-h-screen antialiased text-slate-900 relative">
 
+<!-- LOADER -->
 <div id="cyber-loader-overlay">
-    <div class="hud-radar mb-6">
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-stone-900">
+    <div class="hud-radar mb-4">
+        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-12 h-12 rounded-xl object-cover border border-zinc-900">
     </div>
-
     <div class="text-center">
-        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-stone-900 mb-1">
-            INITIALIZING CORE...
+        <div id="loader-title-text" class="text-sm font-black tracking-wider uppercase text-zinc-900 mb-1">
+            INITIALIZING SYSTEM...
         </div>
-        <div class="text-[10px] font-mono text-stone-600 uppercase tracking-widest font-bold">
-            ARULZXD API v2.0 // REST GATEWAY
+        <div class="text-[11px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+            ARULZXD API GATEWAY
         </div>
     </div>
-
-    <div class="w-64 mt-6">
-        <div class="flex items-center justify-between text-[11px] font-mono mb-2 font-bold">
-            <span class="text-stone-700">LOADING DATA</span>
-            <span id="loader-percentage" class="text-stone-900 font-black">0%</span>
+    <div class="w-60 mt-5">
+        <div class="flex items-center justify-between text-[11px] font-mono font-bold mb-1.5">
+            <span class="text-zinc-600">LOADING DATA</span>
+            <span id="loader-percentage" class="text-zinc-900">0%</span>
         </div>
-        <div class="w-full h-3 bg-white rounded-full border-2 border-stone-900 overflow-hidden shadow-[2px_2px_0px_#111]">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+        <div class="w-full h-2 bg-white rounded-full border-2 border-zinc-900 overflow-hidden">
+            <div id="loader-progress-fill" class="h-full bg-zinc-900 w-0 transition-all duration-200"></div>
         </div>
     </div>
 </div>
 
+<!-- WELCOME POPUP -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="retro-card p-6 w-full max-w-md relative text-stone-900 bg-[#fbf7ee]">
+    <div class="brutal-card p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#fbf8ef]">
       
-      <button id="closePopupBtn" class="absolute top-4 right-4 text-stone-900 hover:bg-stone-200 transition-colors bg-white rounded-full p-1.5 focus:outline-none border-2 border-stone-900 shadow-[2px_2px_0px_#111]">
+      <button id="closePopupBtn" class="absolute top-4 right-4 text-zinc-700 hover:text-black bg-white rounded-full p-1.5 focus:outline-none border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
       
       <div class="text-center mb-4">
-        <h1 class="text-2xl font-black text-stone-900 leading-tight">
-          WELCOME TO <span class="bg-yellow-400 px-2 py-0.5 border-2 border-stone-900 rounded-md shadow-[2px_2px_0px_#111]">ARULZXD API</span>
+        <h1 class="text-2xl font-black text-zinc-900 tracking-tight">
+          WELCOME TO <span class="underline decoration-sky-500">ARULZXD API</span>
         </h1>
       </div>
       
-      <div class="mb-4 rounded-xl overflow-hidden border-2 border-stone-900 bg-black relative group shadow-[3px_3px_0px_#111]">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44 transition-transform duration-500 group-hover:scale-105" />
+      <div class="mb-4 rounded-2xl overflow-hidden border-2 border-zinc-900 bg-white shadow-[0_3px_0px_#18181b]">
+        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
       </div>
       
-      <div class="text-center text-stone-800 text-xs sm:text-sm mb-5 leading-relaxed font-semibold">
-        <p>Halo! Selamat datang di Arulz-XD REST API Core. Gunakan API Key di bawah ini untuk memulai pengujian endpoint secara langsung.</p>
+      <div class="text-center text-zinc-700 text-xs sm:text-sm mb-5 font-semibold">
+        <p>Halo! Selamat datang di Arulz-XD REST API. Gunakan API Key di bawah ini untuk memulai pengujian endpoint secara langsung.</p>
       </div>
       
       <div class="mb-5 flex justify-center">
-        <div class="cyber-pill-capsule py-2 px-5 text-center">
-          <span class="font-bold text-xs text-stone-900 font-mono">
-            APIKEY : <span id="welcomeApiKey" class="font-mono text-stone-900 select-all font-black">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
+        <div class="cyber-pill-capsule py-2 px-5 text-center shadow-[0_2px_0px_#18181b]">
+          <span class="font-bold text-xs text-zinc-900 font-mono">
+            APIKEY : <span id="welcomeApiKey" class="font-mono text-sky-600 select-all font-black">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
       
-      <a href="/support" class="w-full bg-yellow-400 hover:bg-yellow-300 text-stone-900 font-black py-3 px-6 rounded-xl border-2 border-stone-900 shadow-[3px_3px_0px_#111] active:translate-x-0.5 active:translate-y-0.5 transition-all text-xs block text-center uppercase tracking-wider">
+      <a href="/support" class="w-full bg-zinc-900 hover:bg-black text-white font-extrabold py-3 px-6 rounded-xl border-2 border-zinc-900 shadow-[0_3px_0px_#18181b] transition-all text-xs block text-center uppercase tracking-wider">
         Donate Sekarang
       </a>
     </div>
   </div>
 </div>
           
+<!-- PROFILE POPUP -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     
-    <div class="w-full max-w-[410px] retro-popup-bg rounded-3xl p-5 relative font-mono text-stone-900 my-auto">
+    <div class="w-full max-w-[410px] cyber-popup-bg rounded-3xl p-5 relative font-mono text-zinc-900 my-auto">
         
         <div class="flex items-center justify-between mb-5 gap-2">
             <div class="relative w-20 h-20 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border-2 border-stone-900 shadow-[2px_2px_0px_#111] overflow-hidden bg-white">
+                    <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-[0_3px_0px_#18181b] overflow-hidden bg-white">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
             </div>
 
             <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-bold text-stone-900">loading...</span>
+                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate shadow-[0_2px_0px_#18181b]">
+                    <span id="userName" class="text-xs font-black text-zinc-900">loading...</span>
                 </div>
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] text-stone-700">loading_email@gmail.com</span>
+                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate shadow-[0_2px_0px_#18181b]">
+                    <span id="userEmail" class="text-[10px] font-bold text-zinc-600">loading_email@gmail.com</span>
                 </div>
             </div>
 
-            <div id="planBoxContainer" class="relative w-20 h-24 flex flex-col items-center justify-center flex-shrink-0">
-                <div class="w-full h-full border-2 border-stone-900 rounded-2xl bg-yellow-400 shadow-[3px_3px_0px_#111] flex flex-col items-center justify-center font-black p-1">
-                    <span class="text-[9px] uppercase tracking-wider text-stone-900 border-b-2 border-stone-900 mb-1 w-full text-center">USER</span>
-                    <span id="userPlanText" class="text-base font-black text-stone-900">FREE</span>
-                </div>
+            <div id="planBoxContainer" class="relative w-20 h-20 border-2 border-zinc-900 bg-white rounded-2xl flex flex-col items-center justify-center flex-shrink-0 shadow-[0_3px_0px_#18181b]">
+                <span class="text-[10px] font-black text-zinc-400">USER</span>
+                <span id="userPlanText" class="text-base font-black text-zinc-900">FREE</span>
             </div>
         </div>
 
-        <div class="retro-card p-3 mb-4 relative bg-white">
+        <div class="bg-white border-2 border-zinc-900 rounded-2xl p-3 mb-4 relative shadow-[0_3px_0px_#18181b]">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-stone-900 border-2 border-stone-900 bg-yellow-400 px-2.5 py-0.5 rounded-md shadow-[1.5px_1.5px_0px_#111]">Api Key Kamu :</span>
+                <span class="text-[10px] font-black text-zinc-900 border border-zinc-900 bg-zinc-100 px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
             </div>
             
-            <div class="cyber-pill-capsule text-stone-900 text-xs font-bold py-1.5 px-3 truncate mb-3 text-center">
+            <div class="cyber-pill-capsule text-zinc-900 text-xs font-black py-1.5 px-3 truncate mb-3 text-center shadow-[0_2px_0px_#18181b]">
                 <span id="userApiKey">loading-key</span>
             </div>
 
             <div id="vipCustomKeyBox" class="hidden mb-3">
                 <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-white border-2 border-stone-900 rounded-xl px-3 py-1.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none font-bold shadow-[2px_2px_0px_#111]">
-                    <button onclick="saveCustomApiKey()" class="gold-metallic-button text-[10px] px-3 rounded-xl uppercase font-extrabold py-1.5">SIMPAN</button>
+                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-white border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 focus:outline-none font-bold">
+                    <button onclick="saveCustomApiKey()" class="bg-zinc-900 text-white text-[10px] px-3 rounded-xl uppercase font-extrabold border-2 border-zinc-900">SIMPAN</button>
                 </div>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-metallic-button text-xs py-2 rounded-xl uppercase tracking-widest active:scale-95 transition-all">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 text-white text-xs py-2 rounded-xl uppercase font-bold tracking-wider active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
-        <div class="retro-card p-3 mb-4 text-center relative bg-white">
-            <div class="w-full bg-stone-900 text-yellow-400 text-[11px] font-black py-1 rounded-xl uppercase tracking-widest mb-3">
+        <div class="bg-white border-2 border-zinc-900 rounded-2xl p-3 mb-4 text-center relative shadow-[0_3px_0px_#18181b]">
+            <div class="w-full bg-zinc-900 text-white text-[11px] py-1 rounded-xl uppercase font-extrabold mb-3">
                 LIMIT USER
             </div>
             <div class="py-0.5">
-                <span class="inline-block cyber-pill-capsule text-stone-900 px-6 py-1 text-xs font-bold tracking-widest">
+                <span class="inline-block cyber-pill-capsule text-zinc-900 px-6 py-1 text-xs font-black tracking-widest shadow-[0_2px_0px_#18181b]">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
                 </span>
             </div>
         </div>
 
-        <div class="retro-card p-3 mb-4 bg-white">
-            <div class="w-full bg-stone-900 text-yellow-400 text-[11px] font-black py-1 rounded-xl uppercase tracking-widest mb-3 text-center">
+        <div class="bg-white border-2 border-zinc-900 rounded-2xl p-3 mb-4 shadow-[0_3px_0px_#18181b]">
+            <div class="w-full bg-zinc-900 text-white text-[11px] py-1 rounded-xl uppercase font-extrabold mb-3 text-center">
                 AKTIFITAS REQUEST API TERAKHIR
             </div>
             <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="cyber-pill-capsule text-stone-800 text-[10px] py-1.5 px-3 text-center truncate">
+                <div class="cyber-pill-capsule text-zinc-700 text-[10px] py-1.5 px-3 text-center truncate">
                     belum ada request
                 </div>
             </div>
         </div>
 
         <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full gold-metallic-button text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all text-center">
+            <a href="/upgrade-apikey" class="w-full bg-zinc-900 text-white text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase font-black tracking-wider border-2 border-zinc-900 shadow-[0_3px_0px_#18181b]">
                 UPGRADE VIP
             </a>
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-stone-200 text-stone-900 font-extrabold text-xs py-2 uppercase tracking-widest transition-all">
+                <button onclick="closeProfilePopup()" class="flex-1 bg-white text-zinc-900 border-2 border-zinc-900 font-extrabold text-xs py-2 rounded-xl uppercase tracking-wider shadow-[0_2px_0px_#18181b]">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 border-2 border-stone-900 bg-red-400 hover:bg-red-500 text-stone-900 font-extrabold text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest shadow-[2px_2px_0px_#111] transition-all">
+                <a href="/auth/logout" class="flex-1 border-2 border-red-600 bg-red-100 hover:bg-red-200 text-red-700 font-extrabold text-xs py-2 rounded-xl flex items-center justify-center uppercase tracking-wider shadow-[0_2px_0px_#dc2626]">
                     LOG OUT
                 </a>
             </div>
@@ -3260,17 +3253,17 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-    <!-- Header Style Sesuai Gambar -->
-    <header class="max-w-4xl mx-auto px-4 pt-5 pb-3 flex items-center justify-between border-b-2 border-stone-900 bg-[#fbf7ee]">
-        <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl border-2 border-stone-900 bg-cyan-400 flex items-center justify-center overflow-hidden shadow-[2px_2px_0px_#111]">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-full h-full object-cover">
+    <!-- HEADER BAR -->
+    <header class="max-w-4xl mx-auto px-4 pt-5 pb-3 flex items-center justify-between border-b-2 border-zinc-900 bg-[#fbf8ef]">
+        <div class="flex items-center gap-3">
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-xl border-2 border-zinc-900 shadow-[0_2px_0px_#18181b] object-cover">
+            <div>
+                <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
             </div>
-            <span class="text-base font-black text-stone-900 tracking-tight">Arulzxd API</span>
         </div>
 
         <div class="flex items-center gap-3">
-            <button id="bioMenuBtn" class="w-9 h-9 rounded-xl border-2 border-stone-900 bg-white flex items-center justify-center text-stone-900 shadow-[2px_2px_0px_#111] active:translate-x-0.5 active:translate-y-0.5 transition-all focus:outline-none">
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl bg-white border-2 border-zinc-900 shadow-[0_2px_0px_#18181b] flex items-center justify-center text-zinc-900 active:translate-y-0.5 transition-transform focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
@@ -3278,158 +3271,164 @@ app.get('/docs', (req, res) => {
         </div>
     </header>
 
-    <!-- Sidebar Sesuai Gambar Stylera -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-72 bg-white border-l-3 border-stone-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 font-['Plus_Jakarta_Sans'] text-stone-900 overflow-y-auto scrollbar-hide">
+    <!-- SIDEBAR DRAWER (STYLERA MODEL ACCORDING TO IMAGE) -->
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#fbf8ef] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 font-['Plus_Jakarta_Sans'] text-zinc-900 overflow-y-auto scrollbar-hide">
         
-        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-stone-900">
-            <div class="flex items-center gap-2 bg-yellow-400 border-2 border-stone-900 px-3 py-1 rounded-xl shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4 text-stone-900" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span class="font-extrabold text-stone-900 text-xs uppercase tracking-wider">STYLERA</span>
+        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+            <div class="flex items-center gap-2 bg-amber-300 border-2 border-zinc-900 px-3 py-1 rounded-xl shadow-[0_2px_0px_#18181b]">
+                <svg class="w-4 h-4 text-zinc-900" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">STYLERA</span>
             </div>
-            <button id="closeMenuBtn" class="text-stone-900 border-2 border-stone-900 p-1 rounded-lg hover:bg-stone-100 shadow-[1.5px_1.5px_0px_#111]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-xl bg-white border-2 border-zinc-900 shadow-[0_2px_0px_#18181b] flex items-center justify-center text-zinc-900 font-bold">
+                ✕
             </button>
         </div>
 
-        <div class="mb-4 rounded-xl border-2 border-stone-900 overflow-hidden bg-stone-900 shadow-[3px_3px_0px_#111] relative">
-            <div class="bg-yellow-400 text-stone-900 text-[10px] font-black px-3 py-1 border-b-2 border-stone-900 flex items-center justify-between">
-                <span>BANNER</span>
-                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        <!-- BANNER CARD INSIDE DRAWER -->
+        <div class="border-2 border-zinc-900 bg-amber-300 rounded-2xl p-2.5 mb-4 shadow-[0_3px_0px_#18181b]">
+            <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-black uppercase text-zinc-900 tracking-wider">BANNER</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c.88 0 1.637.56 1.905 1.398l1.63 5.068a1.76 1.76 0 01-3.366 1.082l-.568-1.765H5.436z"/></svg>
             </div>
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" class="w-full h-28 object-cover">
+            <div class="w-full h-28 bg-black rounded-xl overflow-hidden border border-zinc-900">
+                <img src="https://arulz-xd.my.id/files/K4Sf61.png" class="w-full h-full object-cover">
+            </div>
         </div>
 
-        <nav class="flex flex-col gap-2 text-stone-900 text-xs font-extrabold flex-1">
-            <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-stone-900 text-white shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+        <nav class="flex flex-col gap-2 text-xs font-extrabold tracking-wide flex-1">
+            <a href="/" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-zinc-900 text-white border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 <span>BACK TO DASHBOARD</span>
             </a>
-            <a href="/docs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-stone-900 text-white shadow-[2px_2px_0px_#111]">
+            <a href="/docs" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white text-zinc-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <span>DOCS</span>
             </a>
-            <a href="/status" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
+            <a href="/status" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white text-zinc-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span>MONITORING</span>
             </a>
-            <a href="/store" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span>LIVE REQUEST</span>
-            </a>
-            <a href="/uploader" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
+            <a href="/uploader" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white text-zinc-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span>UPLOADER</span>
             </a>
-            <a href="/support" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                <span>DONATE</span>
+            <a href="/store" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white text-zinc-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                <span>DONATE / STORE</span>
             </a>
-            <a href="/feedback" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <a href="/feedback" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white text-zinc-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                 <span>REQUEST FITUR</span>
             </a>
-            <a href="/privacy" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-white hover:bg-stone-50 shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>TENTANG KAMI</span>
-            </a>
-            <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-stone-900 bg-emerald-300 text-stone-900 shadow-[2px_2px_0px_#111]">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            <a href="https://whatsapp.com/channel/0029VbAwdIyJJhzRMpjUcS3P" target="_blank" class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-emerald-100 text-emerald-900 border-2 border-zinc-900 shadow-[0_2px_0px_#18181b]">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z"/></svg>
                 <span>FOLLOW CHANNEL</span>
             </a>
         </nav>
 
-        <div class="mt-auto pt-4 text-center text-[10px] font-mono text-stone-500 font-extrabold">
+        <div class="mt-auto pt-3 border-t-2 border-zinc-900 text-[10px] font-mono text-zinc-500 font-bold">
             Stylera © 2026
         </div>
 
     </div>
 
-    <div id="menuOverlay" class="fixed inset-0 bg-stone-900/40 hidden z-30"></div>
+    <div id="menuOverlay" class="fixed inset-0 bg-black/50 hidden z-30"></div>
 
-    <main class="max-w-md mx-auto px-4 py-5 relative z-10">
+    <main class="max-w-md mx-auto px-4 py-4 relative z-10">
         
-        <!-- Banner Utama Gambar Anime Sesuai Referensi Gambar -->
-        <div class="retro-card overflow-hidden mb-5 p-0 relative border-2 border-stone-900 bg-sky-300">
-            <div class="relative w-full h-44 overflow-hidden">
+        <!-- BANNER GRAPHIC MATCHING IMAGE -->
+        <div class="brutal-card overflow-hidden mb-5 border-2 border-zinc-900 shadow-[0_4px_0px_#18181b] rounded-2xl bg-white p-1">
+            <div class="relative w-full h-44 rounded-xl overflow-hidden bg-black">
                 <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Anime Banner" class="w-full h-full object-cover" />
+                
+                <div class="hidden">
+                    <div id="mainTitle">Welcome To ArulzXD API</div>
+                    <p id="mainDescription">Jelajahi dan jalankan pengujian endpoint API.</p>
+                </div>
             </div>
         </div>
 
-        <!-- Section Widget Statistik Sesuai Gambar -->
+        <!-- 4 STAT WIDGETS MATCHING IMAGE EXACTLY -->
         <div class="grid grid-cols-2 gap-3 mb-5">
-            <div class="stat-retro-widget p-3 flex flex-col justify-between h-24">
-                <span class="text-[10px] font-extrabold text-stone-900 uppercase tracking-wider">REAL-TIME CLOCK</span>
-                <div id="liveClock" class="text-xl font-black text-stone-900">18:18:18</div>
-                <div id="liveDate" class="text-[8px] text-stone-700 font-bold uppercase">SENIN, 21, SEPTEMBER 2026</div>
+            <div class="brutal-widget p-3 flex flex-col justify-between">
+                <span class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">REAL-TIME CLOCK</span>
+                <div id="liveClock" class="text-xl font-black text-zinc-900 mt-1">18:18:18</div>
+                <div id="liveDate" class="text-[8px] text-zinc-600 font-extrabold uppercase mt-0.5">SENIN, 21, SEPTEMBER 2026</div>
             </div>
 
-            <div class="stat-retro-widget p-3 flex flex-col justify-between h-24 relative">
+            <div class="brutal-widget p-3 flex flex-col justify-between">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-extrabold text-stone-900 uppercase tracking-wider">LIMIT USED</span>
-                    <span id="userLimitBadge" class="text-[9px] font-black uppercase text-stone-900">FREE</span>
+                    <span class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">LIMIT USED</span>
+                    <span id="userLimitBadge" class="text-[8px] font-black uppercase text-zinc-900">FREE</span>
                 </div>
-                <div class="flex items-baseline gap-1 mt-1">
-                    <span id="userLimitUsed" class="text-2xl font-black text-stone-900">0</span>
-                    <span class="text-stone-900 text-sm font-black">/</span>
-                    <span id="userLimitMax" class="text-sm font-black text-stone-900">100</span>
+                <div class="flex items-baseline gap-0.5 mt-1">
+                    <span id="userLimitUsed" class="text-xl font-black text-zinc-900">0</span>
+                    <span class="text-zinc-500 text-xs font-bold">/</span>
+                    <span id="userLimitMax" class="text-xs font-extrabold text-zinc-700">100</span>
                 </div>
             </div>
 
-            <div class="stat-retro-widget p-3 flex flex-col justify-between h-20">
-                <span id="stat-endpoints-title" class="text-[10px] font-extrabold text-stone-900 uppercase tracking-wider">TOTAL ENDPOINT</span>
-                <span id="totalEndpoints" class="text-2xl font-black text-stone-900">999</span>
+            <div class="brutal-widget p-3 flex flex-col justify-between">
+                <span id="stat-endpoints-title" class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">TOTAL ENDPOINT</span>
+                <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 mt-1 block">999</span>
             </div>
 
-            <div class="stat-retro-widget p-3 flex flex-col justify-between h-20">
-                <span id="stat-categories-title" class="text-[10px] font-extrabold text-stone-900 uppercase tracking-wider">TOTAL KATEGORI</span>
-                <span id="totalCategories" class="text-2xl font-black text-stone-900">16</span>
+            <div class="brutal-widget p-3 flex flex-col justify-between">
+                <span id="stat-categories-title" class="text-[9px] font-black text-zinc-900 uppercase tracking-wider">TOTAL KATEGORI</span>
+                <span id="totalCategories" class="text-2xl font-black text-zinc-900 mt-1 block">16</span>
             </div>
         </div>
 
-        <!-- Search Bar Retro Sesuai Gambar -->
+        <!-- HIDDEN MUSIC PLAYER (Kept for script functionality) -->
+        <div class="music-player-card hidden">
+            <audio id="audioElement"></audio>
+            <img id="musicCoverImg" src="" alt="Cover">
+            <h3 id="musicTitle">Loading...</h3>
+            <p id="musicArtist">-</p>
+            <span id="currentTime">0:00</span>
+            <div id="progressContainer"><div id="progressBar"></div></div>
+            <span id="totalDuration">0:00</span>
+            <button id="prevBtn"></button>
+            <button id="playBtn"><svg id="playIcon"></svg></button>
+            <button id="nextBtn"></button>
+            <button id="playlistToggleBtn"></button>
+            <div id="playlistPanel"></div>
+        </div>
+
+        <!-- SEARCH INPUT MATCHING IMAGE -->
         <div class="mb-5">
             <div class="relative">
                 <input 
                     type="text" 
                     id="searchInput" 
                     placeholder="Cari Endpoint Atau Kategori...."
-                    class="w-full py-3 px-4 pl-10 text-xs font-bold rounded-2xl border-2 border-stone-900 bg-[#f5eedc] text-stone-900 placeholder-stone-600 shadow-[3px_3px_0px_#111] focus:outline-none"
+                    class="w-full px-4 py-3 pl-11 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#f7f4ea] focus:outline-none focus:bg-white transition-all text-zinc-900 placeholder-zinc-500 shadow-[0_3px_0px_#18181b]"
                 >
-                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-800" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
             <div id="categoryFilters" class="flex flex-wrap gap-2 mt-3 justify-start overflow-x-auto pb-1 scrollbar-hide"></div>
         </div>
 
-        <!-- Element Musik Tersembunyi tapi Tetap Aktif Secara Fungsi -->
-        <div class="hidden">
-            <audio id="audioElement"></audio>
-            <span id="musicTitle"></span><span id="musicArtist"></span>
-            <span id="currentTime">0:00</span><span id="totalDuration">0:00</span>
-            <div id="progressContainer"><div id="progressBar"></div></div>
-            <button id="prevBtn"></button><button id="playBtn"></button><button id="nextBtn"></button><button id="playlistToggleBtn"></button>
-            <div id="playlistPanel"></div>
-            <img id="musicCoverImg" src="" alt="Cover">
-        </div>
-
         <div id="noResults" class="text-center py-8 hidden">
-            <h3 id="no-results-title" class="text-sm font-black text-stone-900 mb-1">Endpoint Tidak Ditemukan</h3>
-            <p id="no-results-desc" class="text-xs text-stone-700 font-bold">Coba gunakan kata kunci pencarian yang lain.</p>
+            <h3 id="no-results-title" class="text-sm font-black text-zinc-900 mb-1">Endpoint Tidak Ditemukan</h3>
+            <p id="no-results-desc" class="text-xs text-zinc-600 font-semibold">Coba gunakan kata kunci pencarian yang lain.</p>
         </div>
 
-        <!-- Tempat List API / Categorized Endpoints -->
+        <!-- ACCORDION / API LIST CONTAINER -->
         <div id="apiList" class="space-y-3"></div>
 
-        <footer id="siteFooter" class="mt-12 pt-4 border-t-2 border-stone-900 text-center text-[10px] font-mono tracking-widest text-stone-700 font-bold">
-            © 2026 ARULZXD API REST CORE // STYLERA GATEWAY
+        <footer id="siteFooter" class="mt-12 pt-4 border-t-2 border-zinc-900 text-center text-[10px] font-mono tracking-wider font-bold text-zinc-600">
+            © 2026 ARULZXD API REST CORE // ALL SYSTEM OPERATIONAL
         </footer>
     </main>
 
-    <div id="imageLightbox" class="fixed inset-0 bg-stone-900/80 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+    <div id="imageLightbox" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-md">
         <div class="relative max-w-4xl max-h-[90vh]">
-            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-2xl border-3 border-stone-900 shadow-[8px_8px_0px_#111] object-contain" />
-            <button id="closeLightbox" class="absolute -top-10 right-0 text-stone-900 font-black text-xs bg-white px-3 py-1 rounded-xl border-2 border-stone-900 shadow-[2px_2px_0px_#111]">✕ Close</button>
+            <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain" />
+            <button id="closeLightbox" class="absolute -top-10 right-0 text-white font-mono text-xs bg-black px-3 py-1 rounded border border-white">✕ Close</button>
         </div>
     </div>
     
@@ -3541,13 +3540,13 @@ app.get('/docs', (req, res) => {
                     icon: icon,
                     title: title,
                     text: text,
-                    background: '#fbf7ee',
-                    color: '#111111',
+                    background: '#fbf8ef',
+                    color: '#18181b',
                     confirmButtonText: 'OKE',
                     customClass: {
-                        popup: 'rounded-2xl border-2 border-stone-900 shadow-[4px_4px_0px_#111]',
-                        title: 'text-stone-900 font-extrabold',
-                        confirmButton: 'bg-yellow-400 text-stone-900 font-black px-6 py-2 rounded-xl border-2 border-stone-900 shadow-[2px_2px_0px_#111]'
+                        popup: 'rounded-2xl border-2 border-zinc-900 shadow-[0_4px_0px_#18181b]',
+                        title: 'text-zinc-900 font-extrabold',
+                        confirmButton: 'bg-zinc-900 text-white font-bold px-6 py-2 rounded-xl uppercase text-xs'
                     }
                 });
             };
@@ -3624,20 +3623,20 @@ app.get('/docs', (req, res) => {
           .then(resData => {
               if (resData.status && resData.data && resData.data.length > 0) {
                   container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-pill-capsule text-stone-900 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                    '<div class="cyber-pill-capsule text-zinc-900 font-mono text-[10px] py-1.5 px-3 text-center truncate shadow-[0_2px_0px_#18181b]">' +
                         logText +
                     '</div>'
                 ).join('');
             } else {
                 container.innerHTML = 
-                    '<div class="cyber-pill-capsule text-stone-700 font-mono text-[10px] py-2 px-3 text-center">' +
+                    '<div class="cyber-pill-capsule text-zinc-500 font-mono text-[10px] py-2 px-3 text-center shadow-[0_2px_0px_#18181b]">' +
                         'Belum ada aktivitas request' +
                     '</div>';
             }
         })
         .catch(err => {
             container.innerHTML = 
-                '<div class="cyber-pill-capsule text-red-600 font-mono text-[10px] py-2 px-3 text-center">' +
+                '<div class="cyber-pill-capsule text-red-600 font-mono text-[10px] py-2 px-3 text-center shadow-[0_2px_0px_#18181b]">' +
                     'Gagal memuat aktivitas' +
                 '</div>';
           });
@@ -3722,7 +3721,6 @@ app.get('/docs', (req, res) => {
 </html>
     `);
 });
-
 
 if (require.main === module) {
   app.listen(PORT, () => {
