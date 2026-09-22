@@ -2963,13 +2963,13 @@ app.get('/docs', (req, res) => {
     }
 
     /* =========================================================
-       1. CYBERPUNK LOADER ANIMATION (NEON FUTURISTIC)
+       1. LIGHT RETRO ANIMATED LOADER (ELEGAN & ANIME/FUTURISTIC)
        ========================================================= */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background: #080c14;
+        background-color: var(--bg-cream);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2980,10 +2980,10 @@ app.get('/docs', (req, res) => {
         visibility: hidden;
         pointer-events: none;
     }
-    .cyber-loader-box {
-        background: rgba(13, 19, 33, 0.95);
-        border: 2px solid #00f3ff;
-        box-shadow: 0 0 30px rgba(0, 243, 255, 0.35), inset 0 0 15px rgba(0, 243, 255, 0.15);
+    .light-loader-card {
+        background: #FFFDF8;
+        border: 3px solid #121212;
+        box-shadow: 6px 6px 0px #121212;
         border-radius: 24px;
         padding: 32px 28px;
         display: flex;
@@ -2992,49 +2992,59 @@ app.get('/docs', (req, res) => {
         position: relative;
         width: 320px;
     }
-    .cyber-avatar-wrap {
+    .loader-ring-wrap {
         position: relative;
-        width: 72px;
-        height: 72px;
+        width: 76px;
+        height: 76px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .cyber-ring {
+    .loader-ring-spin {
         position: absolute;
         inset: -6px;
-        border: 3px solid transparent;
-        border-top-color: #00f3ff;
-        border-bottom-color: #ff007f;
+        border: 3.5px solid transparent;
+        border-top-color: #121212;
+        border-right-color: #f59e0b;
         border-radius: 50%;
-        animation: spinCyber 1.2s linear infinite;
+        animation: spinRing 1s linear infinite;
     }
-    @keyframes spinCyber {
+    .loader-ring-spin-reverse {
+        position: absolute;
+        inset: -12px;
+        border: 2px dashed #3b82f6;
+        border-radius: 50%;
+        animation: spinRingRev 3s linear infinite;
+    }
+    @keyframes spinRing {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    .cyber-text-glitch {
-        color: #00f3ff;
-        font-weight: 900;
-        font-size: 13px;
-        letter-spacing: 2px;
-        text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+    @keyframes spinRingRev {
+        0% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
     }
-    .cyber-bar {
+    .loader-pulse-logo {
+        animation: logoPulse 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes logoPulse {
+        0% { transform: scale(0.95); }
+        100% { transform: scale(1.05); }
+    }
+    .loader-bar-bg {
         width: 100%;
-        height: 8px;
-        background: #0f172a;
-        border: 1px solid #00f3ff;
+        height: 10px;
+        background: #FAF7EF;
+        border: 2px solid #121212;
         border-radius: 9999px;
         overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        position: relative;
     }
-    .cyber-bar-fill {
+    .loader-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, #00f3ff, #ff007f);
+        background: linear-gradient(90deg, #f59e0b 0%, #3b82f6 100%);
         width: 0%;
         transition: width 0.15s ease;
-        box-shadow: 0 0 12px #00f3ff;
     }
 
     /* Video Banner Radius Melengkung & Pemotongan Presisi */
@@ -3097,15 +3107,23 @@ app.get('/docs', (req, res) => {
     }
 
     /* =========================================================
-       2. TAMPILAN ENDPOINT (#apiList) RAPI, ELEGAN & TANPA BUG
+       2. PERBAIKAN MUTLAK ENDPOINT LIST (#apiList) - NO NESTED BUG
        ========================================================= */
     #apiList {
+        background-color: transparent !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 14px !important;
+        gap: 12px !important;
     }
 
-    /* Kartu Kategori Utama */
+    /* RESET MUTLAK BORDER PADA DIV INTERNAL */
+    #apiList div {
+        border: none !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+    }
+
+    /* KARTU KATEGORI UTAMA (OUTER CONTAINER) */
     #apiList > div,
     #apiList .category-card {
         background-color: var(--card-bg) !important;
@@ -3113,37 +3131,43 @@ app.get('/docs', (req, res) => {
         border-radius: 20px !important;
         padding: 16px !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        overflow: hidden !important;
     }
 
-    /* Menghapus Border Bertumpuk di Dalam Item Endpoint */
-    #apiList div {
-        border-color: transparent;
-        box-shadow: none;
-    }
-
-    /* Item Accordion Endpoint */
+    /* ACCORDION BARIS ENDPOINT */
     #apiList [class*="item"],
     #apiList [class*="accordion-item"],
     #apiList [class*="endpoint-card"] {
         background-color: #FAF7EF !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 14px !important;
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
-        padding: 12px !important;
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+        padding: 10px 14px !important;
     }
 
-    /* Semua Teks & Judul Jelas */
-    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5,
-    #apiList p, #apiList span, #apiList label, #apiList a, #apiList td, #apiList th {
+    /* WARNA TEKS DENGAN KONTRAS TINGGI */
+    #apiList p, #apiList span, #apiList label, #apiList div,
+    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5, #apiList h6,
+    #apiList td, #apiList th, #apiList a, #apiList li {
         color: #121212 !important;
         font-weight: 800 !important;
         opacity: 1 !important;
-        background: transparent !important;
+        text-shadow: none !important;
     }
 
-    /* Input Parameter & Form */
+    /* KOTAK PATH URL / API ENDPOINT */
+    #apiList [class*="path"], #apiList code, #apiList pre {
+        color: #1d4ed8 !important;
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+    }
+
+    /* INPUT & FORM ELEMENT */
     #apiList input[type="text"], 
     #apiList input[type="file"],
     #apiList select, 
@@ -3159,21 +3183,8 @@ app.get('/docs', (req, res) => {
         outline: none !important;
     }
 
-    /* Kotak Kode / URL / cURL */
-    #apiList code, #apiList pre, #apiList [class*="url-box"] {
-        background-color: #FFFDF8 !important;
-        border: 1.5px solid var(--border-dark) !important;
-        border-radius: 10px !important;
-        color: #0284c7 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 700 !important;
-        padding: 8px 12px !important;
-        display: block !important;
-        overflow-x: auto !important;
-    }
-
-    /* Tombol Eksekusi & Copy */
-    #apiList button, #apiList .btn-execute, #apiList .btn-copy {
+    /* TOMBOL EKSEKUSI & COPY */
+    #apiList button, #apiList .btn-execute, #apiList .btn-copy, #apiList [type="submit"] {
         background-color: #121212 !important;
         color: #ffffff !important;
         border: 2px solid var(--border-dark) !important;
@@ -3190,8 +3201,8 @@ app.get('/docs', (req, res) => {
         color: #ffffff !important;
     }
 
-    /* Method Badges */
-    #apiList [class*="get"], #apiList [class*="GET"] {
+    /* BADGES METODE HTTP (GET / POST) */
+    #apiList [class*="get"], #apiList .get, #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3199,7 +3210,7 @@ app.get('/docs', (req, res) => {
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-    #apiList [class*="post"], #apiList [class*="POST"] {
+    #apiList [class*="post"], #apiList .post, #apiList [class*="POST"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3286,28 +3297,29 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
-<!-- Loader Overlay Cyberpunk -->
+<!-- Loader Overlay Light Brutalist -->
 <div id="cyber-loader-overlay">
-    <div class="cyber-loader-box">
-        <div class="cyber-avatar-wrap mb-4">
-            <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-[#00f3ff] shadow-[0_0_15px_#00f3ff]">
+    <div class="light-loader-card">
+        <div class="loader-ring-wrap mb-5">
+            <div class="loader-ring-spin-reverse"></div>
+            <div class="loader-ring-spin"></div>
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 loader-pulse-logo shadow-sm">
         </div>
-        <div class="text-center">
-            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+        <div class="text-center mb-4">
+            <div id="loader-title-text" class="text-xs font-black tracking-widest uppercase text-zinc-900 mb-1">
                 INITIALIZING GATEWAY...
             </div>
-            <div class="text-[9px] font-mono text-cyan-400/80 uppercase tracking-widest">
+            <div class="text-[9px] font-mono font-extrabold text-zinc-500 uppercase tracking-widest">
                 ARULZ-XD API REST CORE
             </div>
         </div>
-        <div class="w-full mt-5">
-            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-cyan-300">
+        <div class="w-full">
+            <div class="flex items-center justify-between text-[10px] font-mono font-extrabold mb-1.5 text-zinc-800">
                 <span>SYSTEM LOADING</span>
-                <span id="loader-percentage" class="font-bold">0%</span>
+                <span id="loader-percentage" class="font-black text-blue-600">0%</span>
             </div>
-            <div class="cyber-bar">
-                <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+            <div class="loader-bar-bg">
+                <div id="loader-progress-fill" class="loader-bar-fill"></div>
             </div>
         </div>
     </div>
@@ -3695,7 +3707,47 @@ app.get('/docs', (req, res) => {
 </script>
 <script src="script.js"></script>
 
+<!-- Interceptor DOM untuk Membersihkan Nested Border & Inline Styles buatan script.js -->
 <script>
+    const cleanupEndpointStyles = () => {
+        const container = document.getElementById('apiList');
+        if (!container) return;
+
+        // Bersihkan border bertumpuk pada div internal
+        container.querySelectorAll('div').forEach(div => {
+            const isCategoryCard = div.classList.contains('category-card') || div.parentElement.id === 'apiList';
+            const isAccordionItem = div.classList.contains('accordion-item') || div.className.includes('endpoint') || div.className.includes('item');
+
+            if (!isCategoryCard && !isAccordionItem) {
+                div.style.border = 'none';
+                div.style.boxShadow = 'none';
+                div.style.backgroundColor = 'transparent';
+            }
+        });
+
+        // Paksa warna teks agar terbaca jelas
+        container.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'BUTTON' && !el.closest('button')) {
+                const color = window.getComputedStyle(el).color;
+                if (color.includes('255, 255, 255') || color.includes('250, 250') || color.includes('244, 244') || color.includes('228, 228')) {
+                    el.style.setProperty('color', '#121212', 'important');
+                }
+            }
+        });
+    };
+
+    const apiObserver = new MutationObserver(() => {
+        cleanupEndpointStyles();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const target = document.getElementById('apiList');
+        if (target) {
+            apiObserver.observe(target, { childList: true, subtree: true, attributes: true });
+        }
+        cleanupEndpointStyles();
+    });
+
     function copyText(text, label) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
