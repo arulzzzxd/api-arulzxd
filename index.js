@@ -3021,20 +3021,15 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* =========================================================
-       PERBAIKAN TOTAL ENDPOINT LIST (#apiList) - RETRO LIGHT
-       ========================================================= */
+    /* Styling Endpoint List (#apiList) */
     #apiList {
         background-color: transparent !important;
     }
 
-    /* Reset default border pada div internal agar tidak bertumpuk */
     #apiList div {
         box-shadow: none !important;
-        border-color: transparent;
     }
 
-    /* Kartu Kategori Utamanya */
     #apiList > div,
     #apiList .category-card {
         background-color: var(--card-bg) !important;
@@ -3045,7 +3040,6 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
-    /* Item Accordion Endpoint */
     #apiList [class*="item"],
     #apiList [class*="accordion-item"],
     #apiList [class*="endpoint-card"] {
@@ -3057,17 +3051,13 @@ app.get('/docs', (req, res) => {
         overflow: hidden !important;
     }
 
-    /* Teks & Label di dalam List */
     #apiList p, #apiList span, #apiList label, 
     #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5 {
         color: #121212 !important;
         font-weight: 800 !important;
         background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
     }
 
-    /* Input Parameter & File Upload */
     #apiList input[type="text"], 
     #apiList input[type="file"],
     #apiList select, 
@@ -3083,8 +3073,7 @@ app.get('/docs', (req, res) => {
         outline: none !important;
     }
 
-    /* Kotak URL & cURL Command */
-    #apiList code, #apiList pre, #apiList [class*="url-box"], #apiList [class*="code-box"] {
+    #apiList code, #apiList pre {
         background-color: #FFFDF8 !important;
         border: 1.5px solid var(--border-dark) !important;
         border-radius: 10px !important;
@@ -3096,8 +3085,7 @@ app.get('/docs', (req, res) => {
         overflow-x: auto !important;
     }
 
-    /* Tombol Eksekusi, Copy, & Clean */
-    #apiList button, #apiList .btn-execute, #apiList .btn-copy, #apiList [type="submit"] {
+    #apiList button, #apiList .btn-execute, #apiList .btn-copy {
         background-color: #121212 !important;
         color: #ffffff !important;
         border: 2px solid var(--border-dark) !important;
@@ -3107,13 +3095,11 @@ app.get('/docs', (req, res) => {
         cursor: pointer !important;
     }
 
-    #apiList button *, #apiList .btn-execute *, #apiList .btn-copy * {
+    #apiList button * {
         color: #ffffff !important;
         background: transparent !important;
-        border: none !important;
     }
 
-    /* HTTP Method Badges (GET / POST) */
     #apiList [class*="get"], #apiList .get, #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
@@ -3451,7 +3437,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Tombol Navigasi Berbentuk Kartu/Pill dengan Icon SVG -->
+    <!-- Tombol Navigasi -->
     <nav class="space-y-2 flex-1">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3632,13 +3618,11 @@ app.get('/docs', (req, res) => {
 </script>
 <script src="script.js"></script>
 
-<!-- Clean Interceptor JS: Mencegah Inject Background Gelap tanpa Merusak Struktur CSS -->
 <script>
     const enforceCleanLightTheme = () => {
         const container = document.getElementById('apiList');
         if (!container) return;
 
-        // Bersihkan background hitam bawaan script.js tanpa menambah border acak
         const allElements = container.querySelectorAll('*');
         allElements.forEach(el => {
             const style = window.getComputedStyle(el);
@@ -3793,7 +3777,7 @@ app.get('/docs', (req, res) => {
             showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
             if (userAvatarImg) userAvatarImg.src = oldSrc;
             if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-        } fontally {
+        } finally {
             if (userAvatarImg) userAvatarImg.style.opacity = '1';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
             input.value = '';
@@ -3834,28 +3818,28 @@ app.get('/docs', (req, res) => {
         const container = document.getElementById('activityLogsContainer');
         if (!container) return;
 
-    fetch('/api/user-activity')
-      .then(res => res.json())
-      .then(resData => {
-          if (resData.status && resData.data && resData.data.length > 0) {
-              container.innerHTML = resData.data.map(logText => 
-                '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
-                    logText +
-                '</div>'
-            ).join('');
-        } else {
+        fetch('/api/user-activity')
+          .then(res => res.json())
+          .then(resData => {
+              if (resData.status && resData.data && resData.data.length > 0) {
+                  container.innerHTML = resData.data.map(logText => 
+                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                        logText +
+                    '</div>'
+                ).join('');
+            } else {
+                container.innerHTML = 
+                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
+                        'Belum ada aktivitas request' +
+                    '</div>';
+            }
+        })
+        .catch(err => {
             container.innerHTML = 
-                '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
-                    'Belum ada aktivitas request' +
+                '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
+                    'Gagal memuat aktivitas' +
                 '</div>';
-        }
-    })
-    .catch(err => {
-        container.innerHTML = 
-            '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
-                'Gagal memuat aktivitas' +
-            '</div>';
-      });
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
