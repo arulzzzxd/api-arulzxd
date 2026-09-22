@@ -2962,6 +2962,81 @@ app.get('/docs', (req, res) => {
         overflow-x: hidden;
     }
 
+    /* =========================================================
+       1. CYBERPUNK LOADER ANIMATION (NEON FUTURISTIC)
+       ========================================================= */
+    #cyber-loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #080c14;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #cyber-loader-overlay.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    .cyber-loader-box {
+        background: rgba(13, 19, 33, 0.95);
+        border: 2px solid #00f3ff;
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.35), inset 0 0 15px rgba(0, 243, 255, 0.15);
+        border-radius: 24px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        width: 320px;
+    }
+    .cyber-avatar-wrap {
+        position: relative;
+        width: 72px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .cyber-ring {
+        position: absolute;
+        inset: -6px;
+        border: 3px solid transparent;
+        border-top-color: #00f3ff;
+        border-bottom-color: #ff007f;
+        border-radius: 50%;
+        animation: spinCyber 1.2s linear infinite;
+    }
+    @keyframes spinCyber {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .cyber-text-glitch {
+        color: #00f3ff;
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+    }
+    .cyber-bar {
+        width: 100%;
+        height: 8px;
+        background: #0f172a;
+        border: 1px solid #00f3ff;
+        border-radius: 9999px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    }
+    .cyber-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00f3ff, #ff007f);
+        width: 0%;
+        transition: width 0.15s ease;
+        box-shadow: 0 0 12px #00f3ff;
+    }
+
     /* Video Banner Radius Melengkung & Pemotongan Presisi */
     .banner-video-container {
         width: 100% !important;
@@ -3021,25 +3096,33 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* Styling Endpoint List (#apiList) */
+    /* =========================================================
+       2. TAMPILAN ENDPOINT (#apiList) RAPI, ELEGAN & TANPA BUG
+       ========================================================= */
     #apiList {
-        background-color: transparent !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
     }
 
-    #apiList div {
-        box-shadow: none !important;
-    }
-
+    /* Kartu Kategori Utama */
     #apiList > div,
     #apiList .category-card {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--border-dark) !important;
         border-radius: 20px !important;
-        padding: 12px !important;
-        margin-bottom: 16px !important;
+        padding: 16px !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        overflow: hidden !important;
     }
 
+    /* Menghapus Border Bertumpuk di Dalam Item Endpoint */
+    #apiList div {
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    /* Item Accordion Endpoint */
     #apiList [class*="item"],
     #apiList [class*="accordion-item"],
     #apiList [class*="endpoint-card"] {
@@ -3048,16 +3131,19 @@ app.get('/docs', (req, res) => {
         border-radius: 14px !important;
         margin-top: 10px !important;
         margin-bottom: 10px !important;
-        overflow: hidden !important;
+        padding: 12px !important;
     }
 
-    #apiList p, #apiList span, #apiList label, 
-    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5 {
+    /* Semua Teks & Judul Jelas */
+    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5,
+    #apiList p, #apiList span, #apiList label, #apiList a, #apiList td, #apiList th {
         color: #121212 !important;
         font-weight: 800 !important;
+        opacity: 1 !important;
         background: transparent !important;
     }
 
+    /* Input Parameter & Form */
     #apiList input[type="text"], 
     #apiList input[type="file"],
     #apiList select, 
@@ -3073,7 +3159,8 @@ app.get('/docs', (req, res) => {
         outline: none !important;
     }
 
-    #apiList code, #apiList pre {
+    /* Kotak Kode / URL / cURL */
+    #apiList code, #apiList pre, #apiList [class*="url-box"] {
         background-color: #FFFDF8 !important;
         border: 1.5px solid var(--border-dark) !important;
         border-radius: 10px !important;
@@ -3085,6 +3172,7 @@ app.get('/docs', (req, res) => {
         overflow-x: auto !important;
     }
 
+    /* Tombol Eksekusi & Copy */
     #apiList button, #apiList .btn-execute, #apiList .btn-copy {
         background-color: #121212 !important;
         color: #ffffff !important;
@@ -3093,14 +3181,17 @@ app.get('/docs', (req, res) => {
         font-weight: 800 !important;
         padding: 6px 14px !important;
         cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
-    #apiList button * {
+    #apiList button *, #apiList .btn-execute *, #apiList .btn-copy * {
         color: #ffffff !important;
-        background: transparent !important;
     }
 
-    #apiList [class*="get"], #apiList .get, #apiList [class*="GET"] {
+    /* Method Badges */
+    #apiList [class*="get"], #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3108,7 +3199,7 @@ app.get('/docs', (req, res) => {
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-    #apiList [class*="post"], #apiList .post, #apiList [class*="POST"] {
+    #apiList [class*="post"], #apiList [class*="POST"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3185,24 +3276,7 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    #cyber-loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background-color: var(--bg-cream);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-    #cyber-loader-overlay.fade-out {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    /* Popup Modal */
+    /* Popup Modal Styling */
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3212,26 +3286,29 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
-<!-- Loader Overlay -->
+<!-- Loader Overlay Cyberpunk -->
 <div id="cyber-loader-overlay">
-    <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
-    </div>
-    <div class="text-center">
-        <div id="loader-title-text" class="text-xs font-black tracking-widest uppercase text-zinc-900 mb-1">
-            INITIALIZING GATEWAY...
+    <div class="cyber-loader-box">
+        <div class="cyber-avatar-wrap mb-4">
+            <div class="cyber-ring"></div>
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-[#00f3ff] shadow-[0_0_15px_#00f3ff]">
         </div>
-        <div class="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-            ARULZ-XD API REST CORE
+        <div class="text-center">
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                INITIALIZING GATEWAY...
+            </div>
+            <div class="text-[9px] font-mono text-cyan-400/80 uppercase tracking-widest">
+                ARULZ-XD API REST CORE
+            </div>
         </div>
-    </div>
-    <div class="w-56 mt-4">
-        <div class="flex items-center justify-between text-[11px] font-mono mb-1">
-            <span class="text-zinc-600">LOADING DATA</span>
-            <span id="loader-percentage" class="text-zinc-900 font-bold">0%</span>
-        </div>
-        <div class="w-full h-2 bg-zinc-200 rounded-full border border-zinc-900 overflow-hidden">
-            <div id="loader-progress-fill" class="h-full bg-zinc-900 w-0 transition-all duration-200"></div>
+        <div class="w-full mt-5">
+            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-cyan-300">
+                <span>SYSTEM LOADING</span>
+                <span id="loader-percentage" class="font-bold">0%</span>
+            </div>
+            <div class="cyber-bar">
+                <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -3619,32 +3696,6 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-    const enforceCleanLightTheme = () => {
-        const container = document.getElementById('apiList');
-        if (!container) return;
-
-        const allElements = container.querySelectorAll('*');
-        allElements.forEach(el => {
-            const style = window.getComputedStyle(el);
-            if (style.backgroundColor && (style.backgroundColor.includes('0, 0, 0') || style.backgroundColor.includes('18, 18, 18') || style.backgroundColor.includes('24, 24') || style.backgroundColor.includes('30, 30'))) {
-                el.style.backgroundColor = 'transparent';
-                el.style.color = '#121212';
-            }
-        });
-    };
-
-    const apiObserver = new MutationObserver(() => {
-        enforceCleanLightTheme();
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const target = document.getElementById('apiList');
-        if (target) {
-            apiObserver.observe(target, { childList: true, subtree: true, attributes: true });
-        }
-        enforceCleanLightTheme();
-    });
-
     function copyText(text, label) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
