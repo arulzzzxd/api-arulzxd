@@ -2931,7 +2931,7 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Arulzxd API - Dashboard Docs</title>
+    <title>Arulzxd API - Docs</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2943,91 +2943,112 @@ app.get('/docs', (req, res) => {
         --bg-cream: #FAF7EF;
         --card-bg: #FFFDF8;
         --border-dark: #121212;
-        --accent-blue: #0088ff;
+    }
+
+    /* Paksa Background Utama Menjadi Light Cream Sesuai Gambar Target */
+    html, body, #themeBg {
+        background-color: var(--bg-cream) !important;
+        color: var(--border-dark) !important;
+        background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+        background-size: 16px 16px !important;
     }
 
     body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: var(--bg-cream);
-        color: #121212;
-        background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px);
-        background-size: 16px 16px;
-        overflow-x: hidden;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
-
-    /* Card & Border Styling Persis Seperti di Gambar */
-    .retro-card {
-        background: var(--card-bg);
-        border: 1.8px solid var(--border-dark);
-        border-radius: 18px;
-        box-shadow: 0 2px 0px rgba(0,0,0,0.05);
+    /* Styling Kartu & Border Hitam Tegas */
+    .retro-card, .stat-box, .stat-cyber-widget, .cyber-card {
+        background-color: var(--card-bg) !important;
+        border: 1.8px solid var(--border-dark) !important;
+        border-radius: 18px !important;
+        box-shadow: none !important;
+        color: var(--border-dark) !important;
     }
 
-    .stat-box {
-        background: var(--card-bg);
-        border: 1.5px solid var(--border-dark);
-        border-radius: 16px;
-        padding: 12px 14px;
+    /* Override Paksa Untuk Semua Elemen yang Dirender oleh script.js di #apiList */
+    #apiList, #apiList * {
+        text-shadow: none !important;
     }
 
-    /* Override untuk List API & Form Input agar Sesuai Tema Gambar */
-    .api-item, #apiList .category-card {
+    #apiList .category-card,
+    #apiList .api-item,
+    #apiList [class*="bg-"],
+    #apiList [class*="glass-"],
+    #apiList [class*="cyber-"] {
+        background-color: var(--card-bg) !important;
         background: var(--card-bg) !important;
         border: 1.8px solid var(--border-dark) !important;
         border-radius: 16px !important;
-        color: #121212 !important;
+        color: var(--border-dark) !important;
+        box-shadow: none !important;
     }
 
-    .api-item p, .api-item h3, .api-item span {
-        color: #121212 !important;
+    #apiList p, #apiList span, #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList code {
+        color: var(--border-dark) !important;
     }
 
-    .api-item input[type="text"] {
-        background-color: #FAF8F2 !important;
-        color: #121212 !important;
-        border: 1.5px solid #121212 !important;
+    #apiList input[type="text"], #apiList select, #apiList textarea {
+        background-color: #FAF7EF !important;
+        border: 1.5px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
         border-radius: 10px !important;
+    }
+
+    #apiList button {
+        border-color: var(--border-dark) !important;
+    }
+
+    #apiList svg, #apiList path {
+        stroke: var(--border-dark) !important;
+    }
+
+    /* Search Input Styling */
+    #searchInput {
+        background-color: var(--card-bg) !important;
+        border: 1.8px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        border-radius: 18px !important;
+        font-weight: 700 !important;
+    }
+    #searchInput::placeholder {
+        color: #666666 !important;
+    }
+
+    /* Filter Buttons Styling */
+    #categoryFilters button, .filter-btn {
+        background-color: #FAF7EF !important;
+        border: 1.8px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        border-radius: 9999px !important;
+        font-weight: 800 !important;
+        font-size: 11px !important;
+        padding: 6px 14px !important;
+    }
+    #categoryFilters button.active, .filter-btn.active {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
     }
 
     .lang-btn {
         font-family: 'JetBrains Mono', monospace;
         font-size: 10px;
         font-weight: 800;
-        padding: 4px 10px;
+        padding: 3px 8px;
         border: 1.5px solid var(--border-dark);
-        background-color: #FAF8F2;
-        color: #121212;
-        border-radius: 8px;
-        transition: all 0.2s ease;
+        background-color: #FAF7EF;
+        color: var(--border-dark);
+        border-radius: 6px;
     }
     .lang-btn.active {
         background-color: var(--border-dark);
         color: #ffffff;
     }
 
-    .filter-btn {
-        font-size: 11px;
-        font-weight: 700;
-        padding: 6px 16px;
-        border: 1.5px solid var(--border-dark);
-        background: #FAF8F2;
-        color: #121212;
-        border-radius: 9999px;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .filter-btn.active {
-        background: var(--border-dark) !important;
-        color: #ffffff !important;
-    }
-
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Loader */
+    /* Overlay Loader */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3045,31 +3066,12 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Modals & Popups styling agar sinkron */
-    .cyber-popup-bg {
-        background-color: #121212;
-        color: #ffffff;
-    }
-    .double-border-cyan {
-        background: #1c1c1c;
-        border: 1.5px solid #00f3ff;
-    }
-    .cyber-pill-capsule {
-        background: #181818;
-        border: 1px solid #00f3ff;
-        border-radius: 9999px;
-    }
-    .gold-metallic-button {
-        background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-        border: 1px solid #fef08a;
-        color: #000;
-        font-weight: 900;
-    }
-    .cyan-solid-header {
-        background-color: #00f3ff;
-        color: #000;
-        font-weight: 900;
-    }
+    /* Modal Styling */
+    .cyber-popup-bg { background-color: #121212; color: #ffffff; }
+    .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
+    .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
+    .gold-metallic-button { background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%); border: 1px solid #fef08a; color: #000; font-weight: 900; }
+    .cyan-solid-header { background-color: #00f3ff; color: #000; font-weight: 900; }
     </style>
 </head>
 <body class="min-h-screen antialiased text-zinc-900 relative">
@@ -3102,7 +3104,7 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Welcome Popup (Fungsi Asli Tetap Ada) -->
+<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3142,7 +3144,7 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
-<!-- Profile Popup (Fungsi Asli Tetap Ada) -->
+<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3243,14 +3245,14 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Sesuai Gambar 100% -->
+<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
-                <img src="https://files.catbox.moe/dvlk00.mp4" alt="Logo" class="w-7 h-7 rounded-lg object-cover">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-7 h-7 rounded-lg object-cover">
             </div>
-            <span class="text-base font-extrabold text-zinc-900 tracking-tight">Arulzxd API</span>
+            <span class="text-base font-black text-zinc-900 tracking-tight">Arulzxd API</span>
         </div>
 
         <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
@@ -3261,7 +3263,7 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Nav (Fungsi Asli Tetap Ada) -->
+<!-- Sidebar Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 text-zinc-900 overflow-y-auto scrollbar-hide">
     <div class="flex items-center justify-between pb-4 mb-3 border-b border-zinc-300">
         ${req.user ? `
@@ -3274,7 +3276,7 @@ app.get('/docs', (req, res) => {
         </button>
         ` : `
         <div class="flex items-center gap-2">
-            <img src="https://files.catbox.moe/dvlk00.mp4" class="w-8 h-8 rounded-lg object-cover border border-zinc-900">
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" class="w-8 h-8 rounded-lg object-cover border border-zinc-900">
             <span class="font-extrabold text-zinc-900 text-sm">ArulzApis</span>
         </div>
         `}
@@ -3325,7 +3327,7 @@ app.get('/docs', (req, res) => {
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
-<!-- Main Container Sesuai Layout Mobile Gambar 100% -->
+<!-- Main Mobile Container -->
 <main class="max-w-md mx-auto px-3 py-4 relative z-10 space-y-4">
     
     <!-- 1. Banner Utama -->
@@ -3335,7 +3337,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- 2. Grid Statistik 2x2 Sesuai Gambar -->
+    <!-- 2. Grid Statistik 2x2 Presisi Gambar Target -->
     <div class="grid grid-cols-2 gap-3">
         <!-- Card 1: Clock -->
         <div class="stat-box flex flex-col justify-between h-24">
@@ -3361,17 +3363,17 @@ app.get('/docs', (req, res) => {
         <!-- Card 3: Total Endpoint -->
         <div class="stat-box flex flex-col justify-between h-22">
             <span id="stat-endpoints-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL ENDPOINT</span>
-            <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 font-mono leading-none">999</span>
+            <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 font-mono leading-none">0</span>
         </div>
 
         <!-- Card 4: Total Kategori -->
         <div class="stat-box flex flex-col justify-between h-22">
             <span id="stat-categories-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL KATEGORI</span>
-            <span id="totalCategories" class="text-2xl font-black text-zinc-900 font-mono leading-none">16</span>
+            <span id="totalCategories" class="text-2xl font-black text-zinc-900 font-mono leading-none">0</span>
         </div>
     </div>
 
-    <!-- 3. Search Bar Sesuai Gambar -->
+    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3387,7 +3389,7 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Hidden Element untuk Pemutar Musik & Fitur Lainnya Agar JS Tidak Error -->
+    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3402,7 +3404,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List Sesuai Tampilan Kartu Gambar -->
+    <!-- 4. Daftar API List Sesuai Kartu Cream & Border Hitam -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
