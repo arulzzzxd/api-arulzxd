@@ -2935,19 +2935,18 @@ app.get('/docs', (req, res) => {
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
     <style>
     :root {
-        --bg-cream: #fbf8f1;
-        --card-bg: #f8f3ea;
-        --border-black: #000000;
-        --accent-blue: #3b82f6;
+        --bg-cream: #F8F5EE;
+        --card-bg: #FAF7F0;
+        --border-color: #1A1A1A;
     }
 
     body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
         background-color: var(--bg-cream);
         color: #000000;
         overflow-x: hidden;
@@ -2955,28 +2954,23 @@ app.get('/docs', (req, res) => {
 
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
 
-    /* Neo Brutalism Border Style */
-    .brutal-border {
-        border: 2px solid #000000;
-        box-shadow: 0px 3px 0px #000000;
+    /* Custom Neo-Brutalism Styling */
+    .neo-card {
+        background-color: var(--card-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
     }
 
-    .brutal-card {
+    .neo-pill {
         background-color: var(--card-bg);
-        border: 2px solid #000000;
-        border-radius: 16px;
-    }
-
-    .brutal-pill {
-        background-color: var(--card-bg);
-        border: 2px solid #000000;
-        border-radius: 999px;
+        border: 2px solid var(--border-color);
+        border-radius: 9999px;
     }
 
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Loader Overlay Minimalis */
+    /* Custom Loader */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -2986,7 +2980,7 @@ app.get('/docs', (req, res) => {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     #cyber-loader-overlay.fade-out {
@@ -2995,61 +2989,77 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Modals & Popups */
-    .cyber-popup-bg {
-        background-color: var(--bg-cream);
+    /* Modals & Overlays */
+    .cyber-popup-bg { background-color: var(--bg-cream); }
+    
+    /* Override CSS Tambahan untuk Kategori API Item agar mirip 100% gambar */
+    .category-group .glass-panel {
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 20px !important;
+        box-shadow: none !important;
+        margin-bottom: 12px !important;
+    }
+
+    .api-item {
+        border-top: 2px solid var(--border-color) !important;
+    }
+
+    /* Tombol/Input agar bergaya Brutalism */
+    input[type="text"], input[type="file"], select, button {
+        border-color: var(--border-color) !important;
     }
     </style>
 </head>
-<body class="min-h-screen antialiased text-black relative bg-[#fbf8f1]">
+<body class="min-h-screen antialiased text-black relative bg-[#F8F5EE]">
 
 <!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
-    <div class="w-16 h-16 rounded-2xl border-2 border-black bg-white flex items-center justify-center mb-4 shadow-[4px_4px_0px_#000]">
+    <div class="w-16 h-16 rounded-2xl border-2 border-black bg-white flex items-center justify-center mb-3 shadow-[2px_2px_0px_#000]">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-xl object-cover">
     </div>
     <div id="loader-title-text" class="text-xs font-black tracking-widest uppercase text-black mb-2">
-        MEMUAT DASHBOARD...
+        MEMUAT ARULZXD API...
     </div>
-    <div class="w-48 h-2 bg-white border-2 border-black rounded-full overflow-hidden">
+    <div class="w-44 h-2.5 bg-white border-2 border-black rounded-full overflow-hidden">
         <div id="loader-progress-fill" class="h-full bg-black w-0 transition-all duration-200"></div>
     </div>
 </div>
 
 <!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-xs"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="brutal-card p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-black bg-[#fbf8f1]">
+    <div class="neo-card p-5 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-black bg-[#FAF7F0]">
       <button id="closePopupBtn" class="absolute top-4 right-4 text-black hover:bg-black/10 rounded-full p-1 border-2 border-black transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
       
-      <div class="text-center mb-4">
-        <h1 class="text-2xl font-black text-black">
+      <div class="text-center mb-3">
+        <h1 class="text-xl font-black text-black tracking-tight">
           WELCOME TO <span class="text-blue-600">ARULZXD API</span>
         </h1>
       </div>
       
-      <div class="mb-4 rounded-xl overflow-hidden border-2 border-black bg-white">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
+      <div class="mb-3 rounded-2xl overflow-hidden border-2 border-black bg-white">
+        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-40" />
       </div>
       
-      <div class="text-center text-black text-xs font-semibold mb-4 leading-relaxed">
-        <p>Halo! Selamat datang di ArulzXD API. Gunakan API Key Anda untuk mulai menguji endpoint.</p>
+      <div class="text-center text-black text-xs font-bold mb-4 leading-relaxed">
+        <p>Selamat datang di REST API Gateway. Silakan gunakan API Key berikut untuk pengujian endpoint secara langsung.</p>
       </div>
       
-      <div class="mb-5 flex justify-center">
-        <div class="brutal-pill py-2 px-5 text-center bg-white">
+      <div class="mb-4 flex justify-center">
+        <div class="neo-pill py-2 px-5 text-center bg-white">
           <span class="font-bold text-xs font-mono">
             APIKEY : <span id="welcomeApiKey" class="font-mono text-blue-600 select-all font-black">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
       
-      <a href="/support" class="w-full bg-black hover:bg-gray-900 text-white font-black py-3 px-6 rounded-xl border-2 border-black shadow-[3px_3px_0px_#3b82f6] transition-all text-xs block text-center uppercase tracking-wider">
+      <a href="/support" class="w-full bg-black text-white font-black py-3 px-6 rounded-xl border-2 border-black transition-all text-xs block text-center uppercase tracking-wider">
         Donate Sekarang
       </a>
     </div>
@@ -3058,9 +3068,9 @@ app.get('/docs', (req, res) => {
 
 <!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="w-full max-w-[400px] brutal-card bg-[#fbf8f1] p-5 relative font-mono text-black my-auto">
+    <div class="w-full max-w-[400px] neo-card bg-[#FAF7F0] p-5 relative font-mono text-black my-auto">
         <div class="flex items-center justify-between mb-4 gap-3">
             <div class="relative w-16 h-16 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
@@ -3070,21 +3080,21 @@ app.get('/docs', (req, res) => {
             </div>
 
             <div class="flex-1 min-w-0">
-                <div class="brutal-pill py-1 px-3 mb-1 bg-white text-center truncate">
+                <div class="neo-pill py-1 px-3 mb-1 bg-white text-center truncate">
                     <span id="userName" class="text-xs font-bold text-black">loading...</span>
                 </div>
-                <div class="brutal-pill py-1 px-3 bg-white text-center truncate">
+                <div class="neo-pill py-1 px-3 bg-white text-center truncate">
                     <span id="userEmail" class="text-[10px] text-gray-700">loading...</span>
                 </div>
             </div>
 
-            <div class="border-2 border-black rounded-2xl px-3 py-2 bg-white text-center font-bold text-xs">
+            <div class="border-2 border-black rounded-2xl px-3 py-2 bg-white text-center font-black text-xs">
                 <span id="userPlanText">FREE</span>
             </div>
         </div>
 
         <div class="border-2 border-black rounded-2xl p-3 mb-3 bg-white">
-            <span class="text-[10px] font-bold block mb-1">API KEY:</span>
+            <span class="text-[10px] font-bold block mb-1">API KEY USER:</span>
             <div id="userApiKey" class="font-mono text-xs font-bold text-blue-600 truncate mb-2">loading-key</div>
             
             <div id="vipCustomKeyBox" class="hidden mb-2">
@@ -3094,13 +3104,13 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
 
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-black text-white text-xs py-2 rounded-xl font-bold uppercase">
-                Salin API Key
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-black text-white text-xs py-2 rounded-xl font-black uppercase">
+                SALIN API KEY
             </button>
         </div>
 
         <div class="border-2 border-black rounded-2xl p-3 mb-3 bg-white text-center">
-            <span class="text-[10px] font-bold block mb-1">PENGGUNAAN LIMIT</span>
+            <span class="text-[10px] font-bold block mb-1">LIMIT USER</span>
             <span class="text-xs font-bold">
                 <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
             </span>
@@ -3109,13 +3119,13 @@ app.get('/docs', (req, res) => {
         <div class="border-2 border-black rounded-2xl p-3 mb-4 bg-white">
             <span class="text-[10px] font-bold block mb-2 text-center uppercase">Aktivitas Terakhir</span>
             <div id="activityLogsContainer" class="space-y-1.5 max-h-32 overflow-y-auto">
-                <div class="text-[10px] text-center text-gray-500">Belum ada request</div>
+                <div class="text-[10px] text-center text-gray-500">Belum ada aktivitas</div>
             </div>
         </div>
 
         <div class="flex gap-2">
-            <button onclick="closeProfilePopup()" class="flex-1 border-2 border-black bg-white hover:bg-gray-100 font-bold text-xs py-2.5 rounded-xl uppercase">TUTUP</button>
-            <a href="/auth/logout" class="flex-1 border-2 border-black bg-red-500 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl text-center uppercase">LOG OUT</a>
+            <button onclick="closeProfilePopup()" class="flex-1 border-2 border-black bg-white hover:bg-gray-100 font-black text-xs py-2.5 rounded-xl uppercase">TUTUP</button>
+            <a href="/auth/logout" class="flex-1 border-2 border-black bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2.5 rounded-xl text-center uppercase">LOG OUT</a>
         </div>
     </div>
   </div>
@@ -3123,24 +3133,24 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-    <!-- Header Navigation -->
-    <header class="max-w-md mx-auto px-4 pt-4 pb-2 flex items-center justify-between border-b-2 border-black">
+    <!-- Top Navigation Header -->
+    <header class="max-w-md mx-auto px-4 pt-4 pb-3 flex items-center justify-between border-b-2 border-black bg-[#F8F5EE]">
         <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 border-2 border-black rounded-xl overflow-hidden bg-white shadow-[2px_2px_0px_#000]">
+            <div class="w-9 h-9 border-2 border-black rounded-xl overflow-hidden bg-white flex items-center justify-center">
                 <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-full h-full object-cover">
             </div>
             <span class="text-base font-black text-black tracking-tight">Arulzxd API</span>
         </div>
 
-        <button id="bioMenuBtn" class="w-10 h-10 border-2 border-black rounded-2xl bg-white flex items-center justify-center text-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
+        <button id="bioMenuBtn" class="w-10 h-10 border-2 border-black rounded-2xl bg-white flex items-center justify-center text-black active:translate-y-0.5 transition-all">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
         </button>
     </header>
 
-    <!-- Sidebar Right Menu (Slide Overlay) -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#fbf8f1] border-l-2 border-black transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col p-5 font-['Plus_Jakarta_Sans'] text-black overflow-y-auto scrollbar-hide shadow-2xl">
+    <!-- Sidebar Right Menu (Stylera Drawer) -->
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7F0] border-l-2 border-black transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col p-5 font-['Plus_Jakarta_Sans'] text-black overflow-y-auto scrollbar-hide shadow-2xl">
         
         <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-black">
             <div class="flex items-center gap-2">
@@ -3153,79 +3163,76 @@ app.get('/docs', (req, res) => {
             </button>
         </div>
 
-        <nav class="flex flex-col gap-2.5 text-xs font-extrabold tracking-wide flex-1">
-            
-            <div class="border-2 border-black rounded-2xl overflow-hidden bg-white p-2 mb-2 shadow-[2px_2px_0px_#000]">
-                <div class="flex items-center justify-between mb-2 px-1">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-gray-500">BANNER</span>
+        <nav class="flex flex-col gap-2.5 text-xs font-black tracking-wide flex-1">
+            <div class="border-2 border-black rounded-2xl overflow-hidden bg-white p-2 mb-2">
+                <div class="flex items-center justify-between mb-1.5 px-1">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-gray-600">BANNER</span>
                     <span class="text-[10px]">📢</span>
                 </div>
-                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Sidebar Banner" class="w-full h-24 object-cover rounded-xl border border-black">
+                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Sidebar Banner" class="w-full h-24 object-cover rounded-xl border-2 border-black">
             </div>
 
-            <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-black text-white border-2 border-black shadow-[2px_2px_0px_#000] font-bold">
+            <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-black text-white border-2 border-black font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 <span>BACK TO DASHBOARD</span>
             </a>
 
-            <a href="/docs" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-black border-2 border-black hover:bg-gray-100 font-bold">
+            <a href="/docs" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white text-black border-2 border-black hover:bg-gray-100 font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <span>DOCS</span>
             </a>
 
-            <a href="/status" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-black border-2 border-black hover:bg-gray-100 font-bold">
+            <a href="/status" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white text-black border-2 border-black hover:bg-gray-100 font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span>MONITORING</span>
             </a>
 
-            <a href="/uploader" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-black border-2 border-black hover:bg-gray-100 font-bold">
+            <a href="/uploader" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white text-black border-2 border-black hover:bg-gray-100 font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span>UPLOADER</span>
             </a>
 
-            <a href="/store" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-black border-2 border-black hover:bg-gray-100 font-bold">
+            <a href="/store" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white text-black border-2 border-black hover:bg-gray-100 font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                <span>DONATE / BUY</span>
+                <span>DONATE</span>
             </a>
 
-            <a href="/feedback" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-black border-2 border-black hover:bg-gray-100 font-bold">
+            <a href="/feedback" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white text-black border-2 border-black hover:bg-gray-100 font-extrabold uppercase">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                 <span>REQUEST FITUR</span>
             </a>
-
         </nav>
 
         <div class="mt-auto pt-4 text-center border-t-2 border-black text-[10px] font-mono font-bold text-gray-500">
             Stylera © 2026
         </div>
-
     </div>
 
-    <div id="menuOverlay" class="fixed inset-0 bg-black/50 hidden z-30"></div>
+    <div id="menuOverlay" class="fixed inset-0 bg-black/40 hidden z-30"></div>
 
-    <!-- Main Container -->
+    <!-- Main Content Container -->
     <main class="max-w-md mx-auto px-4 py-4 relative z-10">
         
-        <!-- Top Anime Banner -->
-        <div class="border-2 border-black rounded-2xl overflow-hidden bg-white mb-5 shadow-[4px_4px_0px_#000]">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Anime Banner" class="w-full h-auto object-cover max-h-52" />
+        <!-- Main Anime Header Banner -->
+        <div class="border-2 border-black rounded-3xl overflow-hidden bg-white mb-4">
+            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Anime Banner" class="w-full h-auto object-cover max-h-56" />
         </div>
 
-        <!-- 4 Grid Stats Box -->
-        <div class="grid grid-cols-2 gap-3 mb-5">
+        <!-- 4 Grid Stat Box (Persis Gambar) -->
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
             
             <!-- Real-Time Clock -->
-            <div class="border-2 border-black rounded-2xl p-3 bg-[#f8f3ea] flex flex-col justify-between shadow-[2px_2px_0px_#000]">
+            <div class="border-2 border-black rounded-2xl p-3 bg-[#FAF7F0] flex flex-col justify-between">
                 <span class="text-[9px] font-black text-black tracking-wider uppercase">REAL-TIME CLOCK</span>
                 <div id="liveClock" class="text-2xl font-black text-black my-1 tracking-tight">00:00:00</div>
-                <div id="liveDate" class="text-[8px] font-bold text-gray-700 uppercase">SENIN, 21, SEPTEMBER 2026</div>
+                <div id="liveDate" class="text-[8px] font-black text-gray-800 uppercase">SENIN, 21, SEPTEMBER 2026</div>
             </div>
 
             <!-- Limit Used -->
-            <div class="border-2 border-black rounded-2xl p-3 bg-[#f8f3ea] flex flex-col justify-between shadow-[2px_2px_0px_#000] relative">
+            <div class="border-2 border-black rounded-2xl p-3 bg-[#FAF7F0] flex flex-col justify-between">
                 <div class="flex items-center justify-between">
                     <span class="text-[9px] font-black text-black tracking-wider uppercase">LIMIT USED</span>
-                    <span id="userLimitBadge" class="text-[9px] font-black text-black">FREE</span>
+                    <span id="userLimitBadge" class="text-[9px] font-black text-black uppercase">FREE</span>
                 </div>
                 <div class="flex items-baseline gap-0.5 mt-2">
                     <span id="userLimitUsed" class="text-3xl font-black text-black">0</span>
@@ -3235,36 +3242,36 @@ app.get('/docs', (req, res) => {
             </div>
 
             <!-- Total Endpoint -->
-            <div class="border-2 border-black rounded-2xl p-3 bg-[#f8f3ea] flex flex-col justify-between shadow-[2px_2px_0px_#000]">
+            <div class="border-2 border-black rounded-2xl p-3 bg-[#FAF7F0] flex flex-col justify-between">
                 <span id="stat-endpoints-title" class="text-[9px] font-black text-black tracking-wider uppercase">TOTAL ENDPOINT</span>
-                <span id="totalEndpoints" class="text-3xl font-black text-black mt-2">0</span>
+                <span id="totalEndpoints" class="text-3xl font-black text-black mt-2">999</span>
             </div>
 
             <!-- Total Kategori -->
-            <div class="border-2 border-black rounded-2xl p-3 bg-[#f8f3ea] flex flex-col justify-between shadow-[2px_2px_0px_#000]">
+            <div class="border-2 border-black rounded-2xl p-3 bg-[#FAF7F0] flex flex-col justify-between">
                 <span id="stat-categories-title" class="text-[9px] font-black text-black tracking-wider uppercase">TOTAL KATEGORI</span>
-                <span id="totalCategories" class="text-3xl font-black text-black mt-2">0</span>
+                <span id="totalCategories" class="text-3xl font-black text-black mt-2">16</span>
             </div>
 
         </div>
 
-        <!-- Search Bar Minimalis -->
-        <div class="mb-5">
+        <!-- Search Input Field -->
+        <div class="mb-4">
             <div class="relative">
                 <input 
                     type="text" 
                     id="searchInput" 
                     placeholder="Cari Endpoint Atau Kategori...."
-                    class="w-full px-4 py-3 pl-11 text-xs font-bold rounded-2xl border-2 border-black bg-[#f8f3ea] text-black placeholder-gray-500 focus:outline-none shadow-[2px_2px_0px_#000]"
+                    class="w-full px-4 py-3 pl-10 text-xs font-bold rounded-2xl border-2 border-black bg-[#FAF7F0] text-black placeholder-gray-500 focus:outline-none"
                 >
                 <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </div>
-            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
+            <div id="categoryFilters" class="flex flex-wrap gap-2 mt-2.5 overflow-x-auto pb-1 scrollbar-hide"></div>
         </div>
 
-        <!-- Pemutar Musik Tersembunyi (Integrasi Fungsi Musik) -->
+        <!-- Pemutar Musik (Invisibel untuk menjaga kompatibilitas script.js) -->
         <div class="hidden">
             <audio id="audioElement"></audio>
             <span id="musicTitle"></span>
@@ -3280,22 +3287,22 @@ app.get('/docs', (req, res) => {
             <div id="playlistPanel"></div>
         </div>
 
-        <!-- Not Found Placeholder -->
+        <!-- No Results -->
         <div id="noResults" class="text-center py-8 hidden">
             <h3 id="no-results-title" class="text-sm font-black text-black mb-1">Endpoint Tidak Ditemukan</h3>
             <p id="no-results-desc" class="text-xs font-semibold text-gray-600">Coba gunakan kata kunci pencarian lain.</p>
         </div>
 
-        <!-- API List Items Container -->
+        <!-- List Endpoint Kategori (Dirender via script.js) -->
         <div id="apiList" class="space-y-3"></div>
 
-        <footer id="siteFooter" class="mt-12 py-6 text-center text-[10px] font-bold tracking-widest text-gray-500 border-t-2 border-black/10">
+        <footer id="siteFooter" class="mt-10 py-5 text-center text-[10px] font-bold tracking-widest text-gray-500 border-t-2 border-black/10">
             © 2026 ARULZXD API // ALL RIGHTS RESERVED
         </footer>
     </main>
 
-    <!-- Lightbox Gambar -->
-    <div id="imageLightbox" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <!-- Lightbox Gambar Preview -->
+    <div id="imageLightbox" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-xs">
         <div class="relative max-w-4xl max-h-[90vh]">
             <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-2xl border-2 border-white shadow-2xl object-contain" />
             <button id="closeLightbox" class="absolute -top-10 right-0 text-white font-mono text-xs bg-black px-3 py-1 rounded-xl border border-white">✕ Close</button>
