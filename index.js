@@ -2942,6 +2942,7 @@ app.get('/docs', (req, res) => {
     :root {
         --bg-cream: #FAF7EF;
         --card-bg: #FFFDF8;
+        --card-inner: #FAF7EF;
         --border-dark: #121212;
     }
 
@@ -3021,69 +3022,79 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* OVERRIDE TOTAL UNTUK ENDPOINT LIST (#apiList): MENCEGAH BACKGROUND HITAM script.js */
-    #apiList, 
-    #apiList *,
-    #apiList div,
-    #apiList section,
-    #apiList article,
-    #apiList ul,
-    #apiList li {
-        background-color: #FFFDF8 !important;
-        background: #FFFDF8 !important;
-        border-color: #121212 !important;
+    /* OVERRIDE MUTLAK SEMUA ELEMEN DINAMIS script.js (#apiList) UNTUK TEMA LIGHT RETRO */
+    #apiList {
+        background-color: transparent !important;
+    }
+
+    /* Kartu Kategori Utama (Outer Card) */
+    #apiList > div,
+    #apiList .category-card,
+    #apiList [class*="category"] {
+        background-color: var(--card-bg) !important;
+        background: var(--card-bg) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
+        padding: 12px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        overflow: hidden !important;
+    }
+
+    /* Container Daftar Endpoint Dalam Accordion (Menghapus Background Hitam Pekat) */
+    #apiList [class*="endpoint"],
+    #apiList [class*="list"],
+    #apiList [class*="body"],
+    #apiList [class*="content"],
+    #apiList [class*="accordion-content"],
+    #apiList [class*="collapse"],
+    #apiList div[class*="bg-slate"],
+    #apiList div[class*="bg-zinc"],
+    #apiList div[class*="bg-black"],
+    #apiList div[class*="bg-gray"],
+    #apiList div[class*="bg-neutral"] {
+        background-color: var(--card-inner) !important;
+        background: var(--card-inner) !important;
+        border-color: var(--border-dark) !important;
         color: #121212 !important;
+    }
+
+    /* Baris Item Endpoint Individu (Test, Deepsek Ai, Duck Ai, dll) */
+    #apiList [class*="item"],
+    #apiList [class*="endpoint-card"],
+    #apiList [class*="api-card"],
+    #apiList [class*="row"],
+    #apiList div > div > div {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 14px !important;
+        color: #121212 !important;
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.04) !important;
+    }
+
+    /* Warna Teks, Judul, Path, dan Label */
+    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5, #apiList h6,
+    #apiList p, #apiList span, #apiList div, #apiList label, #apiList a,
+    #apiList td, #apiList th, #apiList strong, #apiList b {
+        color: #121212 !important;
+        font-weight: 800 !important;
         text-shadow: none !important;
     }
 
-    /* Item individual & kontainer baris di dalam list endpoint */
-    #apiList div[class*="bg-"],
-    #apiList div[class*="item"],
-    #apiList div[class*="row"],
-    #apiList div[class*="border"],
-    #apiList div[class*="rounded"],
-    #apiList .api-item,
-    #apiList .accordion-item {
-        background-color: #FAF7EF !important;
-        background: #FAF7EF !important;
-        border: 2px solid #121212 !important;
-        border-radius: 14px !important;
-    }
-
-    /* Header Kartu Kategori Utama */
-    #apiList > div {
-        background-color: #FFFDF8 !important;
-        border: 2.5px solid #121212 !important;
-        border-radius: 20px !important;
-        padding: 14px !important;
-        margin-bottom: 16px !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-    }
-
-    /* Teks, Judul, Label di dalam Endpoint */
-    #apiList p, #apiList span, #apiList div, #apiList label, 
-    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList td, #apiList th {
-        color: #121212 !important;
+    #apiList [class*="path"], #apiList code {
+        color: #2563eb !important;
+        font-family: 'JetBrains Mono', monospace !important;
         font-weight: 700 !important;
     }
 
-    /* Teks Route URL / Path */
-    #apiList code, #apiList pre, #apiList [class*="font-mono"] {
-        background-color: #FFFDF8 !important;
-        border: 1.5px solid #121212 !important;
-        border-radius: 10px !important;
-        color: #0284c7 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 800 !important;
-        padding: 6px 10px !important;
-    }
-
-    /* Form Input & Textarea */
+    /* Input & Form */
     #apiList input[type="text"], 
     #apiList select, 
     #apiList textarea {
         background-color: #FFFDF8 !important;
-        border: 2px solid #121212 !important;
+        border: 2px solid var(--border-dark) !important;
         color: #121212 !important;
         border-radius: 12px !important;
         padding: 8px 12px !important;
@@ -3092,9 +3103,21 @@ app.get('/docs', (req, res) => {
         width: 100% !important;
     }
 
-    /* Tombol Aksi (Eksekusi, Salin) */
+    #apiList code, #apiList pre {
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        border-radius: 10px !important;
+        color: #0284c7 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
+        padding: 8px 10px !important;
+        display: block !important;
+        overflow-x: auto !important;
+    }
+
+    /* Tombol Eksekusi & Copy */
     #apiList button, #apiList .btn-execute, #apiList .btn-copy {
-        border: 2px solid #121212 !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
         background-color: #121212 !important;
@@ -3107,52 +3130,34 @@ app.get('/docs', (req, res) => {
         color: #ffffff !important;
     }
 
-    /* Badges HTTP Method (GET & POST) */
-    #apiList [class*="GET"], #apiList [class*="get"] {
+    /* Badges Metode HTTP (GET / POST) & Status Badges */
+    #apiList [class*="get"], #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
-        border: 1.5px solid #121212 !important;
+        border: 1.5px solid var(--border-dark) !important;
         font-weight: 900 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-
-    #apiList [class*="POST"], #apiList [class*="post"] {
+    #apiList [class*="post"], #apiList [class*="POST"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
-        border: 1.5px solid #121212 !important;
+        border: 1.5px solid var(--border-dark) !important;
         font-weight: 900 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-
-    #apiList [class*="POST"] *, #apiList [class*="post"] * {
-        color: #ffffff !important;
-    }
-
-    /* Status Badges */
-    #apiList [class*="READY"], #apiList [class*="ready"] {
-        background-color: #dcfce7 !important;
-        color: #15803d !important;
-        border: 1.5px solid #121212 !important;
-        font-weight: 800 !important;
-    }
-    #apiList [class*="FREE"], #apiList [class*="free"] {
-        background-color: #f4f4f5 !important;
-        color: #18181b !important;
-        border: 1.5px solid #121212 !important;
-        font-weight: 800 !important;
-    }
-    #apiList [class*="MAINTENANCE"], #apiList [class*="maintenance"] {
-        background-color: #fee2e2 !important;
-        color: #b91c1c !important;
-        border: 1.5px solid #121212 !important;
+    #apiList [class*="ready"], #apiList [class*="READY"], #apiList [class*="free"], #apiList [class*="FREE"] {
+        border: 1.5px solid var(--border-dark) !important;
         font-weight: 800 !important;
     }
 
-    /* Icon SVG stroke di dalam apiList */
+    /* Icon SVG stroke di apiList */
     #apiList svg path {
         stroke: #121212 !important;
+    }
+    #apiList button svg path {
+        stroke: #ffffff !important;
     }
 
     /* Menu Navigasi Kartu Dropdown */
@@ -3438,7 +3443,7 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Dropdown Nav (Semua Icon SVG) -->
+<!-- Sidebar Dropdown Nav (Semua Icon Menggunakan SVG) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
     <!-- Header Dropdown -->
@@ -3660,245 +3665,274 @@ app.get('/docs', (req, res) => {
 </script>
 <script src="script.js"></script>
 
+<!-- Clean Runtime Styling Interceptor untuk Memastikan DOM buatan script.js Selalu Light Cream -->
 <script>
-        function copyText(text, label) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert((label || 'Teks') + ' berhasil disalin!');
-                });
+    const enforceLightEndpointTheme = () => {
+        const container = document.getElementById('apiList');
+        if (!container) return;
+
+        container.querySelectorAll('*').forEach(el => {
+            if (el.tagName === 'BUTTON') return;
+            
+            // Hapus inline background gelap buatan script.js
+            const bg = window.getComputedStyle(el).backgroundColor;
+            if (bg && (bg.includes('0, 0, 0') || bg.includes('18, 18, 18') || bg.includes('24, 24') || bg.includes('30, 30'))) {
+                el.style.setProperty('background-color', '#FAF7EF', 'important');
+                el.style.setProperty('color', '#121212', 'important');
             }
+        });
+    };
+
+    const apiObserver = new MutationObserver(() => {
+        enforceLightEndpointTheme();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const target = document.getElementById('apiList');
+        if (target) {
+            apiObserver.observe(target, { childList: true, subtree: true, attributes: true });
         }
+        enforceLightEndpointTheme();
+    });
 
-        function openProfilePopup() {
-            document.getElementById('profilePopup').classList.remove('hidden');
-            fetchUserProfile();
+    function copyText(text, label) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert((label || 'Teks') + ' berhasil disalin!');
+            });
         }
+    }
 
-        function closeProfilePopup() {
-            document.getElementById('profilePopup').classList.add('hidden');
+    function openProfilePopup() {
+        document.getElementById('profilePopup').classList.remove('hidden');
+        fetchUserProfile();
+    }
+
+    function closeProfilePopup() {
+        document.getElementById('profilePopup').classList.add('hidden');
+    }
+
+    function showWelcomePopup() {
+        const popup = document.getElementById('welcomePopup');
+        const closeBtn = document.getElementById('closePopupBtn');
+        if (popup) {
+            popup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
         }
-
-        function showWelcomePopup() {
-            const popup = document.getElementById('welcomePopup');
-            const closeBtn = document.getElementById('closePopupBtn');
-            if (popup) {
-                popup.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            }
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    popup.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                };
-            }
-        }
-
-        function setRoleTheme(roleName) {
-            const planText = document.getElementById('userPlanText');
-            const vipCustomBox = document.getElementById('vipCustomKeyBox');
-            if (!planText) return;
-
-            const role = (roleName || '').toLowerCase();
-
-            if (role.includes('vip')) {
-                planText.textContent = 'VIP';
-                planText.setAttribute('fill', '#00f3ff');
-                if (vipCustomBox) vipCustomBox.classList.remove('hidden');
-            } else if (role.includes('premium')) {
-                planText.textContent = 'PREM';
-                planText.setAttribute('fill', '#fbbf24');
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
-            } else {
-                planText.textContent = 'FREE';
-                planText.setAttribute('fill', '#34d399');
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
-            }
-        }
-
-        async function saveCustomApiKey() {
-            const input = document.getElementById('customApiKeyInput');
-            if (!input || !input.value.trim()) {
-                alert('Ketik API Key kustom yang diinginkan terlebih dahulu!');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/user/custom-apikey', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customKey: input.value.trim() })
-                });
-
-                const resData = await response.json();
-                if (resData.status) {
-                    alert(resData.message);
-                    document.getElementById('userApiKey').innerText = resData.apikey;
-                    input.value = '';
-                } else {
-                    alert(resData.message || 'Gagal mengubah API Key.');
-                }
-            } catch (err) {
-                alert('Terjadi kesalahan koneksi saat menyimpan API Key.');
-            }
-        }
-
-        async function uploadAvatarFile(input) {
-            if (!input.files || !input.files[0]) return;
-
-            const file = input.files[0];
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            const userAvatarImg = document.getElementById('userAvatar');
-            const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
-            const oldSrc = userAvatarImg ? userAvatarImg.src : '';
-
-            if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
-            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
-
-            const showCyberAlert = (icon, title, text) => {
-                Swal.fire({
-                    icon: icon,
-                    title: title,
-                    text: text,
-                    background: '#010a17',
-                    color: '#f8fafc',
-                    confirmButtonText: 'OKE'
-                });
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                popup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
             };
+        }
+    }
 
-            try {
-                const response = await fetch('/api/user/update-avatar', {
-                    method: 'POST',
-                    body: formData
+    function setRoleTheme(roleName) {
+        const planText = document.getElementById('userPlanText');
+        const vipCustomBox = document.getElementById('vipCustomKeyBox');
+        if (!planText) return;
+
+        const role = (roleName || '').toLowerCase();
+
+        if (role.includes('vip')) {
+            planText.textContent = 'VIP';
+            planText.setAttribute('fill', '#00f3ff');
+            if (vipCustomBox) vipCustomBox.classList.remove('hidden');
+        } else if (role.includes('premium')) {
+            planText.textContent = 'PREM';
+            planText.setAttribute('fill', '#fbbf24');
+            if (vipCustomBox) vipCustomBox.classList.add('hidden');
+        } else {
+            planText.textContent = 'FREE';
+            planText.setAttribute('fill', '#34d399');
+            if (vipCustomBox) vipCustomBox.classList.add('hidden');
+        }
+    }
+
+    async function saveCustomApiKey() {
+        const input = document.getElementById('customApiKeyInput');
+        if (!input || !input.value.trim()) {
+            alert('Ketik API Key kustom yang diinginkan terlebih dahulu!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/user/custom-apikey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customKey: input.value.trim() })
+            });
+
+            const resData = await response.json();
+            if (resData.status) {
+                alert(resData.message);
+                document.getElementById('userApiKey').innerText = resData.apikey;
+                input.value = '';
+            } else {
+                alert(resData.message || 'Gagal mengubah API Key.');
+            }
+        } catch (err) {
+            alert('Terjadi kesalahan koneksi saat menyimpan API Key.');
+        }
+    }
+
+    async function uploadAvatarFile(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const userAvatarImg = document.getElementById('userAvatar');
+        const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
+        const oldSrc = userAvatarImg ? userAvatarImg.src : '';
+
+        if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
+        if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
+
+        const showCyberAlert = (icon, title, text) => {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: text,
+                background: '#010a17',
+                color: '#f8fafc',
+                confirmButtonText: 'OKE'
+            });
+        };
+
+        try {
+            const response = await fetch('/api/user/update-avatar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.status) {
+                const newAvatarUrl = result.avatar;
+
+                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                    img.src = newAvatarUrl;
                 });
 
-                const result = await response.json();
-
-                if (result.status) {
-                    const newAvatarUrl = result.avatar;
-
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                        img.src = newAvatarUrl;
-                    });
-
-                    showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
-                } else {
-                    showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
-                    if (userAvatarImg) userAvatarImg.src = oldSrc;
-                    if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-                }
-            } catch (error) {
-                console.error("Error uploading avatar:", error);
-                showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
+                showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+            } else {
+                showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
                 if (userAvatarImg) userAvatarImg.src = oldSrc;
                 if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-            } finally {
-                if (userAvatarImg) userAvatarImg.style.opacity = '1';
-                if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
-                input.value = '';
             }
+        } catch (error) {
+            console.error("Error uploading avatar:", error);
+            showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
+            if (userAvatarImg) userAvatarImg.src = oldSrc;
+            if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
+        } finally {
+            if (userAvatarImg) userAvatarImg.style.opacity = '1';
+            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
+            input.value = '';
         }
+    }
 
-        function fetchUserProfile() {
-            fetch('/api/user-status')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.loggedIn && data.user) {
-                        const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+    function fetchUserProfile() {
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
 
-                        document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                            if (img) img.src = latestAvatar;
-                        });
+                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                        if (img) img.src = latestAvatar;
+                    });
 
-                        document.getElementById('userName').innerText = data.user.username || 'User';
-                        document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        
-                        const userKey = data.user.apikey || '';
-                        document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
-                                                
-                        setRoleTheme(data.user.role || 'Free User');
+                    document.getElementById('userName').innerText = data.user.username || 'User';
+                    document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                    
+                    const userKey = data.user.apikey || '';
+                    document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
+                                            
+                    setRoleTheme(data.user.role || 'Free User');
 
-                        fetchUserActivityLogs(userKey);
-                        if (typeof fetchAndUpdateUserLimit === 'function') {
-                            fetchAndUpdateUserLimit();
-                        }
+                    fetchUserActivityLogs(userKey);
+                    if (typeof fetchAndUpdateUserLimit === 'function') {
+                        fetchAndUpdateUserLimit();
                     }
-                })
-                .catch((err) => {
-                    console.error("Gagal sinkronisasi profile:", err);
-                });
-        }
-
-        function fetchUserActivityLogs() {
-            const container = document.getElementById('activityLogsContainer');
-            if (!container) return;
-
-        fetch('/api/user-activity')
-          .then(res => res.json())
-          .then(resData => {
-              if (resData.status && resData.data && resData.data.length > 0) {
-                  container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
-                        logText +
-                    '</div>'
-                ).join('');
-            } else {
-                container.innerHTML = 
-                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
-                        'Belum ada aktivitas request' +
-                    '</div>';
-            }
-        })
-        .catch(err => {
-            container.innerHTML = 
-                '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
-                    'Gagal memuat aktivitas' +
-                '</div>';
-          });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchUserProfile();
-        });
-
-        let currentProgress = 0;
-        let hasFinishedLoading = false;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
-        const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        function finishLoader() {
-            if (hasFinishedLoading) return;
-            hasFinishedLoading = true;
-            clearInterval(progressInterval);
-            updateProgress(100);
-
-            setTimeout(() => {
-                if (loaderOverlay) {
-                    loaderOverlay.classList.add('fade-out');
-                    setTimeout(() => {
-                        showWelcomePopup();
-                    }, 200);
                 }
-            }, 400);
+            })
+            .catch((err) => {
+                console.error("Gagal sinkronisasi profile:", err);
+            });
+    }
+
+    function fetchUserActivityLogs() {
+        const container = document.getElementById('activityLogsContainer');
+        if (!container) return;
+
+    fetch('/api/user-activity')
+      .then(res => res.json())
+      .then(resData => {
+          if (resData.status && resData.data && resData.data.length > 0) {
+              container.innerHTML = resData.data.map(logText => 
+                '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                    logText +
+                '</div>'
+            ).join('');
+        } else {
+            container.innerHTML = 
+                '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
+                    'Belum ada aktivitas request' +
+                '</div>';
         }
+    })
+    .catch(err => {
+        container.innerHTML = 
+            '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
+                'Gagal memuat aktivitas' +
+            '</div>';
+      });
+    }
 
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchUserProfile();
+    });
+
+    let currentProgress = 0;
+    let hasFinishedLoading = false;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) {
+                loaderOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    showWelcomePopup();
+                }, 200);
             }
-        }, 120);
+        }, 400);
+    }
 
-        window.addEventListener('load', finishLoader);
-        setTimeout(finishLoader, 1500);
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 120);
+
+    window.addEventListener('load', finishLoader);
+    setTimeout(finishLoader, 1500);
 </script>
 
 </body>
