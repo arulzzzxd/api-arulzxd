@@ -2931,7 +2931,7 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Arulzxd API - Docs</title>
+    <title>Arulzxd API - Documentation</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2945,30 +2945,29 @@ app.get('/docs', (req, res) => {
         --border-dark: #121212;
     }
 
-    /* Paksa Background Utama Menjadi Light Cream Sesuai Gambar Target */
-    html, body, #themeBg {
+    * {
+        box-sizing: border-border;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100vh;
         background-color: var(--bg-cream) !important;
         color: var(--border-dark) !important;
         background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
         background-size: 16px 16px !important;
-    }
-
-    body {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
+        overflow-x: hidden;
     }
 
-    /* Styling Kartu & Border Hitam Tegas */
     .retro-card, .stat-box, .stat-cyber-widget, .cyber-card {
         background-color: var(--card-bg) !important;
-        border: 1.8px solid var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 18px !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
         color: var(--border-dark) !important;
-    }
-
-    /* Override Paksa Untuk Semua Elemen yang Dirender oleh script.js di #apiList */
-    #apiList, #apiList * {
-        text-shadow: none !important;
     }
 
     #apiList .category-card,
@@ -2977,8 +2976,7 @@ app.get('/docs', (req, res) => {
     #apiList [class*="glass-"],
     #apiList [class*="cyber-"] {
         background-color: var(--card-bg) !important;
-        background: var(--card-bg) !important;
-        border: 1.8px solid var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 16px !important;
         color: var(--border-dark) !important;
         box-shadow: none !important;
@@ -2995,35 +2993,26 @@ app.get('/docs', (req, res) => {
         border-radius: 10px !important;
     }
 
-    #apiList button {
-        border-color: var(--border-dark) !important;
-    }
-
-    #apiList svg, #apiList path {
-        stroke: var(--border-dark) !important;
-    }
-
-    /* Search Input Styling */
     #searchInput {
         background-color: var(--card-bg) !important;
-        border: 1.8px solid var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         font-weight: 700 !important;
     }
     #searchInput::placeholder {
-        color: #666666 !important;
+        color: #71717a !important;
     }
 
-    /* Filter Buttons Styling */
     #categoryFilters button, .filter-btn {
         background-color: #FAF7EF !important;
-        border: 1.8px solid var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
         border-radius: 9999px !important;
         font-weight: 800 !important;
         font-size: 11px !important;
-        padding: 6px 14px !important;
+        padding: 6px 16px !important;
+        cursor: pointer;
     }
     #categoryFilters button.active, .filter-btn.active {
         background-color: var(--border-dark) !important;
@@ -3034,11 +3023,11 @@ app.get('/docs', (req, res) => {
         font-family: 'JetBrains Mono', monospace;
         font-size: 10px;
         font-weight: 800;
-        padding: 3px 8px;
+        padding: 4px 10px;
         border: 1.5px solid var(--border-dark);
         background-color: #FAF7EF;
         color: var(--border-dark);
-        border-radius: 6px;
+        border-radius: 8px;
     }
     .lang-btn.active {
         background-color: var(--border-dark);
@@ -3048,7 +3037,6 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Overlay Loader */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3066,7 +3054,6 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Modal Styling */
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3074,14 +3061,12 @@ app.get('/docs', (req, res) => {
     .cyan-solid-header { background-color: #00f3ff; color: #000; font-weight: 900; }
     </style>
 </head>
-<body class="min-h-screen antialiased text-zinc-900 relative">
+<body class="min-h-screen pb-10">
 
-<!-- Loader -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
     </div>
-
     <div class="text-center">
         <div id="loader-title-text" class="text-xs font-black tracking-widest uppercase text-zinc-900 mb-1">
             INITIALIZING GATEWAY...
@@ -3090,7 +3075,6 @@ app.get('/docs', (req, res) => {
             ARULZ-XD API REST CORE
         </div>
     </div>
-
     <div class="w-56 mt-4">
         <div class="flex items-center justify-between text-[11px] font-mono mb-1">
             <span class="text-zinc-600">LOADING DATA</span>
@@ -3104,7 +3088,6 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3144,7 +3127,6 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
-<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3245,14 +3227,16 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
-    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-7 h-7 rounded-lg object-cover">
+            <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
-            <span class="text-base font-black text-zinc-900 tracking-tight">Arulzxd API</span>
+            <div>
+                <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">Gateway REST v2</span>
+            </div>
         </div>
 
         <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
@@ -3263,53 +3247,64 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 text-zinc-900 overflow-y-auto scrollbar-hide">
-    <div class="flex items-center justify-between pb-4 mb-3 border-b border-zinc-300">
+    <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-zinc-900">
         ${req.user ? `
         <button onclick="openProfilePopup()" class="flex items-center gap-3 text-left focus:outline-none group">
-            <img id="sidebarUserAvatar" src="${req.user.avatar}" class="w-9 h-9 rounded-xl border-2 border-zinc-900 object-cover">
+            <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-10 h-10 rounded-xl border-2 border-zinc-900 object-cover">
             <div class="flex flex-col min-w-0">
-                <span class="text-sm font-bold text-zinc-900 truncate">${req.user.username}</span>
-                <span class="text-[10px] text-zinc-600 font-mono uppercase font-bold">Free Plan</span>
+                <span class="text-sm font-extrabold text-zinc-900 truncate">${req.user.username}</span>
+                <span class="text-[10px] text-blue-600 font-mono uppercase font-black">Open Profile</span>
             </div>
         </button>
         ` : `
-        <div class="flex items-center gap-2">
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" class="w-8 h-8 rounded-lg object-cover border border-zinc-900">
-            <span class="font-extrabold text-zinc-900 text-sm">ArulzApis</span>
+        <div class="flex items-center justify-between w-full pr-2">
+            <div class="flex items-center gap-2">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" class="w-8 h-8 rounded-lg object-cover border border-zinc-900">
+                <span class="font-extrabold text-zinc-900 text-sm">Guest User</span>
+            </div>
+            <a href="/login" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-zinc-900">
+                Login
+            </a>
         </div>
         `}
 
         <div class="flex items-center gap-2">
-            <div class="flex border border-zinc-300 rounded-lg p-0.5 bg-zinc-200">
+            <div class="flex border border-zinc-900 rounded-lg p-0.5 bg-zinc-200">
                 <button id="lang-id" class="lang-btn active" onclick="setLanguage('id')">ID</button>
                 <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
             </div>
-            <button id="closeMenuBtn" class="text-zinc-600 hover:text-zinc-900 p-1.5 rounded-lg">
+            <button id="closeMenuBtn" class="text-zinc-700 hover:text-zinc-900 p-1.5 rounded-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 
+    ${!req.user ? `
+    <div class="mb-4 p-3 rounded-2xl bg-amber-100 border-2 border-zinc-900 text-xs font-bold text-zinc-800">
+        Anda belum login! Silakan login untuk mendapatkan akses API Key penuh.
+        <a href="/login" class="block text-center mt-2 w-full py-2 bg-zinc-900 text-white rounded-xl font-extrabold uppercase text-[10px]">Masuk / Login Sekarang</a>
+    </div>
+    ` : ''}
+
     <nav class="flex flex-col gap-4 text-xs font-bold tracking-wide flex-1">
         <div>
-            <span class="text-[10px] font-black text-zinc-400 tracking-wider uppercase block mb-2 px-1">PAGES</span>
-            <div class="space-y-1">
+            <span class="text-[10px] font-black text-zinc-400 tracking-wider uppercase block mb-2 px-1">PAGES MENU</span>
+            <div class="space-y-1.5">
                 <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-200 text-zinc-900 font-extrabold">
                     <span>Dashboard</span>
                 </a>
                 <a href="/docs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Docs</span>
+                    <span>Docs / Endpoint</span>
                 </a>
                 <a href="/store" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Store / Buy Plan</span>
+                    <span>Store / Upgrade VIP</span>
                 </a>
                 <a href="/uploader" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Uploader</span>
+                    <span>File Uploader</span>
                 </a>
                 <a href="/pastecode" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Pastecode Snippet</span>
+                    <span>Pastecode</span>
                 </a>
                 <a href="/changelog" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
                     <span>Changelog</span>
@@ -3327,26 +3322,30 @@ app.get('/docs', (req, res) => {
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
-<!-- Main Mobile Container -->
-<main class="max-w-md mx-auto px-3 py-4 relative z-10 space-y-4">
+<main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <!-- 1. Banner Utama -->
-    <div class="retro-card overflow-hidden p-0 border-2 border-zinc-900">
-        <div class="relative w-full h-44 sm:h-48 bg-black">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Banner" class="w-full h-full object-cover" />
+    <div class="retro-card overflow-hidden p-0 border-2 border-zinc-900 rounded-2xl w-full">
+        <div class="relative w-full h-48 sm:h-64 bg-black">
+            <video autoplay loop muted playsinline class="w-full h-full object-cover">
+                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+                <img src="https://files.catbox.moe/dvlk00.mp4" alt="Banner GIF/MP4" class="w-full h-full object-cover">
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4 sm:p-6">
+                <div>
+                    <span class="bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border border-black inline-block mb-1">REST API V2.0 SYSTEM</span>
+                    <h2 class="text-white font-black text-lg sm:text-2xl tracking-tight leading-tight">ARULZ-XD API GATEWAY</h2>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 2. Grid Statistik 2x2 Presisi Gambar Target -->
-    <div class="grid grid-cols-2 gap-3">
-        <!-- Card 1: Clock -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="stat-box flex flex-col justify-between h-24">
             <span class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">REAL-TIME CLOCK</span>
-            <div id="liveClock" class="text-xl font-black text-zinc-900 font-mono tracking-tight leading-none">00:00:00</div>
+            <div id="liveClock" class="text-xl sm:text-2xl font-black text-zinc-900 font-mono tracking-tight leading-none">00:00:00</div>
             <div id="liveDate" class="text-[8px] font-bold text-zinc-600 font-mono uppercase truncate">Loading...</div>
         </div>
 
-        <!-- Card 2: Limit Used -->
         <div class="stat-box flex flex-col justify-between h-24 relative">
             <div class="flex items-center justify-between w-full">
                 <span class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">LIMIT USED</span>
@@ -3360,36 +3359,34 @@ app.get('/docs', (req, res) => {
             <div></div>
         </div>
 
-        <!-- Card 3: Total Endpoint -->
-        <div class="stat-box flex flex-col justify-between h-22">
+        <div class="stat-box flex flex-col justify-between h-24">
             <span id="stat-endpoints-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL ENDPOINT</span>
-            <span id="totalEndpoints" class="text-2xl font-black text-zinc-900 font-mono leading-none">0</span>
+            <span id="totalEndpoints" class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono leading-none">0</span>
+            <div></div>
         </div>
 
-        <!-- Card 4: Total Kategori -->
-        <div class="stat-box flex flex-col justify-between h-22">
+        <div class="stat-box flex flex-col justify-between h-24">
             <span id="stat-categories-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL KATEGORI</span>
-            <span id="totalCategories" class="text-2xl font-black text-zinc-900 font-mono leading-none">0</span>
+            <span id="totalCategories" class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono leading-none">0</span>
+            <div></div>
         </div>
     </div>
 
-    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
                 type="text" 
                 id="searchInput" 
                 placeholder="Cari Endpoint Atau Kategori...."
-                class="w-full py-3.5 pl-10 pr-4 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm"
+                class="w-full py-4 pl-11 pr-4 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm"
             >
-            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
         </div>
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3404,10 +3401,9 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List Sesuai Kartu Cream & Border Hitam -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
-    <footer id="siteFooter" class="mt-10 pt-4 border-t border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+    <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
         © 2026 ARULZ-XD API REST CORE
     </footer>
 </main>
@@ -3424,7 +3420,7 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
 <script class="notranslate" translate="no">
-    window.musicPlaylist = ${JSON.stringify(playlist)};
+    window.musicPlaylist = ${JSON.stringify(playlist || [])};
     const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
