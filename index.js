@@ -2942,7 +2942,6 @@ app.get('/docs', (req, res) => {
     :root {
         --bg-cream: #FAF7EF;
         --card-bg: #FFFDF8;
-        --card-inner: #FAF7EF;
         --border-dark: #121212;
     }
 
@@ -3022,116 +3021,100 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* OVERRIDE MUTLAK SEMUA ELEMEN DINAMIS script.js (#apiList) UNTUK TEMA LIGHT RETRO */
+    /* =========================================================
+       PERBAIKAN TOTAL ENDPOINT LIST (#apiList) - RETRO LIGHT
+       ========================================================= */
     #apiList {
         background-color: transparent !important;
     }
 
-    /* Kartu Kategori Utama (Outer Card) */
+    /* Reset default border pada div internal agar tidak bertumpuk */
+    #apiList div {
+        box-shadow: none !important;
+        border-color: transparent;
+    }
+
+    /* Kartu Kategori Utamanya */
     #apiList > div,
-    #apiList .category-card,
-    #apiList [class*="category"] {
+    #apiList .category-card {
         background-color: var(--card-bg) !important;
-        background: var(--card-bg) !important;
         border: 2.5px solid var(--border-dark) !important;
         border-radius: 20px !important;
         padding: 12px !important;
         margin-bottom: 16px !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+    }
+
+    /* Item Accordion Endpoint */
+    #apiList [class*="item"],
+    #apiList [class*="accordion-item"],
+    #apiList [class*="endpoint-card"] {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 14px !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
         overflow: hidden !important;
     }
 
-    /* Container Daftar Endpoint Dalam Accordion (Menghapus Background Hitam Pekat) */
-    #apiList [class*="endpoint"],
-    #apiList [class*="list"],
-    #apiList [class*="body"],
-    #apiList [class*="content"],
-    #apiList [class*="accordion-content"],
-    #apiList [class*="collapse"],
-    #apiList div[class*="bg-slate"],
-    #apiList div[class*="bg-zinc"],
-    #apiList div[class*="bg-black"],
-    #apiList div[class*="bg-gray"],
-    #apiList div[class*="bg-neutral"] {
-        background-color: var(--card-inner) !important;
-        background: var(--card-inner) !important;
-        border-color: var(--border-dark) !important;
-        color: #121212 !important;
-    }
-
-    /* Baris Item Endpoint Individu (Test, Deepsek Ai, Duck Ai, dll) */
-    #apiList [class*="item"],
-    #apiList [class*="endpoint-card"],
-    #apiList [class*="api-card"],
-    #apiList [class*="row"],
-    #apiList div > div > div {
-        background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 14px !important;
-        color: #121212 !important;
-        margin-top: 8px !important;
-        margin-bottom: 8px !important;
-        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.04) !important;
-    }
-
-    /* Warna Teks, Judul, Path, dan Label */
-    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5, #apiList h6,
-    #apiList p, #apiList span, #apiList div, #apiList label, #apiList a,
-    #apiList td, #apiList th, #apiList strong, #apiList b {
+    /* Teks & Label di dalam List */
+    #apiList p, #apiList span, #apiList label, 
+    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5 {
         color: #121212 !important;
         font-weight: 800 !important;
-        text-shadow: none !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    #apiList [class*="path"], #apiList code {
-        color: #2563eb !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 700 !important;
-    }
-
-    /* Input & Form */
+    /* Input Parameter & File Upload */
     #apiList input[type="text"], 
+    #apiList input[type="file"],
     #apiList select, 
     #apiList textarea {
         background-color: #FFFDF8 !important;
         border: 2px solid var(--border-dark) !important;
         color: #121212 !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         padding: 8px 12px !important;
         font-weight: 700 !important;
         font-size: 12px !important;
         width: 100% !important;
+        outline: none !important;
     }
 
-    #apiList code, #apiList pre {
+    /* Kotak URL & cURL Command */
+    #apiList code, #apiList pre, #apiList [class*="url-box"], #apiList [class*="code-box"] {
         background-color: #FFFDF8 !important;
         border: 1.5px solid var(--border-dark) !important;
         border-radius: 10px !important;
         color: #0284c7 !important;
         font-family: 'JetBrains Mono', monospace !important;
         font-weight: 700 !important;
-        padding: 8px 10px !important;
+        padding: 8px 12px !important;
         display: block !important;
         overflow-x: auto !important;
     }
 
-    /* Tombol Eksekusi & Copy */
-    #apiList button, #apiList .btn-execute, #apiList .btn-copy {
+    /* Tombol Eksekusi, Copy, & Clean */
+    #apiList button, #apiList .btn-execute, #apiList .btn-copy, #apiList [type="submit"] {
+        background-color: #121212 !important;
+        color: #ffffff !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
-        background-color: #121212 !important;
-        color: #ffffff !important;
         padding: 6px 14px !important;
         cursor: pointer !important;
     }
 
     #apiList button *, #apiList .btn-execute *, #apiList .btn-copy * {
         color: #ffffff !important;
+        background: transparent !important;
+        border: none !important;
     }
 
-    /* Badges Metode HTTP (GET / POST) & Status Badges */
-    #apiList [class*="get"], #apiList [class*="GET"] {
+    /* HTTP Method Badges (GET / POST) */
+    #apiList [class*="get"], #apiList .get, #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3139,25 +3122,13 @@ app.get('/docs', (req, res) => {
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-    #apiList [class*="post"], #apiList [class*="POST"] {
+    #apiList [class*="post"], #apiList .post, #apiList [class*="POST"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
         border: 1.5px solid var(--border-dark) !important;
         font-weight: 900 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
-    }
-    #apiList [class*="ready"], #apiList [class*="READY"], #apiList [class*="free"], #apiList [class*="FREE"] {
-        border: 1.5px solid var(--border-dark) !important;
-        font-weight: 800 !important;
-    }
-
-    /* Icon SVG stroke di apiList */
-    #apiList svg path {
-        stroke: #121212 !important;
-    }
-    #apiList button svg path {
-        stroke: #ffffff !important;
     }
 
     /* Menu Navigasi Kartu Dropdown */
@@ -3443,7 +3414,7 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Dropdown Nav (Semua Icon Menggunakan SVG) -->
+<!-- Sidebar Dropdown Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
     <!-- Header Dropdown -->
@@ -3563,7 +3534,7 @@ app.get('/docs', (req, res) => {
 <!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <!-- 1. Banner Video / GIF Utama Melengkung Presisi -->
+    <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
@@ -3573,14 +3544,12 @@ app.get('/docs', (req, res) => {
 
     <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <!-- Card 1: Clock -->
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
             <div id="liveClock" class="stat-value">00:00:00</div>
             <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
-        <!-- Card 2: Limit Used -->
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
@@ -3594,14 +3563,12 @@ app.get('/docs', (req, res) => {
             <div class="stat-sub">DAILY ACCESS</div>
         </div>
 
-        <!-- Card 3: Total Endpoint -->
         <div class="stat-box">
             <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
             <span id="totalEndpoints" class="stat-value">0</span>
             <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
-        <!-- Card 4: Total Kategori -->
         <div class="stat-box">
             <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
             <span id="totalCategories" class="stat-value">0</span>
@@ -3640,7 +3607,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List Sesuai Kontras & Tampilan Jelas -->
+    <!-- 4. Daftar API List Clean Light Retro -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
@@ -3665,26 +3632,25 @@ app.get('/docs', (req, res) => {
 </script>
 <script src="script.js"></script>
 
-<!-- Clean Runtime Styling Interceptor untuk Memastikan DOM buatan script.js Selalu Light Cream -->
+<!-- Clean Interceptor JS: Mencegah Inject Background Gelap tanpa Merusak Struktur CSS -->
 <script>
-    const enforceLightEndpointTheme = () => {
+    const enforceCleanLightTheme = () => {
         const container = document.getElementById('apiList');
         if (!container) return;
 
-        container.querySelectorAll('*').forEach(el => {
-            if (el.tagName === 'BUTTON') return;
-            
-            // Hapus inline background gelap buatan script.js
-            const bg = window.getComputedStyle(el).backgroundColor;
-            if (bg && (bg.includes('0, 0, 0') || bg.includes('18, 18, 18') || bg.includes('24, 24') || bg.includes('30, 30'))) {
-                el.style.setProperty('background-color', '#FAF7EF', 'important');
-                el.style.setProperty('color', '#121212', 'important');
+        // Bersihkan background hitam bawaan script.js tanpa menambah border acak
+        const allElements = container.querySelectorAll('*');
+        allElements.forEach(el => {
+            const style = window.getComputedStyle(el);
+            if (style.backgroundColor && (style.backgroundColor.includes('0, 0, 0') || style.backgroundColor.includes('18, 18, 18') || style.backgroundColor.includes('24, 24') || style.backgroundColor.includes('30, 30'))) {
+                el.style.backgroundColor = 'transparent';
+                el.style.color = '#121212';
             }
         });
     };
 
     const apiObserver = new MutationObserver(() => {
-        enforceLightEndpointTheme();
+        enforceCleanLightTheme();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -3692,7 +3658,7 @@ app.get('/docs', (req, res) => {
         if (target) {
             apiObserver.observe(target, { childList: true, subtree: true, attributes: true });
         }
-        enforceLightEndpointTheme();
+        enforceCleanLightTheme();
     });
 
     function copyText(text, label) {
@@ -3827,7 +3793,7 @@ app.get('/docs', (req, res) => {
             showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
             if (userAvatarImg) userAvatarImg.src = oldSrc;
             if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-        } finally {
+        } fontally {
             if (userAvatarImg) userAvatarImg.style.opacity = '1';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
             input.value = '';
