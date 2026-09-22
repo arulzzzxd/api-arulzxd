@@ -3021,46 +3021,69 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* OVERRIDE MUTLAK SEMUA ELEMEN DINAMIS script.js (#apiList) UNTUK TEMA LIGHT RETRO */
-    #apiList, #apiList * {
+    /* OVERRIDE TOTAL UNTUK ENDPOINT LIST (#apiList): MENCEGAH BACKGROUND HITAM script.js */
+    #apiList, 
+    #apiList *,
+    #apiList div,
+    #apiList section,
+    #apiList article,
+    #apiList ul,
+    #apiList li {
+        background-color: #FFFDF8 !important;
+        background: #FFFDF8 !important;
+        border-color: #121212 !important;
+        color: #121212 !important;
         text-shadow: none !important;
-        color: #121212 !important;
     }
 
-    #apiList .category-card,
-    #apiList .accordion-item,
+    /* Item individual & kontainer baris di dalam list endpoint */
+    #apiList div[class*="bg-"],
+    #apiList div[class*="item"],
+    #apiList div[class*="row"],
+    #apiList div[class*="border"],
+    #apiList div[class*="rounded"],
     #apiList .api-item,
-    #apiList [class*="bg-"],
-    #apiList [class*="glass"],
-    #apiList [class*="cyber"],
-    #apiList [class*="card"] {
-        background-color: var(--card-bg) !important;
-        background: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 16px !important;
-        color: #121212 !important;
-        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.04) !important;
-    }
-
-    #apiList div[class*="slate"], 
-    #apiList div[class*="gray"],
-    #apiList div[class*="zinc"],
-    #apiList div[class*="black"] {
+    #apiList .accordion-item {
         background-color: #FAF7EF !important;
-        border: 1.5px solid var(--border-dark) !important;
-        border-radius: 12px !important;
+        background: #FAF7EF !important;
+        border: 2px solid #121212 !important;
+        border-radius: 14px !important;
     }
 
-    #apiList p, #apiList span, #apiList div, #apiList label, #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList td, #apiList th {
+    /* Header Kartu Kategori Utama */
+    #apiList > div {
+        background-color: #FFFDF8 !important;
+        border: 2.5px solid #121212 !important;
+        border-radius: 20px !important;
+        padding: 14px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+    }
+
+    /* Teks, Judul, Label di dalam Endpoint */
+    #apiList p, #apiList span, #apiList div, #apiList label, 
+    #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList td, #apiList th {
         color: #121212 !important;
         font-weight: 700 !important;
     }
 
+    /* Teks Route URL / Path */
+    #apiList code, #apiList pre, #apiList [class*="font-mono"] {
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid #121212 !important;
+        border-radius: 10px !important;
+        color: #0284c7 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 800 !important;
+        padding: 6px 10px !important;
+    }
+
+    /* Form Input & Textarea */
     #apiList input[type="text"], 
     #apiList select, 
     #apiList textarea {
-        background-color: #FAF7EF !important;
-        border: 2px solid var(--border-dark) !important;
+        background-color: #FFFDF8 !important;
+        border: 2px solid #121212 !important;
         color: #121212 !important;
         border-radius: 12px !important;
         padding: 8px 12px !important;
@@ -3069,20 +3092,9 @@ app.get('/docs', (req, res) => {
         width: 100% !important;
     }
 
-    #apiList code, #apiList pre {
-        background-color: #FAF7EF !important;
-        border: 1.5px solid var(--border-dark) !important;
-        border-radius: 10px !important;
-        color: #0284c7 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 700 !important;
-        padding: 8px 10px !important;
-        display: block !important;
-        overflow-x: auto !important;
-    }
-
+    /* Tombol Aksi (Eksekusi, Salin) */
     #apiList button, #apiList .btn-execute, #apiList .btn-copy {
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid #121212 !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
         background-color: #121212 !important;
@@ -3095,30 +3107,52 @@ app.get('/docs', (req, res) => {
         color: #ffffff !important;
     }
 
-    /* Badges Metode HTTP */
-    #apiList [class*="get"], #apiList [class*="GET"] {
+    /* Badges HTTP Method (GET & POST) */
+    #apiList [class*="GET"], #apiList [class*="get"] {
         background-color: #22c55e !important;
         color: #000000 !important;
-        border: 1.5px solid var(--border-dark) !important;
-        font-weight: 900 !important;
-        padding: 2px 8px !important;
-        border-radius: 6px !important;
-    }
-    #apiList [class*="post"], #apiList [class*="POST"] {
-        background-color: #3b82f6 !important;
-        color: #ffffff !important;
-        border: 1.5px solid var(--border-dark) !important;
+        border: 1.5px solid #121212 !important;
         font-weight: 900 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
 
-    /* Icon SVG stroke di apiList */
+    #apiList [class*="POST"], #apiList [class*="post"] {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #121212 !important;
+        font-weight: 900 !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+    }
+
+    #apiList [class*="POST"] *, #apiList [class*="post"] * {
+        color: #ffffff !important;
+    }
+
+    /* Status Badges */
+    #apiList [class*="READY"], #apiList [class*="ready"] {
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        border: 1.5px solid #121212 !important;
+        font-weight: 800 !important;
+    }
+    #apiList [class*="FREE"], #apiList [class*="free"] {
+        background-color: #f4f4f5 !important;
+        color: #18181b !important;
+        border: 1.5px solid #121212 !important;
+        font-weight: 800 !important;
+    }
+    #apiList [class*="MAINTENANCE"], #apiList [class*="maintenance"] {
+        background-color: #fee2e2 !important;
+        color: #b91c1c !important;
+        border: 1.5px solid #121212 !important;
+        font-weight: 800 !important;
+    }
+
+    /* Icon SVG stroke di dalam apiList */
     #apiList svg path {
         stroke: #121212 !important;
-    }
-    #apiList button svg path {
-        stroke: #ffffff !important;
     }
 
     /* Menu Navigasi Kartu Dropdown */
@@ -3216,6 +3250,7 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
+<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -3241,6 +3276,7 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
+<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3280,6 +3316,7 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
+<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3380,6 +3417,7 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
+<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3400,8 +3438,10 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
+<!-- Sidebar Dropdown Nav (Semua Icon SVG) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
+    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
         <div class="flex items-center gap-2">
             <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
@@ -3421,6 +3461,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
+    <!-- Banner Atas Dropdown -->
     <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
         <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
             <span>BANNER</span>
@@ -3434,6 +3475,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
+    <!-- Tombol Navigasi Berbentuk Kartu/Pill dengan Icon SVG -->
     <nav class="space-y-2 flex-1">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3493,6 +3535,7 @@ app.get('/docs', (req, res) => {
         </a>
     </nav>
 
+    <!-- Profile / Login Status Button -->
     <div class="pt-4 mt-auto border-t-2 border-zinc-900">
         ${req.user ? `
         <button onclick="openProfilePopup()" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
@@ -3512,8 +3555,10 @@ app.get('/docs', (req, res) => {
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
+<!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
+    <!-- 1. Banner Video / GIF Utama Melengkung Presisi -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
@@ -3521,13 +3566,16 @@ app.get('/docs', (req, res) => {
         </video>
     </div>
 
+    <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Card 1: Clock -->
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
             <div id="liveClock" class="stat-value">00:00:00</div>
             <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
+        <!-- Card 2: Limit Used -->
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
@@ -3541,12 +3589,14 @@ app.get('/docs', (req, res) => {
             <div class="stat-sub">DAILY ACCESS</div>
         </div>
 
+        <!-- Card 3: Total Endpoint -->
         <div class="stat-box">
             <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
             <span id="totalEndpoints" class="stat-value">0</span>
             <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
+        <!-- Card 4: Total Kategori -->
         <div class="stat-box">
             <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
             <span id="totalCategories" class="stat-value">0</span>
@@ -3554,6 +3604,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
+    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3569,6 +3620,7 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
+    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3583,6 +3635,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
+    <!-- 4. Daftar API List Sesuai Kontras & Tampilan Jelas -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
