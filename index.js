@@ -2962,7 +2962,7 @@ app.get('/docs', (req, res) => {
         overflow-x: hidden;
     }
 
-    /* Fix Banner Video Radius Melengkung & Pemotongan Sisi Mobile WebKit */
+    /* Video Banner Radius Melengkung & Pemotongan Presisi */
     .banner-video-container {
         width: 100% !important;
         border: 2.5px solid var(--border-dark) !important;
@@ -3021,7 +3021,7 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* OVERRIDE MUTLAK UNTUK ENDPOINT LIST (#apiList): Memaksa Light Theme & Teks Terlihat Jelas */
+    /* OVERRIDE MUTLAK SEMUA ELEMEN DINAMIS script.js (#apiList) UNTUK TEMA LIGHT RETRO */
     #apiList, #apiList * {
         text-shadow: none !important;
         color: #121212 !important;
@@ -3029,18 +3029,29 @@ app.get('/docs', (req, res) => {
 
     #apiList .category-card,
     #apiList .accordion-item,
+    #apiList .api-item,
     #apiList [class*="bg-"],
     #apiList [class*="glass"],
-    #apiList [class*="cyber"] {
+    #apiList [class*="cyber"],
+    #apiList [class*="card"] {
         background-color: var(--card-bg) !important;
         background: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 16px !important;
         color: #121212 !important;
-        box-shadow: none !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.04) !important;
     }
 
-    #apiList p, #apiList span, #apiList div, #apiList label, #apiList h1, #apiList h2, #apiList h3, #apiList h4 {
+    #apiList div[class*="slate"], 
+    #apiList div[class*="gray"],
+    #apiList div[class*="zinc"],
+    #apiList div[class*="black"] {
+        background-color: #FAF7EF !important;
+        border: 1.5px solid var(--border-dark) !important;
+        border-radius: 12px !important;
+    }
+
+    #apiList p, #apiList span, #apiList div, #apiList label, #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList td, #apiList th {
         color: #121212 !important;
         font-weight: 700 !important;
     }
@@ -3070,7 +3081,7 @@ app.get('/docs', (req, res) => {
         overflow-x: auto !important;
     }
 
-    #apiList button, .btn-execute, .btn-copy {
+    #apiList button, #apiList .btn-execute, #apiList .btn-copy {
         border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
@@ -3080,8 +3091,12 @@ app.get('/docs', (req, res) => {
         cursor: pointer !important;
     }
 
-    /* Method Badges (GET / POST) */
-    .method-get, [class*="get"] {
+    #apiList button *, #apiList .btn-execute *, #apiList .btn-copy * {
+        color: #ffffff !important;
+    }
+
+    /* Badges Metode HTTP */
+    #apiList [class*="get"], #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3089,7 +3104,7 @@ app.get('/docs', (req, res) => {
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-    .method-post, [class*="post"] {
+    #apiList [class*="post"], #apiList [class*="POST"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3098,17 +3113,25 @@ app.get('/docs', (req, res) => {
         border-radius: 6px !important;
     }
 
-    /* Menu Navigasi Kartu di bioDropdown Persis Seperti Gambar 290121.png */
+    /* Icon SVG stroke di apiList */
+    #apiList svg path {
+        stroke: #121212 !important;
+    }
+    #apiList button svg path {
+        stroke: #ffffff !important;
+    }
+
+    /* Menu Navigasi Kartu Dropdown */
     .dropdown-nav-card {
         background-color: #FFFDF8 !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 14px !important;
         padding: 10px 14px !important;
         font-weight: 800 !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
         color: #121212 !important;
         display: flex !important;
-        items-center: center !important;
+        align-items: center !important;
         justify-content: space-between !important;
         text-transform: uppercase !important;
         letter-spacing: 0.03em !important;
@@ -3120,7 +3143,7 @@ app.get('/docs', (req, res) => {
         background-color: #FAF7EF !important;
     }
 
-    /* Search Input Styling */
+    /* Search Bar */
     #searchInput {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
@@ -3183,7 +3206,7 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Popup Modal Styling */
+    /* Popup Modal */
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3193,7 +3216,6 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
-<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -3219,7 +3241,6 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3259,7 +3280,6 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
-<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3360,7 +3380,6 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3381,14 +3400,13 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Dropdown Nav (Sesuai Gambar 290121_2.png Tepat 100%) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
-    <!-- Top Header Bar Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
         <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black">
-                ⚡ STYLERA
+            <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                STYLERA
             </span>
         </div>
 
@@ -3403,11 +3421,10 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Banner Atas Dropdown (Sesuai Gambar 290121_2.png) -->
     <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
         <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
             <span>BANNER</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882T19.246 12 11 18.118V5.882z"/></svg>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 6.75-13.5 6.75V5.25z"/></svg>
         </div>
         <div class="h-28 w-full relative overflow-hidden">
             <video autoplay loop muted playsinline class="w-full h-full object-cover">
@@ -3417,46 +3434,45 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Tombol Navigasi Berbentuk Kartu/Pill (Sesuai Gambar 290121_2.png) -->
     <nav class="space-y-2 flex-1">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>⊞</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
                 <span>BACK TO DASHBOARD</span>
             </div>
         </a>
 
         <a href="/docs" class="dropdown-nav-card bg-amber-100">
             <div class="flex items-center gap-2.5">
-                <span>❖</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <span>DOCS / ENDPOINTS</span>
             </div>
         </a>
 
         <a href="/store" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>⚡</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
                 <span>STORE / BUY PLAN</span>
             </div>
         </a>
 
         <a href="/uploader" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>⬆</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                 <span>UPLOADER FILE</span>
             </div>
         </a>
 
         <a href="/pastecode" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>📋</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
                 <span>PASTECODE SNIPPET</span>
             </div>
         </a>
 
         <a href="/changelog" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>📢</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                 <span>CHANGELOG</span>
             </div>
             <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
@@ -3464,20 +3480,19 @@ app.get('/docs', (req, res) => {
 
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>💬</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
                 <span>REQUEST FITUR</span>
             </div>
         </a>
 
         <a href="/status" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
-                <span>ℹ</span>
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
                 <span>SERVER STATUS</span>
             </div>
         </a>
     </nav>
 
-    <!-- Profile/Login Status Button At the Bottom -->
     <div class="pt-4 mt-auto border-t-2 border-zinc-900">
         ${req.user ? `
         <button onclick="openProfilePopup()" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
@@ -3488,18 +3503,17 @@ app.get('/docs', (req, res) => {
             <span class="text-[9px] text-blue-600 font-black">PROFILE</span>
         </button>
         ` : `
-        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5">
-            🔑 LOGIN / REGISTER
+        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            LOGIN / REGISTER
         </a>
         `}
     </div>
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
-<!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <!-- 1. Banner Video / GIF Utama Melengkung Presisi -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
@@ -3507,16 +3521,13 @@ app.get('/docs', (req, res) => {
         </video>
     </div>
 
-    <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <!-- Card 1: Clock -->
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
             <div id="liveClock" class="stat-value">00:00:00</div>
             <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
-        <!-- Card 2: Limit Used -->
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
@@ -3530,14 +3541,12 @@ app.get('/docs', (req, res) => {
             <div class="stat-sub">DAILY ACCESS</div>
         </div>
 
-        <!-- Card 3: Total Endpoint -->
         <div class="stat-box">
             <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
             <span id="totalEndpoints" class="stat-value">0</span>
             <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
-        <!-- Card 4: Total Kategori -->
         <div class="stat-box">
             <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
             <span id="totalCategories" class="stat-value">0</span>
@@ -3545,7 +3554,6 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3561,7 +3569,6 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3576,7 +3583,6 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List Sesuai Kontras & Tampilan Jelas -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
