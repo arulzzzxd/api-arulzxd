@@ -2935,7 +2935,7 @@ app.get('/docs', (req, res) => {
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     
     <style>
@@ -2946,7 +2946,7 @@ app.get('/docs', (req, res) => {
     }
 
     * {
-        box-sizing: border-border;
+        box-sizing: border-box;
     }
 
     html, body {
@@ -2962,43 +2962,120 @@ app.get('/docs', (req, res) => {
         overflow-x: hidden;
     }
 
-    .retro-card, .stat-box, .stat-cyber-widget, .cyber-card {
+    /* Kotak Statistik Presisi & Anti-Terpotong */
+    .stat-box {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 18px !important;
+        padding: 14px 16px !important;
+        min-height: 100px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        color: var(--border-dark) !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
     }
 
-    #apiList .category-card,
-    #apiList .api-item,
-    #apiList [class*="bg-"],
-    #apiList [class*="glass-"],
-    #apiList [class*="cyber-"] {
+    .stat-label {
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.05em !important;
+        color: #121212 !important;
+        text-transform: uppercase !important;
+        line-height: 1.2 !important;
+        margin: 0 0 4px 0 !important;
+    }
+
+    .stat-value {
+        font-size: 24px !important;
+        font-weight: 900 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        color: #121212 !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+
+    .stat-sub {
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        color: #52525b !important;
+        margin-top: 2px !important;
+    }
+
+    /* Container Banner Video / MP4 Melengkung Presisi */
+    .banner-container {
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 24px !important;
+        overflow: hidden !important;
+        background-color: #000000 !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+    }
+
+    .banner-video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        border-radius: 22px !important;
+        display: block !important;
+    }
+
+    /* Override Tampilan API List & Endpoints */
+    #apiList .category-card {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
+        border-radius: 20px !important;
+        padding: 16px !important;
+        margin-bottom: 14px !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.06) !important;
+    }
+
+    #apiList .api-item {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 16px !important;
+        padding: 14px !important;
+        margin-top: 10px !important;
         color: var(--border-dark) !important;
         box-shadow: none !important;
     }
 
-    #apiList p, #apiList span, #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList code {
+    #apiList .api-item input[type="text"], 
+    #apiList .api-item select, 
+    #apiList .api-item textarea {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
+        border-radius: 12px !important;
+        padding: 10px 14px !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
     }
 
-    #apiList input[type="text"], #apiList select, #apiList textarea {
-        background-color: #FAF7EF !important;
-        border: 1.5px solid var(--border-dark) !important;
-        color: var(--border-dark) !important;
+    #apiList .api-item code, #apiList .api-item pre {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 12px !important;
+        color: #121212 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 600 !important;
+        padding: 10px !important;
+    }
+
+    #apiList button {
         border-radius: 10px !important;
+        font-weight: 800 !important;
+        border-width: 1.5px !important;
     }
 
+    /* Search Input Styling */
     #searchInput {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
-        border-radius: 16px !important;
+        border-radius: 18px !important;
         font-weight: 700 !important;
+        box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
     }
     #searchInput::placeholder {
         color: #71717a !important;
@@ -3054,6 +3131,7 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
+    /* Modal Styling */
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3061,8 +3139,9 @@ app.get('/docs', (req, res) => {
     .cyan-solid-header { background-color: #00f3ff; color: #000; font-weight: 900; }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen pb-12">
 
+<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -3088,10 +3167,11 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
+<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="retro-card p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8]">
+    <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl">
       <button id="closePopupBtn" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-900 bg-zinc-200 rounded-full p-1.5 focus:outline-none border border-zinc-900">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -3127,6 +3207,7 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
+<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3227,6 +3308,7 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
+<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3235,7 +3317,7 @@ app.get('/docs', (req, res) => {
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">Gateway REST v2</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
             </div>
         </div>
 
@@ -3247,6 +3329,7 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
+<!-- Sidebar Dropdown Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 text-zinc-900 overflow-y-auto scrollbar-hide">
     <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-zinc-900">
         ${req.user ? `
@@ -3322,56 +3405,62 @@ app.get('/docs', (req, res) => {
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
+<!-- Main Mobile Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <div class="retro-card overflow-hidden p-0 border-2 border-zinc-900 rounded-2xl w-full">
-        <div class="relative w-full h-48 sm:h-64 bg-black">
-            <video autoplay loop muted playsinline class="w-full h-full object-cover">
-                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-                <img src="https://files.catbox.moe/dvlk00.mp4" alt="Banner GIF/MP4" class="w-full h-full object-cover">
-            </video>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4 sm:p-6">
-                <div>
-                    <span class="bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border border-black inline-block mb-1">REST API V2.0 SYSTEM</span>
-                    <h2 class="text-white font-black text-lg sm:text-2xl tracking-tight leading-tight">ARULZ-XD API GATEWAY</h2>
-                </div>
+    <!-- 1. Banner GIF / MP4 Media (Radius Melengkung Presisi) -->
+    <div class="banner-container relative w-full h-56 sm:h-72 md:h-80">
+        <video autoplay loop muted playsinline class="banner-video">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Banner" class="banner-video">
+        </video>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-5 sm:p-6 pointer-events-none">
+            <div>
+                <span class="bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border border-black inline-block mb-1.5">REST API V2.0 SYSTEM</span>
+                <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight leading-tight">ARULZ-XD API GATEWAY</h2>
             </div>
         </div>
     </div>
 
+    <!-- 2. Grid Statistik Real-time (Bebas Potongan Teks) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="stat-box flex flex-col justify-between h-24">
-            <span class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">REAL-TIME CLOCK</span>
-            <div id="liveClock" class="text-xl sm:text-2xl font-black text-zinc-900 font-mono tracking-tight leading-none">00:00:00</div>
-            <div id="liveDate" class="text-[8px] font-bold text-zinc-600 font-mono uppercase truncate">Loading...</div>
+        <!-- Card 1: Clock -->
+        <div class="stat-box">
+            <span class="stat-label">REAL-TIME CLOCK</span>
+            <div id="liveClock" class="stat-value">00:00:00</div>
+            <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
-        <div class="stat-box flex flex-col justify-between h-24 relative">
+        <!-- Card 2: Limit Used -->
+        <div class="stat-box">
             <div class="flex items-center justify-between w-full">
-                <span class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">LIMIT USED</span>
-                <span id="userLimitBadge" class="text-[8px] font-black text-zinc-900 uppercase">FREE</span>
+                <span class="stat-label">LIMIT USED</span>
+                <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">FREE</span>
             </div>
-            <div class="flex items-baseline gap-1">
-                <span id="userLimitUsed" class="text-2xl font-black text-zinc-900">0</span>
+            <div class="flex items-baseline gap-1 mt-1">
+                <span id="userLimitUsed" class="stat-value">0</span>
                 <span class="text-zinc-600 text-sm font-black">/</span>
                 <span id="userLimitMax" class="text-xs font-black text-zinc-600">100</span>
             </div>
-            <div></div>
+            <div class="stat-sub">DAILY LIMIT ACCESS</div>
         </div>
 
-        <div class="stat-box flex flex-col justify-between h-24">
-            <span id="stat-endpoints-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL ENDPOINT</span>
-            <span id="totalEndpoints" class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono leading-none">0</span>
-            <div></div>
+        <!-- Card 3: Total Endpoint -->
+        <div class="stat-box">
+            <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
+            <span id="totalEndpoints" class="stat-value">0</span>
+            <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
-        <div class="stat-box flex flex-col justify-between h-24">
-            <span id="stat-categories-title" class="text-[9px] font-black tracking-wider text-zinc-900 uppercase">TOTAL KATEGORI</span>
-            <span id="totalCategories" class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono leading-none">0</span>
-            <div></div>
+        <!-- Card 4: Total Kategori -->
+        <div class="stat-box">
+            <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
+            <span id="totalCategories" class="stat-value">0</span>
+            <div class="stat-sub">MODULE CATEGORIES</div>
         </div>
     </div>
 
+    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3387,6 +3476,7 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
+    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3401,6 +3491,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
+    <!-- 4. Daftar API List -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
