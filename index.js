@@ -2962,19 +2962,37 @@ app.get('/docs', (req, res) => {
         overflow-x: hidden;
     }
 
-    /* Kotak Statistik Presisi & Anti-Terpotong */
+    /* Fix Banner Video Radius Melengkung & Pemotongan Sisi */
+    .banner-wrapper {
+        width: 100% !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+        background-color: #000000 !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.1) !important;
+        position: relative !important;
+        clip-path: inset(0 rounded 20px) !important;
+    }
+
+    .banner-video-el {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 18px !important;
+    }
+
+    /* Fix Kotak Statistik */
     .stat-box {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 18px !important;
-        padding: 14px 16px !important;
-        min-height: 100px !important;
+        padding: 12px 14px !important;
+        min-height: 98px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        box-sizing: border-box !important;
-        overflow: visible !important;
     }
 
     .stat-label {
@@ -2983,12 +3001,12 @@ app.get('/docs', (req, res) => {
         letter-spacing: 0.05em !important;
         color: #121212 !important;
         text-transform: uppercase !important;
+        margin: 0 !important;
         line-height: 1.2 !important;
-        margin: 0 0 4px 0 !important;
     }
 
     .stat-value {
-        font-size: 24px !important;
+        font-size: 22px !important;
         font-weight: 900 !important;
         font-family: 'JetBrains Mono', monospace !important;
         color: #121212 !important;
@@ -3000,44 +3018,44 @@ app.get('/docs', (req, res) => {
         font-size: 9px !important;
         font-weight: 700 !important;
         color: #52525b !important;
-        margin-top: 2px !important;
     }
 
-    /* Container Banner Video / MP4 Melengkung Presisi */
-    .banner-container {
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 24px !important;
-        overflow: hidden !important;
-        background-color: #000000 !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+    /* FIX ENDPOINT LIST: Mengatasi Teks Hilang / Kurang Jelas / Bug CSS */
+    #apiList, #apiList * {
+        text-shadow: none !important;
     }
 
-    .banner-video {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover !important;
-        border-radius: 22px !important;
-        display: block !important;
-    }
-
-    /* Override Tampilan API List & Endpoints */
     #apiList .category-card {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
-        border-radius: 20px !important;
+        border-radius: 18px !important;
         padding: 16px !important;
         margin-bottom: 14px !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.06) !important;
     }
 
+    #apiList .category-title, #apiList h2, #apiList h3, #apiList h4 {
+        color: #121212 !important;
+        font-weight: 900 !important;
+    }
+
     #apiList .api-item {
         background-color: #FAF7EF !important;
         border: 2px solid var(--border-dark) !important;
-        border-radius: 16px !important;
+        border-radius: 14px !important;
         padding: 14px !important;
         margin-top: 10px !important;
-        color: var(--border-dark) !important;
+        color: #121212 !important;
         box-shadow: none !important;
+    }
+
+    #apiList .api-item p, 
+    #apiList .api-item span, 
+    #apiList .api-item div,
+    #apiList .api-item label,
+    #apiList .api-item td,
+    #apiList .api-item th {
+        color: #121212 !important;
     }
 
     #apiList .api-item input[type="text"], 
@@ -3045,27 +3063,56 @@ app.get('/docs', (req, res) => {
     #apiList .api-item textarea {
         background-color: #FFFDF8 !important;
         border: 2px solid var(--border-dark) !important;
-        color: var(--border-dark) !important;
-        border-radius: 12px !important;
-        padding: 10px 14px !important;
+        color: #121212 !important;
+        border-radius: 10px !important;
+        padding: 8px 12px !important;
         font-weight: 700 !important;
         font-size: 12px !important;
+        width: 100% !important;
     }
 
     #apiList .api-item code, #apiList .api-item pre {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 12px !important;
-        color: #121212 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        border-radius: 10px !important;
+        color: #0284c7 !important;
         font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 600 !important;
-        padding: 10px !important;
+        font-weight: 700 !important;
+        padding: 8px 10px !important;
+        display: block !important;
+        overflow-x: auto !important;
     }
 
-    #apiList button {
+    #apiList button, .btn-execute, .btn-copy {
+        border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
-        border-width: 1.5px !important;
+        background-color: #121212 !important;
+        color: #ffffff !important;
+        padding: 6px 14px !important;
+        cursor: pointer !important;
+    }
+
+    #apiList button:hover {
+        opacity: 0.9 !important;
+    }
+
+    /* Method Badges */
+    .method-get {
+        background-color: #22c55e !important;
+        color: #000000 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        font-weight: 900 !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
+    }
+    .method-post {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: 1.5px solid var(--border-dark) !important;
+        font-weight: 900 !important;
+        padding: 2px 8px !important;
+        border-radius: 6px !important;
     }
 
     /* Search Input Styling */
@@ -3073,7 +3120,7 @@ app.get('/docs', (req, res) => {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
-        border-radius: 18px !important;
+        border-radius: 16px !important;
         font-weight: 700 !important;
         box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
     }
@@ -3131,7 +3178,7 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
 
-    /* Modal Styling */
+    /* Popup Modal Styling */
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3141,7 +3188,6 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
-<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -3167,7 +3213,6 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3207,7 +3252,6 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
-<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3308,7 +3352,6 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3329,7 +3372,6 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<!-- Sidebar Dropdown Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 text-zinc-900 overflow-y-auto scrollbar-hide">
     <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-zinc-900">
         ${req.user ? `
@@ -3402,36 +3444,34 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
     </nav>
+
+    <div class="mt-auto pt-4">
+        <div class="w-full h-32 rounded-2xl overflow-hidden border-2 border-zinc-900 bg-black shadow-sm">
+            <video autoplay loop muted playsinline class="w-full h-full object-cover">
+                <source src="https://arulz-xd.my.id/files/K4Sf61.mp4" type="video/mp4">
+                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Sidebar Media Banner" class="w-full h-full object-cover">
+            </video>
+        </div>
+    </div>
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
-<!-- Main Mobile Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <!-- 1. Banner GIF / MP4 Media (Radius Melengkung Presisi) -->
-    <div class="banner-container relative w-full h-56 sm:h-72 md:h-80">
-        <video autoplay loop muted playsinline class="banner-video">
-            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Banner" class="banner-video">
+    <div class="banner-wrapper h-52 sm:h-72 md:h-80">
+        <video autoplay loop muted playsinline class="banner-video-el">
+            <source src="https://arulz-xd.my.id/files/K4Sf61.mp4" type="video/mp4">
+            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Main Banner" class="banner-video-el">
         </video>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-5 sm:p-6 pointer-events-none">
-            <div>
-                <span class="bg-amber-400 text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md border border-black inline-block mb-1.5">REST API V2.0 SYSTEM</span>
-                <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight leading-tight">ARULZ-XD API GATEWAY</h2>
-            </div>
-        </div>
     </div>
 
-    <!-- 2. Grid Statistik Real-time (Bebas Potongan Teks) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <!-- Card 1: Clock -->
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
             <div id="liveClock" class="stat-value">00:00:00</div>
             <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
-        <!-- Card 2: Limit Used -->
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
@@ -3442,17 +3482,15 @@ app.get('/docs', (req, res) => {
                 <span class="text-zinc-600 text-sm font-black">/</span>
                 <span id="userLimitMax" class="text-xs font-black text-zinc-600">100</span>
             </div>
-            <div class="stat-sub">DAILY LIMIT ACCESS</div>
+            <div class="stat-sub">DAILY ACCESS</div>
         </div>
 
-        <!-- Card 3: Total Endpoint -->
         <div class="stat-box">
             <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
             <span id="totalEndpoints" class="stat-value">0</span>
             <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
-        <!-- Card 4: Total Kategori -->
         <div class="stat-box">
             <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
             <span id="totalCategories" class="stat-value">0</span>
@@ -3460,7 +3498,6 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3476,7 +3513,6 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3491,7 +3527,6 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
