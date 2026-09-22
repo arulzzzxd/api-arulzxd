@@ -2963,7 +2963,7 @@ app.get('/docs', (req, res) => {
     }
 
     /* =========================================================
-       1. LIGHT RETRO ANIMATED LOADER (ELEGAN & ANIME/FUTURISTIC)
+       1. LIGHT RETRO ANIMATED LOADER
        ========================================================= */
     #cyber-loader-overlay {
         position: fixed;
@@ -3107,25 +3107,23 @@ app.get('/docs', (req, res) => {
     }
 
     /* =========================================================
-       2. PERBAIKAN MUTLAK ENDPOINT LIST (#apiList) - NO NESTED BUG
+       2. PERBAIKAN MUTLAK BORDER BERTUMPUK (#apiList)
        ========================================================= */
     #apiList {
         background-color: transparent !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 12px !important;
+        gap: 14px !important;
     }
 
-    /* RESET MUTLAK BORDER PADA DIV INTERNAL */
-    #apiList div {
-        border: none !important;
+    /* Matikan semua shadow default */
+    #apiList * {
         box-shadow: none !important;
-        background-color: transparent !important;
+        text-shadow: none !important;
     }
 
-    /* KARTU KATEGORI UTAMA (OUTER CONTAINER) */
-    #apiList > div,
-    #apiList .category-card {
+    /* Kartu Kategori Utama (Garis Luar) */
+    #apiList > div {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--border-dark) !important;
         border-radius: 20px !important;
@@ -3133,41 +3131,35 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
-    /* ACCORDION BARIS ENDPOINT */
-    #apiList [class*="item"],
-    #apiList [class*="accordion-item"],
-    #apiList [class*="endpoint-card"] {
-        background-color: #FAF7EF !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 14px !important;
-        margin-top: 8px !important;
-        margin-bottom: 8px !important;
-        padding: 10px 14px !important;
+    /* HAPUS TOTAL BORDER DIV DALAM (Mencegah Garis Bertumpuk) */
+    #apiList div div {
+        border: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
     }
 
-    /* WARNA TEKS DENGAN KONTRAS TINGGI */
+    /* Kartu Item Endpoint / Accordion Header */
+    #apiList [class*="accordion-item"],
+    #apiList [class*="endpoint-card"],
+    #apiList [class*="item"] {
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 14px !important;
+        background-color: #FAF7EF !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+        padding: 12px 14px !important;
+    }
+
+    /* WARNA TEKS GELAP & KONTRAS TINGGI */
     #apiList p, #apiList span, #apiList label, #apiList div,
     #apiList h1, #apiList h2, #apiList h3, #apiList h4, #apiList h5, #apiList h6,
     #apiList td, #apiList th, #apiList a, #apiList li {
         color: #121212 !important;
         font-weight: 800 !important;
         opacity: 1 !important;
-        text-shadow: none !important;
     }
 
-    /* KOTAK PATH URL / API ENDPOINT */
-    #apiList [class*="path"], #apiList code, #apiList pre {
-        color: #1d4ed8 !important;
-        background-color: #FFFDF8 !important;
-        border: 1.5px solid var(--border-dark) !important;
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-weight: 700 !important;
-        display: inline-block !important;
-    }
-
-    /* INPUT & FORM ELEMENT */
+    /* INPUT, SELECT, TEXTAREA FORM */
     #apiList input[type="text"], 
     #apiList input[type="file"],
     #apiList select, 
@@ -3181,16 +3173,36 @@ app.get('/docs', (req, res) => {
         font-size: 12px !important;
         width: 100% !important;
         outline: none !important;
+        margin-top: 4px !important;
+        margin-bottom: 8px !important;
     }
 
-    /* TOMBOL EKSEKUSI & COPY */
+    #apiList select option {
+        background-color: #FFFDF8 !important;
+        color: #121212 !important;
+    }
+
+    /* KOTAK PATH CODE / URL */
+    #apiList code, #apiList pre, #apiList [class*="path"], #apiList [class*="url"] {
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        border-radius: 8px !important;
+        color: #0284c7 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
+        padding: 6px 10px !important;
+        display: block !important;
+        overflow-x: auto !important;
+    }
+
+    /* TOMBOL EKSEKUSI & CLEAN */
     #apiList button, #apiList .btn-execute, #apiList .btn-copy, #apiList [type="submit"] {
         background-color: #121212 !important;
         color: #ffffff !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
-        padding: 6px 14px !important;
+        padding: 8px 16px !important;
         cursor: pointer !important;
         display: inline-flex !important;
         align-items: center !important;
@@ -3201,7 +3213,7 @@ app.get('/docs', (req, res) => {
         color: #ffffff !important;
     }
 
-    /* BADGES METODE HTTP (GET / POST) */
+    /* HTTP METHOD BADGES */
     #apiList [class*="get"], #apiList .get, #apiList [class*="GET"] {
         background-color: #22c55e !important;
         color: #000000 !important;
@@ -3707,45 +3719,42 @@ app.get('/docs', (req, res) => {
 </script>
 <script src="script.js"></script>
 
-<!-- Interceptor DOM untuk Membersihkan Nested Border & Inline Styles buatan script.js -->
+<!-- Script Pembersih Aktif: Menghapus Garis Bertumpuk pada Skrip Dinamis script.js -->
 <script>
-    const cleanupEndpointStyles = () => {
-        const container = document.getElementById('apiList');
-        if (!container) return;
+    const sanitizeEndpointDOM = () => {
+        const apiList = document.getElementById('apiList');
+        if (!apiList) return;
 
-        // Bersihkan border bertumpuk pada div internal
-        container.querySelectorAll('div').forEach(div => {
-            const isCategoryCard = div.classList.contains('category-card') || div.parentElement.id === 'apiList';
-            const isAccordionItem = div.classList.contains('accordion-item') || div.className.includes('endpoint') || div.className.includes('item');
-
-            if (!isCategoryCard && !isAccordionItem) {
-                div.style.border = 'none';
-                div.style.boxShadow = 'none';
-                div.style.backgroundColor = 'transparent';
+        // 1. Hapus border ganda pada div anak yang dibuat script.js
+        const innerDivs = apiList.querySelectorAll('div div div');
+        innerDivs.forEach(div => {
+            const hasExplicitCardClass = div.classList.contains('accordion-item') || div.classList.contains('category-card');
+            if (!hasExplicitCardClass) {
+                div.style.setProperty('border', 'none', 'important');
+                div.style.setProperty('box-shadow', 'none', 'important');
+                div.style.setProperty('background-color', 'transparent', 'important');
             }
         });
 
-        // Paksa warna teks agar terbaca jelas
-        container.querySelectorAll('*').forEach(el => {
-            if (el.tagName !== 'BUTTON' && !el.closest('button')) {
-                const color = window.getComputedStyle(el).color;
-                if (color.includes('255, 255, 255') || color.includes('250, 250') || color.includes('244, 244') || color.includes('228, 228')) {
-                    el.style.setProperty('color', '#121212', 'important');
-                }
-            }
+        // 2. Pastikan teks select element & placeholder input terbaca jelas
+        const formInputs = apiList.querySelectorAll('select, input, textarea');
+        formInputs.forEach(el => {
+            el.style.setProperty('color', '#121212', 'important');
+            el.style.setProperty('background-color', '#FFFDF8', 'important');
+            el.style.setProperty('border', '2px solid #121212', 'important');
         });
     };
 
-    const apiObserver = new MutationObserver(() => {
-        cleanupEndpointStyles();
+    const domObserver = new MutationObserver(() => {
+        sanitizeEndpointDOM();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        const target = document.getElementById('apiList');
-        if (target) {
-            apiObserver.observe(target, { childList: true, subtree: true, attributes: true });
+        const apiListEl = document.getElementById('apiList');
+        if (apiListEl) {
+            domObserver.observe(apiListEl, { childList: true, subtree: true });
         }
-        cleanupEndpointStyles();
+        sanitizeEndpointDOM();
     });
 
     function copyText(text, label) {
