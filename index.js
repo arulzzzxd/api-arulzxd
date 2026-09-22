@@ -2962,16 +2962,17 @@ app.get('/docs', (req, res) => {
         overflow-x: hidden;
     }
 
-    /* Fix Banner Video Radius Melengkung & Pemotongan Sisi */
-    .banner-wrapper {
+    /* Fix Banner Video Radius Melengkung & Pemotongan Sisi Mobile WebKit */
+    .banner-video-container {
         width: 100% !important;
         border: 2.5px solid var(--border-dark) !important;
-        border-radius: 20px !important;
+        border-radius: 22px !important;
         overflow: hidden !important;
-        background-color: #000000 !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.1) !important;
         position: relative !important;
-        clip-path: inset(0 rounded 20px) !important;
+        background-color: #000000 !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+        isolation: isolate !important;
     }
 
     .banner-video-el {
@@ -2979,10 +2980,10 @@ app.get('/docs', (req, res) => {
         height: 100% !important;
         object-fit: cover !important;
         display: block !important;
-        border-radius: 18px !important;
+        border-radius: 20px !important;
     }
 
-    /* Fix Kotak Statistik */
+    /* Kotak Statistik */
     .stat-box {
         background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
@@ -3020,59 +3021,45 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* FIX ENDPOINT LIST: Mengatasi Teks Hilang / Kurang Jelas / Bug CSS */
+    /* OVERRIDE MUTLAK UNTUK ENDPOINT LIST (#apiList): Memaksa Light Theme & Teks Terlihat Jelas */
     #apiList, #apiList * {
         text-shadow: none !important;
-    }
-
-    #apiList .category-card {
-        background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 18px !important;
-        padding: 16px !important;
-        margin-bottom: 14px !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.06) !important;
-    }
-
-    #apiList .category-title, #apiList h2, #apiList h3, #apiList h4 {
         color: #121212 !important;
-        font-weight: 900 !important;
     }
 
-    #apiList .api-item {
-        background-color: #FAF7EF !important;
+    #apiList .category-card,
+    #apiList .accordion-item,
+    #apiList [class*="bg-"],
+    #apiList [class*="glass"],
+    #apiList [class*="cyber"] {
+        background-color: var(--card-bg) !important;
+        background: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
-        border-radius: 14px !important;
-        padding: 14px !important;
-        margin-top: 10px !important;
+        border-radius: 16px !important;
         color: #121212 !important;
         box-shadow: none !important;
     }
 
-    #apiList .api-item p, 
-    #apiList .api-item span, 
-    #apiList .api-item div,
-    #apiList .api-item label,
-    #apiList .api-item td,
-    #apiList .api-item th {
+    #apiList p, #apiList span, #apiList div, #apiList label, #apiList h1, #apiList h2, #apiList h3, #apiList h4 {
         color: #121212 !important;
+        font-weight: 700 !important;
     }
 
-    #apiList .api-item input[type="text"], 
-    #apiList .api-item select, 
-    #apiList .api-item textarea {
-        background-color: #FFFDF8 !important;
+    #apiList input[type="text"], 
+    #apiList select, 
+    #apiList textarea {
+        background-color: #FAF7EF !important;
         border: 2px solid var(--border-dark) !important;
         color: #121212 !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         padding: 8px 12px !important;
         font-weight: 700 !important;
         font-size: 12px !important;
         width: 100% !important;
     }
 
-    #apiList .api-item code, #apiList .api-item pre {
-        background-color: #FFFDF8 !important;
+    #apiList code, #apiList pre {
+        background-color: #FAF7EF !important;
         border: 1.5px solid var(--border-dark) !important;
         border-radius: 10px !important;
         color: #0284c7 !important;
@@ -3093,12 +3080,8 @@ app.get('/docs', (req, res) => {
         cursor: pointer !important;
     }
 
-    #apiList button:hover {
-        opacity: 0.9 !important;
-    }
-
-    /* Method Badges */
-    .method-get {
+    /* Method Badges (GET / POST) */
+    .method-get, [class*="get"] {
         background-color: #22c55e !important;
         color: #000000 !important;
         border: 1.5px solid var(--border-dark) !important;
@@ -3106,13 +3089,35 @@ app.get('/docs', (req, res) => {
         padding: 2px 8px !important;
         border-radius: 6px !important;
     }
-    .method-post {
+    .method-post, [class*="post"] {
         background-color: #3b82f6 !important;
         color: #ffffff !important;
         border: 1.5px solid var(--border-dark) !important;
         font-weight: 900 !important;
         padding: 2px 8px !important;
         border-radius: 6px !important;
+    }
+
+    /* Menu Navigasi Kartu di bioDropdown Persis Seperti Gambar 290121.png */
+    .dropdown-nav-card {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        font-weight: 800 !important;
+        font-size: 12px !important;
+        color: #121212 !important;
+        display: flex !important;
+        items-center: center !important;
+        justify-content: space-between !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.03em !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+    }
+    .dropdown-nav-card:active {
+        transform: translateY(1px) !important;
+        background-color: #FAF7EF !important;
     }
 
     /* Search Input Styling */
@@ -3188,6 +3193,7 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
+<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="w-16 h-16 rounded-full border-2 border-dashed border-zinc-900 flex items-center justify-center mb-4 animate-spin">
         <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -3213,6 +3219,7 @@ app.get('/docs', (req, res) => {
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
+<!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -3252,6 +3259,7 @@ app.get('/docs', (req, res) => {
   </div>
 </div>
           
+<!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -3352,6 +3360,7 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
+<!-- Header Top Bar -->
 <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3372,106 +3381,142 @@ app.get('/docs', (req, res) => {
     </div>
 </header>
 
-<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-5 text-zinc-900 overflow-y-auto scrollbar-hide">
-    <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-zinc-900">
-        ${req.user ? `
-        <button onclick="openProfilePopup()" class="flex items-center gap-3 text-left focus:outline-none group">
-            <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-10 h-10 rounded-xl border-2 border-zinc-900 object-cover">
-            <div class="flex flex-col min-w-0">
-                <span class="text-sm font-extrabold text-zinc-900 truncate">${req.user.username}</span>
-                <span class="text-[10px] text-blue-600 font-mono uppercase font-black">Open Profile</span>
-            </div>
-        </button>
-        ` : `
-        <div class="flex items-center justify-between w-full pr-2">
-            <div class="flex items-center gap-2">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" class="w-8 h-8 rounded-lg object-cover border border-zinc-900">
-                <span class="font-extrabold text-zinc-900 text-sm">Guest User</span>
-            </div>
-            <a href="/login" class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-zinc-900">
-                Login
-            </a>
+<!-- Sidebar Dropdown Nav (Sesuai Gambar 290121_2.png Tepat 100%) -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Top Header Bar Dropdown -->
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black">
+                ⚡ STYLERA
+            </span>
         </div>
-        `}
 
         <div class="flex items-center gap-2">
-            <div class="flex border border-zinc-900 rounded-lg p-0.5 bg-zinc-200">
+            <div class="flex border-2 border-zinc-900 rounded-lg p-0.5 bg-zinc-200">
                 <button id="lang-id" class="lang-btn active" onclick="setLanguage('id')">ID</button>
                 <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
             </div>
-            <button id="closeMenuBtn" class="text-zinc-700 hover:text-zinc-900 p-1.5 rounded-lg">
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 
-    ${!req.user ? `
-    <div class="mb-4 p-3 rounded-2xl bg-amber-100 border-2 border-zinc-900 text-xs font-bold text-zinc-800">
-        Anda belum login! Silakan login untuk mendapatkan akses API Key penuh.
-        <a href="/login" class="block text-center mt-2 w-full py-2 bg-zinc-900 text-white rounded-xl font-extrabold uppercase text-[10px]">Masuk / Login Sekarang</a>
-    </div>
-    ` : ''}
-
-    <nav class="flex flex-col gap-4 text-xs font-bold tracking-wide flex-1">
-        <div>
-            <span class="text-[10px] font-black text-zinc-400 tracking-wider uppercase block mb-2 px-1">PAGES MENU</span>
-            <div class="space-y-1.5">
-                <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-200 text-zinc-900 font-extrabold">
-                    <span>Dashboard</span>
-                </a>
-                <a href="/docs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Docs / Endpoint</span>
-                </a>
-                <a href="/store" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Store / Upgrade VIP</span>
-                </a>
-                <a href="/uploader" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>File Uploader</span>
-                </a>
-                <a href="/pastecode" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Pastecode</span>
-                </a>
-                <a href="/changelog" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Changelog</span>
-                    <span class="bg-zinc-900 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">New</span>
-                </a>
-                <a href="/feedback" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Feedback</span>
-                </a>
-                <a href="/status" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 text-zinc-800">
-                    <span>Server Status</span>
-                </a>
-            </div>
+    <!-- Banner Atas Dropdown (Sesuai Gambar 290121_2.png) -->
+    <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
+        <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
+            <span>BANNER</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882T19.246 12 11 18.118V5.882z"/></svg>
         </div>
-    </nav>
-
-    <div class="mt-auto pt-4">
-        <div class="w-full h-32 rounded-2xl overflow-hidden border-2 border-zinc-900 bg-black shadow-sm">
+        <div class="h-28 w-full relative overflow-hidden">
             <video autoplay loop muted playsinline class="w-full h-full object-cover">
-                <source src="https://arulz-xd.my.id/files/K4Sf61.mp4" type="video/mp4">
-                <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Sidebar Media Banner" class="w-full h-full object-cover">
+                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+                <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
             </video>
         </div>
+    </div>
+
+    <!-- Tombol Navigasi Berbentuk Kartu/Pill (Sesuai Gambar 290121_2.png) -->
+    <nav class="space-y-2 flex-1">
+        <a href="/" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>⊞</span>
+                <span>BACK TO DASHBOARD</span>
+            </div>
+        </a>
+
+        <a href="/docs" class="dropdown-nav-card bg-amber-100">
+            <div class="flex items-center gap-2.5">
+                <span>❖</span>
+                <span>DOCS / ENDPOINTS</span>
+            </div>
+        </a>
+
+        <a href="/store" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>⚡</span>
+                <span>STORE / BUY PLAN</span>
+            </div>
+        </a>
+
+        <a href="/uploader" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>⬆</span>
+                <span>UPLOADER FILE</span>
+            </div>
+        </a>
+
+        <a href="/pastecode" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>📋</span>
+                <span>PASTECODE SNIPPET</span>
+            </div>
+        </a>
+
+        <a href="/changelog" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>📢</span>
+                <span>CHANGELOG</span>
+            </div>
+            <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
+        </a>
+
+        <a href="/feedback" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>💬</span>
+                <span>REQUEST FITUR</span>
+            </div>
+        </a>
+
+        <a href="/status" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <span>ℹ</span>
+                <span>SERVER STATUS</span>
+            </div>
+        </a>
+    </nav>
+
+    <!-- Profile/Login Status Button At the Bottom -->
+    <div class="pt-4 mt-auto border-t-2 border-zinc-900">
+        ${req.user ? `
+        <button onclick="openProfilePopup()" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
+            <div class="flex items-center gap-2.5 truncate">
+                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-6 h-6 rounded-md border border-zinc-900 object-cover">
+                <span class="truncate">${req.user.username}</span>
+            </div>
+            <span class="text-[9px] text-blue-600 font-black">PROFILE</span>
+        </button>
+        ` : `
+        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5">
+            🔑 LOGIN / REGISTER
+        </a>
+        `}
     </div>
 </div>
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
+<!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 py-5 relative z-10 space-y-5">
     
-    <div class="banner-wrapper h-52 sm:h-72 md:h-80">
+    <!-- 1. Banner Video / GIF Utama Melengkung Presisi -->
+    <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
-            <source src="https://arulz-xd.my.id/files/K4Sf61.mp4" type="video/mp4">
-            <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Main Banner" class="banner-video-el">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Main Banner" class="banner-video-el">
         </video>
     </div>
 
+    <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Card 1: Clock -->
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
             <div id="liveClock" class="stat-value">00:00:00</div>
             <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
         </div>
 
+        <!-- Card 2: Limit Used -->
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
@@ -3485,12 +3530,14 @@ app.get('/docs', (req, res) => {
             <div class="stat-sub">DAILY ACCESS</div>
         </div>
 
+        <!-- Card 3: Total Endpoint -->
         <div class="stat-box">
             <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
             <span id="totalEndpoints" class="stat-value">0</span>
             <div class="stat-sub">ACTIVE ENDPOINTS</div>
         </div>
 
+        <!-- Card 4: Total Kategori -->
         <div class="stat-box">
             <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
             <span id="totalCategories" class="stat-value">0</span>
@@ -3498,6 +3545,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
+    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3513,6 +3561,7 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
+    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3527,6 +3576,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
+    <!-- 4. Daftar API List Sesuai Kontras & Tampilan Jelas -->
     <div id="apiList" class="space-y-3 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
