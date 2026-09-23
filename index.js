@@ -2969,7 +2969,9 @@ app.get('/docs', (req, res) => {
         position: fixed;
         inset: 0;
         z-index: 99999;
-        background: #080c14;
+        background-color: var(--bg-cream);
+        background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+        background-size: 16px 16px !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2981,9 +2983,9 @@ app.get('/docs', (req, res) => {
         pointer-events: none;
     }
     .cyber-loader-box {
-        background: rgba(13, 19, 33, 0.95);
-        border: 2px solid #00f3ff;
-        box-shadow: 0 0 30px rgba(0, 243, 255, 0.35), inset 0 0 15px rgba(0, 243, 255, 0.15);
+        background: var(--card-bg);
+        border: 2.5px solid var(--border-dark);
+        box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
         border-radius: 24px;
         padding: 32px 28px;
         display: flex;
@@ -2994,8 +2996,8 @@ app.get('/docs', (req, res) => {
     }
     .cyber-avatar-wrap {
         position: relative;
-        width: 72px;
-        height: 72px;
+        width: 76px;
+        height: 76px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -3003,38 +3005,36 @@ app.get('/docs', (req, res) => {
     .cyber-ring {
         position: absolute;
         inset: -6px;
-        border: 3px solid transparent;
-        border-top-color: #00f3ff;
-        border-bottom-color: #ff007f;
+        border: 3.5px solid #e4e4e7;
+        border-top-color: var(--border-dark);
+        border-right-color: #3b82f6;
         border-radius: 50%;
-        animation: spinCyber 1.2s linear infinite;
+        animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
     @keyframes spinCyber {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
     .cyber-text-glitch {
-        color: #00f3ff;
+        color: var(--border-dark);
         font-weight: 900;
         font-size: 13px;
         letter-spacing: 2px;
-        text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
     }
     .cyber-bar {
         width: 100%;
-        height: 8px;
-        background: #0f172a;
-        border: 1px solid #00f3ff;
+        height: 10px;
+        background: #e4e4e7;
+        border: 2px solid var(--border-dark);
         border-radius: 9999px;
         overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
     }
     .cyber-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, #00f3ff, #ff007f);
+        background: var(--border-dark);
         width: 0%;
         transition: width 0.15s ease;
-        box-shadow: 0 0 12px #00f3ff;
+        border-radius: 9999px;
     }
 
     /* Video Banner Radius Melengkung & Pemotongan Presisi */
@@ -3290,6 +3290,30 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* Popup Modal Styling */
+    .light-popup-bg {
+        background-color: var(--card-bg) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
+        color: var(--border-dark) !important;
+    }
+    .light-card-box {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 16px !important;
+    }
+    .light-pill-capsule {
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 9999px !important;
+        color: var(--border-dark) !important;
+        font-weight: 800 !important;
+    }
+    .light-solid-header {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
+        font-weight: 900 !important;
+        border-radius: 10px !important;
+    }
     .cyber-popup-bg { background-color: #121212; color: #ffffff; }
     .double-border-cyan { background: #1c1c1c; border: 1.5px solid #00f3ff; }
     .cyber-pill-capsule { background: #181818; border: 1px solid #00f3ff; border-radius: 9999px; }
@@ -3304,20 +3328,20 @@ app.get('/docs', (req, res) => {
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-[#00f3ff] shadow-[0_0_15px_#00f3ff]">
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
         </div>
         <div class="text-center">
             <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
                 INITIALIZING GATEWAY...
             </div>
-            <div class="text-[9px] font-mono text-cyan-400/80 uppercase tracking-widest">
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
                 ARULZ-XD API REST CORE
             </div>
         </div>
         <div class="w-full mt-5">
-            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-cyan-300">
+            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
                 <span>SYSTEM LOADING</span>
-                <span id="loader-percentage" class="font-bold">0%</span>
+                <span id="loader-percentage" class="font-black">0%</span>
             </div>
             <div class="cyber-bar">
                 <div id="loader-progress-fill" class="cyber-bar-fill"></div>
@@ -3370,95 +3394,89 @@ app.get('/docs', (req, res) => {
           
 <!-- Profile Popup -->
 <div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/90 backdrop-blur-md" onclick="closeProfilePopup()"></div>
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
   <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="w-full max-w-[410px] cyber-popup-bg border-2 border-cyan-400 rounded-3xl p-5 shadow-[0_0_50px_rgba(0,243,255,0.4)] relative font-mono text-cyan-400 my-auto">
+    <div class="w-full max-w-[410px] light-popup-bg rounded-3xl p-5 relative font-sans my-auto">
         <div class="flex items-center justify-between mb-5 gap-2">
             <div class="relative w-20 h-20 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border-2 border-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.8)] overflow-hidden">
+                    <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-sm overflow-hidden bg-white">
                         <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
             </div>
 
             <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-bold text-cyan-300">loading...</span>
+                <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
+                    <span id="userName" class="text-xs font-black text-zinc-900">loading...</span>
                 </div>
-                <div class="cyber-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] text-cyan-400">loading_email@gmail.com</span>
+                <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
+                    <span id="userEmail" class="text-[10px] font-bold text-zinc-700">loading_email@gmail.com</span>
                 </div>
             </div>
 
             <div id="planBoxContainer" class="relative w-20 h-24 flex flex-col items-center justify-center flex-shrink-0">
-                <svg class="w-full h-full filter drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]" viewBox="0 0 100 130" fill="none">
-                    <defs>
-                        <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#00f3ff" />
-                            <stop offset="100%" stop-color="#c084fc" />
-                        </linearGradient>
-                    </defs>
-                    <text x="50" y="20" fill="#00f3ff" font-size="10" font-weight="900" text-anchor="middle">USER</text>
-                    <path d="M 50 35 L 80 45 L 80 85 L 50 110 L 20 85 L 20 45 Z" fill="#010811" stroke="url(#cyberGrad)" stroke-width="2.5"/>
-                    <text id="userPlanText" x="50" y="78" fill="#00f3ff" font-size="18" font-weight="900" text-anchor="middle">FREE</text>
+                <svg class="w-full h-full" viewBox="0 0 100 130" fill="none">
+                    <text x="50" y="20" fill="#121212" font-size="10" font-weight="900" text-anchor="middle">USER</text>
+                    <path d="M 50 35 L 80 45 L 80 85 L 50 110 L 20 85 L 20 45 Z" fill="#FAF7EF" stroke="#121212" stroke-width="3"/>
+                    <text id="userPlanText" x="50" y="78" fill="#121212" font-size="18" font-weight="900" text-anchor="middle">FREE</text>
                 </svg>
             </div>
         </div>
 
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 relative">
+        <div class="light-card-box p-3 mb-4 relative">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold text-cyan-300 border border-cyan-400 bg-[#010811] px-2.5 py-0.5 rounded-md">Api Key Kamu :</span>
+                <span class="text-[10px] font-black text-white border-2 border-zinc-900 bg-zinc-900 px-2.5 py-0.5 rounded-md uppercase">Api Key Kamu :</span>
             </div>
             
-            <div class="cyber-pill-capsule text-cyan-200 text-xs font-bold py-1.5 px-3 truncate mb-3 text-center">
+            <div class="light-pill-capsule text-zinc-900 text-xs font-black py-1.5 px-3 truncate mb-3 text-center font-mono">
                 <span id="userApiKey">loading-key</span>
             </div>
 
             <div id="vipCustomKeyBox" class="hidden mb-3">
                 <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#010a14] border border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-cyan-300 placeholder-cyan-700 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="gold-metallic-button text-[10px] px-3 rounded-xl uppercase font-extrabold">SIMPAN</button>
+                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-500 focus:outline-none font-bold">
+                    <button onclick="saveCustomApiKey()" class="bg-amber-400 text-zinc-900 border-2 border-zinc-900 text-[10px] px-3 rounded-xl uppercase font-extrabold shadow-sm active:scale-95">SIMPAN</button>
                 </div>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full gold-metallic-button text-xs py-2 rounded-xl uppercase tracking-widest active:scale-95 transition-all">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
-        <div class="double-border-cyan rounded-2xl p-3 mb-4 text-center relative">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3">
+        <div class="light-card-box p-3 mb-4 text-center relative">
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">
                 LIMIT USER
             </div>
             <div class="py-0.5">
-                <span class="inline-block cyber-pill-capsule text-cyan-300 px-6 py-1 text-xs font-bold tracking-widest">
+                <span class="inline-block light-pill-capsule text-zinc-900 px-6 py-1 text-xs font-black tracking-widest font-mono">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
                 </span>
             </div>
         </div>
 
-        <div class="double-border-cyan rounded-2xl p-3 mb-4">
-            <div class="w-full cyan-solid-header text-[11px] py-1 rounded-xl uppercase tracking-widest mb-3 text-center">
+        <div class="light-card-box p-3 mb-4">
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">
                 AKTIFITAS REQUEST API TERAKHIR
             </div>
             <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="cyber-pill-capsule text-cyan-300 text-[10px] py-1.5 px-3 text-center truncate">
+                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">
                     belum ada request
                 </div>
             </div>
         </div>
 
         <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full gold-metallic-button text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all">
+            <a href="/upgrade-apikey" class="w-full bg-amber-400 hover:bg-amber-500 text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-sm">
                 UPGRADE VIP
             </a>
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 cyber-pill-capsule hover:bg-[#03203c] text-cyan-300 font-bold text-xs py-2 uppercase tracking-widest transition-all">
+                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">
                     TUTUP
                 </button>
-                <a href="/auth/logout" class="flex-1 border border-red-500/80 bg-[#140306] hover:bg-red-950 text-red-400 font-bold text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all">
+                <a href="/auth/logout" class="flex-1 border-2 border-zinc-900 bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-sm">
                     LOG OUT
                 </a>
             </div>
@@ -3741,15 +3759,15 @@ app.get('/docs', (req, res) => {
 
         if (role.includes('vip')) {
             planText.textContent = 'VIP';
-            planText.setAttribute('fill', '#00f3ff');
+            planText.setAttribute('fill', '#2563eb');
             if (vipCustomBox) vipCustomBox.classList.remove('hidden');
         } else if (role.includes('premium')) {
             planText.textContent = 'PREM';
-            planText.setAttribute('fill', '#fbbf24');
+            planText.setAttribute('fill', '#d97706');
             if (vipCustomBox) vipCustomBox.classList.add('hidden');
         } else {
             planText.textContent = 'FREE';
-            planText.setAttribute('fill', '#34d399');
+            planText.setAttribute('fill', '#121212');
             if (vipCustomBox) vipCustomBox.classList.add('hidden');
         }
     }
@@ -3878,20 +3896,20 @@ app.get('/docs', (req, res) => {
           .then(resData => {
               if (resData.status && resData.data && resData.data.length > 0) {
                   container.innerHTML = resData.data.map(logText => 
-                    '<div class="cyber-pill-capsule text-cyan-300 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                    '<div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
                         logText +
                     '</div>'
                 ).join('');
             } else {
                 container.innerHTML = 
-                    '<div class="cyber-pill-capsule text-cyan-400/60 font-mono text-[10px] py-2 px-3 text-center">' +
+                    '<div class="light-pill-capsule text-zinc-500 font-mono text-[10px] py-2 px-3 text-center">' +
                         'Belum ada aktivitas request' +
                     '</div>';
             }
         })
         .catch(err => {
             container.innerHTML = 
-                '<div class="cyber-pill-capsule text-red-400 font-mono text-[10px] py-2 px-3 text-center">' +
+                '<div class="light-pill-capsule text-red-600 font-mono text-[10px] py-2 px-3 text-center">' +
                     'Gagal memuat aktivitas' +
                 '</div>';
         });
