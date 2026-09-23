@@ -3100,86 +3100,105 @@ app.get('/docs', (req, res) => {
         background-color: transparent !important;
     }
 
-    /* Override Background Gelap (Card, Container) */
-    #apiList .bg-zinc-800,
-    #apiList .bg-zinc-900, 
-    #apiList .bg-black,
-    #apiList .bg-zinc-950,
-    #apiList .bg-\[\#121212\] {
+    /* A. Timpa Semua Background Gelap (Card Header & Expanded Detail) */
+    #apiList [class*="bg-slate-"], 
+    #apiList [class*="bg-zinc-"], 
+    #apiList [class*="bg-gray-"], 
+    #apiList [class*="bg-neutral-"], 
+    #apiList .bg-black, 
+    #apiList .bg-\[\#121212\], 
+    #apiList .bg-\[\#080c14\],
+    #apiList .bg-\[\#0f172a\] {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
-        box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
-        color: var(--border-dark) !important;
-    }
-
-    /* Override Border Gelap */
-    #apiList .border-zinc-800, 
-    #apiList .border-zinc-700,
-    #apiList .border-white\/10 {
         border-color: var(--border-dark) !important;
+        box-shadow: none !important;
     }
 
-    /* Override SEMUA Teks Putih / Abu-abu agar terlihat jelas di tema terang */
-    #apiList .text-white, 
-    #apiList [class*="text-zinc-1"], #apiList [class*="text-zinc-2"], 
-    #apiList [class*="text-zinc-3"], #apiList [class*="text-zinc-4"], 
-    #apiList [class*="text-zinc-5"], #apiList [class*="text-gray-1"], 
-    #apiList [class*="text-gray-2"], #apiList [class*="text-gray-3"], 
-    #apiList [class*="text-gray-4"], #apiList [class*="text-gray-5"] {
+    /* Batas presisi antara Header Endpoint dan Expanded Detail */
+    #apiList > div > div:nth-child(2),
+    #apiList .transition-all.duration-300 {
+        background-color: var(--card-bg) !important;
+        border-top: 2px dashed var(--border-dark) !important;
+        margin-top: 8px !important;
+        padding-top: 12px !important;
+    }
+
+    /* B. Timpa Teks Cyan / Putih / Abu-abu (Agar Path & Judul Terlihat) */
+    #apiList [class*="text-cyan-"], 
+    #apiList [class*="text-blue-200"], 
+    #apiList [class*="text-blue-300"], 
+    #apiList [class*="text-zinc-"], 
+    #apiList [class*="text-gray-"], 
+    #apiList [class*="text-slate-"], 
+    #apiList .text-white {
         color: var(--border-dark) !important;
         font-weight: 800 !important;
+        text-shadow: none !important;
     }
 
-    /* Paksa Icon (SVG) agar berwarna gelap */
-    #apiList svg {
+    #apiList label, #apiList .text-xs.font-bold {
         color: var(--border-dark) !important;
+        font-weight: 900 !important;
     }
 
-    /* Pastikan Input, Select, Textarea Terbaca & Tidak Tumpang Tindih Style Card */
+    /* C. Kotak Pre/Code (URL & cURL Command) */
+    #apiList pre, #apiList code, 
+    #apiList .bg-black\/20, #apiList .bg-black\/30, #apiList .bg-black\/50, 
+    #apiList .bg-white\/5, #apiList .bg-white\/10 {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        border-radius: 8px !important;
+        text-shadow: none !important;
+    }
+
+    /* D. Input Form, Select, & File Upload */
     #apiList input, #apiList select, #apiList textarea {
         background-color: #FFFDF8 !important;
-        color: #121212 !important;
-        border: 2px solid #121212 !important;
+        color: var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 8px !important;
         padding: 8px 12px !important;
+        font-weight: 700 !important;
         outline: none !important;
         box-shadow: none !important;
     }
-    
-    #apiList select option {
-        background-color: #FFFDF8 !important;
-        color: #121212 !important;
-    }
+    #apiList input::placeholder { color: #71717a !important; }
 
-    /* Tombol Utama (Execute, Copy) */
-    #apiList button.bg-blue-600,
-    #apiList button.bg-white,
-    #apiList .btn-execute {
-        background-color: #121212 !important;
+    /* E. Tombol Eksekusi & Aksi */
+    #apiList button {
+        border-radius: 8px !important;
+        font-weight: 800 !important;
+        transition: transform 0.1s ease !important;
+    }
+    #apiList button:active { transform: scale(0.97) !important; }
+    
+    /* Tombol Utama (EKSEKUSI, BERSIHKAN) */
+    #apiList button[class*="bg-blue-"], #apiList button[class*="bg-slate-700"] {
+        background-color: var(--border-dark) !important;
         color: #ffffff !important;
-        border: 2px solid #121212 !important;
-        border-radius: 10px !important;
+        border: 2px solid var(--border-dark) !important;
     }
     
-    #apiList button.bg-blue-600 *,
-    #apiList button.bg-white *,
-    #apiList .btn-execute * {
-         color: #ffffff !important;
+    /* Tombol Copy URL/cURL */
+    #apiList button[class*="bg-white\/10"], #apiList button[class*="bg-zinc-800"] {
+        background-color: #FAF7EF !important;
+        color: var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
     }
 
-    /* Badges HTTP Method (Dikecualikan agar tetap berwarna hijau/biru) */
-    #apiList .bg-green-500\/10, #apiList .text-green-400 {
-        background-color: #22c55e !important;
-        color: #000 !important;
-        border: 1.5px solid #121212 !important;
-        font-weight: 900 !important;
+    /* F. Pertahankan Badge Method (POST/GET/dll) */
+    #apiList .bg-cyan-500\/10, #apiList .bg-cyan-500\/20, #apiList .text-cyan-400 { 
+        background-color: #06b6d4 !important; color: #000 !important; border: 1.5px solid var(--border-dark) !important; 
     }
-    #apiList .bg-blue-500\/10, #apiList .text-blue-400 {
-        background-color: #3b82f6 !important;
-        color: #fff !important;
-        border: 1.5px solid #121212 !important;
-        font-weight: 900 !important;
+    #apiList .bg-green-500\/10, #apiList .bg-green-500\/20, #apiList .text-green-400 { 
+        background-color: #22c55e !important; color: #000 !important; border: 1.5px solid var(--border-dark) !important; 
     }
+    #apiList .bg-blue-500\/10, #apiList .text-blue-400 { 
+        background-color: #3b82f6 !important; color: #fff !important; border: 1.5px solid var(--border-dark) !important; 
+    }
+
+    #apiList svg { color: var(--border-dark) !important; }
 
     /* Menu Navigasi Kartu Dropdown */
     .dropdown-nav-card {
@@ -3657,39 +3676,25 @@ app.get('/docs', (req, res) => {
 
 <!-- JS Pembersih Mode Terang Cerdas: Mengganti warna CSS inline dari script.js tanpa merusak ukuran -->
 <script>
-        const fixEndpointTheme = () => {
+            const fixEndpointTheme = () => {
         const container = document.getElementById('apiList');
         if (!container) return;
 
         container.querySelectorAll('*').forEach(el => {
-            // Hapus background hitam/gelap inline dari script.js
-            if (el.style.backgroundColor) {
-                const bg = el.style.backgroundColor.replace(/\s/g, '');
-                if (bg.includes('rgb(0,0,0)') || bg.includes('rgb(24,24,27)') || bg.includes('rgb(39,39,42)') || bg.includes('#000') || bg.includes('#18181b')) {
-                    el.style.backgroundColor = '#FFFDF8';
-                    el.style.border = '2px solid #121212';
-                }
-            }
+            // Cabut inline background dan text-color bawaan script
+            if (el.style.backgroundColor) el.style.backgroundColor = '';
+            if (el.style.color) el.style.color = '';
             
-            // Hapus teks putih inline agar terlihat di background terang
-            if (el.style.color) {
-                const col = el.style.color.replace(/\s/g, '');
-                if (col.includes('rgb(255,255,255)') || col.includes('rgb(250,250,250)') || col.includes('#fff') || col.includes('rgb(161,161,170)') || col.includes('rgb(212,212,216)')) {
-                    el.style.color = '#121212';
-                    el.style.fontWeight = '800';
+            // Sapu bersih class warna teks yang mengganggu
+            el.classList.forEach(cls => {
+                if (cls.startsWith('text-cyan-') || 
+                    cls.startsWith('text-slate-') || 
+                    cls.startsWith('text-zinc-') || 
+                    cls === 'text-white') {
+                    el.classList.remove(cls);
+                    el.classList.add('text-zinc-900');
                 }
-            }
-
-            // Atur icon SVG Tailwind dengan regex untuk mencakup semua varian abu-abu
-            if (el.tagName.toLowerCase() === 'svg' || el.tagName.toLowerCase() === 'path') {
-                const classes = Array.from(el.classList);
-                classes.forEach(cls => {
-                    if (/^text-(white|zinc-[1-6]00|gray-[1-6]00|slate-[1-6]00)$/.test(cls)) {
-                        el.classList.remove(cls);
-                        el.classList.add('text-zinc-900');
-                    }
-                });
-            }
+            });
         });
     };
 
@@ -3700,9 +3705,9 @@ app.get('/docs', (req, res) => {
     document.addEventListener('DOMContentLoaded', () => {
         const apiListEl = document.getElementById('apiList');
         if (apiListEl) {
-            domObserver.observe(apiListEl, { childList: true, subtree: true, attributes: true });
+            domObserver.observe(apiListEl, { childList: true, subtree: true, attributes: false });
         }
-        fixEndpointTheme();
+        setTimeout(fixEndpointTheme, 500); // Pastikan terpanggil setelah render awal
     });
 
     function copyText(text, label) {
