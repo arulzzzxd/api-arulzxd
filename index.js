@@ -3100,103 +3100,88 @@ app.get('/docs', (req, res) => {
         background-color: transparent !important;
     }
 
-    /* A. Timpa Semua Background Gelap (Card Header & Expanded Detail) */
-    #apiList [class*="bg-slate-"], 
-    #apiList [class*="bg-zinc-"], 
-    #apiList [class*="bg-gray-"], 
-    #apiList [class*="bg-neutral-"], 
-    #apiList .bg-black, 
-    #apiList .bg-\[\#121212\], 
-    #apiList .bg-\[\#080c14\],
-    #apiList .bg-\[\#0f172a\] {
-        background-color: var(--card-bg) !important;
-        border-color: var(--border-dark) !important;
-        box-shadow: none !important;
-    }
-
-    /* Batas presisi antara Header Endpoint dan Expanded Detail */
-    #apiList > div > div:nth-child(2),
-    #apiList .transition-all.duration-300 {
-        background-color: var(--card-bg) !important;
-        border-top: 2px dashed var(--border-dark) !important;
-        margin-top: 8px !important;
-        padding-top: 12px !important;
-    }
-
-    /* B. Timpa Teks Cyan / Putih / Abu-abu (Agar Path & Judul Terlihat) */
-    #apiList [class*="text-cyan-"], 
-    #apiList [class*="text-blue-200"], 
-    #apiList [class*="text-blue-300"], 
-    #apiList [class*="text-zinc-"], 
-    #apiList [class*="text-gray-"], 
-    #apiList [class*="text-slate-"], 
-    #apiList .text-white {
+    /* Paksa semua elemen teks utama menjadi gelap agar terbaca jelas */
+    #apiList p, #apiList div, #apiList h1, #apiList h2, #apiList h3, 
+    #apiList h4, #apiList label, #apiList pre, #apiList code {
         color: var(--border-dark) !important;
-        font-weight: 800 !important;
         text-shadow: none !important;
     }
 
-    #apiList label, #apiList .text-xs.font-bold {
-        color: var(--border-dark) !important;
-        font-weight: 900 !important;
-    }
-
-    /* C. Kotak Pre/Code (URL & cURL Command) */
-    #apiList pre, #apiList code, 
-    #apiList .bg-black\/20, #apiList .bg-black\/30, #apiList .bg-black\/50, 
-    #apiList .bg-white\/5, #apiList .bg-white\/10 {
-        background-color: #FAF7EF !important;
+    /* A. Kartu Utama Endpoint */
+    #apiList > div {
+        background-color: var(--card-bg) !important;
         border: 2px solid var(--border-dark) !important;
-        color: var(--border-dark) !important;
-        border-radius: 8px !important;
-        text-shadow: none !important;
+        border-radius: 16px !important;
+        margin-bottom: 12px !important;
+        overflow: hidden !important;
+        box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
     }
 
-    /* D. Input Form, Select, & File Upload */
+    /* B. Header Endpoint (Method & Path) */
+    #apiList > div > div:first-child {
+        background-color: var(--card-bg) !important;
+        border-bottom: none !important;
+    }
+
+    /* C. Area Detail Expand (Mereset background biru dongker/hitam) */
+    #apiList > div > div:nth-child(2),
+    #apiList > div > div.overflow-hidden {
+        background-color: #FAF7EF !important; /* Warna dasar krem gelap */
+        border-top: 2px dashed var(--border-dark) !important;
+    }
+
+    /* Menghapus background gelap bawaan pada container di dalam panel detail */
+    #apiList > div > div:nth-child(2) div {
+        background-color: transparent !important;
+        border-color: var(--border-dark) !important;
+    }
+
+    /* D. Kotak Spesifik (Deskripsi, URL, cURL) */
+    #apiList > div > div:nth-child(2) > div > div,
+    #apiList pre {
+        background-color: #FFFDF8 !important; /* Warna krem terang */
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
+
+    /* E. Form Input, Parameter & File Upload */
     #apiList input, #apiList select, #apiList textarea {
         background-color: #FFFDF8 !important;
-        color: var(--border-dark) !important;
         border: 2px solid var(--border-dark) !important;
         border-radius: 8px !important;
+        color: var(--border-dark) !important;
         padding: 8px 12px !important;
         font-weight: 700 !important;
-        outline: none !important;
-        box-shadow: none !important;
     }
     #apiList input::placeholder { color: #71717a !important; }
+    #apiList input[type="file"] { padding: 4px 8px !important; }
 
-    /* E. Tombol Eksekusi & Aksi */
+    /* F. Tombol-Tombol Aksi */
     #apiList button {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
         border-radius: 8px !important;
         font-weight: 800 !important;
         transition: transform 0.1s ease !important;
     }
-    #apiList button:active { transform: scale(0.97) !important; }
+    #apiList button:active { transform: scale(0.95) !important; }
     
-    /* Tombol Utama (EKSEKUSI, BERSIHKAN) */
-    #apiList button[class*="bg-blue-"], #apiList button[class*="bg-slate-700"] {
+    /* Tombol Utama (EKSEKUSI) */
+    #apiList button[class*="bg-cyan-"], #apiList button[class*="bg-blue-"] {
         background-color: var(--border-dark) !important;
-        color: #ffffff !important;
-        border: 2px solid var(--border-dark) !important;
     }
-    
-    /* Tombol Copy URL/cURL */
-    #apiList button[class*="bg-white\/10"], #apiList button[class*="bg-zinc-800"] {
-        background-color: #FAF7EF !important;
-        color: var(--border-dark) !important;
-        border: 2px solid var(--border-dark) !important;
+    #apiList button[class*="bg-cyan-"] *, #apiList button[class*="bg-blue-"] * {
+        color: #ffffff !important;
     }
 
-    /* F. Pertahankan Badge Method (POST/GET/dll) */
-    #apiList .bg-cyan-500\/10, #apiList .bg-cyan-500\/20, #apiList .text-cyan-400 { 
-        background-color: #06b6d4 !important; color: #000 !important; border: 1.5px solid var(--border-dark) !important; 
-    }
-    #apiList .bg-green-500\/10, #apiList .bg-green-500\/20, #apiList .text-green-400 { 
-        background-color: #22c55e !important; color: #000 !important; border: 1.5px solid var(--border-dark) !important; 
-    }
-    #apiList .bg-blue-500\/10, #apiList .text-blue-400 { 
-        background-color: #3b82f6 !important; color: #fff !important; border: 1.5px solid var(--border-dark) !important; 
-    }
+    /* G. Badge Method (POST/GET) agar warnanya tidak ikut terhapus */
+    #apiList .bg-green-500\/10 { background-color: #22c55e !important; border: 2px solid var(--border-dark) !important; }
+    #apiList .bg-cyan-500\/10 { background-color: #0ea5e9 !important; border: 2px solid var(--border-dark) !important; }
+    #apiList .bg-blue-500\/10 { background-color: #3b82f6 !important; border: 2px solid var(--border-dark) !important; }
+    
+    #apiList svg { color: var(--border-dark) !important; fill: currentColor !important; }
 
     #apiList svg { color: var(--border-dark) !important; }
 
@@ -3676,40 +3661,6 @@ app.get('/docs', (req, res) => {
 
 <!-- JS Pembersih Mode Terang Cerdas: Mengganti warna CSS inline dari script.js tanpa merusak ukuran -->
 <script>
-            const fixEndpointTheme = () => {
-        const container = document.getElementById('apiList');
-        if (!container) return;
-
-        container.querySelectorAll('*').forEach(el => {
-            // Cabut inline background dan text-color bawaan script
-            if (el.style.backgroundColor) el.style.backgroundColor = '';
-            if (el.style.color) el.style.color = '';
-            
-            // Sapu bersih class warna teks yang mengganggu
-            el.classList.forEach(cls => {
-                if (cls.startsWith('text-cyan-') || 
-                    cls.startsWith('text-slate-') || 
-                    cls.startsWith('text-zinc-') || 
-                    cls === 'text-white') {
-                    el.classList.remove(cls);
-                    el.classList.add('text-zinc-900');
-                }
-            });
-        });
-    };
-
-    const domObserver = new MutationObserver(() => {
-        fixEndpointTheme();
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const apiListEl = document.getElementById('apiList');
-        if (apiListEl) {
-            domObserver.observe(apiListEl, { childList: true, subtree: true, attributes: false });
-        }
-        setTimeout(fixEndpointTheme, 500); // Pastikan terpanggil setelah render awal
-    });
-
     function copyText(text, label) {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
