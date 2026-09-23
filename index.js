@@ -3204,14 +3204,67 @@ app.get('/docs', (req, res) => {
     #apiList svg { color: var(--border-dark) !important; }
     
     /* Response / Output Hasil Eksekusi */
-    #apiList .api-item > div[id^="ep-"] > div[id^="response-"] > div > div {
+        /* =========================================================
+       E. RESPONSE / OUTPUT HASIL EKSEKUSI (LIGHT STYLE OVERRIDE)
+       ========================================================= */
+    /* Container utama kartu response */
+    #apiList [id^="response-content-"] > div {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        box-shadow: none !important;
+        border-radius: 16px !important;
     }
-    #apiList .api-item > div[id^="ep-"] > div[id^="response-"] pre {
+
+    /* Sub-header, Grid, dan Footer Response */
+    #apiList [id^="response-content-"] .bg-black\/60,
+    #apiList [id^="response-content-"] .bg-black\/40,
+    #apiList [id^="response-content-"] .bg-black\/30,
+    #apiList [id^="response-content-"] .bg-black\/20,
+    #apiList [id^="response-content-"] .bg-black\/10,
+    #apiList [id^="response-content-"] .bg-slate-950\/40 {
+        background-color: #FAF7EF !important;
+        border-color: var(--border-dark) !important;
+    }
+
+    /* Kotak Status Grid (Status, Time, Size, Content Type) */
+    #apiList [id^="response-content-"] .grid > div {
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        box-shadow: none !important;
+    }
+
+    /* Teks dalam Response */
+    #apiList [id^="response-content-"] span,
+    #apiList [id^="response-content-"] p,
+    #apiList [id^="response-content-"] div,
+    #apiList [id^="response-content-"] code {
+        color: var(--border-dark) !important;
+    }
+
+    /* Area Teks Output JSON / Code Block */
+    #apiList [id^="response-content-"] pre {
         background-color: #FFFDF8 !important;
         color: var(--border-dark) !important;
         border-top: 2px dashed var(--border-dark) !important;
+    }
+    #apiList [id^="response-content-"] pre code {
+        color: var(--border-dark) !important;
+        font-weight: 700 !important;
+    }
+
+    /* Tombol Aksi dalam Response (Copy Response & Download) */
+    #apiList [id^="response-content-"] button {
+        background-color: #FFFDF8 !important;
+        color: var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
+        font-weight: 800 !important;
+        box-shadow: none !important;
+    }
+    #apiList [id^="response-content-"] button:hover {
+        background-color: #FAF7EF !important;
+    }
+    #apiList [id^="response-content-"] button span {
+        color: var(--border-dark) !important;
     }
 
     /* F. Pengecualian Badge Tag (Biar warnanya tidak tertimpa hitam) */
