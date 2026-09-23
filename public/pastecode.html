@@ -1,48 +1,59 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arulz-XD API - Pastebin</title>
-    <!-- Google Fonts: Cantarell & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Arulz-XD API - Pastebin Snippet</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
+    <!-- Tailwind CSS & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Prism Syntax Highlighting CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+
     <style>
-        :root { 
-            --bg-main: #090d16; 
-            --bg-card: #0f172a;
-            --border-dark: #1e293b; 
-            --cyan: #00a3ff; 
-            --cyan-hover: #0082cc;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+        :root {
+            --bg-cream: #FAF7EF;
+            --card-bg: #FFFDF8;
+            --border-dark: #121212;
+            --cyan: #0284c7;
         }
 
-        body { 
-            font-family: 'Cantarell', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main);
-            background-image: radial-gradient(rgba(0, 163, 255, 0.1) 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 0; 
-            padding-top: 85px; 
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        * {
+            box-sizing: border-box;
         }
 
-        /* Styling Khusus Mode Gist RAW (Dark Theme) */
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-x pan-y;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            -webkit-user-select: none;
+            user-select: none;
+            background-color: var(--bg-cream) !important;
+            color: var(--border-dark) !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            overflow-x: hidden;
+        }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* Mode Gist RAW (Dark Clean) */
         body.gist-raw-mode {
             background: #0d1117 !important;
             color: #e6edf3 !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace !important;
+            font-family: 'JetBrains Mono', monospace !important;
         }
         .gist-raw-container {
             padding: 16px;
@@ -54,901 +65,1011 @@
             background: #0d1117;
         }
 
-        /* Kontainer Tombol Utama di Pojok Kiri Atas */
-        .top-left-nav {
+        /* Cyber Loader Overlay (Docs Light Style) */
+        #cyber-loader-overlay {
             position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-nav-top {
-            background: var(--bg-card);
-            color: var(--text-main);
-            border: 2px solid var(--cyan);
-            padding: 10px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            text-decoration: none;
-            cursor: pointer;
-            box-shadow: 4px 4px 0px rgba(0, 163, 255, 0.2);
-            font-family: inherit;
+            inset: 0;
+            z-index: 99999;
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: transform 0.05s, box-shadow 0.05s;
-            border-radius: 6px;
-        }
-        .btn-nav-top:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px rgba(0, 163, 255, 0.2);
-        }
-        .btn-nav-top.accent {
-            background: var(--cyan);
-            color: #000;
+            justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; box-sizing: border-box; min-height: 400px; }
+        #cyber-loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-        .hero-banner { background: var(--bg-card); border: 2px solid var(--border-dark); box-shadow: 0px 10px 30px rgba(0,0,0,0.5); padding: 35px; margin-bottom: 35px; position: relative; border-radius: 12px; }
-        .hero-tag { background: rgba(0, 163, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); display: inline-block; padding: 4px 12px; font-size: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; border-radius: 20px; font-weight: 700; }
-        .hero-banner h1 { margin: 0 0 20px 0; font-size: 36px; font-weight: 700; color: var(--text-main); }
-        .hero-banner h1 span { color: var(--cyan); }
-        .hero-banner p { margin: 0 0 10px 0; color: var(--text-muted); font-size: 15px; line-height: 1.6; max-width: 700px; }
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--border-dark);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 320px;
+        }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--border-dark); background: var(--bg-card); box-shadow: 0px 10px 30px rgba(0,0,0,0.3); margin-bottom: 35px; border-radius: 12px; overflow: hidden; }
-        .stat-box { padding: 25px; background: var(--bg-card); box-sizing: border-box; }
-        .stat-box.left { border-right: 2px solid var(--border-dark); background: rgba(0, 163, 255, 0.05); }
-        .stat-box.center { border-right: 2px solid var(--border-dark); }
-        .stat-box h2 { margin: 0 0 5px 0; font-size: 38px; font-weight: 700; color: var(--cyan); font-family: 'Cantarell', sans-serif; }
-        .stat-box p { margin: 0; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .cyber-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        .search-wrapper { position: relative; margin-bottom: 15px; }
-        .search-input { width: 100%; padding: 16px 16px 16px 45px; font-size: 14px; border: 2px solid var(--border-dark); border-radius: 8px; box-sizing: border-box; background: var(--bg-card); color: var(--text-main); font-weight: 500; font-family: inherit; }
-        .search-input:focus { outline: none; border-color: var(--cyan); }
-        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text-muted); pointer-events: none; display: flex; align-items: center; }
+        .cyber-ring {
+            position: absolute;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--border-dark);
+            border-right-color: #3b82f6;
+            border-radius: 50%;
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
 
-        .filter-wrapper { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .btn-filter { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 6px; padding: 8px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-        .btn-filter.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-        .title-separator { display: flex; align-items: center; margin-bottom: 30px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-        .title-separator span { color: var(--cyan); margin-right: 15px; font-size: 14px; }
-        .title-separator .line { flex-grow: 1; height: 2px; background: var(--border-dark); margin-left: 20px; }
+        .cyber-text-glitch {
+            color: var(--border-dark);
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
 
-        .paste-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-bottom: 40px; }
-        .paste-card { 
-            background: var(--bg-card); 
-            border: 2px solid var(--border-dark); 
-            border-radius: 12px;
-            display: flex; 
-            flex-direction: column; 
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--border-dark);
+            border-radius: 9999px;
             overflow: hidden;
-            cursor: pointer; 
-            transition: transform 0.2s, border-color 0.2s;
         }
-        .paste-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
 
-        .card-top { background: rgba(0,0,0,0.2); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-dark); }
-        .mac-dots { display: flex; gap: 6px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff5f56; }
-        .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
-        .lang-badge { padding: 3px 10px; font-size: 11px; border-radius: 4px; text-transform: lowercase; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-        .card-body { padding: 20px; background: var(--bg-card); }
-        .card-title { margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: var(--text-main); text-transform: lowercase; cursor: pointer; display: inline-block; }
-        .card-title:hover { color: var(--cyan); }
-        .preview-box { background: #0b0c10; color: #fff; padding: 15px; font-size: 12px; overflow: hidden; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border-dark); border-radius: 6px; height: 70px; box-sizing: border-box; }
-        .card-footer { background: rgba(0,0,0,0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-top: 1px solid var(--border-dark); }
-        .card-footer-info { display: flex; align-items: center; gap: 15px; color: var(--text-muted); }
-        .btn-raw { background: var(--cyan); color: #000; text-decoration: none; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--border-dark);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
+        }
 
-        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 40px auto 20px auto; flex-wrap: wrap; }
-        .page-btn { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .page-btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
-        .page-btn.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
-        .page-btn:disabled { background: #1e293b; color: #475569; border-color: #1e293b; cursor: not-allowed; }
+        /* Light Neubrutalism Card */
+        .light-card {
+            background-color: var(--card-bg) !important;
+            border: 2.5px solid var(--border-dark) !important;
+            border-radius: 20px !important;
+            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        /* Menu Navigasi Kartu Dropdown Sidebar */
+        .dropdown-nav-card {
+            background-color: #FFFDF8 !important;
+            border: 2px solid var(--border-dark) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            font-weight: 800 !important;
+            font-size: 11px !important;
+            color: #121212 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-transform: uppercase !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+        }
+        .dropdown-nav-card:active {
+            transform: translateY(1px) !important;
+            background-color: #FAF7EF !important;
+        }
 
-        .btn-back { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 2px solid var(--border-dark); border-radius: 6px; padding: 10px 18px; text-decoration: none; color: var(--text-main); margin-bottom: 25px; font-size: 12px; font-weight: 700; }
-        .btn-back:hover { border-color: var(--cyan); color: var(--cyan); }
-        .detail-header { background: var(--bg-card); border: 2px solid var(--border-dark); border-radius: 12px; padding: 25px; margin-bottom: 25px; position: relative; }
-        .detail-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        /* Neubrutalist Filter & Action Buttons */
+        .btn-filter-light {
+            background-color: #FAF7EF;
+            border: 2px solid var(--border-dark);
+            color: var(--border-dark);
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+        }
+        .btn-filter-light.active, .btn-filter-light:hover {
+            background-color: var(--border-dark);
+            color: #ffffff;
+        }
 
-        .code-window { background: #0b0c10; border: 2px solid var(--border-dark); border-radius: 12px; margin-bottom: 30px; overflow: hidden; contain: content; }
-        .window-top { background: rgba(0,0,0,0.3); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-dark); color: var(--text-main); font-size: 12px; flex-wrap: wrap; gap: 12px; }
+        .btn-brutalism-light {
+            background-color: #FFFDF8;
+            color: var(--border-dark);
+            border: 2px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1);
+        }
+        .btn-brutalism-light:hover {
+            background-color: #FAF7EF;
+            transform: translateY(-1px);
+        }
+        .btn-brutalism-light.yellow-accent {
+            background-color: #fde047;
+            color: #121212;
+        }
+        .btn-brutalism-light.yellow-accent:hover {
+            background-color: #facc15;
+        }
 
-        .action-menubar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; background: transparent; padding: 0; border: none; }
-        .action-menubar-row-2 { display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; width: 100%; margin-top: 10px; }
+        /* Paste Cards Styling */
+        .paste-card-light {
+            background: var(--card-bg);
+            border: 2.5px solid var(--border-dark);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            cursor: pointer;
+        }
+        .paste-card-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.12);
+        }
 
-        .btn-brutalism { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--border-dark); border-radius: 6px; padding: 12px 8px; font-size: 11px; font-weight: 700; font-family: inherit; text-transform: uppercase; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-        .btn-brutalism:hover { border-color: var(--cyan); color: var(--cyan); }
-        .btn-brutalism.yellow-accent { background: var(--cyan); color: #000; border-color: var(--cyan); }
-        .btn-brutalism.yellow-accent:hover { color: #000; opacity: 0.9; }
-        .btn-brutalism.black-accent { background: var(--text-main); color: #000; border-color: var(--text-main); }
+        .card-top-light {
+            background: #FAF7EF;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-dark);
+        }
 
-        .raw-modal-content { background: var(--bg-card); border: 2px solid var(--border-dark); color: var(--text-main); max-width: 650px; width: 100%; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .raw-modal-header { background: rgba(0,0,0,0.2); padding: 15px 20px; display: flex; justify-content: flex-start; align-items: center; border-bottom: 2px solid var(--border-dark); }
-        .raw-modal-title { color: var(--text-main); font-size: 14px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-        .raw-modal-body { padding: 20px; background: var(--bg-main); }
-        .raw-textarea-box { width: 100%; height: 280px; background: #0b0c10; color: #39ff14; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; padding: 15px; font-family: 'JetBrains Mono', monospace; font-size: 13px; resize: none; outline: none; line-height: 1.6; }
-        .raw-modal-footer { background: rgba(0,0,0,0.2); padding: 15px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 2px solid var(--border-dark); }
+        .preview-box-light {
+            background: #121212;
+            color: #38bdf8;
+            padding: 14px;
+            font-size: 12px;
+            overflow: hidden;
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', monospace;
+            border: 2px solid var(--border-dark);
+            border-radius: 10px;
+            height: 75px;
+            box-sizing: border-box;
+        }
 
-        .alert-modal-content { background: var(--bg-card); color: var(--text-main); border: 2px solid var(--cyan); border-radius: 16px; max-width: 420px; width: 100%; padding: 30px; text-align: left; font-family: inherit; position: relative; overflow: hidden; }
-        .alert-modal-text { font-size: 16px; font-weight: 700; line-height: 1.5; margin-top: 10px; margin-bottom: 25px; }
-        .btn-alert-oke { background: var(--cyan); color: #000; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 24px; text-transform: uppercase; }
+        /* Pagination Buttons */
+        .page-btn-light {
+            background: #FFFDF8;
+            color: var(--border-dark);
+            border: 2px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .page-btn-light:hover:not(:disabled) {
+            background: #FAF7EF;
+        }
+        .page-btn-light.active {
+            background: var(--border-dark);
+            color: #ffffff;
+        }
+        .page-btn-light:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
-        .code-window pre[class*="language-"] { max-height: 550px !important; overflow-y: auto !important; overflow-x: auto !important; margin: 0 !important; background: #0b0c10 !important; font-family: 'JetBrains Mono', monospace !important; }
-        pre[class*="language-"].line-numbers { padding-left: 3.8em !important; font-size: 13px; }
-        .footer { background: #0b0c10; color: var(--text-muted); padding: 30px 20px; text-align: center; border-top: 2px solid var(--border-dark); font-size: 13px; margin-top: 60px; }
+        /* Modals Neubrutalist Light Style */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-        .heavy-code-warning { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; font-size: 12px; color: #f87171; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-        :root {
-        --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.4);
-        --bg-dark: #030712;
-        --bg-card: rgba(15, 23, 42, 0.75);
-        --border-color: rgba(0, 243, 255, 0.2);
-    }
+        .raw-modal-content {
+            background: var(--card-bg);
+            border: 2.5px solid var(--border-dark);
+            color: var(--border-dark);
+            max-width: 650px;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2);
+        }
 
-    /* Support Light Theme Mode */
-    html.light {
-        --neon-cyan: #008b9b;
-        --neon-glow: rgba(0, 139, 155, 0.25);
-        --bg-dark: #f0fdfa;
-        --bg-card: rgba(255, 255, 255, 0.85);
-        --border-color: rgba(0, 139, 155, 0.3);
-    }
+        .raw-textarea-box {
+            width: 100%;
+            height: 280px;
+            background: #121212;
+            color: #38bdf8;
+            border: 2px solid var(--border-dark);
+            border-radius: 10px;
+            box-sizing: border-box;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            line-height: 1.6;
+        }
 
-    #cyber-loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background-color: var(--bg-dark);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
-    }
+        .alert-modal-content {
+            background: var(--card-bg);
+            color: var(--border-dark);
+            border: 2.5px solid var(--border-dark);
+            border-radius: 20px;
+            max-width: 400px;
+            width: 100%;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2);
+        }
 
-    #cyber-loader-overlay.fade-out {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
+        .code-window-light {
+            background: #121212;
+            border: 2.5px solid var(--border-dark);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .window-top-light {
+            background: #FAF7EF;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2.5px solid var(--border-dark);
+            color: var(--border-dark);
+            font-size: 11px;
+            font-weight: 800;
+        }
 
-    /* Laser Scanner Beam */
-    .scanner-beam {
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 300%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-        animation: scanAnimation 4s infinite linear;
-    }
-    @keyframes scanAnimation {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-    }
+        .code-window-light pre[class*="language-"] {
+            max-height: 550px !important;
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+            margin: 0 !important;
+            background: #121212 !important;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
 
-    /* Concentric Hologram HUD Rotating Rings */
-    .hud-ring {
-        position: relative;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .ring-outer {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2px dashed var(--neon-cyan);
-        opacity: 0.6;
-        animation: spinClockwise 10s linear infinite;
-        box-shadow: 0 0 15px var(--neon-glow);
-    }
-
-    .ring-middle {
-        position: absolute;
-        inset: 10px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: var(--neon-cyan);
-        border-bottom-color: var(--neon-cyan);
-        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
-
-    .ring-inner {
-        position: absolute;
-        inset: 20px;
-        border-radius: 50%;
-        border: 1px dotted var(--neon-cyan);
-        opacity: 0.8;
-        animation: spinClockwise 6s linear infinite;
-    }
-
-    .hud-avatar {
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--neon-cyan);
-        box-shadow: 0 0 20px var(--neon-cyan);
-        z-index: 10;
-    }
-
-    @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-    @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
-
-    /* Animated Dot Pulse */
-    .animated-dots::after {
-        content: '';
-        display: inline-block;
-        width: 1.5em;
-        text-align: left;
-        animation: dotsAnimation 1.5s steps(4, end) infinite;
-    }
-    @keyframes dotsAnimation {
-        0% { content: ''; }
-        25% { content: '.'; }
-        50% { content: '..'; }
-        75% { content: '...'; }
-    }
-
-    .neon-progress-bar {
-        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-        box-shadow: 0 0 12px var(--neon-cyan);
-        transition: width 0.15s ease-out;
-    }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="min-h-screen relative flex flex-col justify-between antialiased">
 
-<div id="cyber-loader-overlay">
-    <div class="scanner-beam"></div>
-
-    <!-- Central Holographic HUD Ring Spinner -->
-    <div class="hud-ring mb-6">
-        <div class="ring-outer"></div>
-        <div class="ring-middle"></div>
-        <div class="ring-inner"></div>
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
-    </div>
-
-    <!-- Dynamic Page Name & Animated Dot Text -->
-    <div class="text-center px-4">
-        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-            Memuat Halaman<span class="animated-dots"></span>
-        </div>
-        <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-            SYSTEM INITIALIZING // CORE GATEWAY
-        </div>
-    </div>
-
-    <!-- Progress Bar (0% - 100%) -->
-    <div class="w-64 sm:w-80 mt-6">
-        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-            <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
-        </div>
-        <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-        </div>
-    </div>
-
-    <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-        Arulz-XD API v2.0
-    </div>
-</div>
-
-<div class="top-left-nav">
-    <a href="/" class="btn-nav-top">
-        <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="width:14px; height:14px;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Kembali
-    </a>
-
-    <button id="translateBtn" class="btn-nav-top accent" onclick="toggleLanguageSystem()">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px; height:14px;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802" />
-        </svg>
-        <span id="translate-btn-text">EN</span>
-    </button>
-</div>
-
-<div class="container" id="page-content">
-    <div style="text-align:center; padding:40px;" id="loading-text">Mengambil data Server...</div>
-</div>
-
-<div class="modal" id="rawModal">
-    <div class="modal-content raw-modal-content">
-        <div class="raw-modal-header">
-            <div class="raw-modal-title">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px; height:16px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
-                <span id="raw-modal-title-text">RAW - PREVIEW</span>
+    <!-- Loader Overlay Cyberpunk Light Style -->
+    <div id="cyber-loader-overlay">
+        <div class="cyber-loader-box">
+            <div class="cyber-avatar-wrap mb-4">
+                <div class="cyber-ring"></div>
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
+            </div>
+            <div class="text-center">
+                <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                    INITIALIZING GATEWAY...
+                </div>
+                <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                    ARULZ-XD API REST CORE
+                </div>
+            </div>
+            <div class="w-full mt-5">
+                <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                    <span>SYSTEM LOADING</span>
+                    <span id="loader-percentage" class="font-black">0%</span>
+                </div>
+                <div class="cyber-bar">
+                    <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+                </div>
             </div>
         </div>
-        <div class="raw-modal-body">
-            <textarea id="raw-textarea-display" class="raw-textarea-box" readonly></textarea>
-        </div>
-        <div class="raw-modal-footer">
-            <button class="btn-brutalism" style="padding: 8px 20px;" onclick="closeRawModal()">TUTUP</button>
-            <button class="btn-brutalism yellow-accent" style="padding: 8px 20px;" onclick="copyRawInsideModal()">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" />
+    </div>
+
+    <!-- Header Top Bar -->
+    <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
+                    <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                </div>
+                <div>
+                    <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">PASTECODE SNIPPET</span>
+                </div>
+            </div>
+
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
-                SALIN RAW
             </button>
         </div>
-    </div>
-</div>
+    </header>
 
-<div class="modal" id="alertModal">
-    <div class="modal-content alert-modal-content">
-        <div class="alert-modal-text" id="alertModalMessage">Aksi berhasil dilakukan!</div>
-        <div class="alert-modal-btn-container">
-            <button class="btn-alert-oke" onclick="closeAlertModal()">Oke</button>
+    <!-- Sidebar Dropdown Nav (bioDropdown) -->
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+        
+        <!-- Header Dropdown -->
+        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    STYLERA
+                </span>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Banner Atas Dropdown -->
+        <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
+            <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
+                <span>BANNER</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 6.75-13.5 6.75V5.25z"/></svg>
+            </div>
+            <div class="h-28 w-full relative overflow-hidden">
+                <video autoplay loop muted playsinline class="w-full h-full object-cover">
+                    <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+                    <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
+                </video>
+            </div>
+        </div>
+
+        <!-- Tombol Navigasi Dropdown -->
+        <nav class="space-y-2 flex-1">
+            <a href="/" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    <span>BACK TO DASHBOARD</span>
+                </div>
+            </a>
+            <a href="/docs" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span>DOCS / ENDPOINTS</span>
+                </div>
+            </a>
+            <a href="/store" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                    <span>STORE / BUY PLAN</span>
+                </div>
+            </a>
+            <a href="/uploader" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    <span>UPLOADER FILE</span>
+                </div>
+            </a>
+            <a href="/pastecode" class="dropdown-nav-card bg-amber-100">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                    <span>PASTECODE SNIPPET</span>
+                </div>
+            </a>
+            <a href="/changelog" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                    <span>CHANGELOG</span>
+                </div>
+                <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
+            </a>
+            <a href="/feedback" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                    <span>REQUEST FITUR</span>
+                </div>
+            </a>
+            <a href="/status" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                    <span>SERVER STATUS</span>
+                </div>
+            </a>
+        </nav>
+
+        <!-- Profile / Login Status Button di Bagian Bawah Sidebar -->
+        <div id="sidebarAuthBtnContainer" class="pt-4 mt-auto border-t-2 border-zinc-900">
+            <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
+                <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                LOGIN / REGISTER
+            </a>
         </div>
     </div>
-</div>
+    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
-<div class="footer" id="main-footer">
-    <p>© 2026 Arulz-XD API · <span id="lbl-footer-text">Dibuat untuk Developer Indonesia</span></p>
-</div>
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6 relative z-10 flex-1 w-full" id="page-content">
+        <div class="text-center py-10 font-bold text-zinc-600 text-sm font-mono" id="loading-text">
+            Mengambil data Server...
+        </div>
+    </main>
 
-<script>
-    const GITHUB_RAW_URL = "https://raw.githubusercontent.com/arulzzzxd/api-arulzxd/main/database/data.js";
-
-    const translations = {
-        id: {
-            heroTitle: "<span>Snippet</span> & Kode", heroDesc: "Kumpulan kode, script, dan snippet dari tim Arulz-XD. Gratis, langsung pakai.",
-            stat1: "Total Paste", stat2: "Bahasa", stat4: "Total Baris",
-            searchPlaceholder: "Cari paste berdasarkan judul, bahasa, atau deskripsi...", filterAll: "Semua", sepText: "Semua Paste", noData: "Data tidak ditemukan.",
-            lblFooterText: "Dibuat untuk Developer Indonesia", alertSuccessCopy: "Kode berhasil disalin!", 
-            btnBack: "KEMBALI KE PASTEBIN", lblLines: "baris", btnCopy: "SALIN KODE", 
-            btnRaw: "RAW", btnShare: "SHARE", alertShare: "Link berhasil disalin ke clipboard!", btnDownload: "DOWNLOAD",
-            btnPrev: "← Sebelumnya", btnNext: "Berikutnya →"
-        },
-        en: {
-            heroTitle: "<span>Snippet</span> & Code", heroDesc: "Collection of codes, scripts, and snippets from the over-XD team. Free, ready to use.",
-            stat1: "Total Pastes", stat2: "Languages", stat4: "Total Lines",
-            searchPlaceholder: "Search paste by title, language, or description...", filterAll: "All", sepText: "All Pastes", noData: "Data not found.",
-            lblFooterText: "Created for Indonesian Developers", alertSuccessCopy: "Code successfully copied!", 
-            btnBack: "BACK TO PASTEBIN", lblLines: "lines", btnCopy: "COPY CODE", 
-            btnRaw: "RAW", btnShare: "SHARE", alertShare: "Link copied to clipboard!", btnDownload: "DOWNLOAD",
-            btnPrev: "← Previous", btnNext: "Next →"
-        }
-    };
-
-    let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
-    let pastes = [];
-    let currentPage = 1;
-    const itemsPerPage = 4; 
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewId = urlParams.get('id');
-    const isRawMode = urlParams.get('raw') === 'true'; 
-    let currentFilter = 'ALL';
-
-    function getLanguageStyle(lang) {
-        const l = String(lang).toLowerCase().trim();
-        switch(l) {
-            case 'javascript': case 'js':
-                return 'background: rgba(247, 223, 30, 0.1); color: #f7df1e; border: 1px solid #f7df1e;';
-            case 'html':
-                return 'background: rgba(227, 76, 38, 0.1); color: #e34c26; border: 1px solid #e34c26;';
-            case 'php':
-                return 'background: rgba(119, 123, 180, 0.1); color: #8892bf; border: 1px solid #8892bf;';
-            case 'python':
-                return 'background: rgba(55, 118, 171, 0.1); color: #4584b6; border: 1px solid #4584b6;';
-            case 'scrape':
-                return 'background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc;';
-            default:
-                return 'background: rgba(0, 163, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan);';
-        }
-    }
-
-    function customAlert(message) {
-        document.getElementById('alertModalMessage').innerText = message;
-        document.getElementById('alertModal').style.display = 'flex';
-    }
-
-    function closeAlertModal() {
-        document.getElementById('alertModal').style.display = 'none';
-    }
-
-    async function loadPastesFromServer() {
-        try {
-            const response = await fetch(GITHUB_RAW_URL);
-            if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
-            const fileContent = await response.text();
-
-            let jsonString = fileContent.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
-            if (jsonString.endsWith(';')) {
-                jsonString = jsonString.slice(0, -1);
-            }
-
-            pastes = JSON.parse(jsonString);
-            localStorage.setItem('arulzxd_pastes', JSON.stringify(pastes));
-        } catch (err) {
-            const rawLocal = localStorage.getItem('arulzxd_pastes');
-            try { pastes = rawLocal ? JSON.parse(rawLocal) : []; } catch(e) { pastes = []; }
-        }
-        if (!pastes || !Array.isArray(pastes)) pastes = [];
-        renderPage();
-    }
-
-    function toggleLanguageSystem() {
-        const nextLang = currentLang === 'id' ? 'en' : 'id';
-        changeLanguage(nextLang);
-    }
-
-    function changeLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('arulzxd_lang', lang);
-        const btnText = document.getElementById('translate-btn-text');
-        if(btnText) btnText.innerText = lang === 'id' ? 'EN' : 'ID';
-        applyStaticTranslations();
-        renderPage();
-    }
-
-    function applyStaticTranslations() {
-        const t = translations[currentLang];
-        if(document.getElementById('lbl-footer-text')) document.getElementById('lbl-footer-text').innerText = t.lblFooterText;
-    }
-
-    function openRawModal() {
-        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-        if(idx !== -1) {
-            const current = pastes[idx];
-            document.getElementById('raw-modal-title-text').innerText = `RAW - ${current.title.toUpperCase()}`;
-            document.getElementById('raw-textarea-display').value = current.content;
-            document.getElementById('rawModal').style.display = 'flex';
-        }
-    }
-
-    function closeRawModal() {
-        document.getElementById('rawModal').style.display = 'none';
-    }
-
-    function copyRawInsideModal() {
-        const txt = document.getElementById('raw-textarea-display').value;
-        navigator.clipboard.writeText(txt).then(() => {
-            customAlert(translations[currentLang].alertSuccessCopy);
-            closeRawModal();
-        });
-    }
-
-    function downloadCode() {
-        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-        if(idx !== -1) {
-            const current = pastes[idx];
-            const element = document.createElement("a");
-            const file = new Blob([current.content], {type: 'text/plain'});
-            element.href = URL.createObjectURL(file);
-            element.download = `${current.title.replace(/\s+/g, '_').toLowerCase()}.js`;
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-    }
-
-    function renderPage() {
-        const target = document.getElementById('page-content');
-        if (!target) return;
-        const t = translations[currentLang];
-
-        // LOGIKA MODE RAW (BG HITAM, TEKS PUTIH)
-        if (viewId && isRawMode) {
-            const current = pastes.find(p => p.id.toString() === viewId.toString());
-            if (!current) { 
-                document.body.innerHTML = "404 Not Found"; 
-                return; 
-            }
+    <!-- Raw Modal -->
+    <div class="modal" id="rawModal">
+        <div class="raw-modal-content p-5 relative">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-zinc-900">
+                <div class="flex items-center gap-2">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-4 h-4 text-zinc-900">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                    <span id="raw-modal-title-text" class="text-xs font-extrabold uppercase text-zinc-900 tracking-wider">RAW - PREVIEW</span>
+                </div>
+                <button onclick="closeRawModal()" class="w-7 h-7 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 font-bold">✕</button>
+            </div>
             
-            document.body.classList.add('gist-raw-mode');
-            
-            const topLeftNav = document.querySelector('.top-left-nav');
-            const mainFooter = document.getElementById('main-footer');
-            if (topLeftNav) topLeftNav.style.display = 'none';
-            if (mainFooter) mainFooter.style.display = 'none';
-            
-            target.style.margin = "0";
-            target.style.padding = "0";
-            target.style.maxWidth = "none";
-            target.innerHTML = `<div class="gist-raw-container">${escapeHTML(current.content || '')}</div>`;
-            return;
-        }
+            <textarea id="raw-textarea-display" class="raw-textarea-box mb-4" readonly></textarea>
 
-        // LOGIKA PENYEMBUNYIAN TOMBOL NAVIGASI ATAS
-        const topLeftNav = document.querySelector('.top-left-nav');
-        if (topLeftNav) {
-            if (viewId) {
-                topLeftNav.style.display = 'none'; 
-            } else {
-                topLeftNav.style.display = 'flex'; 
+            <div class="flex justify-end gap-2">
+                <button class="btn-brutalism-light" onclick="closeRawModal()">TUTUP</button>
+                <button class="btn-brutalism-light yellow-accent" onclick="copyRawInsideModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" />
+                    </svg>
+                    SALIN RAW
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal" id="alertModal">
+        <div class="alert-modal-content">
+            <div class="text-xs font-black uppercase text-blue-600 font-mono mb-2">NOTIFIKASI SYSTEM</div>
+            <div class="text-xs font-bold text-zinc-800 mb-5 leading-relaxed" id="alertModalMessage">Aksi berhasil dilakukan!</div>
+            <button class="btn-brutalism-light yellow-accent w-full" onclick="closeAlertModal()">OKE</button>
+        </div>
+    </div>
+
+    <!-- Footer Halaman -->
+    <footer class="w-full max-w-4xl mx-auto px-4 py-6 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest relative z-10">
+        &copy; 2026 ARULZ-XD API · DIBUAT UNTUK DEVELOPER INDONESIA
+    </footer>
+
+    <script>
+        const GITHUB_RAW_URL = "https://raw.githubusercontent.com/arulzzzxd/api-arulzxd/main/database/data.js";
+
+        let pastes = [];
+        let currentPage = 1;
+        const itemsPerPage = 4;
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('id');
+        const isRawMode = urlParams.get('raw') === 'true';
+        let currentFilter = 'ALL';
+
+        function getLanguageStyle(lang) {
+            const l = String(lang).toLowerCase().trim();
+            switch(l) {
+                case 'javascript': case 'js':
+                    return 'background: #fef08a; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                case 'html':
+                    return 'background: #ffedd5; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                case 'php':
+                    return 'background: #e0e7ff; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                case 'python':
+                    return 'background: #dbeafe; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                case 'scrape':
+                    return 'background: #ccfbf1; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                default:
+                    return 'background: #FAF7EF; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
             }
         }
 
-        if (pastes.length === 0 && !viewId) {
-            target.innerHTML = `<div style="text-align:center; padding:40px; border:2px dashed var(--border-dark); background:var(--bg-card);">${t.noData}</div>`;
-            return;
+        function customAlert(message) {
+            document.getElementById('alertModalMessage').innerText = message;
+            document.getElementById('alertModal').style.display = 'flex';
         }
 
-        if (viewId) {
+        function closeAlertModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        async function loadPastesFromServer() {
+            try {
+                const response = await fetch(GITHUB_RAW_URL);
+                if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+                const fileContent = await response.text();
+
+                let jsonString = fileContent.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
+                if (jsonString.endsWith(';')) {
+                    jsonString = jsonString.slice(0, -1);
+                }
+
+                pastes = JSON.parse(jsonString);
+                localStorage.setItem('arulzxd_pastes', JSON.stringify(pastes));
+            } catch (err) {
+                const rawLocal = localStorage.getItem('arulzxd_pastes');
+                try { pastes = rawLocal ? JSON.parse(rawLocal) : []; } catch(e) { pastes = []; }
+            }
+            if (!pastes || !Array.isArray(pastes)) pastes = [];
+            renderPage();
+        }
+
+        function openRawModal() {
             const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-            if (idx === -1) {
-                target.innerHTML = `<h2>Data tidak ditemukan!</h2><a href="/pastecode" class="btn-back">Kembali</a>`;
+            if(idx !== -1) {
+                const current = pastes[idx];
+                document.getElementById('raw-modal-title-text').innerText = `RAW - ${current.title.toUpperCase()}`;
+                document.getElementById('raw-textarea-display').value = current.content;
+                document.getElementById('rawModal').style.display = 'flex';
+            }
+        }
+
+        function closeRawModal() {
+            document.getElementById('rawModal').style.display = 'none';
+        }
+
+        function copyRawInsideModal() {
+            const txt = document.getElementById('raw-textarea-display').value;
+            navigator.clipboard.writeText(txt).then(() => {
+                customAlert("Kode berhasil disalin!");
+                closeRawModal();
+            });
+        }
+
+        function downloadCode() {
+            const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+            if(idx !== -1) {
+                const current = pastes[idx];
+                const element = document.createElement("a");
+                const file = new Blob([current.content], {type: 'text/plain'});
+                element.href = URL.createObjectURL(file);
+                element.download = `${current.title.replace(/\s+/g, '_').toLowerCase()}.js`;
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            }
+        }
+
+        function renderPage() {
+            const target = document.getElementById('page-content');
+            if (!target) return;
+
+            // Mode Gist RAW
+            if (viewId && isRawMode) {
+                const current = pastes.find(p => p.id.toString() === viewId.toString());
+                if (!current) { 
+                    document.body.innerHTML = "404 Not Found"; 
+                    return; 
+                }
+                
+                document.body.classList.add('gist-raw-mode');
+                
+                const mainHeader = document.querySelector('header');
+                const mainFooter = document.querySelector('footer');
+                if (mainHeader) mainHeader.style.display = 'none';
+                if (mainFooter) mainFooter.style.display = 'none';
+                
+                target.style.margin = "0";
+                target.style.padding = "0";
+                target.style.maxWidth = "none";
+                target.innerHTML = `<div class="gist-raw-container">${escapeHTML(current.content || '')}</div>`;
                 return;
             }
 
-            const current = pastes[idx];
-            const lineCount = current.content ? current.content.split('\n').length : 0;
-            const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
+            if (pastes.length === 0 && !viewId) {
+                target.innerHTML = `<div class="light-card p-8 text-center text-xs font-bold text-zinc-600 uppercase">Data tidak ditemukan.</div>`;
+                return;
+            }
 
-            target.innerHTML = `
-                <a href="/pastecode" class="btn-back">
-                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
-                    ${t.btnBack}
-                </a>
-                <div class="detail-header">
-                    <div class="detail-header-top">
-                        <div style="flex-grow: 1; padding-right: 20px;">
-                            <h2 style="margin:0 0 10px 0; font-size:24px; color:var(--text-main); font-weight:700;">${current.title}</h2>
-                            <p style="margin:0 0 15px 0; font-size:14px; color:var(--text-muted); font-weight:normal;">${current.desc || 'Tidak ada deskripsi.'}</p>
+            if (viewId) {
+                const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+                if (idx === -1) {
+                    target.innerHTML = `
+                        <div class="light-card p-6 text-center">
+                            <h2 class="text-base font-black text-zinc-900 mb-4">Data tidak ditemukan!</h2>
+                            <a href="/pastecode" class="btn-brutalism-light inline-flex">Kembali ke Pastebin</a>
+                        </div>`;
+                    return;
+                }
+
+                const current = pastes[idx];
+                const lineCount = current.content ? current.content.split('\n').length : 0;
+                const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
+
+                target.innerHTML = `
+                    <a href="/pastecode" class="btn-brutalism-light inline-flex mb-4">
+                        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                        KEMBALI KE PASTEBIN
+                    </a>
+
+                    <div class="light-card p-5 mb-5">
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-lg font-black text-zinc-900 mb-1 truncate">${current.title}</h2>
+                                <p class="text-xs font-semibold text-zinc-600 mb-3">${current.desc || 'Tidak ada deskripsi.'}</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs rounded-lg code-font" style="${getLanguageStyle(current.language)}">${current.language}</span>
                         </div>
-                        <div>
-                            <div class="detail-lang-badge" style="${getLanguageStyle(current.language)}">${current.language}</div>
+
+                        <div class="flex items-center gap-3 text-[10px] font-mono font-extrabold text-zinc-500 pt-2 border-t-2 border-zinc-200">
+                            <span>📅 ${current.date}</span>
+                            <span>•</span>
+                            <span>📄 ${lineCount.toLocaleString()} BARIS</span>
                         </div>
                     </div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top: 10px; display:flex; align-items:center; gap:10px;">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                        ${current.date} · 
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
-                        ${lineCount.toLocaleString()} ${t.lblLines}
-                    </div>
-                </div>
 
-                ${isHeavyCode ? `<div class="heavy-code-warning">⚠️ File besar terdeteksi (${lineCount.toLocaleString()} baris). Syntax highlighting dimatikan demi kelancaran rendering.</div>` : ''}
+                    ${isHeavyCode ? `<div class="p-3 bg-red-100 border-2 border-zinc-900 rounded-xl mb-4 text-xs font-bold text-red-600">⚠️ File besar terdeteksi (${lineCount.toLocaleString()} baris). Syntax highlighting dimatikan demi kelancaran rendering.</div>` : ''}
 
-                <div style="margin-bottom: 20px;">
-                    <div class="action-menubar">
-                        <button class="btn-brutalism yellow-accent" onclick="copyText()">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" /></svg>
-                            ${t.btnCopy}
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+                        <button class="btn-brutalism-light yellow-accent" onclick="copyText()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376A8.965 8.965 0 0012 12.75c-.497 0-.982.04-1.455.12l-.179.032m5.884 4.348a8.974 8.974 0 01-2.228 3.931m0 0A8.92 8.92 0 017.5 21.75a9.06 9.06 0 01-1.5-.124m4.5-10.5a4.5 4.5 0 00-4.5 4.5v3m9.375-9a4.5 4.5 0 00-4.5-4.5v3" /></svg>
+                            SALIN KODE
                         </button>
-                        <button class="btn-brutalism" onclick="downloadCode()">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        <button class="btn-brutalism-light" onclick="downloadCode()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                             DOWNLOAD
                         </button>
-                        <button class="btn-brutalism" onclick="openRawModal()">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                            ${t.btnRaw}
+                        <button class="btn-brutalism-light" onclick="openRawModal()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                            RAW
                         </button>
-                    </div>
-                    <div class="action-menubar-row-2">
-                        <button class="btn-brutalism" onclick="copyRawUrl()">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                        <button class="btn-brutalism-light" onclick="copyRawUrl()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                             RAW URL
                         </button>
-                        <button class="btn-brutalism black-accent" onclick="sharePaste()">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
-                            ${t.btnShare}
+                        <button class="btn-brutalism-light border-2 border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800" onclick="sharePaste()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                            BAGIKAN
                         </button>
                     </div>
-                </div>
 
-                <div class="code-window">
-                    <div class="window-top">
-                        <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
-                        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--cyan);">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
+                    <div class="code-window-light">
+                        <div class="window-top-light">
+                            <div class="flex gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-zinc-900"></span></div>
+                            <div class="code-font text-blue-600 font-bold">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
+                        </div>
+                        <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : current.language}"><code id="code-block"></code></pre>
                     </div>
-                    <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : current.language}"><code id="code-block"></code></pre>
-                </div>
-            `;
-            const codeEl = document.getElementById('code-block');
-            if (codeEl) {
-                codeEl.textContent = current.content || '';
-                if (!isHeavyCode && typeof Prism !== 'undefined') {
-                    Prism.highlightElement(codeEl);
+                `;
+                const codeEl = document.getElementById('code-block');
+                if (codeEl) {
+                    codeEl.textContent = current.content || '';
+                    if (!isHeavyCode && typeof Prism !== 'undefined') {
+                        Prism.highlightElement(codeEl);
+                    }
                 }
+
+            } else {
+                let totalLines = 0;
+                let langs = {};
+                pastes.forEach(p => {
+                    if(p.content) totalLines += p.content.split('\n').length;
+                    langs[p.language] = true;
+                });
+                let totalLanguagesCount = Object.keys(langs).length;
+                if (totalLanguagesCount < 2) totalLanguagesCount = 2;
+
+                target.innerHTML = `
+                    <div class="light-card p-6 mb-6">
+                        <span class="px-3 py-1 bg-amber-400 border-2 border-zinc-900 text-[10px] font-black uppercase rounded-full inline-block mb-3">Arulz-XD Pastebin</span>
+                        <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 mb-2">Snippet &amp; Kode</h1>
+                        <p class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-2xl">Kumpulan kode, script, dan snippet dari tim Arulz-XD. Gratis, siap pakai untuk mendukung projek Anda.</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="light-card p-4 text-center">
+                            <span class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono block mb-1">${pastes.length}</span>
+                            <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Total Paste</span>
+                        </div>
+                        <div class="light-card p-4 text-center">
+                            <span class="text-2xl sm:text-3xl font-black text-blue-600 font-mono block mb-1">${totalLanguagesCount}</span>
+                            <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Bahasa</span>
+                        </div>
+                        <div class="light-card p-4 text-center">
+                            <span class="text-2xl sm:text-3xl font-black text-zinc-900 font-mono block mb-1">${totalLines.toLocaleString()}</span>
+                            <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Total Baris</span>
+                        </div>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <input type="text" id="search-bar" class="w-full py-3.5 pl-11 pr-4 text-xs font-extrabold rounded-xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm" placeholder="Cari paste berdasarkan judul, bahasa, atau deskripsi..." oninput="handleSearch()">
+                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+
+                    <div class="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
+                        <button class="btn-filter-light id-filter-all active" onclick="filterLanguage('ALL')">Semua</button>
+                        <button class="btn-filter-light id-filter-javascript" onclick="filterLanguage('javascript')">JavaScript</button>
+                        <button class="btn-filter-light id-filter-html" onclick="filterLanguage('html')">HTML</button>
+                        <button class="btn-filter-light id-filter-php" onclick="filterLanguage('php')">PHP</button>
+                        <button class="btn-filter-light id-filter-python" onclick="filterLanguage('python')">Python</button>
+                        <button class="btn-filter-light id-filter-scrape" onclick="filterLanguage('scrape')">Scrape</button>
+                        <button class="btn-filter-light id-filter-plaintext" onclick="filterLanguage('plaintext')">Plaintext</button>
+                    </div>
+
+                    <div class="flex items-center gap-2 mb-4 text-xs font-black uppercase text-zinc-800 tracking-wider">
+                        <span class="text-blue-600">//</span> Semua Paste (<span id="total-paste-text">${pastes.length}</span> Paste)
+                        <div class="flex-1 h-0.5 bg-zinc-300"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 mb-6" id="grid-list"></div>
+                    <div class="flex justify-center items-center gap-2 my-6 flex-wrap" id="pagination-wrapper"></div>
+                `;
+                applyFilterAndSearch();
+            }
+        }
+
+        function renderGridItems(items) {
+            const grid = document.getElementById('grid-list');
+            if(!grid) return;
+            grid.innerHTML = '';
+            if(items.length === 0) {
+                grid.innerHTML = `<div class="light-card p-8 text-center text-xs font-bold text-zinc-600 uppercase">Data tidak ditemukan.</div>`;
+                document.getElementById('pagination-wrapper').innerHTML = '';
+                return;
             }
 
-        } else {
-            let totalLines = 0;
-            let langs = {};
-            pastes.forEach(p => {
-                if(p.content) totalLines += p.content.split('\n').length;
-                langs[p.language] = true;
+            const totalPages = Math.ceil(items.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = items.slice(startIndex, endIndex);
+
+            let htmlCards = '';
+            paginatedItems.forEach(p => {
+                const contentPreview = p.content ? p.content.substring(0, 120) : '';
+                htmlCards += `
+                    <div class="paste-card-light" onclick="window.location.href='/pastecode?id=${p.id}'">
+                        <div class="card-top-light">
+                            <div class="flex gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-zinc-900"></span></div>
+                            <div class="px-2.5 py-0.5 text-[10px] rounded code-font" style="${getLanguageStyle(p.language)}">${p.language}</div>
+                        </div>
+                        <div class="p-4 bg-[#FFFDF8]">
+                            <h3 class="font-extrabold text-base text-zinc-900 mb-2 truncate">${p.title}</h3>
+                            <div class="preview-box-light">${escapeHTML(contentPreview)}</div>
+                        </div>
+                        <div class="px-4 py-2.5 bg-[#FAF7EF] border-t-2 border-zinc-900 flex justify-between items-center text-xs">
+                            <span class="font-mono text-[10px] font-extrabold text-zinc-500">📅 ${p.date}</span>
+                            <a href="/pastecode?id=${p.id}&raw=true" target="_blank" class="px-3 py-1 bg-zinc-900 text-white font-extrabold text-[10px] rounded-md border border-zinc-900 uppercase" onclick="event.stopPropagation();">
+                                RAW
+                            </a>
+                        </div>
+                    </div>
+                `;
             });
-            let totalLanguagesCount = Object.keys(langs).length;
-            if (totalLanguagesCount < 2) totalLanguagesCount = 2;
+            grid.innerHTML = htmlCards;
+            renderPaginationControls(totalPages, items);
+        }
 
-            target.innerHTML = `
-                <div class="hero-banner">
-                    <div class="hero-tag">Arulz-XD Pastebin</div>
-                    <h1>${t.heroTitle}</h1>
-                    <p>${t.heroDesc}</p>
-                </div>
+        function renderPaginationControls(totalPages, currentItems) {
+            const wrapper = document.getElementById('pagination-wrapper');
+            if (!wrapper) return;
+            wrapper.innerHTML = '';
 
-                <div class="stats-grid">
-                    <div class="stat-box left"><h2>${pastes.length}</h2><p>${t.stat1}</p></div>
-                    <div class="stat-box center"><h2>${totalLanguagesCount}</h2><p>${t.stat2}</p></div>
-                    <div class="stat-box"><h2>${totalLines.toLocaleString()}</h2><p>${t.stat4}</p></div>
-                </div>
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn-light';
+            prevBtn.innerText = '← SEBELUMNYA';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderGridItems(currentItems);
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                }
+            };
+            wrapper.appendChild(prevBtn);
 
-                <div class="search-wrapper">
-                    <span class="search-icon">
-                        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:18px; height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.604 10.604z" /></svg>
-                    </span>
-                    <input type="text" id="search-bar" class="search-input" placeholder="${t.searchPlaceholder}" oninput="handleSearch()">
-                </div>
+            const maxPagesToShow = Math.min(totalPages, 5);
+            for (let i = 1; i <= maxPagesToShow; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn-light ${currentPage === i ? 'active' : ''}`;
+                pageBtn.innerText = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    renderGridItems(currentItems);
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                };
+                wrapper.appendChild(pageBtn);
+            }
 
-                <div class="filter-wrapper">
-                    <button class="btn-filter id-filter-all active" onclick="filterLanguage('ALL')">${t.filterAll}</button>
-                    <button class="btn-filter id-filter-javascript" onclick="filterLanguage('javascript')">JavaScript</button>
-                    <button class="btn-filter id-filter-html" onclick="filterLanguage('html')">HTML</button>
-                    <button class="btn-filter id-filter-php" onclick="filterLanguage('php')">PHP</button>
-                    <button class="btn-filter id-filter-python" onclick="filterLanguage('python')">Python</button>
-                    <button class="btn-filter id-filter-scrape" onclick="filterLanguage('scrape')">Scrape</button>
-                    <button class="btn-filter id-filter-plaintext" onclick="filterLanguage('plaintext')">Plaintext</button>
-                </div>
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn-light';
+            nextBtn.innerText = 'BERIKUTNYA →';
+            nextBtn.disabled = currentPage === totalPages || currentPage >= 5;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages && currentPage < 5) {
+                    currentPage++;
+                    renderGridItems(currentItems);
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                }
+            };
+            wrapper.appendChild(nextBtn);
+        }
 
-                <div class="title-separator"><span>//</span> ${t.sepText} (<span id="total-paste-text">${pastes.length}</span> Paste) <div class="line"></div></div>
-                <div class="paste-grid" id="grid-list"></div>
-                <div class="pagination-container" id="pagination-wrapper"></div>
-            `;
+        function filterLanguage(lang) {
+            currentFilter = lang;
+            currentPage = 1;
+            document.querySelectorAll('.btn-filter-light').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.id-filter-${lang.toLowerCase()}`);
+            if (activeBtn) activeBtn.classList.add('active');
             applyFilterAndSearch();
         }
-    }
 
-    function renderGridItems(items) {
-        const grid = document.getElementById('grid-list');
-        if(!grid) return;
-        grid.innerHTML = '';
-        if(items.length === 0) {
-            grid.innerHTML = `<div style="text-align:center; padding:40px; border:2px dashed var(--border-dark); background:var(--bg-card);">${translations[currentLang].noData}</div>`;
-            document.getElementById('pagination-wrapper').innerHTML = '';
-            return;
+        function copyRawUrl() {
+            const rawUrl = window.location.origin + "/pastecode?id=" + viewId + "&raw=true";
+            navigator.clipboard.writeText(rawUrl).then(() => customAlert("Link RAW berhasil disalin ke clipboard!"));
         }
 
-        const totalPages = Math.ceil(items.length / itemsPerPage);
-        if (currentPage > totalPages) currentPage = totalPages || 1;
+        function sharePaste() {
+            const currentViewId = new URLSearchParams(window.location.search).get('id');
+            if (!currentViewId) return;
 
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const paginatedItems = items.slice(startIndex, endIndex);
+            const idx = pastes.findIndex(p => p.id.toString() === currentViewId.toString());
+            if (idx !== -1) {
+                const current = pastes[idx];
+                const shareUrl = window.location.origin + "/pastecode?id=" + currentViewId;
+                if (navigator.share) {
+                    navigator.share({ title: current.title, text: current.desc || `Lihat kode ${current.title}`, url: shareUrl });
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => customAlert("Link berhasil disalin ke clipboard!"));
+                }
+            }
+        }
 
-        let htmlCards = '';
-        paginatedItems.forEach(p => {
-            const contentPreview = p.content ? p.content.substring(0, 120) : '';
-            htmlCards += `
-                <div class="paste-card" onclick="window.location.href='/pastecode?id=${p.id}'">
-                    <div class="card-top">
-                        <div class="mac-dots"><div class="dot"></div><div class="dot y"></div><div class="dot g"></div></div>
-                        <div class="lang-badge" style="${getLanguageStyle(p.language)}">${p.language}</div>
-                    </div>
-                    <div class="card-body">
-                        <h3 class="card-title" style="margin:0 0 15px 0;">${p.title}</h3>
-                        <div class="preview-box">${escapeHTML(contentPreview)}</div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="card-footer-info" style="display:flex; align-items:center; gap:5px;">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.625 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.625 9h12.75A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                            <span>${p.date}</span>
-                        </div>
-                        <a href="/pastecode?id=${p.id}&raw=true" target="_blank" class="btn-raw" onclick="event.stopPropagation();">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px; height:12px; stroke:#000;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                            RAW
-                        </a>
-                    </div>
-                </div>
-            `;
+        function handleSearch() { currentPage = 1; applyFilterAndSearch(); }
+
+        function applyFilterAndSearch() {
+            const searchBar = document.getElementById('search-bar');
+            const query = searchBar ? searchBar.value.toLowerCase() : "";
+            let filtered = pastes;
+
+            if (currentFilter !== 'ALL') {
+                filtered = filtered.filter(p => p.language && p.language.toLowerCase() === currentFilter.toLowerCase());
+            }
+            if (query) {
+                filtered = filtered.filter(p => 
+                    (p.title && p.title.toLowerCase().includes(query)) || 
+                    (p.desc && p.desc.toLowerCase().includes(query)) ||
+                    (p.language && p.language.toLowerCase().includes(query))
+                );
+            }
+            const totalText = document.getElementById('total-paste-text');
+            if(totalText) totalText.innerText = filtered.length;
+            renderGridItems(filtered);
+        }
+
+        function escapeHTML(text) { 
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+        }
+
+        function copyText() {
+            const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+            if(idx !== -1) {
+                navigator.clipboard.writeText(pastes[idx].content).then(() => customAlert("Kode berhasil disalin!"));
+            }
+        }
+
+        // Sidebar Drawer Handlers
+        function closeSidebarMenu() {
+            const bioDropdown = document.getElementById('bioDropdown');
+            const menuOverlay = document.getElementById('menuOverlay');
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bioMenuBtn = document.getElementById('bioMenuBtn');
+            const bioDropdown = document.getElementById('bioDropdown');
+            const closeMenuBtn = document.getElementById('closeMenuBtn');
+            const menuOverlay = document.getElementById('menuOverlay');
+
+            if (bioMenuBtn && bioDropdown && menuOverlay) {
+                bioMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    bioDropdown.style.transform = 'translateX(0)';
+                    menuOverlay.classList.remove('hidden');
+                });
+                if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+                menuOverlay.addEventListener('click', closeSidebarMenu);
+                bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+            }
+
+            // Fetch Status User untuk Sidebar
+            fetch('/api/user-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.loggedIn && data.user) {
+                        const container = document.getElementById('sidebarAuthBtnContainer');
+                        if (container) {
+                            container.innerHTML = `
+                                <a href="/docs?showProfile=true" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
+                                    <div class="flex items-center gap-2.5 truncate">
+                                        <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-6 h-6 rounded-md border border-zinc-900 object-cover">
+                                        <span class="truncate">${data.user.username}</span>
+                                    </div>
+                                    <span class="text-[9px] text-blue-600 font-black">PROFILE</span>
+                                </a>
+                            `;
+                        }
+                    }
+                })
+                .catch(err => console.error("Gagal memuat status user:", err));
         });
-        grid.innerHTML = htmlCards;
-        renderPaginationControls(totalPages, items);
-    }
 
-    function renderPaginationControls(totalPages, currentItems) {
-        const wrapper = document.getElementById('pagination-wrapper');
-        if (!wrapper) return;
-        wrapper.innerHTML = '';
-        const t = translations[currentLang];
-
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'page-btn';
-        prevBtn.innerText = t.btnPrev;
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderGridItems(currentItems);
-                window.scrollTo({ top: 400, behavior: 'smooth' });
-            }
-        };
-        wrapper.appendChild(prevBtn);
-
-        const maxPagesToShow = Math.min(totalPages, 5);
-        for (let i = 1; i <= maxPagesToShow; i++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
-            pageBtn.innerText = i;
-            pageBtn.onclick = () => {
-                currentPage = i;
-                renderGridItems(currentItems);
-                window.scrollTo({ top: 400, behavior: 'smooth' });
-            };
-            wrapper.appendChild(pageBtn);
-        }
-
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'page-btn';
-        nextBtn.innerText = t.btnNext;
-        nextBtn.disabled = currentPage === totalPages || currentPage >= 5;
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages && currentPage < 5) {
-                currentPage++;
-                renderGridItems(currentItems);
-                window.scrollTo({ top: 400, behavior: 'smooth' });
-            }
-        };
-        wrapper.appendChild(nextBtn);
-    }
-
-    function filterLanguage(lang) {
-        currentFilter = lang;
-        currentPage = 1; 
-        document.querySelectorAll('.filter-wrapper .btn-filter').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.querySelector(`.id-filter-${lang.toLowerCase()}`);
-        if (activeBtn) activeBtn.classList.add('active');
-        applyFilterAndSearch();
-    }
-
-    function copyRawUrl() {
-        const rawUrl = window.location.origin + "/pastecode?id=" + viewId + "&raw=true";
-        navigator.clipboard.writeText(rawUrl).then(() => customAlert(translations[currentLang].alertShare));
-    }
-
-    function sharePaste() {
-        const currentViewId = new URLSearchParams(window.location.search).get('id');
-        if (!currentViewId) return;
-
-        const idx = pastes.findIndex(p => p.id.toString() === currentViewId.toString());
-        if (idx !== -1) {
-            const current = pastes[idx];
-            const shareUrl = window.location.origin + "/pastecode?id=" + currentViewId;
-            if (navigator.share) {
-                navigator.share({ title: current.title, text: current.desc || `Lihat kode ${current.title}`, url: shareUrl });
-            } else {
-                navigator.clipboard.writeText(shareUrl).then(() => customAlert(translations[currentLang].alertShare));
-            }
-        }
-    }
-
-    function handleSearch() { currentPage = 1; applyFilterAndSearch(); }
-
-    function applyFilterAndSearch() {
-        const searchBar = document.getElementById('search-bar');
-        const query = searchBar ? searchBar.value.toLowerCase() : "";
-        let filtered = pastes;
-
-        if (currentFilter !== 'ALL') {
-            filtered = filtered.filter(p => p.language && p.language.toLowerCase() === currentFilter.toLowerCase());
-        }
-        if (query) {
-            filtered = filtered.filter(p => 
-                (p.title && p.title.toLowerCase().includes(query)) || 
-                (p.desc && p.desc.toLowerCase().includes(query)) ||
-                (p.language && p.language.toLowerCase().includes(query))
-            );
-        }
-        const totalText = document.getElementById('total-paste-text');
-        if(totalText) totalText.innerText = filtered.length;
-        renderGridItems(filtered);
-    }
-
-    function escapeHTML(text) { 
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
-    }
-
-    function copyText() {
-        const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-        if(idx !== -1) {
-            navigator.clipboard.writeText(pastes[idx].content).then(() => customAlert(translations[currentLang].alertSuccessCopy));
-        }
-    }
-
-    window.onload = function() {
-        const btnText = document.getElementById('translate-btn-text');
-        if(btnText) btnText.innerText = currentLang === 'id' ? 'EN' : 'ID';
-        applyStaticTranslations();
-        loadPastesFromServer(); 
-    };
-    
-    function getPageDisplayName() {
-        const path = window.location.pathname;
-        let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-        if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-        const pageMap = {
-            'home': 'Home',
-            'docs': 'Dokumentasi',
-            'doc': 'Dokumentasi',
-            'status': 'Status Server',
-            'store': 'Store API',
-            'changelog': 'Changelog',
-            'uploader': 'Uploader File',
-            'pastecode': 'Pastecode',
-            'feedback': 'Feedback',
-            'privacy': 'Kebijakan Privasi',
-            'support': 'Dukungan Support',
-            'login': 'Halaman Login'
+        window.onload = function() {
+            loadPastesFromServer(); 
         };
 
-        if (pageMap[fileName]) return pageMap[fileName];
-        return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-    }
+        // Progress Loader
+        let currentProgress = 0;
+        const progressFill = document.getElementById('loader-progress-fill');
+        const percentageText = document.getElementById('loader-percentage');
+        const loaderOverlay = document.getElementById('cyber-loader-overlay');
 
-    const pageName = getPageDisplayName();
-    const loaderTitleEl = document.getElementById('loader-title-text');
-    if (loaderTitleEl) {
-        loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
-    }
-
-    // Progress Loader 0% - 100%
-    let currentProgress = 0;
-    const progressFill = document.getElementById('loader-progress-fill');
-    const percentageText = document.getElementById('loader-percentage');
-    const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-    function updateProgress(targetVal) {
-        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-        if (progressFill) progressFill.style.width = currentProgress + '%';
-        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-    }
-
-    const progressInterval = setInterval(() => {
-        if (currentProgress < 85) {
-            const increment = Math.random() * 12 + 5;
-            updateProgress(currentProgress + increment);
+        function updateProgress(targetVal) {
+            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+            if (progressFill) progressFill.style.width = currentProgress + '%';
+            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
         }
-    }, 120);
 
-    window.addEventListener('load', () => {
-        clearInterval(progressInterval);
-        updateProgress(100);
+        const progressInterval = setInterval(() => {
+            if (currentProgress < 85) {
+                const increment = Math.random() * 12 + 5;
+                updateProgress(currentProgress + increment);
+            }
+        }, 120);
+
+        window.addEventListener('load', () => {
+            clearInterval(progressInterval);
+            updateProgress(100);
+
+            setTimeout(() => {
+                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+            }, 400);
+        });
 
         setTimeout(() => {
-            if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-        }, 400);
-    });
+            clearInterval(progressInterval);
+            updateProgress(100);
+            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+                loaderOverlay.classList.add('fade-out');
+            }
+        }, 4000);
+    </script>
 
-    // Fallback Safety (Maksimal 4 detik)
-    setTimeout(() => {
-        clearInterval(progressInterval);
-        updateProgress(100);
-        if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
-            loaderOverlay.classList.add('fade-out');
-        }
-    }, 4000);
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <!-- Prism Syntax Highlighting Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 </body>
 </html>
