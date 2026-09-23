@@ -3101,6 +3101,7 @@ app.get('/docs', (req, res) => {
     }
 
     /* Override Background Gelap (Card, Container) */
+    #apiList .bg-zinc-800,
     #apiList .bg-zinc-900, 
     #apiList .bg-black,
     #apiList .bg-zinc-950,
@@ -3118,17 +3119,23 @@ app.get('/docs', (req, res) => {
         border-color: var(--border-dark) !important;
     }
 
-    /* Override Teks Putih / Abu-abu */
+    /* Override SEMUA Teks Putih / Abu-abu agar terlihat jelas di tema terang */
     #apiList .text-white, 
-    #apiList .text-zinc-300, 
-    #apiList .text-zinc-400,
-    #apiList .text-gray-300,
-    #apiList .text-gray-400 {
+    #apiList [class*="text-zinc-1"], #apiList [class*="text-zinc-2"], 
+    #apiList [class*="text-zinc-3"], #apiList [class*="text-zinc-4"], 
+    #apiList [class*="text-zinc-5"], #apiList [class*="text-gray-1"], 
+    #apiList [class*="text-gray-2"], #apiList [class*="text-gray-3"], 
+    #apiList [class*="text-gray-4"], #apiList [class*="text-gray-5"] {
         color: var(--border-dark) !important;
         font-weight: 800 !important;
     }
 
-    /* Pastikan Input, Select, Textarea Terbaca */
+    /* Paksa Icon (SVG) agar berwarna gelap */
+    #apiList svg {
+        color: var(--border-dark) !important;
+    }
+
+    /* Pastikan Input, Select, Textarea Terbaca & Tidak Tumpang Tindih Style Card */
     #apiList input, #apiList select, #apiList textarea {
         background-color: #FFFDF8 !important;
         color: #121212 !important;
@@ -3136,6 +3143,7 @@ app.get('/docs', (req, res) => {
         border-radius: 8px !important;
         padding: 8px 12px !important;
         outline: none !important;
+        box-shadow: none !important;
     }
     
     #apiList select option {
@@ -3159,7 +3167,7 @@ app.get('/docs', (req, res) => {
          color: #ffffff !important;
     }
 
-    /* Badges HTTP Method */
+    /* Badges HTTP Method (Dikecualikan agar tetap berwarna hijau/biru) */
     #apiList .bg-green-500\/10, #apiList .text-green-400 {
         background-color: #22c55e !important;
         color: #000 !important;
@@ -3649,14 +3657,14 @@ app.get('/docs', (req, res) => {
 
 <!-- JS Pembersih Mode Terang Cerdas: Mengganti warna CSS inline dari script.js tanpa merusak ukuran -->
 <script>
-    const fixEndpointTheme = () => {
+        const fixEndpointTheme = () => {
         const container = document.getElementById('apiList');
         if (!container) return;
 
         container.querySelectorAll('*').forEach(el => {
             // Hapus background hitam/gelap inline dari script.js
             if (el.style.backgroundColor) {
-                const bg = el.style.backgroundColor.replace(/\\s/g, '');
+                const bg = el.style.backgroundColor.replace(/\s/g, '');
                 if (bg.includes('rgb(0,0,0)') || bg.includes('rgb(24,24,27)') || bg.includes('rgb(39,39,42)') || bg.includes('#000') || bg.includes('#18181b')) {
                     el.style.backgroundColor = '#FFFDF8';
                     el.style.border = '2px solid #121212';
@@ -3665,19 +3673,22 @@ app.get('/docs', (req, res) => {
             
             // Hapus teks putih inline agar terlihat di background terang
             if (el.style.color) {
-                const col = el.style.color.replace(/\\s/g, '');
-                if (col.includes('rgb(255,255,255)') || col.includes('rgb(250,250,250)') || col.includes('#fff')) {
+                const col = el.style.color.replace(/\s/g, '');
+                if (col.includes('rgb(255,255,255)') || col.includes('rgb(250,250,250)') || col.includes('#fff') || col.includes('rgb(161,161,170)') || col.includes('rgb(212,212,216)')) {
                     el.style.color = '#121212';
                     el.style.fontWeight = '800';
                 }
             }
 
-            // Atur stroke icon SVG Tailwind yang putih menjadi hitam
+            // Atur icon SVG Tailwind dengan regex untuk mencakup semua varian abu-abu
             if (el.tagName.toLowerCase() === 'svg' || el.tagName.toLowerCase() === 'path') {
-                if (el.classList.contains('text-white') || el.classList.contains('text-zinc-300')) {
-                    el.classList.remove('text-white', 'text-zinc-300');
-                    el.classList.add('text-zinc-900');
-                }
+                const classes = Array.from(el.classList);
+                classes.forEach(cls => {
+                    if (/^text-(white|zinc-[1-6]00|gray-[1-6]00|slate-[1-6]00)$/.test(cls)) {
+                        el.classList.remove(cls);
+                        el.classList.add('text-zinc-900');
+                    }
+                });
             }
         });
     };
