@@ -3100,90 +3100,129 @@ app.get('/docs', (req, res) => {
         background-color: transparent !important;
     }
 
-    /* Paksa semua elemen teks utama menjadi gelap agar terbaca jelas */
-    #apiList p, #apiList div, #apiList h1, #apiList h2, #apiList h3, 
-    #apiList h4, #apiList label, #apiList pre, #apiList code {
-        color: var(--border-dark) !important;
-        text-shadow: none !important;
-    }
-
     /* A. Kartu Utama Endpoint */
-    #apiList > div {
+    #apiList .api-item {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2.5px solid var(--border-dark) !important;
         border-radius: 16px !important;
-        margin-bottom: 12px !important;
-        overflow: hidden !important;
+        margin-bottom: 14px !important;
         box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
+        overflow: hidden !important;
     }
 
-    /* B. Header Endpoint (Method & Path) */
-    #apiList > div > div:first-child {
+    /* B. Header Endpoint (Judul & URL Path) */
+    #apiList .api-item > button {
         background-color: var(--card-bg) !important;
         border-bottom: none !important;
+        color: var(--border-dark) !important;
+    }
+    #apiList .api-item > button p { color: var(--border-dark) !important; font-weight: 900 !important; }
+    
+    /* Kotak Method (POST/GET) */
+    #apiList .api-item > button .bg-cyan-500 { background-color: var(--border-dark) !important; color: #fff !important; border-radius: 6px !important; }
+    
+    /* URL Path */
+    #apiList .api-item > button code, #apiList .api-item > button .text-cyan-200, #apiList .api-item > button .text-cyan-700 { color: var(--border-dark) !important; font-weight: 700 !important; }
+
+    /* C. Panel Expand Detail (Area yang sebelumnya hitam di gambar) */
+    #apiList .api-item > div[id^="ep-"] {
+        background-color: #FAF7EF !important; 
+        border-top: 2.5px dashed var(--border-dark) !important;
+    }
+    
+    /* Box Spesifik: Deskripsi, URL, cURL menjadi terang */
+    #apiList .api-item > div[id^="ep-"] .bg-slate-900\/60,
+    #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
+    #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        box-shadow: none !important;
+        color: var(--border-dark) !important;
     }
 
-    /* C. Area Detail Expand (Mereset background biru dongker/hitam) */
-    #apiList > div > div:nth-child(2),
-    #apiList > div > div.overflow-hidden {
-        background-color: #FAF7EF !important; /* Warna dasar krem gelap */
+    /* Paksa semua teks di dalam panel expand diubah jadi gelap */
+    #apiList .api-item > div[id^="ep-"] h4,
+    #apiList .api-item > div[id^="ep-"] p,
+    #apiList .api-item > div[id^="ep-"] span,
+    #apiList .api-item > div[id^="ep-"] code {
+        color: var(--border-dark) !important;
+    }
+
+    /* D. Input Parameter & Select */
+    #apiList form label {
+        color: var(--border-dark) !important;
+        font-weight: 900 !important;
+    }
+    #apiList form input,
+    #apiList form select,
+    #apiList form button[id^="custom-select-"] {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        font-weight: 800 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+    #apiList form input::placeholder { color: #71717a !important; font-weight: 700 !important; }
+
+    /* Custom Dropdown (Modal Opsi) */
+    .select-modal-container {
+        background-color: #FFFDF8 !important;
+        border: 2.5px solid var(--border-dark) !important;
+    }
+    .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
+    .select-modal-container .select-modal-item.selected { background-color: var(--border-dark) !important; color: #fff !important; }
+    .select-modal-container p, .select-modal-container span, .select-modal-container svg { color: var(--border-dark) !important; }
+
+    /* E. Tombol Aksi */
+    #apiList button {
+        border: 2px solid var(--border-dark) !important;
+        font-weight: 900 !important;
+        color: var(--border-dark) !important;
+    }
+    /* Tombol Copy (URL / cURL) */
+    #apiList .api-item > div[id^="ep-"] button[onclick^="copyFromElement"] {
+        background-color: #FFFDF8 !important;
+        padding: 4px 12px !important;
+    }
+    /* Tombol Utama (EKSEKUSI) */
+    #apiList button[type="submit"] {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
+        box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
+    }
+    #apiList button[type="submit"]:active { box-shadow: 0 0 0 transparent !important; transform: translate(2px, 2px) !important; }
+    #apiList button[type="submit"] * { color: #ffffff !important; }
+    
+    /* Tombol BERSIHKAN */
+    #apiList button[onclick^="clearResponse"] {
+        background-color: #FFFDF8 !important;
+    }
+    #apiList button[onclick^="clearResponse"]:hover { background-color: #FAF7EF !important; }
+
+    /* Fix SVG Keseluruhan Area */
+    #apiList svg { color: var(--border-dark) !important; }
+    
+    /* Response / Output Hasil Eksekusi */
+    #apiList .api-item > div[id^="ep-"] > div[id^="response-"] > div > div {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+    }
+    #apiList .api-item > div[id^="ep-"] > div[id^="response-"] pre {
+        background-color: #FFFDF8 !important;
+        color: var(--border-dark) !important;
         border-top: 2px dashed var(--border-dark) !important;
     }
 
-    /* Menghapus background gelap bawaan pada container di dalam panel detail */
-    #apiList > div > div:nth-child(2) div {
-        background-color: transparent !important;
-        border-color: var(--border-dark) !important;
-    }
-
-    /* D. Kotak Spesifik (Deskripsi, URL, cURL) */
-    #apiList > div > div:nth-child(2) > div > div,
-    #apiList pre {
-        background-color: #FFFDF8 !important; /* Warna krem terang */
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 8px !important;
-        padding: 10px !important;
-    }
-
-    /* E. Form Input, Parameter & File Upload */
-    #apiList input, #apiList select, #apiList textarea {
-        background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
-        border-radius: 8px !important;
-        color: var(--border-dark) !important;
-        padding: 8px 12px !important;
-        font-weight: 700 !important;
-    }
-    #apiList input::placeholder { color: #71717a !important; }
-    #apiList input[type="file"] { padding: 4px 8px !important; }
-
-    /* F. Tombol-Tombol Aksi */
-    #apiList button {
-        background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
-        color: var(--border-dark) !important;
-        border-radius: 8px !important;
-        font-weight: 800 !important;
-        transition: transform 0.1s ease !important;
-    }
-    #apiList button:active { transform: scale(0.95) !important; }
+    /* F. Pengecualian Badge Tag (Biar warnanya tidak tertimpa hitam) */
+    #apiList .api-item .status-ready { background-color: #86efac !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
     
-    /* Tombol Utama (EKSEKUSI) */
-    #apiList button[class*="bg-cyan-"], #apiList button[class*="bg-blue-"] {
-        background-color: var(--border-dark) !important;
-    }
-    #apiList button[class*="bg-cyan-"] *, #apiList button[class*="bg-blue-"] * {
-        color: #ffffff !important;
-    }
-
-    /* G. Badge Method (POST/GET) agar warnanya tidak ikut terhapus */
-    #apiList .bg-green-500\/10 { background-color: #22c55e !important; border: 2px solid var(--border-dark) !important; }
-    #apiList .bg-cyan-500\/10 { background-color: #0ea5e9 !important; border: 2px solid var(--border-dark) !important; }
-    #apiList .bg-blue-500\/10 { background-color: #3b82f6 !important; border: 2px solid var(--border-dark) !important; }
-    
-    #apiList svg { color: var(--border-dark) !important; fill: currentColor !important; }
-
-    #apiList svg { color: var(--border-dark) !important; }
+    #apiList .api-item span.bg-blue-500\/20 { background-color: #bfdbfe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-amber-500\/20 { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-purple-500\/20 { background-color: #d8b4fe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-blue-500\/20 svg, #apiList .api-item span.bg-amber-500\/20 svg, #apiList .api-item span.bg-purple-500\/20 svg { color: #121212 !important; }
 
     /* Menu Navigasi Kartu Dropdown */
     .dropdown-nav-card {
