@@ -1,357 +1,514 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Changelog - ArulzXD API</title>
+    <meta name="google" content="notranslate">
+    <!-- Mencegah zoom di HP / Touch Screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Changelog - Arulz-XD API</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <!-- Tailwind CSS & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            background-color: #020617;
-            font-family: 'Space Grotesk', sans-serif;
-            color: #f8fafc;
+        :root {
+            --bg-cream: #FAF7EF;
+            --card-bg: #FFFDF8;
+            --border-dark: #121212;
         }
-        .font-mono-custom {
-            font-family: 'JetBrains Mono', monospace;
+
+        * {
+            box-sizing: border-box;
         }
-        .glass-panel {
-            background: #0b1329;
-            border: 1px solid rgba(6, 182, 212, 0.15);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 15px rgba(6, 182, 212, 0.05);
-            border-radius: 16px;
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-x pan-y;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            -webkit-user-select: none;
+            user-select: none;
+            background-color: var(--bg-cream) !important;
+            color: var(--border-dark) !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            overflow-x: hidden;
         }
-        .glass-btn {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
         }
-        .glass-btn:hover {
-            border-color: rgba(6, 182, 212, 0.4);
-            background: rgba(6, 182, 212, 0.1);
+
+        /* Cyber Loader Light Style */
+        #cyber-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-         :root {
-        --neon-cyan: #00f3ff;
-        --neon-glow: rgba(0, 243, 255, 0.4);
-        --bg-dark: #030712;
-        --bg-card: rgba(15, 23, 42, 0.75);
-        --border-color: rgba(0, 243, 255, 0.2);
-    }
 
-    /* Support Light Theme Mode */
-    html.light {
-        --neon-cyan: #008b9b;
-        --neon-glow: rgba(0, 139, 155, 0.25);
-        --bg-dark: #f0fdfa;
-        --bg-card: rgba(255, 255, 255, 0.85);
-        --border-color: rgba(0, 139, 155, 0.3);
-    }
+        #cyber-loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-    #cyber-loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background-color: var(--bg-dark);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
-    }
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--border-dark);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 320px;
+        }
 
-    #cyber-loader-overlay.fade-out {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
+        .cyber-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    /* Laser Scanner Beam */
-    .scanner-beam {
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 300%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-        animation: scanAnimation 4s infinite linear;
-    }
-    @keyframes scanAnimation {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-    }
+        .cyber-ring {
+            position: absolute;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--border-dark);
+            border-right-color: #3b82f6;
+            border-radius: 50%;
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
 
-    /* Concentric Hologram HUD Rotating Rings */
-    .hud-ring {
-        position: relative;
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    .ring-outer {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2px dashed var(--neon-cyan);
-        opacity: 0.6;
-        animation: spinClockwise 10s linear infinite;
-        box-shadow: 0 0 15px var(--neon-glow);
-    }
+        .cyber-text-glitch {
+            color: var(--border-dark);
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
 
-    .ring-middle {
-        position: absolute;
-        inset: 10px;
-        border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: var(--neon-cyan);
-        border-bottom-color: var(--neon-cyan);
-        animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--border-dark);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
 
-    .ring-inner {
-        position: absolute;
-        inset: 20px;
-        border-radius: 50%;
-        border: 1px dotted var(--neon-cyan);
-        opacity: 0.8;
-        animation: spinClockwise 6s linear infinite;
-    }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--border-dark);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
+        }
 
-    .hud-avatar {
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--neon-cyan);
-        box-shadow: 0 0 20px var(--neon-cyan);
-        z-index: 10;
-    }
+        /* Card Light Neubrutalism */
+        .light-card {
+            background-color: var(--card-bg) !important;
+            border: 2.5px solid var(--border-dark) !important;
+            border-radius: 20px !important;
+            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
+        }
 
-    @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-    @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+        /* Menu Navigasi Kartu Dropdown Sidebar */
+        .dropdown-nav-card {
+            background-color: #FFFDF8 !important;
+            border: 2px solid var(--border-dark) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            font-weight: 800 !important;
+            font-size: 11px !important;
+            color: #121212 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-transform: uppercase !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+        }
+        .dropdown-nav-card:active {
+            transform: translateY(1px) !important;
+            background-color: #FAF7EF !important;
+        }
 
-    /* Animated Dot Pulse */
-    .animated-dots::after {
-        content: '';
-        display: inline-block;
-        width: 1.5em;
-        text-align: left;
-        animation: dotsAnimation 1.5s steps(4, end) infinite;
-    }
-    @keyframes dotsAnimation {
-        0% { content: ''; }
-        25% { content: '.'; }
-        50% { content: '..'; }
-        75% { content: '...'; }
-    }
-
-    .neon-progress-bar {
-        background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-        box-shadow: 0 0 12px var(--neon-cyan);
-        transition: width 0.15s ease-out;
-    }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen pb-16 antialiased">
+<body class="min-h-screen relative flex flex-col justify-between antialiased">
 
+    <!-- Loader Overlay Cyberpunk Light Style -->
     <div id="cyber-loader-overlay">
-    <div class="scanner-beam"></div>
-
-    <!-- Central Holographic HUD Ring Spinner -->
-    <div class="hud-ring mb-6">
-        <div class="ring-outer"></div>
-        <div class="ring-middle"></div>
-        <div class="ring-inner"></div>
-        <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
-    </div>
-
-    <!-- Dynamic Page Name & Animated Dot Text -->
-    <div class="text-center px-4">
-        <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-            Memuat Halaman<span class="animated-dots"></span>
-        </div>
-        <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-            SYSTEM INITIALIZING // CORE GATEWAY
-        </div>
-    </div>
-
-    <!-- Progress Bar (0% - 100%) -->
-    <div class="w-64 sm:w-80 mt-6">
-        <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-            <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-            <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
-        </div>
-        <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-            <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+        <div class="cyber-loader-box">
+            <div class="cyber-avatar-wrap mb-4">
+                <div class="cyber-ring"></div>
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
+            </div>
+            <div class="text-center">
+                <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                    INITIALIZING GATEWAY...
+                </div>
+                <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                    ARULZ-XD API REST CORE
+                </div>
+            </div>
+            <div class="w-full mt-5">
+                <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                    <span>SYSTEM LOADING</span>
+                    <span id="loader-percentage" class="font-black">0%</span>
+                </div>
+                <div class="cyber-bar">
+                    <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-        BACKEND DEV - ARULZ-XD API v2.0
-    </div>
-</div>
+    <!-- Header Top Bar -->
+    <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
+                    <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                </div>
+                <div>
+                    <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">SYSTEM CHANGELOG</span>
+                </div>
+            </div>
 
-    <!-- Sticky Navigation Header -->
-    <header class="sticky top-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-cyan-500/10 px-4 py-3">
-        <div class="max-w-3xl mx-auto flex justify-between items-center gap-3">
-            <a href="/" class="glass-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 hover:text-cyan-400 flex items-center gap-2 transition-all shadow-md">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/>
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="/docs" class="glass-btn px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 hover:text-cyan-400 flex items-center gap-2 transition-all shadow-md">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <span>Documentation</span>
-            </a>
+            </button>
         </div>
     </header>
 
+    <!-- Sidebar Dropdown Nav (bioDropdown) -->
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+        
+        <!-- Header Dropdown -->
+        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    STYLERA
+                </span>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Banner Atas Dropdown -->
+        <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
+            <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
+                <span>BANNER</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 6.75-13.5 6.75V5.25z"/></svg>
+            </div>
+            <div class="h-28 w-full relative overflow-hidden">
+                <video autoplay loop muted playsinline class="w-full h-full object-cover">
+                    <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+                    <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
+                </video>
+            </div>
+        </div>
+
+        <!-- Tombol Navigasi Dropdown -->
+        <nav class="space-y-2 flex-1">
+            <a href="/" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    <span>BACK TO DASHBOARD</span>
+                </div>
+            </a>
+            <a href="/docs" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span>DOCS / ENDPOINTS</span>
+                </div>
+            </a>
+            <a href="/store" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                    <span>STORE / BUY PLAN</span>
+                </div>
+            </a>
+            <a href="/uploader" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    <span>UPLOADER FILE</span>
+                </div>
+            </a>
+            <a href="/pastecode" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                    <span>PASTECODE SNIPPET</span>
+                </div>
+            </a>
+            <a href="/changelog" class="dropdown-nav-card bg-amber-100">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                    <span>CHANGELOG</span>
+                </div>
+                <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
+            </a>
+            <a href="/feedback" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                    <span>REQUEST FITUR</span>
+                </div>
+            </a>
+            <a href="/status" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                    <span>SERVER STATUS</span>
+                </div>
+            </a>
+        </nav>
+
+        <!-- Profile / Login Status Button di Bagian Bawah Sidebar -->
+        <div id="sidebarAuthBtnContainer" class="pt-4 mt-auto border-t-2 border-zinc-900">
+            <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
+                <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                LOGIN / REGISTER
+            </a>
+        </div>
+    </div>
+    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
+
     <!-- Main Content Area -->
-    <main class="max-w-3xl mx-auto px-4 mt-8">
+    <main class="max-w-3xl mx-auto px-4 py-6 relative z-10 flex-1 w-full">
         
         <!-- Header Section -->
-        <div class="mb-8 text-left">
-            <span class="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold text-[10px] tracking-widest uppercase rounded-full mb-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span> SYSTEM UPDATES
-            </span>
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">Changelog</h1>
-            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
-                Catatan otomatis mengenai pembaruan protokol, perbaikan bug, dan rilis fitur REST API dari cluster infrastruktur.
+        <div class="light-card p-6 mb-8">
+            <div class="flex items-center justify-between gap-2 flex-wrap mb-3">
+                <span class="inline-flex items-center gap-2 px-3 py-1 bg-amber-400 border-2 border-zinc-900 text-zinc-900 font-black text-[10px] tracking-widest uppercase rounded-full shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-zinc-900 animate-pulse"></span> SYSTEM UPDATES
+                </span>
+                
+                <!-- Co-Pilot Style Live Auto Sync Status Indicator -->
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border-2 border-blue-600 rounded-lg text-[10px] font-mono font-black text-blue-600">
+                    <span id="syncPulseDot" class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+                    <span id="syncStatusText">AUTO-SYNC TERHUBUNG</span>
+                </div>
+            </div>
+
+            <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 tracking-tight mb-2">Changelog</h1>
+            <p class="text-xs sm:text-sm font-semibold text-zinc-700 leading-relaxed">
+                Catatan pembaruan otomatis mengenai protokol, fitur endpoint baru, dan perbaikan bug REST API yang disinkronkan secara otomatis tanpa perlu muat ulang halaman.
             </p>
         </div>
 
         <!-- Dynamic Changelog Timeline Container -->
-        <div class="relative space-y-8" id="changelog-container">
-            <div id="loading" class="text-center py-12 font-mono-custom text-xs text-cyan-400 font-bold">
-                [ LOADING PROTOCOL DATA... ]
+        <div class="relative space-y-6" id="changelog-container">
+            <div id="loading" class="light-card p-8 text-center code-font text-xs text-zinc-600 font-bold uppercase">
+                [ MEMUAT DATA LOG REVOLUSI API... ]
             </div>
         </div>
 
     </main>
 
+    <!-- Footer Halaman -->
+    <footer class="w-full max-w-3xl mx-auto px-4 py-6 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest relative z-10">
+        &copy; 2026 ARULZ-XD API · POWERED BY REALTIME CORE ENGINE
+    </footer>
+
     <script>
-        async function loadChangelog() {
-    try {
-        const res = await fetch('/database/changelog');
-        const data = await res.json();
-        
+    // Memblokir Pinch Zoom & Gesture Zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+    });
+    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+    // Sidebar Drawer (bioDropdown) Handlers
+    function closeSidebarMenu() {
+        const bioDropdown = document.getElementById('bioDropdown');
+        const menuOverlay = document.getElementById('menuOverlay');
+        if (bioDropdown && menuOverlay) {
+            bioDropdown.style.transform = 'translateX(100%)';
+            menuOverlay.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        if (bioMenuBtn && bioDropdown && menuOverlay) {
+            bioMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bioDropdown.style.transform = 'translateX(0)';
+                menuOverlay.classList.remove('hidden');
+            });
+            if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+            menuOverlay.addEventListener('click', closeSidebarMenu);
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+        }
+
+        // Fetch User Status untuk Tombol Profil di Sidebar
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('sidebarAuthBtnContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <a href="/docs?showProfile=true" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-6 h-6 rounded-md border border-zinc-900 object-cover">
+                                    <span class="truncate">${data.user.username}</span>
+                                </div>
+                                <span class="text-[9px] text-blue-600 font-black">PROFILE</span>
+                            </a>
+                        `;
+                    }
+                }
+            })
+            .catch(err => console.error("Gagal memuat status user:", err));
+    });
+
+    // Variable Cache untuk mengecek perbedaan data secara otomatis (Co-pilot Style)
+    let lastChangelogHash = "";
+
+    function renderChangelog(data) {
         const container = document.getElementById('changelog-container');
+        if (!container) return;
         container.innerHTML = '';
+
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            container.innerHTML = `<div class="light-card p-8 text-center text-xs font-bold text-zinc-600 uppercase">Belum ada catatan changelog.</div>`;
+            return;
+        }
 
         data.forEach((item, index) => {
             const isLast = index === data.length - 1;
             const type = item.type ? item.type.toLowerCase() : '';
 
-            // Pengondisian Warna & Label Tipe Pembaruan
-            let dotBg = 'bg-cyan-400';
-            let badgeClass = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30';
+            // Pengondisian Badge & Warna Tipe Neubrutalism Light
+            let badgeBg = 'bg-blue-400 text-zinc-900 border-zinc-900';
             let typeLabel = item.type ? item.type.toUpperCase() : 'UPDATE';
 
             if (type === 'add' || type === 'added') {
-                dotBg = 'bg-emerald-400';
-                badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                badgeBg = 'bg-emerald-400 text-zinc-900 border-zinc-900';
                 typeLabel = 'ADD';
             } else if (type === 'delete' || type === 'deleted' || type === 'remove') {
-                dotBg = 'bg-rose-500';
-                badgeClass = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+                badgeBg = 'bg-red-400 text-zinc-900 border-zinc-900';
                 typeLabel = 'DELETE';
             } else if (type === 'bug fix' || type === 'fix' || type === 'bugfix') {
-                dotBg = 'bg-amber-400';
-                badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+                badgeBg = 'bg-amber-400 text-zinc-900 border-zinc-900';
                 typeLabel = 'BUG FIX';
             } else if (type === 'feature') {
-                dotBg = 'bg-indigo-400';
-                badgeClass = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30';
+                badgeBg = 'bg-purple-400 text-zinc-900 border-zinc-900';
                 typeLabel = 'FEATURE';
             }
 
             const cardHTML = `
-                <div class="relative pl-9 sm:pl-10">
+                <div class="relative pl-8 sm:pl-10">
                     <!-- Timeline Line -->
-                    ${!isLast ? '<div class="absolute left-[15px] sm:left-[17px] top-8 bottom-[-32px] w-[2px] bg-gradient-to-b from-cyan-500/40 via-cyan-500/10 to-transparent"></div>' : ''}
+                    ${!isLast ? '<div class="absolute left-[13px] sm:left-[15px] top-8 bottom-[-24px] w-[2.5px] bg-zinc-900"></div>' : ''}
 
-                    <!-- Dot Icon Marker -->
-                    <div class="absolute left-0 top-1 w-8 h-8 rounded-full border border-cyan-500/30 bg-[#020617] flex items-center justify-center z-10 shadow-lg">
-                        <div class="w-2.5 h-2.5 rounded-full ${dotBg} shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
+                    <!-- Dot Marker -->
+                    <div class="absolute left-0 top-1 w-7 h-7 rounded-full border-2 border-zinc-900 bg-white flex items-center justify-center z-10 shadow-sm">
+                        <div class="w-2.5 h-2.5 rounded-full bg-zinc-900"></div>
                     </div>
 
-                    <!-- Header Version Tag & Date -->
-                    <div class="flex items-center gap-2 mb-2 font-mono-custom text-xs">
-                        <span class="px-2 py-0.5 border border-cyan-500/30 rounded-md text-[11px] font-bold text-cyan-400 bg-cyan-950/30">${item.version}</span>
-                        <span class="text-slate-400 font-medium text-[11px]">${item.date}</span>
-                        <span class="text-slate-600">•</span>
-                        <span class="px-2 py-0.5 border rounded-md text-[9px] font-extrabold tracking-wider uppercase ${badgeClass}">${typeLabel}</span>
+                    <!-- Header Version & Date -->
+                    <div class="flex items-center gap-2 mb-2 code-font text-xs flex-wrap">
+                        <span class="px-2.5 py-0.5 border-2 border-zinc-900 rounded-lg text-[11px] font-black text-zinc-900 bg-white shadow-xs">${item.version || 'v1.0'}</span>
+                        <span class="text-zinc-600 font-bold text-[11px]">${item.date || ''}</span>
+                        <span class="text-zinc-400">•</span>
+                        <span class="px-2 py-0.5 border-2 rounded-lg text-[9px] font-black tracking-wider uppercase ${badgeBg}">${typeLabel}</span>
                     </div>
 
-                    <!-- Content Card -->
-                    <div class="glass-panel p-5 sm:p-6 transition-all duration-300 hover:border-cyan-500/30">
-                        <h2 class="text-base sm:text-lg font-bold text-white mb-2 tracking-wide">${item.title}</h2>
-                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal mb-4">
-                            ${item.description}
+                    <!-- Content Card Light -->
+                    <div class="light-card p-5 sm:p-6 transition-all duration-200">
+                        <h2 class="text-base sm:text-lg font-black text-zinc-900 mb-2 tracking-tight">${item.title || 'Pembaruan System'}</h2>
+                        <p class="text-xs sm:text-sm font-semibold text-zinc-700 leading-relaxed mb-4">
+                            ${item.description || item.desc || ''}
                         </p>
                         
-                        <hr class="border-white/5 mb-3">
-
-                        <div class="flex justify-between items-center text-[10px] sm:text-[11px] font-mono-custom text-slate-400">
-                            <div class="flex items-center gap-1.5 text-cyan-400 font-semibold">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <div class="pt-3 border-t-2 border-zinc-200 flex justify-between items-center text-[10px] sm:text-[11px] code-font text-zinc-600 font-bold">
+                            <div class="flex items-center gap-1.5 text-blue-600 font-black">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>PROTOCOL VERIFIED</span>
                             </div>
-                            ${item.node ? `<span class="opacity-80">NODE: ${item.node}</span>` : ''}
+                            ${item.node ? `<span class="uppercase">NODE: ${item.node}</span>` : ''}
                         </div>
                     </div>
                 </div>
             `;
             container.innerHTML += cardHTML;
         });
-    } catch (err) {
-        console.error('Error fetching changelog:', err);
-    }
-}
-
-        document.addEventListener('DOMContentLoaded', loadChangelog);
-        function getPageDisplayName() {
-        const path = window.location.pathname;
-        let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-        if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-        const pageMap = {
-            'home': 'Home',
-            'docs': 'Dokumentasi',
-            'doc': 'Dokumentasi',
-            'status': 'Status Server',
-            'store': 'Store API',
-            'changelog': 'Changelog',
-            'uploader': 'Uploader File',
-            'pastecode': 'Pastecode',
-            'feedback': 'Feedback',
-            'privacy': 'Kebijakan Privasi',
-            'support': 'Dukungan Support',
-            'login': 'Halaman Login'
-        };
-
-        if (pageMap[fileName]) return pageMap[fileName];
-        return fileName.charAt(0).toUpperCase() + fileName.slice(1);
     }
 
-    const pageName = getPageDisplayName();
-    const loaderTitleEl = document.getElementById('loader-title-text');
-    if (loaderTitleEl) {
-        loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
+    // Fungsi Fetch & Auto-Sync Realtime (Gaya Co-pilot tanpa GitHub RAW & Tanpa /database/changelog)
+    async function fetchChangelogRealtime() {
+        try {
+            const syncStatusText = document.getElementById('syncStatusText');
+            
+            // Menggunakan API internal /api/changelog
+            const res = await fetch('/api/changelog', {
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (!res.ok) throw new Error('Network error');
+
+            const data = await res.json();
+            const currentHash = JSON.stringify(data);
+
+            // Deteksi otomatis jika ada perubahan data baru
+            if (currentHash !== lastChangelogHash) {
+                lastChangelogHash = currentHash;
+                renderChangelog(data);
+
+                if (syncStatusText) {
+                    syncStatusText.innerText = "SINKRONISASI UPDATE TERBARU";
+                    setTimeout(() => {
+                        syncStatusText.innerText = "AUTO-SYNC TERHUBUNG";
+                    }, 2500);
+                }
+            }
+        } catch (err) {
+            console.error('Auto-sync error:', err);
+            const syncStatusText = document.getElementById('syncStatusText');
+            if (syncStatusText) syncStatusText.innerText = "MEMUAT DATA UTAMA...";
+        }
     }
+
+    // Polling Co-pilot Realtime setiap 4 detik tanpa reload halaman
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchChangelogRealtime();
+        setInterval(fetchChangelogRealtime, 4000);
+    });
 
     // Progress Loader 0% - 100%
     let currentProgress = 0;
@@ -381,7 +538,7 @@
         }, 400);
     });
 
-    // Fallback Safety (Maksimal 4 detik)
+    // Fallback Safety Loader (Maksimal 4 detik)
     setTimeout(() => {
         clearInterval(progressInterval);
         updateProgress(100);
