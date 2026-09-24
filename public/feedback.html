@@ -57,19 +57,27 @@
             color: var(--theme-text) !important;
         }
 
-        /* Keyframe Animasi RGB Pelangi Dynamic */
-        @keyframes rgbGlowAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* Keyframe Animasi Perubahan Warna RGB Pelangi */
+@keyframes rgbHueAnimation {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
 
-        .theme-rgb-active {
-            background: linear-gradient(-45deg, #ef4444, #f59e0b, #10b981, #06b6d4, #3b82f6, #8b5cf6) !important;
-            background-size: 300% 300% !important;
-            animation: rgbGlowAnimation 4s ease infinite !important;
-            color: #ffffff !important;
-        }
+@keyframes rgbBgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Class RGB yang benar-benar bergerak dan berubah warna */
+.theme-rgb-active {
+    background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+    background-size: 300% 300% !important;
+    animation: rgbBgMove 3s ease infinite, rgbHueAnimation 2s linear infinite !important;
+    color: #ffffff !important;
+    border-color: #121212 !important;
+}
+
 
         /* Cyber Loader Overlay Light Style */
         #cyber-loader-overlay {
@@ -566,39 +574,56 @@
     <!-- JavaScript Handling -->
     <script>
         // Konfigurasi Tema Style Warna
-        const THEME_COLORS = {
-            yellow: { accent: '#fde047', text: '#121212' },
-            red:    { accent: '#ef4444', text: '#ffffff' },
-            blue:   { accent: '#3b82f6', text: '#ffffff' },
-            cyan:   { accent: '#22d3ee', text: '#121212' },
-            purple: { accent: '#a855f7', text: '#ffffff' },
-            green:  { accent: '#10b981', text: '#121212' },
-            rgb:    { accent: 'rgb', text: '#ffffff' }
-        };
+        // Konfigurasi Tema Style Warna
+const THEME_COLORS = {
+    yellow: { accent: '#fde047', text: '#121212' },
+    red:    { accent: '#ef4444', text: '#ffffff' },
+    blue:   { accent: '#3b82f6', text: '#ffffff' },
+    cyan:   { accent: '#22d3ee', text: '#121212' },
+    purple: { accent: '#a855f7', text: '#ffffff' },
+    green:  { accent: '#10b981', text: '#121212' },
+    rgb:    { accent: 'rgb', text: '#ffffff' }
+};
 
-        function setAppTheme(themeName) {
-            const root = document.documentElement;
-            const themeBtn = document.getElementById('themePickerBtn');
-            const accentTargets = document.querySelectorAll('.yellow-accent, .bg-theme-accent, #submitBtn');
+let rgbInterval = null; // Menyimpan timer animasi RGB
 
-            localStorage.setItem('selectedThemeStyle', themeName);
+function setAppTheme(themeName) {
+    const root = document.documentElement;
+    const themeBtn = document.getElementById('themePickerBtn');
+    const accentTargets = document.querySelectorAll('.yellow-accent, .bg-theme-accent, #submitBtn');
 
-            if (themeName === 'rgb') {
-                accentTargets.forEach(el => el.classList.add('theme-rgb-active'));
-                if (themeBtn) themeBtn.classList.add('theme-rgb-active');
-            } else {
-                const theme = THEME_COLORS[themeName] || THEME_COLORS.yellow;
-                
-                accentTargets.forEach(el => el.classList.remove('theme-rgb-active'));
-                if (themeBtn) themeBtn.classList.remove('theme-rgb-active');
+    // Hentikan animasi RGB berulang jika pengguna memilih tema biasa
+    if (rgbInterval) {
+        clearInterval(rgbInterval);
+        rgbInterval = null;
+    }
 
-                root.style.setProperty('--theme-accent', theme.accent);
-                root.style.setProperty('--theme-text', theme.text);
-            }
+    localStorage.setItem('selectedThemeStyle', themeName);
 
-            const dropdown = document.getElementById('themeMenuDropdown');
-            if (dropdown) dropdown.classList.add('hidden');
-        }
+    if (themeName === 'rgb') {
+        let hue = 0;
+        accentTargets.forEach(el => el.classList.add('theme-rgb-active'));
+        if (themeBtn) themeBtn.classList.add('theme-rgb-active');
+
+        // Loop perubahan warna HSL secara terus menerus (0 - 360 derajat)
+        rgbInterval = setInterval(() => {
+            hue = (hue + 3) % 360;
+            root.style.setProperty('--theme-accent', `hsl(${hue}, 100%, 50%)`);
+            root.style.setProperty('--theme-text', '#ffffff');
+        }, 30);
+    } else {
+        const theme = THEME_COLORS[themeName] || THEME_COLORS.yellow;
+        
+        accentTargets.forEach(el => el.classList.remove('theme-rgb-active'));
+        if (themeBtn) themeBtn.classList.remove('theme-rgb-active');
+
+        root.style.setProperty('--theme-accent', theme.accent);
+        root.style.setProperty('--theme-text', theme.text);
+    }
+
+    const dropdown = document.getElementById('themeMenuDropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+}
 
         // Memblokir Pinch Zoom & Gesture Zoom
         document.addEventListener('gesturestart', e => e.preventDefault());
