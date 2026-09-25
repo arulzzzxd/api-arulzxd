@@ -2930,12 +2930,10 @@ app.get('/docs', (req, res) => {
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
-    <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Arulzxd API - Documentation</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
     
-    <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -2946,8 +2944,6 @@ app.get('/docs', (req, res) => {
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
-            
-            /* Variabel Warna Tema & Outline Dinamis */
             --theme-border: #a16207;
             --theme-accent: #fde047;
             --theme-text: #121212;
@@ -2955,9 +2951,7 @@ app.get('/docs', (req, res) => {
             --rgb-angle: 0deg;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         html, body {
             margin: 0;
@@ -2973,11 +2967,8 @@ app.get('/docs', (req, res) => {
             overflow-x: hidden;
         }
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace !important;
-        }
+        .code-font { font-family: 'JetBrains Mono', monospace !important; }
 
-        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
         .brutal-border,
         .light-card,
         .dropdown-nav-card,
@@ -2995,7 +2986,6 @@ app.get('/docs', (req, res) => {
             transition: border-color 0.15s ease;
         }
 
-        /* Class Aksen Tema */
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
@@ -3014,7 +3004,6 @@ app.get('/docs', (req, res) => {
             transition: all 0.15s ease;
         }
 
-        /* MODE RGB DYNAMIC ROTATING BORDER */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active .btn-brutalism-light,
@@ -3051,7 +3040,6 @@ app.get('/docs', (req, res) => {
             background-clip: padding-box, border-box !important;
         }
 
-        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
@@ -3124,7 +3112,6 @@ app.get('/docs', (req, res) => {
             border-radius: 9999px;
         }
 
-        /* Banner Video Container */
         .banner-video-container {
             width: 100% !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -3144,7 +3131,6 @@ app.get('/docs', (req, res) => {
             border-radius: 20px !important;
         }
 
-        /* Kotak Statistik */
         .stat-box {
             background-color: var(--card-bg) !important;
             border: 2px solid var(--theme-border) !important;
@@ -3179,7 +3165,6 @@ app.get('/docs', (req, res) => {
             color: #52525b !important;
         }
 
-        /* Override Style List Endpoint */
         #apiList { background-color: transparent !important; }
         #apiList .api-item {
             background-color: var(--card-bg) !important;
@@ -3195,39 +3180,6 @@ app.get('/docs', (req, res) => {
             color: #121212 !important;
         }
         #apiList .api-item > button p { color: #121212 !important; font-weight: 900 !important; }
-        #apiList .api-item > button .bg-cyan-500 { background-color: #121212 !important; color: #fff !important; border-radius: 6px !important; }
-        #apiList .api-item > button code, #apiList .api-item > button .text-cyan-200, #apiList .api-item > button .text-cyan-700 { color: #121212 !important; font-weight: 700 !important; }
-
-        #apiList .api-item > div[id^="ep-"] {
-            background-color: #FAF7EF !important; 
-            border-top: 2.5px dashed var(--theme-border) !important;
-        }
-        #apiList .api-item > div[id^="ep-"] .bg-slate-900\/60,
-        #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
-        #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
-            background-color: #FFFDF8 !important;
-            border: 2px solid var(--theme-border) !important;
-            box-shadow: none !important;
-            color: #121212 !important;
-        }
-        #apiList .api-item > div[id^="ep-"] h4,
-        #apiList .api-item > div[id^="ep-"] p,
-        #apiList .api-item > div[id^="ep-"] span,
-        #apiList .api-item > div[id^="ep-"] code {
-            color: #121212 !important;
-        }
-
-        #apiList form label { color: #121212 !important; font-weight: 900 !important; }
-        #apiList form input,
-        #apiList form select,
-        #apiList form button[id^="custom-select-"] {
-            background-color: #FFFDF8 !important;
-            border: 2px solid var(--theme-border) !important;
-            color: #121212 !important;
-            font-weight: 800 !important;
-            border-radius: 8px !important;
-        }
-        #apiList form input::placeholder { color: #71717a !important; font-weight: 700 !important; }
 
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
@@ -3274,21 +3226,6 @@ app.get('/docs', (req, res) => {
             color: #ffffff !important;
         }
 
-        .lang-btn {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border: 1.5px solid var(--theme-border);
-            background-color: #FAF7EF;
-            color: #121212;
-            border-radius: 8px;
-        }
-        .lang-btn.active {
-            background-color: var(--theme-border);
-            color: #ffffff;
-        }
-
         .light-popup-bg {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -3328,12 +3265,8 @@ app.get('/docs', (req, res) => {
             <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
         </div>
         <div class="text-center">
-            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
-                INITIALIZING GATEWAY...
-            </div>
-            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
-                ARULZ-XD API REST CORE
-            </div>
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">INITIALIZING GATEWAY...</div>
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">ARULZ-XD API REST CORE</div>
         </div>
         <div class="w-full mt-5">
             <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
@@ -3355,25 +3288,17 @@ app.get('/docs', (req, res) => {
   <div class="fixed inset-0 flex items-center justify-center p-4">
     <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 brutal-border rounded-2xl shadow-xl">
       <button id="closePopupBtn" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-900 bg-zinc-200 rounded-full p-1.5 focus:outline-none border border-zinc-900">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
-      
       <div class="text-center mb-4">
-        <h1 class="text-xl font-extrabold text-zinc-900 leading-tight">
-          WELCOME TO <span class="theme-text-accent">ARULZ-XD API</span>
-        </h1>
+        <h1 class="text-xl font-extrabold text-zinc-900 leading-tight">WELCOME TO <span class="theme-text-accent">ARULZ-XD API</span></h1>
       </div>
-      
       <div class="mb-4 rounded-xl overflow-hidden border-2 brutal-border bg-black relative">
         <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
       </div>
-      
       <div class="text-center text-zinc-700 text-xs mb-5 leading-relaxed font-semibold">
         <p>Halo! Selamat datang di Arulz-XD REST API Core. Gunakan API Key di bawah ini untuk memulai pengujian endpoint secara langsung.</p>
       </div>
-      
       <div class="mb-5 flex justify-center">
         <div class="bg-zinc-100 border-2 brutal-border rounded-full py-2 px-5 text-center">
           <span class="font-bold text-xs text-zinc-900 font-mono">
@@ -3381,10 +3306,7 @@ app.get('/docs', (req, res) => {
           </span>
         </div>
       </div>
-      
-      <a href="/support" class="w-full theme-bg-accent text-zinc-900 font-extrabold py-3 px-6 rounded-xl border-2 brutal-border text-xs block text-center uppercase tracking-wider active:scale-95 shadow-xs">
-        Donate Sekarang
-      </a>
+      <a href="/support" class="w-full theme-bg-accent text-zinc-900 font-extrabold py-3 px-6 rounded-xl border-2 brutal-border text-xs block text-center uppercase tracking-wider active:scale-95 shadow-xs">Donate Sekarang</a>
     </div>
   </div>
 </div>
@@ -3444,9 +3366,7 @@ app.get('/docs', (req, res) => {
         </div>
 
         <div class="light-card-box p-3 mb-4 text-center relative">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">
-                LIMIT USER
-            </div>
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">LIMIT USER</div>
             <div class="py-0.5">
                 <span class="inline-block light-pill-capsule text-zinc-900 px-6 py-1 text-xs font-black tracking-widest font-mono">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
@@ -3455,27 +3375,17 @@ app.get('/docs', (req, res) => {
         </div>
 
         <div class="light-card-box p-3 mb-4">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">
-                AKTIFITAS REQUEST API TERAKHIR
-            </div>
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">AKTIFITAS REQUEST API TERAKHIR</div>
             <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">
-                    belum ada request
-                </div>
+                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">belum ada request</div>
             </div>
         </div>
 
         <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 brutal-border font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-xs">
-                UPGRADE VIP
-            </a>
+            <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 brutal-border font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-xs">UPGRADE VIP</a>
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">
-                    TUTUP
-                </button>
-                <a href="/auth/logout" class="flex-1 border-2 brutal-border bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-xs">
-                    LOG OUT
-                </a>
+                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">TUTUP</button>
+                <a href="/auth/logout" class="flex-1 border-2 brutal-border bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-xs">LOG OUT</a>
             </div>
         </div>
     </div>
@@ -3499,68 +3409,37 @@ app.get('/docs', (req, res) => {
 
         <div class="flex items-center gap-2 relative">
             <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                </svg>
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
             </button>
 
             <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
             </button>
 
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
-                
-                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>YELLOW</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
-                </button>
-                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
-                    <span>RED</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
-                </button>
-                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
-                    <span>BLUE</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
-                </button>
-                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>CYAN</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
-                </button>
-                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
-                    <span>PURPLE</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
-                </button>
-                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>GREEN</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
-                </button>
-                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
-                    <span>BLACK</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
-                </button>
-                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
-                    <span>RGB DYNAMIC</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
-                </button>
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95"><span>YELLOW</span><span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span></button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95"><span>RED</span><span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span></button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95"><span>BLUE</span><span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span></button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95"><span>CYAN</span><span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span></button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95"><span>PURPLE</span><span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span></button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95"><span>GREEN</span><span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span></button>
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95"><span>BLACK</span><span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span></button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm"><span>RGB DYNAMIC</span><span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span></button>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Overlay Latar Belakang -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (Ala Home) -->
+<!-- Sidebar Dropdown Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
         <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
             <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             ARULZXD API
         </span>
-
         <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -3661,6 +3540,7 @@ app.get('/docs', (req, res) => {
         </video>
     </div>
 
+    <!-- Statistik -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
@@ -3691,6 +3571,7 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
+    <!-- Search & Filter -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3706,59 +3587,201 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
-    <div class="hidden">
-        <audio id="audioElement"></audio>
-        <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
-        <span id="currentTime"></span><div id="progressContainer"><div id="progressBar"></div></div>
-        <span id="totalDuration"></span><button id="prevBtn"></button><button id="playBtn"></button>
-        <button id="nextBtn"></button><button id="playlistToggleBtn"></button><div id="playlistPanel"></div>
-        <span id="mainTitle"></span><span id="mainDescription"></span>
-    </div>
-
     <div id="noResults" class="text-center py-8 hidden">
         <h3 id="no-results-title" class="text-xs font-black text-zinc-900 mb-1">Endpoint Tidak Ditemukan</h3>
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- Container Utama Tempat List Endpoint Rendred -->
-    <div id="apiList" class="space-y-4 pt-1"></div>
+    <!-- Container Utama Tempat List Endpoint -->
+    <div id="apiList" class="space-y-4 pt-1">
+        <div class="text-center py-8 font-bold text-xs text-zinc-600">Memuat daftar endpoint...</div>
+    </div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
         &copy; 2026 ARULZ-XD API REST CORE
     </footer>
 </main>
 
-<div id="imageLightbox" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4">
-    <div class="relative max-w-4xl max-h-[90vh]">
-        <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg object-contain" />
-        <button id="closeLightbox" class="absolute -top-10 right-0 text-white font-mono text-xs bg-black px-3 py-1 rounded border border-white">✕ Close</button>
-    </div>
-</div>
-
-<!-- Script Pembantu & Injeksi Variabel Penting -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
-<!-- DEKLARASI VARIABEL PENTING UNTUK SCRIPT.JS -->
+<!-- AMAN DARI REFERENCE ERROR NODE.JS -->
 <script class="notranslate" translate="no">
-    window.musicPlaylist = ${JSON.stringify(playlist || [])};
+    window.musicPlaylist = [];
     const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 
-<!-- Script Utama untuk Memuat Endpoint /apilist -->
 <script src="script.js"></script>
 
+<!-- AUTO-FETCHER FALLBACK LANGSUNG DARI BROWSER -->
 <script>
-    // Memblokir Pinch Zoom
-    document.addEventListener('gesturestart', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
-    });
-    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+    let rawEndpointsData = [];
 
-    // Presets Tema Warna & Border
+    async function loadEndpointsDirectly() {
+        const apiListContainer = document.getElementById('apiList');
+        const totalEpEl = document.getElementById('totalEndpoints');
+        const totalCatEl = document.getElementById('totalCategories');
+        const filterContainer = document.getElementById('categoryFilters');
+
+        try {
+            // Mencoba beberapa endpoint API backend secara berurutan
+            let response = await fetch('/api/apilist').catch(() => null);
+            if (!response || !response.ok) response = await fetch('/apilist').catch(() => null);
+            if (!response || !response.ok) response = await fetch('/api/endpoints').catch(() => null);
+
+            if (!response || !response.ok) throw new Error('Gagal terhubung ke endpoint data');
+
+            const result = await response.json();
+            
+            // Format data universal (Array / Object)
+            let data = Array.isArray(result) ? result : (result.data || result.endpoints || result.result || result.list || []);
+
+            if (!data || data.length === 0) {
+                if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-zinc-600">Tidak ada endpoint yang ditemukan.</div>';
+                return;
+            }
+
+            rawEndpointsData = data;
+
+            // Hitung statistik
+            let totalEndpointsCount = 0;
+            let categoriesSet = new Set();
+
+            data.forEach(cat => {
+                if (cat.category) categoriesSet.add(cat.category);
+                const items = cat.endpoints || cat.items || [];
+                totalEndpointsCount += items.length;
+            });
+
+            if (totalEpEl) totalEpEl.innerText = totalEndpointsCount;
+            if (totalCatEl) totalCatEl.innerText = categoriesSet.size;
+
+            // Render Tombol Filter Kategori
+            if (filterContainer && categoriesSet.size > 0) {
+                filterContainer.innerHTML = '<button onclick="filterCategory(\'all\')" class="filter-btn active">SEMUA (' + totalEndpointsCount + ')</button>';
+                categoriesSet.forEach(catName => {
+                    const count = data.find(c => c.category === catName)?.endpoints?.length || 0;
+                    filterContainer.innerHTML += '<button onclick="filterCategory(\'' + catName + '\')" class="filter-btn">' + catName.toUpperCase() + ' (' + count + ')</button>';
+                });
+            }
+
+            renderEndpointList(data);
+
+        } catch (err) {
+            console.error('Fallback fetch error:', err);
+        }
+    }
+
+    function renderEndpointList(categories) {
+        const apiListContainer = document.getElementById('apiList');
+        if (!apiListContainer) return;
+
+        let html = '';
+        let globalIndex = 0;
+
+        categories.forEach(cat => {
+            const categoryName = cat.category || 'GENERAL';
+            const endpoints = cat.endpoints || cat.items || [];
+
+            endpoints.forEach(ep => {
+                globalIndex++;
+                const epId = 'ep-' + globalIndex;
+                const path = ep.path || ep.endpoint || '/';
+                const name = ep.name || ep.title || path;
+                const desc = ep.description || ep.desc || 'Tidak ada deskripsi.';
+                const method = (ep.method || 'GET').toUpperCase();
+                const status = ep.status || 'Active';
+
+                html += \`
+                <div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="\${categoryName.toLowerCase()}" data-search="\${name.toLowerCase()} \${path.toLowerCase()}">
+                    <button onclick="toggleEndpoint('\${epId}')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">
+                        <div class="flex items-center gap-2.5 overflow-hidden pr-2">
+                            <span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">\${method}</span>
+                            <div class="truncate">
+                                <p class="text-xs font-black text-zinc-900 leading-tight truncate">\${name}</p>
+                                <code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">\${path}</code>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase \${status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400'}">\${status}</span>
+                    </button>
+                    
+                    <div id="\${epId}" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">
+                        <p class="text-xs font-semibold text-zinc-700 mb-3">\${desc}</p>
+                        <div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">
+                            <code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">\${path}</code>
+                            <button onclick="copyText('\${path}', 'Endpoint Path')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>
+                        </div>
+                    </div>
+                </div>
+                \`;
+            });
+        });
+
+        apiListContainer.innerHTML = html;
+    }
+
+    function toggleEndpoint(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('hidden');
+    }
+
+    function filterCategory(cat) {
+        const buttons = document.querySelectorAll('#categoryFilters button');
+        buttons.forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        const items = document.querySelectorAll('#apiList .api-item');
+        items.forEach(item => {
+            if (cat === 'all' || item.getAttribute('data-category') === cat.toLowerCase()) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+
+    // Live Search
+    document.addEventListener('DOMContentLoaded', () => {
+        loadEndpointsDirectly();
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                const items = document.querySelectorAll('#apiList .api-item');
+                let found = 0;
+
+                items.forEach(item => {
+                    const text = item.getAttribute('data-search') || '';
+                    if (text.includes(query)) {
+                        item.classList.remove('hidden');
+                        found++;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+
+                const noRes = document.getElementById('noResults');
+                if (noRes) {
+                    if (found === 0 && items.length > 0) noRes.classList.remove('hidden');
+                    else noRes.classList.add('hidden');
+                }
+            });
+        }
+    });
+
+    // Clock
+    function updateClock() {
+        const now = moment().tz('Asia/Jakarta');
+        const clockEl = document.getElementById('liveClock');
+        const dateEl = document.getElementById('liveDate');
+        if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
+        if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Theme Switcher Logic
     const THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -3896,17 +3919,6 @@ app.get('/docs', (req, res) => {
         if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
         if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
 
-        const showCyberAlert = (icon, title, text) => {
-            Swal.fire({
-                icon: icon,
-                title: title,
-                text: text,
-                background: '#010a17',
-                color: '#f8fafc',
-                confirmButtonText: 'OKE'
-            });
-        };
-
         try {
             const response = await fetch('/api/user/update-avatar', {
                 method: 'POST',
@@ -3917,20 +3929,15 @@ app.get('/docs', (req, res) => {
 
             if (result.status) {
                 const newAvatarUrl = result.avatar;
-
-                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                    img.src = newAvatarUrl;
-                });
-
-                showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => { img.src = newAvatarUrl; });
+                alert('Avatar profil berhasil diperbarui!');
             } else {
-                showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
+                alert(result.message || 'Gagal mengunggah avatar.');
                 if (userAvatarImg) userAvatarImg.src = oldSrc;
                 if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
             }
         } catch (error) {
-            console.error("Error uploading avatar:", error);
-            showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
+            alert('Terjadi kesalahan koneksi saat mengunggah gambar.');
             if (userAvatarImg) userAvatarImg.src = oldSrc;
             if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
         } finally {
@@ -3946,57 +3953,16 @@ app.get('/docs', (req, res) => {
             .then(data => {
                 if (data.loggedIn && data.user) {
                     const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
-
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
-                        if (img) img.src = latestAvatar;
-                    });
-
+                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => { if (img) img.src = latestAvatar; });
                     document.getElementById('userName').innerText = data.user.username || 'User';
                     document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                    
                     const userKey = data.user.apikey || '';
                     document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
                     document.getElementById('welcomeApiKey').innerText = userKey || 'Silakan Login';
-                                            
                     setRoleTheme(data.user.role || 'Free User');
-
-                    fetchUserActivityLogs(userKey);
-                    if (typeof fetchAndUpdateUserLimit === 'function') {
-                        fetchAndUpdateUserLimit();
-                    }
                 }
             })
-            .catch((err) => {
-                console.error("Gagal sinkronisasi profile:", err);
-            });
-    }
-
-    function fetchUserActivityLogs() {
-        const container = document.getElementById('activityLogsContainer');
-        if (!container) return;
-
-        fetch('/api/user-activity')
-          .then(res => res.json())
-          .then(resData => {
-              if (resData.status && resData.data && resData.data.length > 0) {
-                  container.innerHTML = resData.data.map(logText => 
-                    '<div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
-                        logText +
-                    '</div>'
-                ).join('');
-            } else {
-                container.innerHTML = 
-                    '<div class="light-pill-capsule text-zinc-500 font-mono text-[10px] py-2 px-3 text-center">' +
-                        'Belum ada aktivitas request' +
-                    '</div>';
-            }
-        })
-        .catch(err => {
-            container.innerHTML = 
-                '<div class="light-pill-capsule text-red-600 font-mono text-[10px] py-2 px-3 text-center">' +
-                    'Gagal memuat aktivitas' +
-                '</div>';
-        });
+            .catch((err) => console.error("Gagal sinkronisasi profile:", err));
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -4004,8 +3970,6 @@ app.get('/docs', (req, res) => {
         const bioDropdown = document.getElementById('bioDropdown');
         const closeMenuBtn = document.getElementById('closeMenuBtn');
         const menuOverlay = document.getElementById('menuOverlay');
-        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
-
         const themeBtn = document.getElementById('themePickerBtn');
         const themeDropdown = document.getElementById('themeMenuDropdown');
 
@@ -4014,7 +3978,6 @@ app.get('/docs', (req, res) => {
                 e.stopPropagation();
                 themeDropdown.classList.toggle('hidden');
             });
-
             document.addEventListener('click', (e) => {
                 if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
                     themeDropdown.classList.add('hidden');
@@ -4024,12 +3987,6 @@ app.get('/docs', (req, res) => {
 
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
-
-        function playBannerVideo() {
-            if (sidebarBannerVideo) {
-                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
-            }
-        }
 
         function closeSidebarMenu() {
             if (bioDropdown && menuOverlay) {
@@ -4043,22 +4000,16 @@ app.get('/docs', (req, res) => {
                 e.stopPropagation();
                 bioDropdown.style.transform = 'translateX(0)';
                 menuOverlay.classList.remove('hidden');
-                playBannerVideo();
             });
             if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
             menuOverlay.addEventListener('click', closeSidebarMenu);
             bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
         }
 
-        playBannerVideo();
         fetchUserProfile();
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('showProfile') === 'true') {
-            openProfilePopup();
-        }
     });
 
+    // Loader Progress
     let currentProgress = 0;
     let hasFinishedLoading = false;
     const progressFill = document.getElementById('loader-progress-fill');
@@ -4087,7 +4038,7 @@ app.get('/docs', (req, res) => {
                     }
                 }, 200);
             }
-        }, 400);
+        }, 300);
     }
 
     const progressInterval = setInterval(() => {
@@ -4095,16 +4046,17 @@ app.get('/docs', (req, res) => {
             const increment = Math.random() * 12 + 5;
             updateProgress(currentProgress + increment);
         }
-    }, 120);
+    }, 100);
 
     window.addEventListener('load', finishLoader);
-    setTimeout(finishLoader, 1500);
+    setTimeout(finishLoader, 1200);
 </script>
 
 </body>
 </html>
     `);
 });
+
 
 if (require.main === module) {
   app.listen(PORT, () => {
