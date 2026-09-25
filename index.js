@@ -2938,7 +2938,6 @@ app.get('/docs', (req, res) => {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css" />
     
     <style>
         :root {
@@ -3179,7 +3178,6 @@ app.get('/docs', (req, res) => {
             border-bottom: none !important;
             color: #121212 !important;
         }
-        #apiList .api-item > button p { color: #121212 !important; font-weight: 900 !important; }
 
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
@@ -3279,6 +3277,42 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 </div>
+
+<!-- SCRIPT KHUSUS LOADER: BERJALAN INDEPENDEN SEGERA -->
+<script>
+    (function() {
+        let currentProgress = 0;
+        let hasFinished = false;
+        
+        function updateLoader(val) {
+            currentProgress = Math.min(Math.max(currentProgress, val), 100);
+            const fill = document.getElementById('loader-progress-fill');
+            const text = document.getElementById('loader-percentage');
+            if (fill) fill.style.width = currentProgress + '%';
+            if (text) text.innerText = Math.floor(currentProgress) + '%';
+        }
+
+        const interval = setInterval(() => {
+            if (currentProgress < 85) {
+                updateLoader(currentProgress + Math.random() * 12 + 5);
+            }
+        }, 80);
+
+        function hideLoader() {
+            if (hasFinished) return;
+            hasFinished = true;
+            clearInterval(interval);
+            updateLoader(100);
+            setTimeout(() => {
+                const overlay = document.getElementById('cyber-loader-overlay');
+                if (overlay) overlay.classList.add('fade-out');
+            }, 300);
+        }
+
+        window.addEventListener('load', hideLoader);
+        setTimeout(hideLoader, 1500);
+    })();
+</script>
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
@@ -3605,36 +3639,33 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
 
-<!-- AMAN DARI REFERENCE ERROR NODE.JS -->
+<!-- AMAN DARI REFERENCE ERROR -->
 <script class="notranslate" translate="no">
     window.musicPlaylist = [];
-    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
+    var displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 
 <script src="script.js"></script>
 
-<!-- AUTO-FETCHER FALLBACK LANGSUNG DARI BROWSER -->
+<!-- AUTO-FETCHER AMAN TANPA NESTED TEMPLATE LITERAL -->
 <script>
-    let rawEndpointsData = [];
+    var rawEndpointsData = [];
 
     async function loadEndpointsDirectly() {
-        const apiListContainer = document.getElementById('apiList');
-        const totalEpEl = document.getElementById('totalEndpoints');
-        const totalCatEl = document.getElementById('totalCategories');
-        const filterContainer = document.getElementById('categoryFilters');
+        var apiListContainer = document.getElementById('apiList');
+        var totalEpEl = document.getElementById('totalEndpoints');
+        var totalCatEl = document.getElementById('totalCategories');
+        var filterContainer = document.getElementById('categoryFilters');
 
         try {
-            // Mencoba beberapa endpoint API backend secara berurutan
-            let response = await fetch('/api/apilist').catch(() => null);
-            if (!response || !response.ok) response = await fetch('/apilist').catch(() => null);
-            if (!response || !response.ok) response = await fetch('/api/endpoints').catch(() => null);
+            var response = await fetch('/api/apilist').catch(function() { return null; });
+            if (!response || !response.ok) response = await fetch('/apilist').catch(function() { return null; });
+            if (!response || !response.ok) response = await fetch('/api/endpoints').catch(function() { return null; });
 
-            if (!response || !response.ok) throw new Error('Gagal terhubung ke endpoint data');
+            if (!response || !response.ok) throw new Error('Gagal terhubung ke server');
 
-            const result = await response.json();
-            
-            // Format data universal (Array / Object)
-            let data = Array.isArray(result) ? result : (result.data || result.endpoints || result.result || result.list || []);
+            var result = await response.json();
+            var data = Array.isArray(result) ? result : (result.data || result.endpoints || result.result || result.list || []);
 
             if (!data || data.length === 0) {
                 if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-zinc-600">Tidak ada endpoint yang ditemukan.</div>';
@@ -3643,24 +3674,23 @@ app.get('/docs', (req, res) => {
 
             rawEndpointsData = data;
 
-            // Hitung statistik
-            let totalEndpointsCount = 0;
-            let categoriesSet = new Set();
+            var totalEndpointsCount = 0;
+            var categoriesSet = new Set();
 
-            data.forEach(cat => {
+            data.forEach(function(cat) {
                 if (cat.category) categoriesSet.add(cat.category);
-                const items = cat.endpoints || cat.items || [];
+                var items = cat.endpoints || cat.items || [];
                 totalEndpointsCount += items.length;
             });
 
             if (totalEpEl) totalEpEl.innerText = totalEndpointsCount;
             if (totalCatEl) totalCatEl.innerText = categoriesSet.size;
 
-            // Render Tombol Filter Kategori
             if (filterContainer && categoriesSet.size > 0) {
                 filterContainer.innerHTML = '<button onclick="filterCategory(\'all\')" class="filter-btn active">SEMUA (' + totalEndpointsCount + ')</button>';
-                categoriesSet.forEach(catName => {
-                    const count = data.find(c => c.category === catName)?.endpoints?.length || 0;
+                categoriesSet.forEach(function(catName) {
+                    var targetCat = data.find(function(c) { return c.category === catName; });
+                    var count = (targetCat && targetCat.endpoints) ? targetCat.endpoints.length : 0;
                     filterContainer.innerHTML += '<button onclick="filterCategory(\'' + catName + '\')" class="filter-btn">' + catName.toUpperCase() + ' (' + count + ')</button>';
                 });
             }
@@ -3668,52 +3698,49 @@ app.get('/docs', (req, res) => {
             renderEndpointList(data);
 
         } catch (err) {
-            console.error('Fallback fetch error:', err);
+            console.error('Fetch error:', err);
         }
     }
 
     function renderEndpointList(categories) {
-        const apiListContainer = document.getElementById('apiList');
+        var apiListContainer = document.getElementById('apiList');
         if (!apiListContainer) return;
 
-        let html = '';
-        let globalIndex = 0;
+        var html = '';
+        var globalIndex = 0;
 
-        categories.forEach(cat => {
-            const categoryName = cat.category || 'GENERAL';
-            const endpoints = cat.endpoints || cat.items || [];
+        categories.forEach(function(cat) {
+            var categoryName = cat.category || 'GENERAL';
+            var endpoints = cat.endpoints || cat.items || [];
 
-            endpoints.forEach(ep => {
+            endpoints.forEach(function(ep) {
                 globalIndex++;
-                const epId = 'ep-' + globalIndex;
-                const path = ep.path || ep.endpoint || '/';
-                const name = ep.name || ep.title || path;
-                const desc = ep.description || ep.desc || 'Tidak ada deskripsi.';
-                const method = (ep.method || 'GET').toUpperCase();
-                const status = ep.status || 'Active';
+                var epId = 'ep-' + globalIndex;
+                var path = ep.path || ep.endpoint || '/';
+                var name = ep.name || ep.title || path;
+                var desc = ep.description || ep.desc || 'Tidak ada deskripsi.';
+                var method = (ep.method || 'GET').toUpperCase();
+                var status = ep.status || 'Active';
 
-                html += \`
-                <div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="\${categoryName.toLowerCase()}" data-search="\${name.toLowerCase()} \${path.toLowerCase()}">
-                    <button onclick="toggleEndpoint('\${epId}')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">
-                        <div class="flex items-center gap-2.5 overflow-hidden pr-2">
-                            <span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">\${method}</span>
-                            <div class="truncate">
-                                <p class="text-xs font-black text-zinc-900 leading-tight truncate">\${name}</p>
-                                <code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">\${path}</code>
-                            </div>
-                        </div>
-                        <span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase \${status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400'}">\${status}</span>
-                    </button>
-                    
-                    <div id="\${epId}" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">
-                        <p class="text-xs font-semibold text-zinc-700 mb-3">\${desc}</p>
-                        <div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">
-                            <code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">\${path}</code>
-                            <button onclick="copyText('\${path}', 'Endpoint Path')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>
-                        </div>
-                    </div>
-                </div>
-                \`;
+                html += '<div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="' + categoryName.toLowerCase() + '" data-search="' + name.toLowerCase() + ' ' + path.toLowerCase() + '">' +
+                    '<button onclick="toggleEndpoint(\'' + epId + '\')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">' +
+                        '<div class="flex items-center gap-2.5 overflow-hidden pr-2">' +
+                            '<span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">' + method + '</span>' +
+                            '<div class="truncate">' +
+                                '<p class="text-xs font-black text-zinc-900 leading-tight truncate">' + name + '</p>' +
+                                '<code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">' + path + '</code>' +
+                            '</div>' +
+                        '</div>' +
+                        '<span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase ' + (status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400') + '">' + status + '</span>' +
+                    '</button>' +
+                    '<div id="' + epId + '" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">' +
+                        '<p class="text-xs font-semibold text-zinc-700 mb-3">' + desc + '</p>' +
+                        '<div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">' +
+                            '<code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">' + path + '</code>' +
+                            '<button onclick="copyText(\'' + path + '\', \'Endpoint Path\')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
             });
         });
 
@@ -3721,17 +3748,17 @@ app.get('/docs', (req, res) => {
     }
 
     function toggleEndpoint(id) {
-        const el = document.getElementById(id);
+        var el = document.getElementById(id);
         if (el) el.classList.toggle('hidden');
     }
 
     function filterCategory(cat) {
-        const buttons = document.querySelectorAll('#categoryFilters button');
-        buttons.forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        var buttons = document.querySelectorAll('#categoryFilters button');
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        if (event && event.target) event.target.classList.add('active');
 
-        const items = document.querySelectorAll('#apiList .api-item');
-        items.forEach(item => {
+        var items = document.querySelectorAll('#apiList .api-item');
+        items.forEach(function(item) {
             if (cat === 'all' || item.getAttribute('data-category') === cat.toLowerCase()) {
                 item.classList.remove('hidden');
             } else {
@@ -3740,20 +3767,19 @@ app.get('/docs', (req, res) => {
         });
     }
 
-    // Live Search
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
         loadEndpointsDirectly();
 
-        const searchInput = document.getElementById('searchInput');
+        var searchInput = document.getElementById('searchInput');
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase().trim();
-                const items = document.querySelectorAll('#apiList .api-item');
-                let found = 0;
+            searchInput.addEventListener('input', function(e) {
+                var query = e.target.value.toLowerCase().trim();
+                var items = document.querySelectorAll('#apiList .api-item');
+                var found = 0;
 
-                items.forEach(item => {
-                    const text = item.getAttribute('data-search') || '';
-                    if (text.includes(query)) {
+                items.forEach(function(item) {
+                    var text = item.getAttribute('data-search') || '';
+                    if (text.indexOf(query) !== -1) {
                         item.classList.remove('hidden');
                         found++;
                     } else {
@@ -3761,7 +3787,7 @@ app.get('/docs', (req, res) => {
                     }
                 });
 
-                const noRes = document.getElementById('noResults');
+                var noRes = document.getElementById('noResults');
                 if (noRes) {
                     if (found === 0 && items.length > 0) noRes.classList.remove('hidden');
                     else noRes.classList.add('hidden');
@@ -3770,19 +3796,19 @@ app.get('/docs', (req, res) => {
         }
     });
 
-    // Clock
     function updateClock() {
-        const now = moment().tz('Asia/Jakarta');
-        const clockEl = document.getElementById('liveClock');
-        const dateEl = document.getElementById('liveDate');
-        if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
-        if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
+        if (typeof moment !== 'undefined') {
+            var now = moment();
+            var clockEl = document.getElementById('liveClock');
+            var dateEl = document.getElementById('liveDate');
+            if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
+            if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
+        }
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Theme Switcher Logic
-    const THEME_PRESETS = {
+    var THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
         blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
@@ -3792,11 +3818,11 @@ app.get('/docs', (req, res) => {
         black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
     };
 
-    let rgbInterval = null;
+    var rgbInterval = null;
 
     function setAppTheme(themeName) {
-        const root = document.documentElement;
-        const dropdown = document.getElementById('themeMenuDropdown');
+        var root = document.documentElement;
+        var dropdown = document.getElementById('themeMenuDropdown');
 
         if (rgbInterval) {
             clearInterval(rgbInterval);
@@ -3807,14 +3833,14 @@ app.get('/docs', (req, res) => {
 
         if (themeName === 'rgb') {
             document.body.classList.add('rgb-mode-active');
-            let angle = 0;
-            rgbInterval = setInterval(() => {
+            var angle = 0;
+            rgbInterval = setInterval(function() {
                 angle = (angle + 3) % 360;
                 root.style.setProperty('--rgb-angle', angle + 'deg');
             }, 20);
         } else {
             document.body.classList.remove('rgb-mode-active');
-            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            var t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
             root.style.setProperty('--theme-border', t.border);
             root.style.setProperty('--theme-accent', t.accent);
             root.style.setProperty('--theme-text', t.text);
@@ -3826,7 +3852,7 @@ app.get('/docs', (req, res) => {
 
     function copyText(text, label) {
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
+            navigator.clipboard.writeText(text).then(function() {
                 alert((label || 'Teks') + ' berhasil disalin!');
             });
         }
@@ -3842,150 +3868,58 @@ app.get('/docs', (req, res) => {
     }
 
     function showWelcomePopup() {
-        const popup = document.getElementById('welcomePopup');
-        const closeBtn = document.getElementById('closePopupBtn');
+        var popup = document.getElementById('welcomePopup');
+        var closeBtn = document.getElementById('closePopupBtn');
         if (popup) {
             popup.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         }
         if (closeBtn) {
-            closeBtn.onclick = () => {
+            closeBtn.onclick = function() {
                 popup.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
             };
         }
     }
 
-    function setRoleTheme(roleName) {
-        const planText = document.getElementById('userPlanText');
-        const vipCustomBox = document.getElementById('vipCustomKeyBox');
-        if (!planText) return;
-
-        const role = (roleName || '').toLowerCase();
-
-        if (role.includes('vip')) {
-            planText.textContent = 'VIP';
-            planText.setAttribute('fill', '#2563eb');
-            if (vipCustomBox) vipCustomBox.classList.remove('hidden');
-        } else if (role.includes('premium')) {
-            planText.textContent = 'PREM';
-            planText.setAttribute('fill', '#d97706');
-            if (vipCustomBox) vipCustomBox.classList.add('hidden');
-        } else {
-            planText.textContent = 'FREE';
-            planText.setAttribute('fill', '#121212');
-            if (vipCustomBox) vipCustomBox.classList.add('hidden');
-        }
-    }
-
-    async function saveCustomApiKey() {
-        const input = document.getElementById('customApiKeyInput');
-        if (!input || !input.value.trim()) {
-            alert('Ketik API Key kustom yang diinginkan terlebih dahulu!');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/user/custom-apikey', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customKey: input.value.trim() })
-            });
-
-            const resData = await response.json();
-            if (resData.status) {
-                alert(resData.message);
-                document.getElementById('userApiKey').innerText = resData.apikey;
-                input.value = '';
-            } else {
-                alert(resData.message || 'Gagal mengubah API Key.');
-            }
-        } catch (err) {
-            alert('Terjadi kesalahan koneksi saat menyimpan API Key.');
-        }
-    }
-
-    async function uploadAvatarFile(input) {
-        if (!input.files || !input.files[0]) return;
-
-        const file = input.files[0];
-        const formData = new FormData();
-        formData.append('avatar', file);
-
-        const userAvatarImg = document.getElementById('userAvatar');
-        const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
-        const oldSrc = userAvatarImg ? userAvatarImg.src : '';
-
-        if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
-        if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
-
-        try {
-            const response = await fetch('/api/user/update-avatar', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.status) {
-                const newAvatarUrl = result.avatar;
-                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => { img.src = newAvatarUrl; });
-                alert('Avatar profil berhasil diperbarui!');
-            } else {
-                alert(result.message || 'Gagal mengunggah avatar.');
-                if (userAvatarImg) userAvatarImg.src = oldSrc;
-                if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-            }
-        } catch (error) {
-            alert('Terjadi kesalahan koneksi saat mengunggah gambar.');
-            if (userAvatarImg) userAvatarImg.src = oldSrc;
-            if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-        } finally {
-            if (userAvatarImg) userAvatarImg.style.opacity = '1';
-            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
-            input.value = '';
-        }
-    }
-
     function fetchUserProfile() {
         fetch('/api/user-status')
-            .then(res => res.json())
-            .then(data => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 if (data.loggedIn && data.user) {
-                    const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => { if (img) img.src = latestAvatar; });
+                    var latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(function(img) { if (img) img.src = latestAvatar; });
                     document.getElementById('userName').innerText = data.user.username || 'User';
                     document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                    const userKey = data.user.apikey || '';
+                    var userKey = data.user.apikey || '';
                     document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
                     document.getElementById('welcomeApiKey').innerText = userKey || 'Silakan Login';
-                    setRoleTheme(data.user.role || 'Free User');
                 }
             })
-            .catch((err) => console.error("Gagal sinkronisasi profile:", err));
+            .catch(function(err) { console.error("Gagal sinkronisasi profile:", err); });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const bioMenuBtn = document.getElementById('bioMenuBtn');
-        const bioDropdown = document.getElementById('bioDropdown');
-        const closeMenuBtn = document.getElementById('closeMenuBtn');
-        const menuOverlay = document.getElementById('menuOverlay');
-        const themeBtn = document.getElementById('themePickerBtn');
-        const themeDropdown = document.getElementById('themeMenuDropdown');
+    document.addEventListener('DOMContentLoaded', function() {
+        var bioMenuBtn = document.getElementById('bioMenuBtn');
+        var bioDropdown = document.getElementById('bioDropdown');
+        var closeMenuBtn = document.getElementById('closeMenuBtn');
+        var menuOverlay = document.getElementById('menuOverlay');
+        var themeBtn = document.getElementById('themePickerBtn');
+        var themeDropdown = document.getElementById('themeMenuDropdown');
 
         if (themeBtn && themeDropdown) {
-            themeBtn.addEventListener('click', (e) => {
+            themeBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 themeDropdown.classList.toggle('hidden');
             });
-            document.addEventListener('click', (e) => {
+            document.addEventListener('click', function(e) {
                 if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
                     themeDropdown.classList.add('hidden');
                 }
             });
         }
 
-        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        var savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
 
         function closeSidebarMenu() {
@@ -3996,67 +3930,24 @@ app.get('/docs', (req, res) => {
         }
 
         if (bioMenuBtn && bioDropdown && menuOverlay) {
-            bioMenuBtn.addEventListener('click', (e) => {
+            bioMenuBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 bioDropdown.style.transform = 'translateX(0)';
                 menuOverlay.classList.remove('hidden');
             });
             if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
             menuOverlay.addEventListener('click', closeSidebarMenu);
-            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+            bioDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
         }
 
         fetchUserProfile();
     });
-
-    // Loader Progress
-    let currentProgress = 0;
-    let hasFinishedLoading = false;
-    const progressFill = document.getElementById('loader-progress-fill');
-    const percentageText = document.getElementById('loader-percentage');
-    const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-    function updateProgress(targetVal) {
-        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-        if (progressFill) progressFill.style.width = currentProgress + '%';
-        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-    }
-
-    function finishLoader() {
-        if (hasFinishedLoading) return;
-        hasFinishedLoading = true;
-        clearInterval(progressInterval);
-        updateProgress(100);
-
-        setTimeout(() => {
-            if (loaderOverlay) {
-                loaderOverlay.classList.add('fade-out');
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('showProfile') !== 'true') {
-                        showWelcomePopup();
-                    }
-                }, 200);
-            }
-        }, 300);
-    }
-
-    const progressInterval = setInterval(() => {
-        if (currentProgress < 85) {
-            const increment = Math.random() * 12 + 5;
-            updateProgress(currentProgress + increment);
-        }
-    }, 100);
-
-    window.addEventListener('load', finishLoader);
-    setTimeout(finishLoader, 1200);
 </script>
 
 </body>
 </html>
     `);
 });
-
 
 if (require.main === module) {
   app.listen(PORT, () => {
