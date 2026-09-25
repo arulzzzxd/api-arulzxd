@@ -3565,43 +3565,53 @@ app.get('/docs', (req, res) => {
 <!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (z-50) -->
-<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+<!-- Sidebar Dropdown Nav -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
     <!-- Header Dropdown -->
-    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
-        <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
-                <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                STYLERA
-            </span>
-        </div>
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+        <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            ARULZXD API
+        </span>
 
-        <div class="flex items-center gap-2">
-            <div class="flex border-2 brutal-border rounded-lg p-0.5 bg-zinc-200">
-                <button id="lang-id" class="lang-btn active" onclick="setLanguage('id')">ID</button>
-                <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
+        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <!-- Banner Atas Dropdown (Clean/Tanpa Header "BANNER") -->
+    <div class="mb-3 rounded-2xl border-2 border-zinc-900 overflow-hidden bg-black h-36 relative shadow-sm">
+        <video autoplay loop muted playsinline class="w-full h-full object-cover">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
+        </video>
+    </div>
+
+    <!-- Profile Box Pengguna (Tepat di bawah Banner Video) -->
+    <div class="mb-3">
+        ${req.user ? `
+        <div class="p-2.5 rounded-2xl border-2 border-zinc-900 bg-white/60 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-9 h-9 rounded-xl border-2 border-zinc-900 object-cover flex-shrink-0 bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">
+                <div class="flex flex-col truncate">
+                    <span class="text-xs font-extrabold text-zinc-900 truncate">${req.user.username}</span>
+                    <span class="text-[9px] font-bold text-blue-600 uppercase tracking-tight">AKUN TERHUBUNG</span>
+                </div>
             </div>
-            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button onclick="openProfilePopup()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] rounded-xl border-2 border-zinc-900 uppercase tracking-wider active:scale-95 transition-all flex-shrink-0 shadow-sm">
+                PROFILE
             </button>
         </div>
+        ` : `
+        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            LOGIN / REGISTER
+        </a>
+        `}
     </div>
 
-    <!-- Banner Atas Dropdown -->
-    <div class="mb-4 rounded-xl border-2 brutal-border overflow-hidden bg-black relative">
-        <div class="theme-bg-accent px-3 py-1 border-b-2 brutal-border flex items-center justify-between text-[10px] font-black uppercase">
-            <span>BANNER</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 6.75-13.5 6.75V5.25z"/></svg>
-        </div>
-        <div class="h-28 w-full relative overflow-hidden">
-            <video id="sidebarBannerVideo" autoplay loop muted playsinline class="w-full h-full object-cover">
-                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-            </video>
-        </div>
-    </div>
-
-    <!-- Tombol Navigasi Dropdown -->
+    <!-- Tombol Navigasi -->
     <nav class="space-y-2 flex-1">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3609,7 +3619,7 @@ app.get('/docs', (req, res) => {
                 <span>BACK TO DASHBOARD</span>
             </div>
         </a>
-        <a href="/docs" class="dropdown-nav-card theme-light-bg">
+        <a href="/docs" class="dropdown-nav-card bg-amber-100">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <span>DOCS / ENDPOINTS</span>
@@ -3632,13 +3642,6 @@ app.get('/docs', (req, res) => {
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
                 <span>PASTECODE SNIPPET</span>
             </div>
-        </a>
-        <a href="/changelog" class="dropdown-nav-card">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-                <span>CHANGELOG</span>
-            </div>
-            <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
         </a>
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3665,14 +3668,6 @@ app.get('/docs', (req, res) => {
             </div>
         </a>
     </nav>
-
-    <!-- Profile / Login Status Container -->
-    <div id="sidebarAuthBtnContainer" class="pt-4 mt-auto border-t-2 brutal-border">
-        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
-            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-            LOGIN / REGISTER
-        </a>
-    </div>
 </div>
 
 <!-- Main Mobile & Desktop Container (pt-20 agar tidak tertutup header fixed) -->
