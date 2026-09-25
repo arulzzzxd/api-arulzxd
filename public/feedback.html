@@ -23,6 +23,7 @@
             --theme-accent: #fde047;
             --theme-text: #121212;
             --theme-light: #fef9c3;
+            --rgb-angle: 0deg;
         }
 
         * {
@@ -49,7 +50,7 @@
             font-family: 'JetBrains Mono', monospace !important;
         }
 
-        /* Penerapan Outline / Border Dinamis Sesuai Tema */
+        /* Penerapan Outline / Border Dinamis Sesuai Tema Standard */
         .brutal-border,
         .light-card,
         .dropdown-nav-card,
@@ -84,28 +85,48 @@
             transition: all 0.15s ease;
         }
 
-        /* Mode Khusus Animasi Flowing Gradient RGB Dynamic */
-        @keyframes rgbFlowGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER (SEPERTI MINECRAFT GUI)*/
+        /* ======================================================= */
+        .rgb-mode-active .light-card,
+        .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light,
+        .rgb-mode-active .feedback-radio-box,
+        .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box,
+        .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .theme-input {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
         }
 
+        .rgb-mode-active header,
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        /* Isian Tombol & Badge Saat RGB Aktif */
         .rgb-mode-active .theme-bg-accent {
-            background: linear-gradient(-45deg, #ff0055, #ff7700, #ffeb00, #00ff66, #00e5ff, #7e22ce) !important;
-            background-size: 400% 400% !important;
-            animation: rgbFlowGradient 3s ease infinite !important;
+            background-image: conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
             color: #ffffff !important;
+            border-color: #121212 !important;
         }
 
-        /* Focus Input Form dengan Outline Warna Tema */
+        /* Focus Input Form */
         .theme-input:focus {
             outline: none !important;
             border-color: var(--theme-border) !important;
             box-shadow: 0 0 0 3px var(--theme-accent) !important;
         }
 
-        /* Radio Box Selection Aktif Terhubung Warna Tema & Outline */
+        /* Radio Box Selection */
         .feedback-radio-box {
             background-color: #FFFDF8;
             border: 2.5px solid var(--theme-border);
@@ -609,7 +630,7 @@
 
     <!-- JavaScript Handling -->
     <script>
-        // Konfigurasi Tema Style Warna & Outline Dinamis (Masing-masing Warna Memiliki Border Khusus)
+        // Konfigurasi Tema Style Warna & Outline Dinamis
         const THEME_PRESETS = {
             yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
             red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -635,16 +656,12 @@
 
             if (themeName === 'rgb') {
                 document.body.classList.add('rgb-mode-active');
-                let hue = 0;
-                
-                // Rotasi Warna HSL Real-Time yang Sangat Halus untuk Border & Aksen
-                rgbInterval = setInterval(() => {
-                    hue = (hue + 1.5) % 360;
-                    const borderColor = `hsl(${hue}, 90%, 38%)`;
-                    const lightBg = `hsl(${hue}, 85%, 93%)`;
+                let angle = 0;
 
-                    root.style.setProperty('--theme-border', borderColor);
-                    root.style.setProperty('--theme-light', lightBg);
+                // Rotasi sudut 360 derajat secara kontinu mengelilingi border (Persis seperti GUI Minecraft RGB)
+                rgbInterval = setInterval(() => {
+                    angle = (angle + 3) % 360;
+                    root.style.setProperty('--rgb-angle', angle + 'deg');
                 }, 20);
             } else {
                 document.body.classList.remove('rgb-mode-active');
