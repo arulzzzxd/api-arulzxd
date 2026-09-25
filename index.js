@@ -2925,352 +2925,469 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
-    // Evaluasi data user di server sebelum merender HTML
-    const userApiKey = (req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login';
-    const username = req.user ? req.user.username : '';
-    const userAvatar = (req.user && req.user.avatar) ? req.user.avatar : 'https://arulz-xd.my.id/files/X1F0Cn.png';
-    const isLoggedIn = !!req.user;
-
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <title>Arulzxd API - Documentation</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css" />
     
     <style>
-        :root {
-            --bg-cream: #FAF7EF;
-            --card-bg: #FFFDF8;
-            --theme-border: #a16207;
-            --theme-accent: #fde047;
-            --theme-text: #121212;
-            --theme-light: #fef9c3;
-            --rgb-angle: 0deg;
-        }
+    :root {
+        --bg-cream: #FAF7EF;
+        --card-bg: #FFFDF8;
+        --border-dark: #121212;
+        
+        /* Variabel Sistem Tema Dinamis */
+        --theme-accent: #fde047;
+        --theme-text: #121212;
+        --theme-light: #fef9c3;
+        --theme-ring: #facc15;
+    }
 
-        * { box-sizing: border-box; }
+    * {
+        box-sizing: border-box;
+    }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-            touch-action: pan-x pan-y;
-            background-color: var(--bg-cream) !important;
-            color: #121212 !important;
-            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
-            background-size: 16px 16px !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            overflow-x: hidden;
-        }
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100vh;
+        background-color: var(--bg-cream) !important;
+        color: var(--border-dark) !important;
+        background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+        background-size: 16px 16px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        overflow-x: hidden;
+    }
 
-        .code-font { font-family: 'JetBrains Mono', monospace !important; }
+    .code-font {
+        font-family: 'JetBrains Mono', monospace !important;
+    }
 
-        .brutal-border,
-        .light-card,
-        .dropdown-nav-card,
-        .btn-brutalism-light,
-        .stat-box,
-        .light-popup-bg,
-        .light-card-box,
-        header,
-        #bioDropdown,
-        #themeMenuDropdown,
-        .cyber-loader-box,
-        .cyber-bar,
-        .status-pill-badge {
-            border-color: var(--theme-border) !important;
-            transition: border-color 0.15s ease;
-        }
+    /* Class Aksen Tema Keseluruhan */
+    .theme-bg-accent {
+        background-color: var(--theme-accent) !important;
+        color: var(--theme-text) !important;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
 
-        .theme-bg-accent {
-            background-color: var(--theme-accent) !important;
-            color: var(--theme-text) !important;
-            border-color: var(--theme-border) !important;
-            transition: all 0.15s ease;
-        }
+    .theme-text-accent {
+        color: var(--theme-accent) !important;
+        transition: color 0.15s ease;
+    }
 
-        .theme-text-accent {
-            color: var(--theme-border) !important;
-            transition: color 0.15s ease;
-        }
+    .theme-border-accent {
+        border-color: var(--theme-accent) !important;
+        transition: border-color 0.15s ease;
+    }
 
-        .theme-light-bg {
-            background-color: var(--theme-light) !important;
-            border-color: var(--theme-border) !important;
-            transition: all 0.15s ease;
-        }
+    .theme-light-bg {
+        background-color: var(--theme-light) !important;
+        transition: background-color 0.15s ease;
+    }
 
-        .rgb-mode-active .light-card,
-        .rgb-mode-active .dropdown-nav-card,
-        .rgb-mode-active .btn-brutalism-light,
-        .rgb-mode-active #themeMenuDropdown,
-        .rgb-mode-active .cyber-loader-box,
-        .rgb-mode-active .cyber-bar,
-        .rgb-mode-active .stat-box,
-        .rgb-mode-active .light-popup-bg,
-        .rgb-mode-active .light-card-box,
-        .rgb-mode-active #searchInput,
-        .rgb-mode-active .status-pill-badge {
-            border-color: transparent !important;
-            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
-                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            background-origin: border-box !important;
-            background-clip: padding-box, border-box !important;
-        }
+    /* CYBERPUNK LOADER ANIMATION */
+    #cyber-loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background-color: var(--bg-cream);
+        background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+        background-size: 16px 16px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #cyber-loader-overlay.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    .cyber-loader-box {
+        background: var(--card-bg);
+        border: 2.5px solid var(--border-dark);
+        box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+        border-radius: 24px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        width: 320px;
+    }
+    .cyber-avatar-wrap {
+        position: relative;
+        width: 76px;
+        height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .cyber-ring {
+        position: absolute;
+        inset: -6px;
+        border: 3.5px solid #e4e4e7;
+        border-top-color: var(--border-dark);
+        border-right-color: #3b82f6;
+        border-radius: 50%;
+        animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+    }
+    @keyframes spinCyber {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .cyber-text-glitch {
+        color: var(--border-dark);
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 2px;
+    }
+    .cyber-bar {
+        width: 100%;
+        height: 10px;
+        background: #e4e4e7;
+        border: 2px solid var(--border-dark);
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+    .cyber-bar-fill {
+        height: 100%;
+        background: var(--border-dark);
+        width: 0%;
+        transition: width 0.15s ease;
+        border-radius: 9999px;
+    }
 
-        .rgb-mode-active .theme-bg-accent {
-            border-color: transparent !important;
-            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
-                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            background-origin: border-box !important;
-            background-clip: padding-box, border-box !important;
-            color: var(--theme-text) !important;
-        }
+    /* Video Banner Radius Melengkung & Pemotongan Presisi */
+    .banner-video-container {
+        width: 100% !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 22px !important;
+        overflow: hidden !important;
+        position: relative !important;
+        background-color: #000000 !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+        isolation: isolate !important;
+    }
+    .banner-video-el {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        border-radius: 20px !important;
+    }
 
-        .rgb-mode-active header,
-        .rgb-mode-active #bioDropdown {
-            border-color: transparent !important;
-            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
-                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            background-origin: border-box !important;
-            background-clip: padding-box, border-box !important;
-        }
+    /* Kotak Statistik */
+    .stat-box {
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 18px !important;
+        padding: 12px 14px !important;
+        min-height: 98px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+    }
+    .stat-label {
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.05em !important;
+        color: #121212 !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
+    }
+    .stat-value {
+        font-size: 22px !important;
+        font-weight: 900 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        color: #121212 !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+    .stat-sub {
+        font-size: 9px !important;
+        font-weight: 700 !important;
+        color: #52525b !important;
+    }
 
-        #cyber-loader-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            background-color: var(--bg-cream);
-            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
-            background-size: 16px 16px !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-        }
-        #cyber-loader-overlay.fade-out {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .cyber-loader-box {
-            background: var(--card-bg);
-            border: 2.5px solid var(--theme-border);
-            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
-            border-radius: 24px;
-            padding: 32px 28px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            width: 320px;
-        }
-        .cyber-avatar-wrap {
-            position: relative;
-            width: 76px;
-            height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .cyber-ring {
-            position: absolute;
-            inset: -6px;
-            border: 3.5px solid #e4e4e7;
-            border-top-color: var(--theme-border);
-            border-right-color: #3b82f6;
-            border-radius: 50%;
-            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-        }
-        @keyframes spinCyber {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .cyber-text-glitch {
-            color: #121212;
-            font-weight: 900;
-            font-size: 13px;
-            letter-spacing: 2px;
-        }
-        .cyber-bar {
-            width: 100%;
-            height: 10px;
-            background: #e4e4e7;
-            border: 2px solid var(--theme-border);
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .cyber-bar-fill {
-            height: 100%;
-            background: var(--theme-border);
-            width: 0%;
-            transition: width 0.15s ease;
-            border-radius: 9999px;
-        }
+    /* OVERRIDE LIST ENDPOINT & FORM PARAMETER */
+    #apiList {
+        background-color: transparent !important;
+    }
 
-        .banner-video-container {
-            width: 100% !important;
-            border: 2.5px solid var(--theme-border) !important;
-            border-radius: 22px !important;
-            overflow: hidden !important;
-            position: relative !important;
-            background-color: #000000 !important;
-            box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-            -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-            isolation: isolate !important;
-        }
-        .banner-video-el {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            display: block !important;
-            border-radius: 20px !important;
-        }
+    #apiList .api-item {
+        background-color: var(--card-bg) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 16px !important;
+        margin-bottom: 14px !important;
+        box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
+        overflow: hidden !important;
+    }
 
-        .stat-box {
-            background-color: var(--card-bg) !important;
-            border: 2px solid var(--theme-border) !important;
-            border-radius: 18px !important;
-            padding: 12px 14px !important;
-            min-height: 98px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        }
-        .stat-label {
-            font-size: 10px !important;
-            font-weight: 900 !important;
-            letter-spacing: 0.05em !important;
-            color: #121212 !important;
-            text-transform: uppercase !important;
-            margin: 0 !important;
-            line-height: 1.2 !important;
-        }
-        .stat-value {
-            font-size: 22px !important;
-            font-weight: 900 !important;
-            font-family: 'JetBrains Mono', monospace !important;
-            color: #121212 !important;
-            line-height: 1.1 !important;
-            margin: 0 !important;
-        }
-        .stat-sub {
-            font-size: 9px !important;
-            font-weight: 700 !important;
-            color: #52525b !important;
-        }
+    #apiList .api-item > button {
+        background-color: var(--card-bg) !important;
+        border-bottom: none !important;
+        color: var(--border-dark) !important;
+    }
+    #apiList .api-item > button p { color: var(--border-dark) !important; font-weight: 900 !important; }
+    #apiList .api-item > button .bg-cyan-500 { background-color: var(--border-dark) !important; color: #fff !important; border-radius: 6px !important; }
+    #apiList .api-item > button code, #apiList .api-item > button .text-cyan-200, #apiList .api-item > button .text-cyan-700 { color: var(--border-dark) !important; font-weight: 700 !important; }
 
-        #apiList { background-color: transparent !important; }
-        #apiList .api-item {
-            background-color: var(--card-bg) !important;
-            border: 2.5px solid var(--theme-border) !important;
-            border-radius: 16px !important;
-            margin-bottom: 14px !important;
-            box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
-            overflow: hidden !important;
-        }
-        #apiList .api-item > button {
-            background-color: var(--card-bg) !important;
-            border-bottom: none !important;
-            color: #121212 !important;
-        }
+    #apiList .api-item > div[id^="ep-"] {
+        background-color: #FAF7EF !important; 
+        border-top: 2.5px dashed var(--border-dark) !important;
+    }
+    
+    #apiList .api-item > div[id^="ep-"] .bg-slate-900\/60,
+    #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
+    #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        box-shadow: none !important;
+        color: var(--border-dark) !important;
+    }
 
-        .dropdown-nav-card {
-            background-color: #FFFDF8 !important;
-            border: 2px solid var(--theme-border) !important;
-            border-radius: 14px !important;
-            padding: 10px 14px !important;
-            font-weight: 800 !important;
-            font-size: 11px !important;
-            color: #121212 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            text-transform: uppercase !important;
-            transition: all 0.15s ease !important;
-            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
-        }
-        .dropdown-nav-card:active {
-            transform: translateY(1px) !important;
-            background-color: #FAF7EF !important;
-        }
+    #apiList .api-item > div[id^="ep-"] h4,
+    #apiList .api-item > div[id^="ep-"] p,
+    #apiList .api-item > div[id^="ep-"] span,
+    #apiList .api-item > div[id^="ep-"] code {
+        color: var(--border-dark) !important;
+    }
 
-        #searchInput {
-            background-color: var(--card-bg) !important;
-            border: 2px solid var(--theme-border) !important;
-            color: #121212 !important;
-            border-radius: 16px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
-        }
-        #searchInput::placeholder { color: #71717a !important; }
+    #apiList form label {
+        color: var(--border-dark) !important;
+        font-weight: 900 !important;
+    }
+    #apiList form input,
+    #apiList form select,
+    #apiList form button[id^="custom-select-"] {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        font-weight: 800 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+    #apiList form input::placeholder { color: #71717a !important; font-weight: 700 !important; }
 
-        #categoryFilters button, .filter-btn {
-            background-color: #FAF7EF !important;
-            border: 2px solid var(--theme-border) !important;
-            color: #121212 !important;
-            border-radius: 9999px !important;
-            font-weight: 800 !important;
-            font-size: 11px !important;
-            padding: 6px 16px !important;
-            cursor: pointer;
-        }
-        #categoryFilters button.active, .filter-btn.active {
-            background-color: var(--theme-border) !important;
-            color: #ffffff !important;
-        }
+    .select-modal-container {
+        background-color: #FFFDF8 !important;
+        border: 2.5px solid var(--border-dark) !important;
+    }
+    .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
+    .select-modal-container .select-modal-item.selected { background-color: var(--border-dark) !important; color: #fff !important; }
+    .select-modal-container p, .select-modal-container span, .select-modal-container svg { color: var(--border-dark) !important; }
 
-        .light-popup-bg {
-            background-color: var(--card-bg) !important;
-            border: 2.5px solid var(--theme-border) !important;
-            box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
-            color: #121212 !important;
-        }
-        .light-card-box {
-            background-color: #FAF7EF !important;
-            border: 2px solid var(--theme-border) !important;
-            border-radius: 16px !important;
-        }
-        .light-pill-capsule {
-            background-color: var(--card-bg) !important;
-            border: 2px solid var(--theme-border) !important;
-            border-radius: 9999px !important;
-            color: #121212 !important;
-            font-weight: 800 !important;
-        }
-        .light-solid-header {
-            background-color: var(--theme-border) !important;
-            color: #ffffff !important;
-            font-weight: 900 !important;
-            border-radius: 10px !important;
-        }
+    #apiList button {
+        border: 2px solid var(--border-dark) !important;
+        font-weight: 900 !important;
+        color: var(--border-dark) !important;
+    }
+    #apiList .api-item > div[id^="ep-"] button[onclick^="copyFromElement"] {
+        background-color: #FFFDF8 !important;
+        padding: 4px 12px !important;
+    }
+    #apiList button[type="submit"] {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
+        box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
+    }
+    #apiList button[type="submit"]:active { box-shadow: 0 0 0 transparent !important; transform: translate(2px, 2px) !important; }
+    #apiList button[type="submit"] * { color: #ffffff !important; }
+    
+    #apiList button[onclick^="clearResponse"] {
+        background-color: #FFFDF8 !important;
+    }
+    #apiList button[onclick^="clearResponse"]:hover { background-color: #FAF7EF !important; }
 
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    #apiList svg { color: var(--border-dark) !important; }
+
+    /* RESPONSE CONTAINER OUTPUT */
+    #apiList [id^="response-content-"] > div {
+        background-color: #FFFDF8 !important;
+        border: 2.5px solid var(--border-dark) !important;
+        box-shadow: none !important;
+        border-radius: 16px !important;
+    }
+
+    #apiList [id^="response-content-"] .bg-black\/60,
+    #apiList [id^="response-content-"] .bg-black\/40,
+    #apiList [id^="response-content-"] .bg-black\/30,
+    #apiList [id^="response-content-"] .bg-black\/20,
+    #apiList [id^="response-content-"] .bg-black\/10,
+    #apiList [id^="response-content-"] .bg-slate-950\/40 {
+        background-color: #FAF7EF !important;
+        border-color: var(--border-dark) !important;
+    }
+
+    #apiList [id^="response-content-"] .grid > div {
+        background-color: #FFFDF8 !important;
+        border: 1.5px solid var(--border-dark) !important;
+        box-shadow: none !important;
+    }
+
+    #apiList [id^="response-content-"] span,
+    #apiList [id^="response-content-"] p,
+    #apiList [id^="response-content-"] div,
+    #apiList [id^="response-content-"] code {
+        color: var(--border-dark) !important;
+    }
+
+    #apiList [id^="response-content-"] pre {
+        background-color: #FFFDF8 !important;
+        color: var(--border-dark) !important;
+        border-top: 2px dashed var(--border-dark) !important;
+    }
+    #apiList [id^="response-content-"] pre code {
+        color: var(--border-dark) !important;
+        font-weight: 700 !important;
+    }
+
+    #apiList [id^="response-content-"] button {
+        background-color: #FFFDF8 !important;
+        color: var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
+        font-weight: 800 !important;
+        box-shadow: none !important;
+    }
+    #apiList [id^="response-content-"] button:hover {
+        background-color: #FAF7EF !important;
+    }
+    #apiList [id^="response-content-"] button span {
+        color: var(--border-dark) !important;
+    }
+
+    /* BADGES */
+    #apiList .api-item .status-ready { background-color: #86efac !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    
+    #apiList .api-item span.bg-blue-500\/20 { background-color: #bfdbfe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-amber-500\/20 { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-purple-500\/20 { background-color: #d8b4fe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item span.bg-blue-500\/20 svg, #apiList .api-item span.bg-amber-500\/20 svg, #apiList .api-item span.bg-purple-500\/20 svg { color: #121212 !important; }
+
+    /* Menu Navigasi Kartu Dropdown */
+    .dropdown-nav-card {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        font-weight: 800 !important;
+        font-size: 11px !important;
+        color: #121212 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        text-transform: uppercase !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+    }
+    .dropdown-nav-card:active {
+        transform: translateY(1px) !important;
+        background-color: #FAF7EF !important;
+    }
+
+    /* Search Bar */
+    #searchInput {
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        border-radius: 16px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
+    }
+    #searchInput::placeholder { color: #71717a !important; }
+
+    #categoryFilters button, .filter-btn {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
+        color: var(--border-dark) !important;
+        border-radius: 9999px !important;
+        font-weight: 800 !important;
+        font-size: 11px !important;
+        padding: 6px 16px !important;
+        cursor: pointer;
+    }
+    #categoryFilters button.active, .filter-btn.active {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
+    }
+
+    .lang-btn {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border: 1.5px solid var(--border-dark);
+        background-color: #FAF7EF;
+        color: var(--border-dark);
+        border-radius: 8px;
+    }
+    .lang-btn.active {
+        background-color: var(--border-dark);
+        color: #ffffff;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Popup Modal Styling */
+    .light-popup-bg {
+        background-color: var(--card-bg) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
+        color: var(--border-dark) !important;
+    }
+    .light-card-box {
+        background-color: #FAF7EF !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 16px !important;
+    }
+    .light-pill-capsule {
+        background-color: var(--card-bg) !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 9999px !important;
+        color: var(--border-dark) !important;
+        font-weight: 800 !important;
+    }
+    .light-solid-header {
+        background-color: var(--border-dark) !important;
+        color: #ffffff !important;
+        font-weight: 900 !important;
+        border-radius: 10px !important;
+    }
     </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen pb-12 antialiased">
 
-<!-- Loader Overlay -->
+<!-- Loader Overlay Cyberpunk -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
         </div>
         <div class="text-center">
-            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">INITIALIZING GATEWAY...</div>
-            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">ARULZ-XD API REST CORE</div>
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                INITIALIZING GATEWAY...
+            </div>
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                ARULZ-XD API REST CORE
+            </div>
         </div>
         <div class="w-full mt-5">
             <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
@@ -3284,61 +3401,44 @@ app.get('/docs', (req, res) => {
     </div>
 </div>
 
-<!-- SCRIPT KHUSUS LOADER (LANGSUNG JALAN ANTI MACET) -->
-<script>
-    (function() {
-        var progress = 0;
-        var fill = document.getElementById('loader-progress-fill');
-        var text = document.getElementById('loader-percentage');
-        var overlay = document.getElementById('cyber-loader-overlay');
-        
-        var timer = setInterval(function() {
-            progress += Math.floor(Math.random() * 15) + 5;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(timer);
-                if (fill) fill.style.width = '100%';
-                if (text) text.innerText = '100%';
-                setTimeout(function() {
-                    if (overlay) {
-                        overlay.classList.add('fade-out');
-                    }
-                }, 200);
-            } else {
-                if (fill) fill.style.width = progress + '%';
-                if (text) text.innerText = progress + '%';
-            }
-        }, 60);
-    })();
-</script>
-
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
 <!-- Welcome Popup -->
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 brutal-border rounded-2xl shadow-xl">
+    <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl">
       <button id="closePopupBtn" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-900 bg-zinc-200 rounded-full p-1.5 focus:outline-none border border-zinc-900">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
       </button>
+      
       <div class="text-center mb-4">
-        <h1 class="text-xl font-extrabold text-zinc-900 leading-tight">WELCOME TO <span class="theme-text-accent">ARULZ-XD API</span></h1>
+        <h1 class="text-xl font-extrabold text-zinc-900 leading-tight">
+          WELCOME TO <span class="theme-text-accent font-black">ARULZ-XD API</span>
+        </h1>
       </div>
-      <div class="mb-4 rounded-xl overflow-hidden border-2 brutal-border bg-black relative">
+      
+      <div class="mb-4 rounded-xl overflow-hidden border-2 border-zinc-900 bg-black relative">
         <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
       </div>
+      
       <div class="text-center text-zinc-700 text-xs mb-5 leading-relaxed font-semibold">
         <p>Halo! Selamat datang di Arulz-XD REST API Core. Gunakan API Key di bawah ini untuk memulai pengujian endpoint secara langsung.</p>
       </div>
+      
       <div class="mb-5 flex justify-center">
-        <div class="bg-zinc-100 border-2 brutal-border rounded-full py-2 px-5 text-center">
+        <div class="bg-zinc-100 border-2 border-zinc-900 rounded-full py-2 px-5 text-center">
           <span class="font-bold text-xs text-zinc-900 font-mono">
-            APIKEY : <span id="welcomeApiKey" class="font-mono theme-text-accent select-all font-extrabold">${userApiKey}</span>
+            APIKEY : <span id="welcomeApiKey" class="font-mono text-blue-600 select-all font-extrabold">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
-      <a href="/support" class="w-full theme-bg-accent text-zinc-900 font-extrabold py-3 px-6 rounded-xl border-2 brutal-border text-xs block text-center uppercase tracking-wider active:scale-95 shadow-xs">Donate Sekarang</a>
+      
+      <a href="/support" class="w-full theme-bg-accent font-extrabold py-3 px-6 rounded-xl border-2 border-zinc-900 text-xs block text-center uppercase tracking-wider shadow-xs">
+        Donate Sekarang
+      </a>
     </div>
   </div>
 </div>
@@ -3352,15 +3452,15 @@ app.get('/docs', (req, res) => {
             <div class="relative w-20 h-20 flex-shrink-0">
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border-2 brutal-border shadow-sm overflow-hidden bg-white">
-                        <img id="userAvatar" src="${userAvatar}" class="w-full h-full rounded-full object-cover">
+                    <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-sm overflow-hidden bg-white">
+                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
             </div>
 
             <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
                 <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-black text-zinc-900">${username || 'User'}</span>
+                    <span id="userName" class="text-xs font-black text-zinc-900">loading...</span>
                 </div>
                 <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
                     <span id="userEmail" class="text-[10px] font-bold text-zinc-700">loading_email@gmail.com</span>
@@ -3378,27 +3478,29 @@ app.get('/docs', (req, res) => {
 
         <div class="light-card-box p-3 mb-4 relative">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-white border-2 brutal-border bg-zinc-900 px-2.5 py-0.5 rounded-md uppercase">Api Key Kamu :</span>
+                <span class="text-[10px] font-black text-white border-2 border-zinc-900 bg-zinc-900 px-2.5 py-0.5 rounded-md uppercase">Api Key Kamu :</span>
             </div>
             
             <div class="light-pill-capsule text-zinc-900 text-xs font-black py-1.5 px-3 truncate mb-3 text-center font-mono">
-                <span id="userApiKey">${userApiKey}</span>
+                <span id="userApiKey">loading-key</span>
             </div>
 
             <div id="vipCustomKeyBox" class="hidden mb-3">
                 <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-500 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 brutal-border text-[10px] px-3 rounded-xl uppercase font-extrabold shadow-xs active:scale-95">SIMPAN</button>
+                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-500 focus:outline-none font-bold">
+                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-[10px] px-3 rounded-xl uppercase font-extrabold shadow-sm active:scale-95">SIMPAN</button>
                 </div>
             </div>
             
-            <button onclick="copyTxt(document.getElementById('userApiKey').innerText)" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 brutal-border text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
+            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
 
         <div class="light-card-box p-3 mb-4 text-center relative">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">LIMIT USER</div>
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">
+                LIMIT USER
+            </div>
             <div class="py-0.5">
                 <span class="inline-block light-pill-capsule text-zinc-900 px-6 py-1 text-xs font-black tracking-widest font-mono">
                     <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
@@ -3407,17 +3509,27 @@ app.get('/docs', (req, res) => {
         </div>
 
         <div class="light-card-box p-3 mb-4">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">AKTIFITAS REQUEST API TERAKHIR</div>
+            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">
+                AKTIFITAS REQUEST API TERAKHIR
+            </div>
             <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">belum ada request</div>
+                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">
+                    belum ada request
+                </div>
             </div>
         </div>
 
         <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 brutal-border font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-xs">UPGRADE VIP</a>
+            <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-sm">
+                UPGRADE VIP
+            </a>
             <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">TUTUP</button>
-                <a href="/auth/logout" class="flex-1 border-2 brutal-border bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-xs">LOG OUT</a>
+                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">
+                    TUTUP
+                </button>
+                <a href="/auth/logout" class="flex-1 border-2 border-zinc-900 bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-sm">
+                    LOG OUT
+                </a>
             </div>
         </div>
     </div>
@@ -3426,87 +3538,141 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar -->
-<header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+<!-- Header Top Bar (Fixed Solid Krem z-30) -->
+<header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 border-zinc-900 z-30 shadow-xs">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
+            <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
                 <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">DOCUMENTATION GATEWAY</span>
             </div>
         </div>
 
+        <!-- Tombol Aksi Kanan -->
         <div class="flex items-center gap-2 relative">
-            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            
+            <!-- Tombol Switcher Tema Warna -->
+            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 border-zinc-900 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
             </button>
 
-            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+            <!-- Tombol Menu Sidebar -->
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
             </button>
 
-            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+            <!-- Dropdown Pilihan Tema Warna -->
+            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
-                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95"><span>YELLOW</span><span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span></button>
-                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95"><span>RED</span><span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span></button>
-                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95"><span>BLUE</span><span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span></button>
-                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95"><span>CYAN</span><span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span></button>
-                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95"><span>PURPLE</span><span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span></button>
-                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95"><span>GREEN</span><span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span></button>
-                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95"><span>BLACK</span><span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span></button>
-                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm"><span>RGB DYNAMIC</span><span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span></button>
+                
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-zinc-900"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-zinc-900 animate-pulse"></span>
+                </button>
             </div>
+
         </div>
     </div>
 </header>
 
+<!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav -->
+<!-- Sidebar Dropdown Nav (z-50) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
-        <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            ARULZXD API
-        </span>
-        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 theme-bg-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                ARULZXD API
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <div class="flex border-2 border-zinc-900 rounded-lg p-0.5 bg-zinc-200">
+                <button id="lang-id" class="lang-btn active" onclick="setLanguage('id')">ID</button>
+                <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
+            </div>
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
     </div>
 
-    <div class="mb-3 rounded-2xl border-2 border-zinc-900 overflow-hidden bg-black h-36 relative shadow-sm">
-        <video autoplay loop muted playsinline class="w-full h-full object-cover">
+    <!-- Banner Video -->
+    <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
         </video>
     </div>
 
-    <div class="mb-3">
-        ${isLoggedIn ? `
-        <div class="p-2.5 rounded-2xl border-2 border-zinc-900 bg-white/60 flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-2.5 overflow-hidden">
-                <img id="sidebarUserAvatar" src="${userAvatar}" class="w-9 h-9 rounded-xl border-2 border-zinc-900 object-cover flex-shrink-0 bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">
-                <div class="flex flex-col truncate">
-                    <span class="text-xs font-extrabold text-zinc-900 truncate">${username}</span>
-                    <span class="text-[9px] font-bold text-blue-600 uppercase tracking-tight">AKUN TERHUBUNG</span>
+    <!-- Auth / Profile Status Container (Di atas Dashboard) -->
+    <div id="sidebarAuthBtnContainer" class="mb-3">
+        ${req.user ? `
+        <button onclick="openProfilePopup()" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+            <div class="flex items-center gap-2.5 truncate">
+                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
+                <div class="truncate text-left leading-tight">
+                    <span class="block text-xs font-black truncate">${req.user.username}</span>
+                    <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
                 </div>
             </div>
-            <button onclick="openProfilePopup()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] rounded-xl border-2 border-zinc-900 uppercase tracking-wider active:scale-95 transition-all flex-shrink-0 shadow-sm">
-                PROFILE
-            </button>
-        </div>
+            <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+        </button>
         ` : `
-        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
-            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-            LOGIN / REGISTER
-        </a>
+        <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
+            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>PERINGATAN!</span>
+            </div>
+            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+            </p>
+            <a href="/login" class="w-full bg-zinc-900 text-white border-2 border-zinc-900 rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                <span>LOGIN / REGISTER</span>
+            </a>
+        </div>
         `}
     </div>
 
-    <nav class="space-y-2 flex-1">
+    <!-- Tombol Navigasi Dropdown -->
+    <nav class="space-y-2 flex-1 pb-4">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
@@ -3537,6 +3703,13 @@ app.get('/docs', (req, res) => {
                 <span>PASTECODE SNIPPET</span>
             </div>
         </a>
+        <a href="/changelog" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                <span>CHANGELOG</span>
+            </div>
+            <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
+        </a>
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
@@ -3564,15 +3737,18 @@ app.get('/docs', (req, res) => {
     </nav>
 </div>
 
-<!-- Main Container -->
+<!-- Main Mobile & Desktop Container (pt-20 agar tidak tertutup header fixed) -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
+    
+    <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Main Banner" class="banner-video-el">
         </video>
     </div>
 
-    <!-- Statistik -->
+    <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
@@ -3582,7 +3758,7 @@ app.get('/docs', (req, res) => {
         <div class="stat-box">
             <div class="flex items-center justify-between w-full">
                 <span class="stat-label">LIMIT USED</span>
-                <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border brutal-border uppercase">FREE</span>
+                <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">FREE</span>
             </div>
             <div class="flex items-baseline gap-1 mt-1">
                 <span id="userLimitUsed" class="stat-value">0</span>
@@ -3603,14 +3779,14 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Search & Filter -->
+    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
                 type="text" 
                 id="searchInput" 
                 placeholder="Cari Endpoint Atau Kategori...."
-                class="w-full py-4 pl-11 pr-4 text-xs font-bold rounded-2xl border-2 brutal-border bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-xs"
+                class="w-full py-4 pl-11 pr-4 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm"
             >
             <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -3619,181 +3795,62 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
+    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
+    <div class="hidden">
+        <audio id="audioElement"></audio>
+        <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
+        <span id="currentTime"></span><div id="progressContainer"><div id="progressBar"></div></div>
+        <span id="totalDuration"></span><button id="prevBtn"></button><button id="playBtn"></button>
+        <button id="nextBtn"></button><button id="playlistToggleBtn"></button><div id="playlistPanel"></div>
+        <span id="mainTitle"></span><span id="mainDescription"></span>
+    </div>
+
     <div id="noResults" class="text-center py-8 hidden">
         <h3 id="no-results-title" class="text-xs font-black text-zinc-900 mb-1">Endpoint Tidak Ditemukan</h3>
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- Container Utama Tempat List Endpoint -->
-    <div id="apiList" class="space-y-4 pt-1">
-        <div class="text-center py-8 font-bold text-xs text-zinc-600">Memuat daftar endpoint...</div>
-    </div>
+    <!-- 4. Daftar API List -->
+    <div id="apiList" class="space-y-4 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
-        &copy; 2026 ARULZ-XD API REST CORE
+        © 2026 ARULZ-XD API REST CORE
     </footer>
 </main>
 
+<div id="imageLightbox" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-[90vh]">
+        <img id="lightboxImage" src="" alt="Preview" class="max-w-full max-h-[85vh] rounded-lg object-contain" />
+        <button id="closeLightbox" class="absolute -top-10 right-0 text-white font-mono text-xs bg-black px-3 py-1 rounded border border-white">✕ Close</button>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
-<!-- SCRIPT UTAMA FRONTEND BROWSER -->
+<script class="notranslate" translate="no">
+    window.musicPlaylist = ${JSON.stringify(playlist || [])};
+    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
+</script>
+<script src="script.js"></script>
+
 <script>
-    var globalApiKey = '${userApiKey}';
-
-    function copyTxt(text) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function() {
-                alert('Teks berhasil disalin!');
-            });
-        }
-    }
-
-    function toggleEp(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden');
-    }
-
-    function filterCat(cat, btnEl) {
-        var buttons = document.querySelectorAll('#categoryFilters .filter-btn');
-        buttons.forEach(function(b) { b.classList.remove('active'); });
-        if (btnEl) btnEl.classList.add('active');
-
-        var items = document.querySelectorAll('#apiList .api-item');
-        items.forEach(function(item) {
-            if (cat === 'all' || item.getAttribute('data-category') === cat.toLowerCase()) {
-                item.classList.remove('hidden');
-            } else {
-                item.classList.add('hidden');
-            }
-        });
-    }
-
-    function loadEndpoints() {
-        var apiListContainer = document.getElementById('apiList');
-        var totalEpEl = document.getElementById('totalEndpoints');
-        var totalCatEl = document.getElementById('totalCategories');
-        var filterContainer = document.getElementById('categoryFilters');
-
-        fetch('/api/apilist')
-            .then(function(res) { return res.json(); })
-            .catch(function() { return fetch('/apilist').then(function(res) { return res.json(); }); })
-            .then(function(result) {
-                var data = Array.isArray(result) ? result : (result.data || result.endpoints || []);
-
-                if (!data || data.length === 0) {
-                    if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-zinc-600">Tidak ada endpoint.</div>';
-                    return;
-                }
-
-                var epCount = 0;
-                var catSet = new Set();
-
-                data.forEach(function(c) {
-                    if (c.category) catSet.add(c.category);
-                    var list = c.endpoints || c.items || [];
-                    epCount += list.length;
-                });
-
-                if (totalEpEl) totalEpEl.innerText = epCount;
-                if (totalCatEl) totalCatEl.innerText = catSet.size;
-
-                if (filterContainer && catSet.size > 0) {
-                    var fHtml = '<button onclick="filterCat(\'all\', this)" class="filter-btn active">SEMUA (' + epCount + ')</button>';
-                    catSet.forEach(function(catName) {
-                        var count = 0;
-                        data.forEach(function(item) {
-                            if (item.category === catName) count += (item.endpoints || item.items || []).length;
-                        });
-                        fHtml += '<button onclick="filterCat(\'' + catName + '\', this)" class="filter-btn">' + catName.toUpperCase() + ' (' + count + ')</button>';
-                    });
-                    filterContainer.innerHTML = fHtml;
-                }
-
-                var html = '';
-                var idx = 0;
-                data.forEach(function(c) {
-                    var catName = c.category || 'GENERAL';
-                    var list = c.endpoints || c.items || [];
-
-                    list.forEach(function(ep) {
-                        idx++;
-                        var id = 'ep-' + idx;
-                        var path = ep.path || ep.endpoint || '/';
-                        var name = ep.name || ep.title || path;
-                        var desc = ep.description || ep.desc || 'Tanpa deskripsi.';
-                        var method = (ep.method || 'GET').toUpperCase();
-                        var status = ep.status || 'Active';
-
-                        html += '<div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="' + catName.toLowerCase() + '" data-search="' + name.toLowerCase() + ' ' + path.toLowerCase() + '">' +
-                            '<button onclick="toggleEp(\'' + id + '\')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">' +
-                                '<div class="flex items-center gap-2.5 overflow-hidden pr-2">' +
-                                    '<span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">' + method + '</span>' +
-                                    '<div class="truncate">' +
-                                        '<p class="text-xs font-black text-zinc-900 leading-tight truncate">' + name + '</p>' +
-                                        '<code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">' + path + '</code>' +
-                                    '</div>' +
-                                '</div>' +
-                                '<span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase ' + (status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400') + '">' + status + '</span>' +
-                            '</button>' +
-                            '<div id="' + id + '" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">' +
-                                '<p class="text-xs font-semibold text-zinc-700 mb-3">' + desc + '</p>' +
-                                '<div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">' +
-                                    '<code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">' + path + '</code>' +
-                                    '<button onclick="copyTxt(\'' + path + '\')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>';
-                    });
-                });
-
-                if (apiListContainer) apiListContainer.innerHTML = html;
-            })
-            .catch(function(err) {
-                console.error(err);
-                if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-red-600">Gagal memuat daftar endpoint dari server.</div>';
-            });
-    }
-
-    function openProfilePopup() {
-        var p = document.getElementById('profilePopup');
-        if (p) p.classList.remove('hidden');
-    }
-
-    function closeProfilePopup() {
-        var p = document.getElementById('profilePopup');
-        if (p) p.classList.add('hidden');
-    }
-
-    function showWelcomePopup() {
-        var popup = document.getElementById('welcomePopup');
-        var closeBtn = document.getElementById('closePopupBtn');
-        if (popup) {
-            popup.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-        }
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                popup.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            };
-        }
-    }
-
-    var THEME_PRESETS = {
-        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
-        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
-        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
-        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
-        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
-        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
-        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+    // System Theme Switcher Presets
+    const THEME_PRESETS = {
+        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15' },
+        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171' },
+        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa' },
+        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee' },
+        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc' },
+        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399' }
     };
 
-    var rgbInterval = null;
+    let rgbInterval = null;
 
     function setAppTheme(themeName) {
-        var root = document.documentElement;
-        var dropdown = document.getElementById('themeMenuDropdown');
+        const root = document.documentElement;
+        const dropdown = document.getElementById('themeMenuDropdown');
 
         if (rgbInterval) {
             clearInterval(rgbInterval);
@@ -3803,57 +3860,259 @@ app.get('/docs', (req, res) => {
         localStorage.setItem('selectedThemeStyle', themeName);
 
         if (themeName === 'rgb') {
-            document.body.classList.add('rgb-mode-active');
-            var angle = 0;
-            rgbInterval = setInterval(function() {
-                angle = (angle + 3) % 360;
-                root.style.setProperty('--rgb-angle', angle + 'deg');
-            }, 20);
+            let hue = 0;
+            rgbInterval = setInterval(() => {
+                hue = (hue + 2) % 360;
+                const accentColor = \`hsl(\${hue}, 85%, 50%)\`;
+                const lightBg = \`hsl(\${hue}, 85%, 92%)\`;
+                const ringColor = \`hsl(\${hue}, 85%, 60%)\`;
+                const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
+
+                root.style.setProperty('--theme-accent', accentColor);
+                root.style.setProperty('--theme-text', textColor);
+                root.style.setProperty('--theme-light', lightBg);
+                root.style.setProperty('--theme-ring', ringColor);
+            }, 30);
         } else {
-            document.body.classList.remove('rgb-mode-active');
-            var t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
-            root.style.setProperty('--theme-border', t.border);
+            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
             root.style.setProperty('--theme-accent', t.accent);
             root.style.setProperty('--theme-text', t.text);
             root.style.setProperty('--theme-light', t.light);
+            root.style.setProperty('--theme-ring', t.ring);
         }
 
         if (dropdown) dropdown.classList.add('hidden');
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        loadEndpoints();
+    function copyText(text, label) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert((label || 'Teks') + ' berhasil disalin!');
+            });
+        }
+    }
 
-        // Welcome Popup Delay
-        setTimeout(function() {
-            var urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('showProfile') !== 'true') {
-                showWelcomePopup();
+    function openProfilePopup() {
+        document.getElementById('profilePopup').classList.remove('hidden');
+        fetchUserProfile();
+    }
+
+    function closeProfilePopup() {
+        document.getElementById('profilePopup').classList.add('hidden');
+    }
+
+    function showWelcomePopup() {
+        const popup = document.getElementById('welcomePopup');
+        const closeBtn = document.getElementById('closePopupBtn');
+        if (popup) {
+            popup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                popup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            };
+        }
+    }
+
+    function setRoleTheme(roleName) {
+        const planText = document.getElementById('userPlanText');
+        const vipCustomBox = document.getElementById('vipCustomKeyBox');
+        if (!planText) return;
+
+        const role = (roleName || '').toLowerCase();
+
+        if (role.includes('vip')) {
+            planText.textContent = 'VIP';
+            planText.setAttribute('fill', '#2563eb');
+            if (vipCustomBox) vipCustomBox.classList.remove('hidden');
+        } else if (role.includes('premium')) {
+            planText.textContent = 'PREM';
+            planText.setAttribute('fill', '#d97706');
+            if (vipCustomBox) vipCustomBox.classList.add('hidden');
+        } else {
+            planText.textContent = 'FREE';
+            planText.setAttribute('fill', '#121212');
+            if (vipCustomBox) vipCustomBox.classList.add('hidden');
+        }
+    }
+
+    async function saveCustomApiKey() {
+        const input = document.getElementById('customApiKeyInput');
+        if (!input || !input.value.trim()) {
+            alert('Ketik API Key kustom yang diinginkan terlebih dahulu!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/user/custom-apikey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customKey: input.value.trim() })
+            });
+
+            const resData = await response.json();
+            if (resData.status) {
+                alert(resData.message);
+                document.getElementById('userApiKey').innerText = resData.apikey;
+                input.value = '';
+            } else {
+                alert(resData.message || 'Gagal mengubah API Key.');
             }
-        }, 800);
+        } catch (err) {
+            alert('Terjadi kesalahan koneksi saat menyimpan API Key.');
+        }
+    }
 
-        // Sidebar Navigation
-        var bioMenuBtn = document.getElementById('bioMenuBtn');
-        var bioDropdown = document.getElementById('bioDropdown');
-        var closeMenuBtn = document.getElementById('closeMenuBtn');
-        var menuOverlay = document.getElementById('menuOverlay');
-        var themeBtn = document.getElementById('themePickerBtn');
-        var themeDropdown = document.getElementById('themeMenuDropdown');
+    async function uploadAvatarFile(input) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const userAvatarImg = document.getElementById('userAvatar');
+        const sidebarAvatarImg = document.getElementById('sidebarUserAvatar');
+        const oldSrc = userAvatarImg ? userAvatarImg.src : '';
+
+        if (userAvatarImg) userAvatarImg.style.opacity = '0.4';
+        if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '0.4';
+
+        const showCyberAlert = (icon, title, text) => {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: text,
+                background: '#010a17',
+                color: '#f8fafc',
+                confirmButtonText: 'OKE'
+            });
+        };
+
+        try {
+            const response = await fetch('/api/user/update-avatar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.status) {
+                const newAvatarUrl = result.avatar;
+
+                document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                    img.src = newAvatarUrl;
+                });
+
+                showCyberAlert('success', 'AVATAR UPDATED', 'Avatar profil berhasil diperbarui!');
+            } else {
+                showCyberAlert('error', 'UPDATE FAILED', result.message || 'Gagal mengunggah avatar.');
+                if (userAvatarImg) userAvatarImg.src = oldSrc;
+                if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
+            }
+        } catch (error) {
+            console.error("Error uploading avatar:", error);
+            showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
+            if (userAvatarImg) userAvatarImg.src = oldSrc;
+            if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
+        } finally {
+            if (userAvatarImg) userAvatarImg.style.opacity = '1';
+            if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
+            input.value = '';
+        }
+    }
+
+    function fetchUserProfile() {
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+
+                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
+                        if (img) img.src = latestAvatar;
+                    });
+
+                    document.getElementById('userName').innerText = data.user.username || 'User';
+                    document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
+                    
+                    const userKey = data.user.apikey || '';
+                    document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
+                                            
+                    setRoleTheme(data.user.role || 'Free User');
+
+                    fetchUserActivityLogs(userKey);
+                    if (typeof fetchAndUpdateUserLimit === 'function') {
+                        fetchAndUpdateUserLimit();
+                    }
+                }
+            })
+            .catch((err) => {
+                console.error("Gagal sinkronisasi profile:", err);
+            });
+    }
+
+    function fetchUserActivityLogs() {
+        const container = document.getElementById('activityLogsContainer');
+        if (!container) return;
+
+        fetch('/api/user-activity')
+          .then(res => res.json())
+          .then(resData => {
+              if (resData.status && resData.data && resData.data.length > 0) {
+                  container.innerHTML = resData.data.map(logText => 
+                    '<div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">' +
+                        logText +
+                    '</div>'
+                ).join('');
+            } else {
+                container.innerHTML = 
+                    '<div class="light-pill-capsule text-zinc-500 font-mono text-[10px] py-2 px-3 text-center">' +
+                        'Belum ada aktivitas request' +
+                    '</div>';
+            }
+        })
+        .catch(err => {
+            container.innerHTML = 
+                '<div class="light-pill-capsule text-red-600 font-mono text-[10px] py-2 px-3 text-center">' +
+                    'Gagal memuat aktivitas' +
+                '</div>';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+        const themeBtn = document.getElementById('themePickerBtn');
+        const themeDropdown = document.getElementById('themeMenuDropdown');
 
         if (themeBtn && themeDropdown) {
-            themeBtn.addEventListener('click', function(e) {
+            themeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 themeDropdown.classList.toggle('hidden');
             });
-            document.addEventListener('click', function(e) {
+
+            document.addEventListener('click', (e) => {
                 if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
                     themeDropdown.classList.add('hidden');
                 }
             });
         }
 
-        var savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        // Muat Tema dari LocalStorage
+        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
+
+        function playBannerVideo() {
+            if (sidebarBannerVideo) {
+                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
+            }
+        }
 
         function closeSidebarMenu() {
             if (bioDropdown && menuOverlay) {
@@ -3863,55 +4122,65 @@ app.get('/docs', (req, res) => {
         }
 
         if (bioMenuBtn && bioDropdown && menuOverlay) {
-            bioMenuBtn.addEventListener('click', function(e) {
+            bioMenuBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 bioDropdown.style.transform = 'translateX(0)';
                 menuOverlay.classList.remove('hidden');
+                playBannerVideo();
             });
             if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
             menuOverlay.addEventListener('click', closeSidebarMenu);
-            bioDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
         }
 
-        // Live Search Input
-        var searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                var query = e.target.value.toLowerCase().trim();
-                var items = document.querySelectorAll('#apiList .api-item');
-                var found = 0;
+        fetchUserProfile();
 
-                items.forEach(function(item) {
-                    var text = item.getAttribute('data-search') || '';
-                    if (text.indexOf(query) !== -1) {
-                        item.classList.remove('hidden');
-                        found++;
-                    } else {
-                        item.classList.add('hidden');
-                    }
-                });
-
-                var noRes = document.getElementById('noResults');
-                if (noRes) {
-                    if (found === 0 && items.length > 0) noRes.classList.remove('hidden');
-                    else noRes.classList.add('hidden');
-                }
-            });
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('showProfile') === 'true') {
+            openProfilePopup();
         }
     });
 
-    // Real-time Clock
-    function updateClock() {
-        if (typeof moment !== 'undefined') {
-            var now = moment();
-            var clockEl = document.getElementById('liveClock');
-            var dateEl = document.getElementById('liveDate');
-            if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
-            if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
-        }
+    let currentProgress = 0;
+    let hasFinishedLoading = false;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) {
+                loaderOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('showProfile') !== 'true') {
+                        showWelcomePopup();
+                    }
+                }, 200);
+            }
+        }, 400);
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 120);
+
+    window.addEventListener('load', finishLoader);
+    setTimeout(finishLoader, 1500);
 </script>
 
 </body>
