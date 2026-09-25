@@ -18,8 +18,12 @@
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
             --border-dark: #121212;
+            
+            /* Variabel Sistem Tema Dinamis */
             --theme-accent: #fde047;
             --theme-text: #121212;
+            --theme-light: #fef9c3;
+            --theme-ring: #facc15;
         }
 
         * {
@@ -46,38 +50,58 @@
             font-family: 'JetBrains Mono', monospace !important;
         }
 
-        /* Class Elemen Dinamis Akses Tema Warna */
-        .bg-theme-accent {
+        /* Class Aksen Tema Keseluruhan */
+        .theme-bg-accent {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
+            transition: background-color 0.15s ease, color 0.15s ease;
         }
 
-        .yellow-accent, input[type="radio"]:checked + .feedback-radio-box {
+        .theme-text-accent {
+            color: var(--theme-accent) !important;
+            transition: color 0.15s ease;
+        }
+
+        .theme-border-accent {
+            border-color: var(--theme-accent) !important;
+            transition: border-color 0.15s ease;
+        }
+
+        .theme-light-bg {
+            background-color: var(--theme-light) !important;
+            transition: background-color 0.15s ease;
+        }
+
+        /* Focus Ring Dinamis Input Form */
+        .theme-input:focus {
+            outline: none !important;
+            border-color: var(--border-dark) !important;
+            box-shadow: 0 0 0 3px var(--theme-ring) !important;
+        }
+
+        /* Radio Box Card Selection Terhubung Tema */
+        .feedback-radio-box {
+            background-color: #FFFDF8;
+            border: 2px solid var(--border-dark);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.15s ease;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.05);
+        }
+
+        input[type="radio"]:checked + .feedback-radio-box {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
+            border-color: var(--border-dark) !important;
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.15);
         }
 
-        /* Keyframe Animasi Perubahan Warna RGB Pelangi */
-@keyframes rgbHueAnimation {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-}
-
-@keyframes rgbBgMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Class RGB yang benar-benar bergerak dan berubah warna */
-.theme-rgb-active {
-    background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-    background-size: 300% 300% !important;
-    animation: rgbBgMove 3s ease infinite, rgbHueAnimation 2s linear infinite !important;
-    color: #ffffff !important;
-    border-color: #121212 !important;
-}
-
+        input[type="radio"]:checked + .feedback-radio-box i,
+        input[type="radio"]:checked + .feedback-radio-box span {
+            color: var(--theme-text) !important;
+        }
 
         /* Cyber Loader Overlay Light Style */
         #cyber-loader-overlay {
@@ -189,7 +213,7 @@
             background-color: #FAF7EF !important;
         }
 
-        /* Neubrutalist Buttons & Radio Options */
+        /* Neubrutalist Buttons */
         .btn-brutalism-light {
             background-color: #FFFDF8;
             color: var(--border-dark);
@@ -209,25 +233,7 @@
             box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.12);
         }
         .btn-brutalism-light:hover {
-            background-color: #FAF7EF;
             transform: translateY(-1px);
-        }
-
-        /* Radio Card Selection Style */
-        .feedback-radio-box {
-            background-color: #FFFDF8;
-            border: 2px solid var(--border-dark);
-            border-radius: 14px;
-            padding: 12px;
-            text-align: center;
-            transition: all 0.15s ease;
-            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.05);
-        }
-
-        input[type="radio"]:checked + .feedback-radio-box {
-            border-color: #121212 !important;
-            transform: translateY(-2px);
-            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.15);
         }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -263,7 +269,7 @@
         </div>
     </div>
 
-    <!-- Header Top Bar (Fixed, Solid Krem, Terunci di Atas z-30) -->
+    <!-- Header Top Bar (Fixed Solid Krem z-30) -->
     <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 border-zinc-900 z-30 shadow-xs">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -279,8 +285,8 @@
             <!-- Tombol Aksi Kanan -->
             <div class="flex items-center gap-2 relative">
                 
-                <!-- Tombol Pengubah Style (Theme Switcher) -->
-                <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-theme-accent flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm transition-all">
+                <!-- Tombol Switcher Tema Warna -->
+                <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 border-zinc-900 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
                     <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                     </svg>
@@ -293,7 +299,7 @@
                     </svg>
                 </button>
 
-                <!-- Popover Dropdown Menu Style Warna -->
+                <!-- Dropdown Pilihan Tema Warna -->
                 <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                     <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                     
@@ -301,19 +307,19 @@
                         <span>YELLOW</span>
                         <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-zinc-900"></span>
                     </button>
-                    <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-red-400 text-[11px] font-black text-white active:scale-95">
+                    <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-red-500 text-[11px] font-black text-white active:scale-95">
                         <span>RED</span>
                         <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-zinc-900"></span>
                     </button>
-                    <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-blue-400 text-[11px] font-black text-white active:scale-95">
+                    <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-blue-500 text-[11px] font-black text-white active:scale-95">
                         <span>BLUE</span>
                         <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-zinc-900"></span>
                     </button>
-                    <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-cyan-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
                         <span>CYAN</span>
-                        <span class="w-3.5 h-3.5 rounded-full bg-cyan-400 border border-zinc-900"></span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-zinc-900"></span>
                     </button>
-                    <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-purple-400 text-[11px] font-black text-white active:scale-95">
+                    <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-purple-500 text-[11px] font-black text-white active:scale-95">
                         <span>PURPLE</span>
                         <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-zinc-900"></span>
                     </button>
@@ -337,10 +343,10 @@
     <!-- Sidebar Dropdown Nav (z-50) -->
     <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         
-        <!-- 1. Header Dropdown -->
+        <!-- Header Dropdown -->
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
             <div class="flex items-center gap-2">
-                <span class="px-2.5 py-1 bg-theme-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span class="px-2.5 py-1 theme-bg-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     ARULZXD API
                 </span>
@@ -351,14 +357,14 @@
             </button>
         </div>
 
-        <!-- 2. Banner Video (Besar h-44, Tanpa Header Tulisan BANNER) -->
+        <!-- Banner Video (Besar h-44, Tanpa Header "BANNER") -->
         <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
             <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
                 <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
             </video>
         </div>
 
-        <!-- 3. Profile / Login / Status Peringatan (Dipindah ke Atas) -->
+        <!-- Auth / Profile Status Container (Di atas Dashboard) -->
         <div id="sidebarAuthBtnContainer" class="mb-3">
             <!-- Default State: Peringatan Belum Login -->
             <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
@@ -378,7 +384,7 @@
             </div>
         </div>
 
-        <!-- 4. Tombol Navigasi Dropdown -->
+        <!-- Tombol Navigasi Dropdown -->
         <nav class="space-y-2 flex-1 pb-4">
             <a href="/" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
@@ -410,7 +416,7 @@
                     <span>PASTECODE SNIPPET</span>
                 </div>
             </a>
-            <a href="/feedback" class="dropdown-nav-card bg-amber-100">
+            <a href="/feedback" class="dropdown-nav-card theme-light-bg">
                 <div class="flex items-center gap-2.5">
                     <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
                     <span>REQUEST FITUR</span>
@@ -442,11 +448,11 @@
         
         <!-- Header Section -->
         <div class="light-card p-6">
-            <span class="px-3 py-1 bg-theme-accent border-2 border-zinc-900 text-[10px] font-black uppercase rounded-full inline-block mb-3">
+            <span class="px-3 py-1 theme-bg-accent border-2 border-zinc-900 text-[10px] font-black uppercase rounded-full inline-block mb-3 shadow-xs">
                 SUPPORT CENTER
             </span>
             <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 mb-2 tracking-tight">
-                Hubungi <span class="text-blue-600">Kami</span>
+                Hubungi <span class="theme-text-accent">Kami</span>
             </h1>
             <p class="text-xs sm:text-sm font-semibold text-zinc-700 leading-relaxed">
                 Punya pertanyaan, menemukan bug, atau punya ide fitur baru? Kami di sini untuk mendengarkan. Feedback Anda membantu kami berkembang.
@@ -457,7 +463,7 @@
         <div id="cardContainer" class="relative">
             <div id="formContent" class="light-card p-6 sm:p-8 transition-all duration-300">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b-2 border-zinc-200">
-                    <div class="w-12 h-12 rounded-xl bg-theme-accent border-2 border-zinc-900 flex items-center justify-center text-zinc-900 text-xl font-black shadow-xs">
+                    <div class="w-12 h-12 rounded-xl theme-bg-accent border-2 border-zinc-900 flex items-center justify-center text-xl font-black shadow-xs">
                         <i class="fa-solid fa-comment-dots"></i>
                     </div>
                     <div>
@@ -475,7 +481,7 @@
                                 <i class="fa-solid fa-envelope"></i>
                             </span>
                             <input type="email" id="email" required
-                                class="w-full pl-10 pr-4 py-3 bg-white border-2 border-zinc-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400" 
+                                class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 border-zinc-900 rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                                 placeholder="nama@email.com">
                         </div>
                     </div>
@@ -522,12 +528,12 @@
                     <div>
                         <label for="message" class="block text-[11px] font-black code-font uppercase text-zinc-900 mb-2">ISI LAPORAN / PESAN</label>
                         <textarea id="message" rows="4" required
-                            class="w-full px-4 py-3 bg-white border-2 border-zinc-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-xs font-semibold text-zinc-900 placeholder:text-zinc-400 resize-none leading-relaxed"
+                            class="theme-input w-full px-4 py-3 bg-white border-2 border-zinc-900 rounded-xl text-xs font-semibold text-zinc-900 placeholder:text-zinc-400 resize-none leading-relaxed transition-all"
                             placeholder="Jelaskan secara detail kendala, pertanyaan, atau saran hebat Anda..."></textarea>
                     </div>
 
                     <!-- Tombol Kirim -->
-                    <button type="submit" id="submitBtn" class="btn-brutalism-light yellow-accent w-full text-xs py-3.5">
+                    <button type="submit" id="submitBtn" class="btn-brutalism-light theme-bg-accent w-full text-xs py-3.5">
                         <i class="fa-solid fa-paper-plane"></i> KIRIM LAPORAN
                     </button>
                 </form>
@@ -537,7 +543,7 @@
         <!-- Info Respons Cepat -->
         <div class="light-card p-6 space-y-4">
             <h3 class="text-sm font-black text-zinc-900 uppercase tracking-wider code-font flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-amber-500"></i> BUTUH RESPONS CEPAT?
+                <i class="fa-solid fa-bolt theme-text-accent"></i> BUTUH RESPONS CEPAT?
             </h3>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
@@ -573,57 +579,53 @@
 
     <!-- JavaScript Handling -->
     <script>
-        // Konfigurasi Tema Style Warna
-        // Konfigurasi Tema Style Warna
-const THEME_COLORS = {
-    yellow: { accent: '#fde047', text: '#121212' },
-    red:    { accent: '#ef4444', text: '#ffffff' },
-    blue:   { accent: '#3b82f6', text: '#ffffff' },
-    cyan:   { accent: '#22d3ee', text: '#121212' },
-    purple: { accent: '#a855f7', text: '#ffffff' },
-    green:  { accent: '#10b981', text: '#121212' },
-    rgb:    { accent: 'rgb', text: '#ffffff' }
-};
+        // Konfigurasi Tema Style Warna Harmonis
+        const THEME_PRESETS = {
+            yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15' },
+            red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171' },
+            blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa' },
+            cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee' },
+            purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc' },
+            green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399' }
+        };
 
-let rgbInterval = null; // Menyimpan timer animasi RGB
+        let rgbInterval = null;
 
-function setAppTheme(themeName) {
-    const root = document.documentElement;
-    const themeBtn = document.getElementById('themePickerBtn');
-    const accentTargets = document.querySelectorAll('.yellow-accent, .bg-theme-accent, #submitBtn');
+        function setAppTheme(themeName) {
+            const root = document.documentElement;
+            const dropdown = document.getElementById('themeMenuDropdown');
 
-    // Hentikan animasi RGB berulang jika pengguna memilih tema biasa
-    if (rgbInterval) {
-        clearInterval(rgbInterval);
-        rgbInterval = null;
-    }
+            if (rgbInterval) {
+                clearInterval(rgbInterval);
+                rgbInterval = null;
+            }
 
-    localStorage.setItem('selectedThemeStyle', themeName);
+            localStorage.setItem('selectedThemeStyle', themeName);
 
-    if (themeName === 'rgb') {
-        let hue = 0;
-        accentTargets.forEach(el => el.classList.add('theme-rgb-active'));
-        if (themeBtn) themeBtn.classList.add('theme-rgb-active');
+            if (themeName === 'rgb') {
+                let hue = 0;
+                rgbInterval = setInterval(() => {
+                    hue = (hue + 2) % 360;
+                    const accentColor = `hsl(${hue}, 85%, 50%)`;
+                    const lightBg = `hsl(${hue}, 85%, 92%)`;
+                    const ringColor = `hsl(${hue}, 85%, 60%)`;
+                    const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
 
-        // Loop perubahan warna HSL secara terus menerus (0 - 360 derajat)
-        rgbInterval = setInterval(() => {
-            hue = (hue + 3) % 360;
-            root.style.setProperty('--theme-accent', `hsl(${hue}, 100%, 50%)`);
-            root.style.setProperty('--theme-text', '#ffffff');
-        }, 30);
-    } else {
-        const theme = THEME_COLORS[themeName] || THEME_COLORS.yellow;
-        
-        accentTargets.forEach(el => el.classList.remove('theme-rgb-active'));
-        if (themeBtn) themeBtn.classList.remove('theme-rgb-active');
+                    root.style.setProperty('--theme-accent', accentColor);
+                    root.style.setProperty('--theme-text', textColor);
+                    root.style.setProperty('--theme-light', lightBg);
+                    root.style.setProperty('--theme-ring', ringColor);
+                }, 30);
+            } else {
+                const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+                root.style.setProperty('--theme-accent', t.accent);
+                root.style.setProperty('--theme-text', t.text);
+                root.style.setProperty('--theme-light', t.light);
+                root.style.setProperty('--theme-ring', t.ring);
+            }
 
-        root.style.setProperty('--theme-accent', theme.accent);
-        root.style.setProperty('--theme-text', theme.text);
-    }
-
-    const dropdown = document.getElementById('themeMenuDropdown');
-    if (dropdown) dropdown.classList.add('hidden');
-}
+            if (dropdown) dropdown.classList.add('hidden');
+        }
 
         // Memblokir Pinch Zoom & Gesture Zoom
         document.addEventListener('gesturestart', e => e.preventDefault());
@@ -632,7 +634,7 @@ function setAppTheme(themeName) {
         });
         document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-        // Sidebar Drawer, Autoplay Banner, & Theme Switcher Event Handlers
+        // Event Handlers
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
@@ -643,7 +645,6 @@ function setAppTheme(themeName) {
             const themeBtn = document.getElementById('themePickerBtn');
             const themeDropdown = document.getElementById('themeMenuDropdown');
 
-            // Toggle Dropdown Switcher Tema
             if (themeBtn && themeDropdown) {
                 themeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -657,13 +658,13 @@ function setAppTheme(themeName) {
                 });
             }
 
-            // Muat Tema Tersimpan dari LocalStorage
+            // Muat Tema dari LocalStorage
             const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
             setAppTheme(savedTheme);
 
             function playBannerVideo() {
                 if (sidebarBannerVideo) {
-                    sidebarBannerVideo.play().catch(err => console.log("Autoplay ditangani browser:", err));
+                    sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
                 }
             }
 
@@ -688,7 +689,7 @@ function setAppTheme(themeName) {
 
             playBannerVideo();
 
-            // Pengecekan Status User untuk Sidebar
+            // Status User
             fetch('/api/user-status')
                 .then(res => res.json())
                 .then(data => {
@@ -713,7 +714,7 @@ function setAppTheme(themeName) {
                 .catch(err => console.error("Gagal mengecek status user:", err));
         });
 
-        // Form Submit Handling
+        // Form Submit
         document.getElementById('feedbackForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -750,13 +751,13 @@ function setAppTheme(themeName) {
                                 </div>
                                 <h2 class="text-xl font-black text-zinc-900 mb-2">Pesan Berhasil Terkirim!</h2>
                                 <p class="text-xs font-semibold text-zinc-700 max-w-sm mx-auto leading-relaxed mb-6">
-                                    Terima kasih. Laporan Anda (<span class="text-blue-600 font-bold uppercase code-font">${typeData}</span>) telah diteruskan ke administrator server.
+                                    Terima kasih. Laporan Anda (<span class="theme-text-accent font-bold uppercase code-font">${typeData}</span>) telah diteruskan ke administrator server.
                                 </p>
                                 <div class="flex flex-col sm:flex-row items-center justify-center gap-2">
                                     <button onclick="window.location.reload()" class="btn-brutalism-light w-full sm:w-auto text-xs py-2.5">
                                         <i class="fa-solid fa-pen-to-square"></i> Kirim Baru
                                     </button>
-                                    <a href="/" class="btn-brutalism-light yellow-accent w-full sm:w-auto text-xs py-2.5">
+                                    <a href="/" class="btn-brutalism-light theme-bg-accent w-full sm:w-auto text-xs py-2.5">
                                         <i class="fa-solid fa-house"></i> Dashboard
                                     </a>
                                 </div>
@@ -780,7 +781,7 @@ function setAppTheme(themeName) {
             }
         });
 
-        // Progress Loader
+        // Loader Progress
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
