@@ -3014,9 +3014,7 @@ app.get('/docs', (req, res) => {
             transition: all 0.15s ease;
         }
 
-        /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (HANYA OUTLINE/BORDER) */
-        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active .btn-brutalism-light,
@@ -3035,7 +3033,6 @@ app.get('/docs', (req, res) => {
             background-clip: padding-box, border-box !important;
         }
 
-        /* Tombol Aksen & Badge (Latar Solid Tema + Outline RGB) */
         .rgb-mode-active .theme-bg-accent {
             border-color: transparent !important;
             background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
@@ -3182,7 +3179,7 @@ app.get('/docs', (req, res) => {
             color: #52525b !important;
         }
 
-        /* Override Style List Endpoint (Mode Terang) */
+        /* Override Style List Endpoint */
         #apiList { background-color: transparent !important; }
         #apiList .api-item {
             background-color: var(--card-bg) !important;
@@ -3232,7 +3229,6 @@ app.get('/docs', (req, res) => {
         }
         #apiList form input::placeholder { color: #71717a !important; font-weight: 700 !important; }
 
-        /* Menu Navigasi Kartu Dropdown */
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
             border: 2px solid var(--theme-border) !important;
@@ -3253,7 +3249,6 @@ app.get('/docs', (req, res) => {
             background-color: #FAF7EF !important;
         }
 
-        /* Search Bar & Filter Buttons */
         #searchInput {
             background-color: var(--card-bg) !important;
             border: 2px solid var(--theme-border) !important;
@@ -3294,7 +3289,6 @@ app.get('/docs', (req, res) => {
             color: #ffffff;
         }
 
-        /* Popup Modal Styling */
         .light-popup-bg {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -3326,7 +3320,7 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12">
 
-<!-- Loader Overlay Cyberpunk Light Style -->
+<!-- Loader Overlay -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
@@ -3383,7 +3377,7 @@ app.get('/docs', (req, res) => {
       <div class="mb-5 flex justify-center">
         <div class="bg-zinc-100 border-2 brutal-border rounded-full py-2 px-5 text-center">
           <span class="font-bold text-xs text-zinc-900 font-mono">
-            APIKEY : <span id="welcomeApiKey" class="font-mono theme-text-accent select-all font-extrabold">Loading...</span>
+            APIKEY : <span id="welcomeApiKey" class="font-mono theme-text-accent select-all font-extrabold">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
           </span>
         </div>
       </div>
@@ -3490,7 +3484,7 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar (Fixed Solid Krem z-30) -->
+<!-- Header Top Bar -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3503,24 +3497,19 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-        <!-- Tombol Aksi Kanan -->
         <div class="flex items-center gap-2 relative">
-            
-            <!-- Tombol Switcher Style Warna -->
             <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
             </button>
 
-            <!-- Tombol Menu Sidebar -->
             <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </button>
 
-            <!-- Dropdown Pilihan Tema Warna -->
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                 
@@ -3557,18 +3546,15 @@ app.get('/docs', (req, res) => {
                     <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
-
         </div>
     </div>
 </header>
 
-<!-- Overlay Latar Belakang (z-40) -->
+<!-- Overlay Latar Belakang -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav -->
+<!-- Sidebar Dropdown Nav (Ala Home) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
-    
-    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
         <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
             <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -3580,7 +3566,6 @@ app.get('/docs', (req, res) => {
         </button>
     </div>
 
-    <!-- Banner Atas Dropdown (Clean/Tanpa Header "BANNER") -->
     <div class="mb-3 rounded-2xl border-2 border-zinc-900 overflow-hidden bg-black h-36 relative shadow-sm">
         <video autoplay loop muted playsinline class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
@@ -3588,7 +3573,6 @@ app.get('/docs', (req, res) => {
         </video>
     </div>
 
-    <!-- Profile Box Pengguna (Tepat di bawah Banner Video) -->
     <div class="mb-3">
         ${req.user ? `
         <div class="p-2.5 rounded-2xl border-2 border-zinc-900 bg-white/60 flex items-center justify-between shadow-sm">
@@ -3611,7 +3595,6 @@ app.get('/docs', (req, res) => {
         `}
     </div>
 
-    <!-- Tombol Navigasi -->
     <nav class="space-y-2 flex-1">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3619,7 +3602,7 @@ app.get('/docs', (req, res) => {
                 <span>BACK TO DASHBOARD</span>
             </div>
         </a>
-        <a href="/docs" class="dropdown-nav-card bg-amber-100">
+        <a href="/docs" class="dropdown-nav-card theme-light-bg">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 <span>DOCS / ENDPOINTS</span>
@@ -3670,17 +3653,14 @@ app.get('/docs', (req, res) => {
     </nav>
 </div>
 
-<!-- Main Mobile & Desktop Container (pt-20 agar tidak tertutup header fixed) -->
+<!-- Main Container -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
-    
-    <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
         </video>
     </div>
 
-    <!-- 2. Grid Statistik Real-time -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="stat-box">
             <span class="stat-label">REAL-TIME CLOCK</span>
@@ -3711,7 +3691,6 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- 3. Search Bar -->
     <div class="pt-1">
         <div class="relative">
             <input 
@@ -3742,7 +3721,7 @@ app.get('/docs', (req, res) => {
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
     </div>
 
-    <!-- 4. Daftar API List Terang & Bersih -->
+    <!-- Container Utama Tempat List Endpoint Rendred -->
     <div id="apiList" class="space-y-4 pt-1"></div>
 
     <footer id="siteFooter" class="mt-10 pt-4 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
@@ -3757,14 +3736,22 @@ app.get('/docs', (req, res) => {
     </div>
 </div>
 
-<!-- Moment.js CDN & Script Utama -->
+<!-- Script Pembantu & Injeksi Variabel Penting -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
+
+<!-- DEKLARASI VARIABEL PENTING UNTUK SCRIPT.JS -->
+<script class="notranslate" translate="no">
+    window.musicPlaylist = ${JSON.stringify(playlist || [])};
+    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
+</script>
+
+<!-- Script Utama untuk Memuat Endpoint /apilist -->
 <script src="script.js"></script>
 
 <script>
-    // Memblokir Pinch Zoom & Gesture Zoom
+    // Memblokir Pinch Zoom
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
@@ -3798,8 +3785,6 @@ app.get('/docs', (req, res) => {
         if (themeName === 'rgb') {
             document.body.classList.add('rgb-mode-active');
             let angle = 0;
-
-            // Rotasi 360 derajat Conic Gradient RGB
             rgbInterval = setInterval(() => {
                 angle = (angle + 3) % 360;
                 root.style.setProperty('--rgb-angle', angle + 'deg');
@@ -4037,7 +4022,6 @@ app.get('/docs', (req, res) => {
             });
         }
 
-        // Muat Tema Tersimpan
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
 
@@ -4069,14 +4053,12 @@ app.get('/docs', (req, res) => {
         playBannerVideo();
         fetchUserProfile();
 
-        // Otomatis buka Profile Modal jika query showProfile=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('showProfile') === 'true') {
             openProfilePopup();
         }
     });
 
-    // Loader Progress 0 - 100%
     let currentProgress = 0;
     let hasFinishedLoading = false;
     const progressFill = document.getElementById('loader-progress-fill');
