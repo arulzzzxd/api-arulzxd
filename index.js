@@ -2925,6 +2925,12 @@ app.get('/database/changelog', (req, res) => {
 });
 
 app.get('/docs', (req, res) => {
+    // Evaluasi data user di server sebelum merender HTML
+    const userApiKey = (req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login';
+    const username = req.user ? req.user.username : '';
+    const userAvatar = (req.user && req.user.avatar) ? req.user.avatar : 'https://arulz-xd.my.id/files/X1F0Cn.png';
+    const isLoggedIn = !!req.user;
+
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
@@ -3278,39 +3284,31 @@ app.get('/docs', (req, res) => {
     </div>
 </div>
 
-<!-- SCRIPT KHUSUS LOADER: BERJALAN INDEPENDEN SEGERA -->
+<!-- SCRIPT KHUSUS LOADER (LANGSUNG JALAN ANTI MACET) -->
 <script>
     (function() {
-        let currentProgress = 0;
-        let hasFinished = false;
+        var progress = 0;
+        var fill = document.getElementById('loader-progress-fill');
+        var text = document.getElementById('loader-percentage');
+        var overlay = document.getElementById('cyber-loader-overlay');
         
-        function updateLoader(val) {
-            currentProgress = Math.min(Math.max(currentProgress, val), 100);
-            const fill = document.getElementById('loader-progress-fill');
-            const text = document.getElementById('loader-percentage');
-            if (fill) fill.style.width = currentProgress + '%';
-            if (text) text.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        const interval = setInterval(() => {
-            if (currentProgress < 85) {
-                updateLoader(currentProgress + Math.random() * 12 + 5);
+        var timer = setInterval(function() {
+            progress += Math.floor(Math.random() * 15) + 5;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(timer);
+                if (fill) fill.style.width = '100%';
+                if (text) text.innerText = '100%';
+                setTimeout(function() {
+                    if (overlay) {
+                        overlay.classList.add('fade-out');
+                    }
+                }, 200);
+            } else {
+                if (fill) fill.style.width = progress + '%';
+                if (text) text.innerText = progress + '%';
             }
-        }, 80);
-
-        function hideLoader() {
-            if (hasFinished) return;
-            hasFinished = true;
-            clearInterval(interval);
-            updateLoader(100);
-            setTimeout(() => {
-                const overlay = document.getElementById('cyber-loader-overlay');
-                if (overlay) overlay.classList.add('fade-out');
-            }, 300);
-        }
-
-        window.addEventListener('load', hideLoader);
-        setTimeout(hideLoader, 1500);
+        }, 60);
     })();
 </script>
 
@@ -3336,7 +3334,7 @@ app.get('/docs', (req, res) => {
       <div class="mb-5 flex justify-center">
         <div class="bg-zinc-100 border-2 brutal-border rounded-full py-2 px-5 text-center">
           <span class="font-bold text-xs text-zinc-900 font-mono">
-            APIKEY : <span id="welcomeApiKey" class="font-mono theme-text-accent select-all font-extrabold">${(req.user && req.user.apikey) ? req.user.apikey : 'Silakan Login'}</span>
+            APIKEY : <span id="welcomeApiKey" class="font-mono theme-text-accent select-all font-extrabold">${userApiKey}</span>
           </span>
         </div>
       </div>
@@ -3355,14 +3353,14 @@ app.get('/docs', (req, res) => {
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
                     <div class="w-full h-full rounded-full p-0.5 border-2 brutal-border shadow-sm overflow-hidden bg-white">
-                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
+                        <img id="userAvatar" src="${userAvatar}" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
             </div>
 
             <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
                 <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-black text-zinc-900">loading...</span>
+                    <span id="userName" class="text-xs font-black text-zinc-900">${username || 'User'}</span>
                 </div>
                 <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
                     <span id="userEmail" class="text-[10px] font-bold text-zinc-700">loading_email@gmail.com</span>
@@ -3384,7 +3382,7 @@ app.get('/docs', (req, res) => {
             </div>
             
             <div class="light-pill-capsule text-zinc-900 text-xs font-black py-1.5 px-3 truncate mb-3 text-center font-mono">
-                <span id="userApiKey">loading-key</span>
+                <span id="userApiKey">${userApiKey}</span>
             </div>
 
             <div id="vipCustomKeyBox" class="hidden mb-3">
@@ -3394,7 +3392,7 @@ app.get('/docs', (req, res) => {
                 </div>
             </div>
             
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 brutal-border text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
+            <button onclick="copyTxt(document.getElementById('userApiKey').innerText)" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 brutal-border text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
                 SALIN API KEY
             </button>
         </div>
@@ -3487,12 +3485,12 @@ app.get('/docs', (req, res) => {
     </div>
 
     <div class="mb-3">
-        ${req.user ? `
+        ${isLoggedIn ? `
         <div class="p-2.5 rounded-2xl border-2 border-zinc-900 bg-white/60 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2.5 overflow-hidden">
-                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-9 h-9 rounded-xl border-2 border-zinc-900 object-cover flex-shrink-0 bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">
+                <img id="sidebarUserAvatar" src="${userAvatar}" class="w-9 h-9 rounded-xl border-2 border-zinc-900 object-cover flex-shrink-0 bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">
                 <div class="flex flex-col truncate">
-                    <span class="text-xs font-extrabold text-zinc-900 truncate">${req.user.username}</span>
+                    <span class="text-xs font-extrabold text-zinc-900 truncate">${username}</span>
                     <span class="text-[9px] font-bold text-blue-600 uppercase tracking-tight">AKUN TERHUBUNG</span>
                 </div>
             </div>
@@ -3637,125 +3635,28 @@ app.get('/docs', (req, res) => {
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/id.min.js"></script>
 
-<!-- AMAN DARI REFERENCE ERROR -->
-<script class="notranslate" translate="no">
-    window.musicPlaylist = [];
-    var displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
-</script>
-
-<script src="script.js"></script>
-
-<!-- AUTO-FETCHER AMAN TANPA NESTED TEMPLATE LITERAL -->
+<!-- SCRIPT UTAMA FRONTEND BROWSER -->
 <script>
-    var rawEndpointsData = [];
+    var globalApiKey = '${userApiKey}';
 
-    async function loadEndpointsDirectly() {
-        var apiListContainer = document.getElementById('apiList');
-        var totalEpEl = document.getElementById('totalEndpoints');
-        var totalCatEl = document.getElementById('totalCategories');
-        var filterContainer = document.getElementById('categoryFilters');
-
-        try {
-            var response = await fetch('/api/apilist').catch(function() { return null; });
-            if (!response || !response.ok) response = await fetch('/apilist').catch(function() { return null; });
-            if (!response || !response.ok) response = await fetch('/api/endpoints').catch(function() { return null; });
-
-            if (!response || !response.ok) throw new Error('Gagal terhubung ke server');
-
-            var result = await response.json();
-            var data = Array.isArray(result) ? result : (result.data || result.endpoints || result.result || result.list || []);
-
-            if (!data || data.length === 0) {
-                if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-zinc-600">Tidak ada endpoint yang ditemukan.</div>';
-                return;
-            }
-
-            rawEndpointsData = data;
-
-            var totalEndpointsCount = 0;
-            var categoriesSet = new Set();
-
-            data.forEach(function(cat) {
-                if (cat.category) categoriesSet.add(cat.category);
-                var items = cat.endpoints || cat.items || [];
-                totalEndpointsCount += items.length;
+    function copyTxt(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Teks berhasil disalin!');
             });
-
-            if (totalEpEl) totalEpEl.innerText = totalEndpointsCount;
-            if (totalCatEl) totalCatEl.innerText = categoriesSet.size;
-
-            if (filterContainer && categoriesSet.size > 0) {
-                filterContainer.innerHTML = '<button onclick="filterCategory(\'all\')" class="filter-btn active">SEMUA (' + totalEndpointsCount + ')</button>';
-                categoriesSet.forEach(function(catName) {
-                    var targetCat = data.find(function(c) { return c.category === catName; });
-                    var count = (targetCat && targetCat.endpoints) ? targetCat.endpoints.length : 0;
-                    filterContainer.innerHTML += '<button onclick="filterCategory(\'' + catName + '\')" class="filter-btn">' + catName.toUpperCase() + ' (' + count + ')</button>';
-                });
-            }
-
-            renderEndpointList(data);
-
-        } catch (err) {
-            console.error('Fetch error:', err);
         }
     }
 
-    function renderEndpointList(categories) {
-        var apiListContainer = document.getElementById('apiList');
-        if (!apiListContainer) return;
-
-        var html = '';
-        var globalIndex = 0;
-
-        categories.forEach(function(cat) {
-            var categoryName = cat.category || 'GENERAL';
-            var endpoints = cat.endpoints || cat.items || [];
-
-            endpoints.forEach(function(ep) {
-                globalIndex++;
-                var epId = 'ep-' + globalIndex;
-                var path = ep.path || ep.endpoint || '/';
-                var name = ep.name || ep.title || path;
-                var desc = ep.description || ep.desc || 'Tidak ada deskripsi.';
-                var method = (ep.method || 'GET').toUpperCase();
-                var status = ep.status || 'Active';
-
-                html += '<div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="' + categoryName.toLowerCase() + '" data-search="' + name.toLowerCase() + ' ' + path.toLowerCase() + '">' +
-                    '<button onclick="toggleEndpoint(\'' + epId + '\')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">' +
-                        '<div class="flex items-center gap-2.5 overflow-hidden pr-2">' +
-                            '<span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">' + method + '</span>' +
-                            '<div class="truncate">' +
-                                '<p class="text-xs font-black text-zinc-900 leading-tight truncate">' + name + '</p>' +
-                                '<code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">' + path + '</code>' +
-                            '</div>' +
-                        '</div>' +
-                        '<span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase ' + (status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400') + '">' + status + '</span>' +
-                    '</button>' +
-                    '<div id="' + epId + '" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">' +
-                        '<p class="text-xs font-semibold text-zinc-700 mb-3">' + desc + '</p>' +
-                        '<div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">' +
-                            '<code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">' + path + '</code>' +
-                            '<button onclick="copyText(\'' + path + '\', \'Endpoint Path\')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
-            });
-        });
-
-        apiListContainer.innerHTML = html;
-    }
-
-    function toggleEndpoint(id) {
+    function toggleEp(id) {
         var el = document.getElementById(id);
         if (el) el.classList.toggle('hidden');
     }
 
-    function filterCategory(cat) {
-        var buttons = document.querySelectorAll('#categoryFilters button');
+    function filterCat(cat, btnEl) {
+        var buttons = document.querySelectorAll('#categoryFilters .filter-btn');
         buttons.forEach(function(b) { b.classList.remove('active'); });
-        if (event && event.target) event.target.classList.add('active');
+        if (btnEl) btnEl.classList.add('active');
 
         var items = document.querySelectorAll('#apiList .api-item');
         items.forEach(function(item) {
@@ -3767,46 +3668,116 @@ app.get('/docs', (req, res) => {
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        loadEndpointsDirectly();
+    function loadEndpoints() {
+        var apiListContainer = document.getElementById('apiList');
+        var totalEpEl = document.getElementById('totalEndpoints');
+        var totalCatEl = document.getElementById('totalCategories');
+        var filterContainer = document.getElementById('categoryFilters');
 
-        var searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                var query = e.target.value.toLowerCase().trim();
-                var items = document.querySelectorAll('#apiList .api-item');
-                var found = 0;
+        fetch('/api/apilist')
+            .then(function(res) { return res.json(); })
+            .catch(function() { return fetch('/apilist').then(function(res) { return res.json(); }); })
+            .then(function(result) {
+                var data = Array.isArray(result) ? result : (result.data || result.endpoints || []);
 
-                items.forEach(function(item) {
-                    var text = item.getAttribute('data-search') || '';
-                    if (text.indexOf(query) !== -1) {
-                        item.classList.remove('hidden');
-                        found++;
-                    } else {
-                        item.classList.add('hidden');
-                    }
+                if (!data || data.length === 0) {
+                    if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-zinc-600">Tidak ada endpoint.</div>';
+                    return;
+                }
+
+                var epCount = 0;
+                var catSet = new Set();
+
+                data.forEach(function(c) {
+                    if (c.category) catSet.add(c.category);
+                    var list = c.endpoints || c.items || [];
+                    epCount += list.length;
                 });
 
-                var noRes = document.getElementById('noResults');
-                if (noRes) {
-                    if (found === 0 && items.length > 0) noRes.classList.remove('hidden');
-                    else noRes.classList.add('hidden');
-                }
-            });
-        }
-    });
+                if (totalEpEl) totalEpEl.innerText = epCount;
+                if (totalCatEl) totalCatEl.innerText = catSet.size;
 
-    function updateClock() {
-        if (typeof moment !== 'undefined') {
-            var now = moment();
-            var clockEl = document.getElementById('liveClock');
-            var dateEl = document.getElementById('liveDate');
-            if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
-            if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
+                if (filterContainer && catSet.size > 0) {
+                    var fHtml = '<button onclick="filterCat(\'all\', this)" class="filter-btn active">SEMUA (' + epCount + ')</button>';
+                    catSet.forEach(function(catName) {
+                        var count = 0;
+                        data.forEach(function(item) {
+                            if (item.category === catName) count += (item.endpoints || item.items || []).length;
+                        });
+                        fHtml += '<button onclick="filterCat(\'' + catName + '\', this)" class="filter-btn">' + catName.toUpperCase() + ' (' + count + ')</button>';
+                    });
+                    filterContainer.innerHTML = fHtml;
+                }
+
+                var html = '';
+                var idx = 0;
+                data.forEach(function(c) {
+                    var catName = c.category || 'GENERAL';
+                    var list = c.endpoints || c.items || [];
+
+                    list.forEach(function(ep) {
+                        idx++;
+                        var id = 'ep-' + idx;
+                        var path = ep.path || ep.endpoint || '/';
+                        var name = ep.name || ep.title || path;
+                        var desc = ep.description || ep.desc || 'Tanpa deskripsi.';
+                        var method = (ep.method || 'GET').toUpperCase();
+                        var status = ep.status || 'Active';
+
+                        html += '<div class="api-item rounded-2xl border-2 brutal-border bg-[#FFFDF8] overflow-hidden mb-3 shadow-xs" data-category="' + catName.toLowerCase() + '" data-search="' + name.toLowerCase() + ' ' + path.toLowerCase() + '">' +
+                            '<button onclick="toggleEp(\'' + id + '\')" class="w-full p-3.5 flex items-center justify-between text-left hover:bg-amber-50/50 transition-colors">' +
+                                '<div class="flex items-center gap-2.5 overflow-hidden pr-2">' +
+                                    '<span class="px-2 py-0.5 bg-zinc-900 text-white font-black text-[9px] rounded-md font-mono">' + method + '</span>' +
+                                    '<div class="truncate">' +
+                                        '<p class="text-xs font-black text-zinc-900 leading-tight truncate">' + name + '</p>' +
+                                        '<code class="text-[10px] font-mono font-bold text-zinc-600 truncate block">' + path + '</code>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase ' + (status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-400' : 'bg-red-100 text-red-800 border border-red-400') + '">' + status + '</span>' +
+                            '</button>' +
+                            '<div id="' + id + '" class="hidden p-4 border-t-2 border-dashed border-zinc-900 bg-[#FAF7EF]">' +
+                                '<p class="text-xs font-semibold text-zinc-700 mb-3">' + desc + '</p>' +
+                                '<div class="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border-2 brutal-border">' +
+                                    '<code class="text-xs font-mono font-bold text-zinc-900 truncate flex-1">' + path + '</code>' +
+                                    '<button onclick="copyTxt(\'' + path + '\')" class="px-3 py-1 bg-amber-400 border-2 brutal-border text-zinc-900 font-extrabold text-[10px] rounded-lg active:scale-95 uppercase">Salin</button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                });
+
+                if (apiListContainer) apiListContainer.innerHTML = html;
+            })
+            .catch(function(err) {
+                console.error(err);
+                if (apiListContainer) apiListContainer.innerHTML = '<div class="text-center py-8 font-bold text-xs text-red-600">Gagal memuat daftar endpoint dari server.</div>';
+            });
+    }
+
+    function openProfilePopup() {
+        var p = document.getElementById('profilePopup');
+        if (p) p.classList.remove('hidden');
+    }
+
+    function closeProfilePopup() {
+        var p = document.getElementById('profilePopup');
+        if (p) p.classList.add('hidden');
+    }
+
+    function showWelcomePopup() {
+        var popup = document.getElementById('welcomePopup');
+        var closeBtn = document.getElementById('closePopupBtn');
+        if (popup) {
+            popup.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                popup.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            };
         }
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
     var THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
@@ -3850,56 +3821,18 @@ app.get('/docs', (req, res) => {
         if (dropdown) dropdown.classList.add('hidden');
     }
 
-    function copyText(text, label) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function() {
-                alert((label || 'Teks') + ' berhasil disalin!');
-            });
-        }
-    }
-
-    function openProfilePopup() {
-        document.getElementById('profilePopup').classList.remove('hidden');
-        fetchUserProfile();
-    }
-
-    function closeProfilePopup() {
-        document.getElementById('profilePopup').classList.add('hidden');
-    }
-
-    function showWelcomePopup() {
-        var popup = document.getElementById('welcomePopup');
-        var closeBtn = document.getElementById('closePopupBtn');
-        if (popup) {
-            popup.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-        }
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                popup.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            };
-        }
-    }
-
-    function fetchUserProfile() {
-        fetch('/api/user-status')
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.loggedIn && data.user) {
-                    var latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
-                    document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(function(img) { if (img) img.src = latestAvatar; });
-                    document.getElementById('userName').innerText = data.user.username || 'User';
-                    document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                    var userKey = data.user.apikey || '';
-                    document.getElementById('userApiKey').innerText = userKey || 'No Key Found';
-                    document.getElementById('welcomeApiKey').innerText = userKey || 'Silakan Login';
-                }
-            })
-            .catch(function(err) { console.error("Gagal sinkronisasi profile:", err); });
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
+        loadEndpoints();
+
+        // Welcome Popup Delay
+        setTimeout(function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('showProfile') !== 'true') {
+                showWelcomePopup();
+            }
+        }, 800);
+
+        // Sidebar Navigation
         var bioMenuBtn = document.getElementById('bioMenuBtn');
         var bioDropdown = document.getElementById('bioDropdown');
         var closeMenuBtn = document.getElementById('closeMenuBtn');
@@ -3940,8 +3873,45 @@ app.get('/docs', (req, res) => {
             bioDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
         }
 
-        fetchUserProfile();
+        // Live Search Input
+        var searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                var query = e.target.value.toLowerCase().trim();
+                var items = document.querySelectorAll('#apiList .api-item');
+                var found = 0;
+
+                items.forEach(function(item) {
+                    var text = item.getAttribute('data-search') || '';
+                    if (text.indexOf(query) !== -1) {
+                        item.classList.remove('hidden');
+                        found++;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+
+                var noRes = document.getElementById('noResults');
+                if (noRes) {
+                    if (found === 0 && items.length > 0) noRes.classList.remove('hidden');
+                    else noRes.classList.add('hidden');
+                }
+            });
+        }
     });
+
+    // Real-time Clock
+    function updateClock() {
+        if (typeof moment !== 'undefined') {
+            var now = moment();
+            var clockEl = document.getElementById('liveClock');
+            var dateEl = document.getElementById('liveDate');
+            if (clockEl) clockEl.innerText = now.format('HH:mm:ss');
+            if (dateEl) dateEl.innerText = now.format('dddd, DD MMMM YYYY');
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 </script>
 
 </body>
