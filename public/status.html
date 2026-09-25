@@ -1,69 +1,157 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <!-- Mencegah zoom di HP / Touch Screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Server OS Status - ArulzXD REST API</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <!-- Tailwind CSS & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { 
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                } 
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body { 
-            background-color: #0b0f19; 
-            color: #f3f4f6;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
-        }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-        }
-        .progress-bar {
-            transition: width 1s ease-in-out;
-        }
         :root {
-            --neon-cyan: #00f3ff;
-            --neon-glow: rgba(0, 243, 255, 0.4);
-            --bg-dark: #030712;
-            --bg-card: rgba(15, 23, 42, 0.75);
-            --border-color: rgba(0, 243, 255, 0.2);
+        --bg-cream: #FAF7EF;
+        --card-bg: #FFFDF8;
+        
+        /* Variabel Warna Tema & Outline Dinamis */
+        --theme-border: #a16207;
+        --theme-accent: #fde047;
+        --theme-text: #121212;
+        --theme-light: #fef9c3;
+        --rgb-angle: 0deg;
+         }
+
+        * {
+            box-sizing: border-box;
+        }
+        
+        .brutal-border,
+    .light-card,
+    .dropdown-nav-card,
+    .btn-brutalism-light,
+    .feedback-radio-box,
+    header,
+    #bioDropdown,
+    #themeMenuDropdown,
+    .cyber-loader-box,
+    .cyber-bar,
+    .theme-input {
+        border-color: var(--theme-border) !important;
+        transition: border-color 0.15s ease;
+    }
+
+    /* Class Aksen Tema */
+    .theme-bg-accent {
+        background-color: var(--theme-accent) !important;
+        color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
+        transition: all 0.15s ease;
+    }
+
+    .theme-text-accent {
+        color: var(--theme-border) !important;
+        transition: color 0.15s ease;
+    }
+
+    .theme-light-bg {
+        background-color: var(--theme-light) !important;
+        border-color: var(--theme-border) !important;
+        transition: all 0.15s ease;
+    }
+
+    /* ======================================================= */
+    /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°)   */
+    /* ======================================================= */
+    .rgb-mode-active .light-card,
+    .rgb-mode-active .dropdown-nav-card,
+    .rgb-mode-active .btn-brutalism-light,
+    .rgb-mode-active .feedback-radio-box,
+    .rgb-mode-active #themeMenuDropdown,
+    .rgb-mode-active .cyber-loader-box,
+    .rgb-mode-active .cyber-bar,
+    .rgb-mode-active .theme-input {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+    }
+
+    .rgb-mode-active header,
+    .rgb-mode-active #bioDropdown {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+    }
+
+    .rgb-mode-active .theme-bg-accent {
+        background-image: conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        color: #ffffff !important;
+        border-color: #121212 !important;
+    }
+
+    /* Dropdown Nav Card Base */
+    .dropdown-nav-card {
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--theme-border) !important;
+        border-radius: 14px !important;
+        padding: 10px 14px !important;
+        font-weight: 800 !important;
+        font-size: 11px !important;
+        color: #121212 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        text-transform: uppercase !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+    }
+    .dropdown-nav-card:active {
+        transform: translateY(1px) !important;
+        background-color: #FAF7EF !important;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            touch-action: pan-x pan-y;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            -webkit-user-select: none;
+            user-select: none;
+            background-color: var(--bg-cream) !important;
+            color: var(--border-dark) !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            overflow-x: hidden;
         }
 
-        /* Support Light Theme Mode */
-        html.light {
-            --neon-cyan: #008b9b;
-            --neon-glow: rgba(0, 139, 155, 0.25);
-            --bg-dark: #f0fdfa;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(0, 139, 155, 0.3);
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
         }
 
+        /* Cyber Loader Overlay (Docs Light Style) */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
         #cyber-loader-overlay.fade-out {
@@ -72,260 +160,456 @@
             pointer-events: none;
         }
 
-        /* Laser Scanner Beam */
-        .scanner-beam {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 300%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-            animation: scanAnimation 4s infinite linear;
-        }
-        @keyframes scanAnimation {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--border-dark);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 320px;
         }
 
-        /* Concentric Hologram HUD Rotating Rings */
-        .hud-ring {
+        .cyber-avatar-wrap {
             position: relative;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
+            width: 76px;
+            height: 76px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .ring-outer {
+        .cyber-ring {
             position: absolute;
-            inset: 0;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--border-dark);
+            border-right-color: #3b82f6;
             border-radius: 50%;
-            border: 2px dashed var(--neon-cyan);
-            opacity: 0.6;
-            animation: spinClockwise 10s linear infinite;
-            box-shadow: 0 0 15px var(--neon-glow);
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
         }
 
-        .ring-middle {
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .ring-inner {
-            position: absolute;
-            inset: 20px;
-            border-radius: 50%;
-            border: 1px dotted var(--neon-cyan);
-            opacity: 0.8;
-            animation: spinClockwise 6s linear infinite;
+        .cyber-text-glitch {
+            color: var(--border-dark);
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
         }
 
-        .hud-avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            z-index: 10;
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--border-dark);
+            border-radius: 9999px;
+            overflow: hidden;
         }
 
-        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
-
-        /* Animated Dot Pulse */
-        .animated-dots::after {
-            content: '';
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            animation: dotsAnimation 1.5s steps(4, end) infinite;
-        }
-        @keyframes dotsAnimation {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--border-dark);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
         }
 
-        .neon-progress-bar {
-            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-            box-shadow: 0 0 12px var(--neon-cyan);
-            transition: width 0.15s ease-out;
+        /* Card Light Neubrutalism */
+        .light-card {
+            background-color: var(--card-bg) !important;
+            border: 2.5px solid var(--border-dark) !important;
+            border-radius: 20px !important;
+            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
+        }
+
+        /* Neubrutalist Buttons */
+        .btn-brutalism-light {
+            background-color: #FFFDF8;
+            color: var(--border-dark);
+            border: 2px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1);
+        }
+        .btn-brutalism-light:hover {
+            background-color: #FAF7EF;
+            transform: translateY(-1px);
+        }
+        .btn-brutalism-light.yellow-accent {
+            background-color: #fde047;
+            color: #121212;
+        }
+        .btn-brutalism-light.yellow-accent:hover {
+            background-color: #facc15;
+        }
+
+        .progress-bar-smooth {
+            transition: width 0.6s ease-in-out;
         }
     </style>
 </head>
-<body class="min-h-screen p-4 sm:p-8 flex items-center justify-center">
+<body class="min-h-screen relative flex flex-col justify-between antialiased">
 
+    <!-- Loader Overlay Cyberpunk Light Style -->
     <div id="cyber-loader-overlay">
-        <div class="scanner-beam"></div>
-
-        <!-- Central Holographic HUD Ring Spinner -->
-        <div class="hud-ring mb-6">
-            <div class="ring-outer"></div>
-            <div class="ring-middle"></div>
-            <div class="ring-inner"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
-        </div>
-
-        <!-- Dynamic Page Name & Animated Dot Text -->
-        <div class="text-center px-4">
-            <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-                Memuat Halaman<span class="animated-dots"></span>
+        <div class="cyber-loader-box">
+            <div class="cyber-avatar-wrap mb-4">
+                <div class="cyber-ring"></div>
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
             </div>
-            <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-                SYSTEM INITIALIZING // CORE GATEWAY
+            <div class="text-center">
+                <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                    INITIALIZING GATEWAY...
+                </div>
+                <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                    ARULZ-XD API REST CORE
+                </div>
             </div>
-        </div>
-
-        <!-- Progress Bar (0% - 100%) -->
-        <div class="w-64 sm:w-80 mt-6">
-            <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-                <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-                <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+            <div class="w-full mt-5">
+                <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                    <span>SYSTEM LOADING</span>
+                    <span id="loader-percentage" class="font-black">0%</span>
+                </div>
+                <div class="cyber-bar">
+                    <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+                </div>
             </div>
-            <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-                <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            Arulz-XD API v2.0
         </div>
     </div>
 
-    <div class="w-full max-w-4xl">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold tracking-tight text-white mb-2">
-                System <span class="text-cyan-400">OS Status</span>
-            </h1>
-            <p class="text-sm text-gray-400">Status monitor spesifikasi, beban kerja mesin, dan OS website secara real-time.</p>
+    <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+            </div>
+            <div>
+                <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                <span id="pageSubTitle" class="text-[10px] font-mono font-bold text-zinc-600 uppercase">STATUS SERVER</span>
+            </div>
         </div>
 
-        <!-- Dashboard Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tombol Aksi Kanan -->
+        <div class="flex items-center gap-2 relative">
+            
+            <!-- Tombol Switcher Style Warna -->
+            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </button>
+
+            <!-- Tombol Menu Sidebar -->
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            <!-- Dropdown Pilihan Tema Warna -->
+            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+                <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                </button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                </button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                </button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                </button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                </button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                </button>
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</header>
+     
+    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Header Dropdown -->
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                ARULZXD API
+            </span>
+        </div>
+
+        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <!-- Banner Video -->
+    <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Auth / Profile Status Container -->
+    <div id="sidebarAuthBtnContainer" class="mb-3">
+        <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
+            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>PERINGATAN!</span>
+            </div>
+            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+            </p>
+            <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                <span>LOGIN / REGISTER</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tombol Navigasi Dropdown -->
+    <nav class="space-y-2 flex-1 pb-4">
+        <a href="/" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                <span>BACK TO DASHBOARD</span>
+            </div>
+        </a>
+        <a href="/docs" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>DOCS / ENDPOINTS</span>
+            </div>
+        </a>
+        <a href="/store" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                <span>STORE / BUY PLAN</span>
+            </div>
+        </a>
+        <a href="/uploader" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span>UPLOADER FILE</span>
+            </div>
+        </a>
+        <a href="/pastecode" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                <span>PASTECODE SNIPPET</span>
+            </div>
+        </a>
+        <a href="/feedback" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                <span>REQUEST FITUR</span>
+            </div>
+        </a>
+        <a href="/status" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                <span>SERVER STATUS</span>
+            </div>
+        </a>
+        <a href="/support" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <span>SUPPORT / DONASI</span>
+            </div>
+        </a>
+        <a href="/privacy" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                <span>PRIVACY POLICY</span>
+            </div>
+        </a>
+    </nav>
+</div>
+<main class="max-w-4xl mx-auto px-4 pt-20 pb-6 relative z-10 flex-1 w-full">
+        
+        <!-- Header Section -->
+        <div class="light-card p-6 mb-6">
+            <span class="px-3 py-1 bg-amber-400 border-2 border-zinc-900 text-[10px] font-black uppercase rounded-full inline-block mb-3">
+                REALTIME TELEMETRY
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 mb-2">
+                System <span class="text-blue-600">OS Status</span>
+            </h1>
+            <p class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-2xl">
+                Status monitor spesifikasi, beban kerja mesin, memori RAM, dan sistem operasi server secara real-time.
+            </p>
+        </div>
+
+        <!-- Dashboard Grid Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             <!-- Card 1: RAM & Resource Usage -->
-            <div class="glass-card p-6 rounded-2xl shadow-xl">
-                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path></svg>
+            <div class="light-card p-5">
+                <h3 class="text-sm font-black text-zinc-900 mb-3 uppercase tracking-wider code-font flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path></svg>
                     Memory Usage (RAM)
                 </h3>
-                <div class="space-y-4">
+                
+                <div class="space-y-3">
                     <div>
-                        <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <div class="flex justify-between text-xs font-bold text-zinc-600 mb-1 font-mono">
                             <span>Beban RAM Terpakai</span>
-                            <span id="ram-percent" class="font-bold text-white">0%</span>
+                            <span id="ram-percent" class="font-black text-zinc-900">0%</span>
                         </div>
-                        <div class="w-full bg-slate-950/80 rounded-full h-3 border border-white/5 overflow-hidden">
-                            <div id="ram-bar" class="progress-bar bg-cyan-500 h-full w-[0%]"></div>
+                        <div class="w-full bg-zinc-200 rounded-full h-3.5 border-2 border-zinc-900 overflow-hidden p-0.5">
+                            <div id="ram-bar" class="progress-bar-smooth bg-blue-500 h-full rounded-full w-[0%]"></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-2 text-center pt-2">
-                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Total</span>
-                            <span id="ram-total" class="font-mono text-sm font-semibold text-white">-- GB</span>
+                    <div class="grid grid-cols-3 gap-2 text-center pt-1">
+                        <div class="bg-[#FAF7EF] p-2.5 rounded-xl border-2 border-zinc-900">
+                            <span class="block text-[9px] text-zinc-500 uppercase font-black">Total</span>
+                            <span id="ram-total" class="code-font text-xs font-black text-zinc-900">-- GB</span>
                         </div>
-                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Terpakai</span>
-                            <span id="ram-used" class="font-mono text-sm font-semibold text-cyan-400">-- GB</span>
+                        <div class="bg-[#FAF7EF] p-2.5 rounded-xl border-2 border-zinc-900">
+                            <span class="block text-[9px] text-zinc-500 uppercase font-black">Terpakai</span>
+                            <span id="ram-used" class="code-font text-xs font-black text-blue-600">-- GB</span>
                         </div>
-                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                            <span class="block text-[10px] text-gray-400 uppercase font-bold">Tersisa</span>
-                            <span id="ram-free" class="font-mono text-sm font-semibold text-emerald-400">-- GB</span>
+                        <div class="bg-[#FAF7EF] p-2.5 rounded-xl border-2 border-zinc-900">
+                            <span class="block text-[9px] text-zinc-500 uppercase font-black">Tersisa</span>
+                            <span id="ram-free" class="code-font text-xs font-black text-emerald-600">-- GB</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Card 2: CPU & Processor Info -->
-            <div class="glass-card p-6 rounded-2xl shadow-xl">
-                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m10.5-5.25V4.5m7.5 3.75h-1.5m-3 11.25V21m-7.5-16.5v1.5m-3 0h1.5m13.5 0h-1.5m-15 4.5H4.5m15 0h-1.5m-15 4.5H4.5m15 0h-1.5M4.5 19.5H3m16.5 0H18m-10.5 0V21m4.5-21v1.5m-3 15V21m3-21v1.5M5.25 5.25h13.5A2.25 2.25 0 0121 7.5v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.5A2.25 2.25 0 015.25 5.25z"></path></svg>
+            <div class="light-card p-5">
+                <h3 class="text-sm font-black text-zinc-900 mb-3 uppercase tracking-wider code-font flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m10.5-5.25V4.5m7.5 3.75h-1.5m-3 11.25V21m-7.5-16.5v1.5m-3 0h1.5m13.5 0h-1.5m-15 4.5H4.5m15 0h-1.5m-15 4.5H4.5m15 0h-1.5M4.5 19.5H3m16.5 0H18m-10.5 0V21m4.5-21v1.5m-3 15V21m3-21v1.5M5.25 5.25h13.5A2.25 2.25 0 0121 7.5v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.5A2.25 2.25 0 015.25 5.25z"></path></svg>
                     Processor Information
                 </h3>
-                <div class="space-y-3 font-mono text-xs">
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-gray-400">Model CPU:</span>
-                        <span id="cpu-model" class="text-white font-semibold truncate max-w-[200px]">--</span>
+                <div class="space-y-2.5 code-font text-xs">
+                    <div class="flex justify-between border-b-2 border-zinc-200 pb-1.5">
+                        <span class="text-zinc-600 font-bold">Model CPU:</span>
+                        <span id="cpu-model" class="text-zinc-900 font-black truncate max-w-[180px]">--</span>
                     </div>
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-gray-400">Kecepatan CPU:</span>
-                        <span id="cpu-speed" class="text-white font-semibold">--</span>
+                    <div class="flex justify-between border-b-2 border-zinc-200 pb-1.5">
+                        <span class="text-zinc-600 font-bold">Kecepatan CPU:</span>
+                        <span id="cpu-speed" class="text-zinc-900 font-black">--</span>
                     </div>
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-gray-400">Jumlah CPU Core:</span>
-                        <span id="cpu-cores" class="text-cyan-400 font-bold">-- Cores</span>
+                    <div class="flex justify-between border-b-2 border-zinc-200 pb-1.5">
+                        <span class="text-zinc-600 font-bold">Jumlah CPU Core:</span>
+                        <span id="cpu-cores" class="text-blue-600 font-black">-- Cores</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Load Average (1/5/15m):</span>
-                        <span id="cpu-load" class="text-emerald-400 font-bold">--</span>
+                        <span class="text-zinc-600 font-bold">Load Average (1/5/15m):</span>
+                        <span id="cpu-load" class="text-emerald-600 font-black">--</span>
                     </div>
                 </div>
             </div>
 
             <!-- Card 3: Platform & OS Details -->
-            <div class="glass-card p-6 rounded-2xl shadow-xl">
-                <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a3 3 0 013-3v11.25m13.5-11.25a3 3 0 013 3V18"></path></svg>
+            <div class="light-card p-5">
+                <h3 class="text-sm font-black text-zinc-900 mb-3 uppercase tracking-wider code-font flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a3 3 0 013-3v11.25m13.5-11.25a3 3 0 013 3V18"></path></svg>
                     Sistem Operasi (OS)
                 </h3>
-                <div class="space-y-3 font-mono text-xs">
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-gray-400">Platform OS:</span>
-                        <span id="os-platform" class="text-white font-bold uppercase">--</span>
+                <div class="space-y-2.5 code-font text-xs">
+                    <div class="flex justify-between border-b-2 border-zinc-200 pb-1.5">
+                        <span class="text-zinc-600 font-bold">Platform OS:</span>
+                        <span id="os-platform" class="text-zinc-900 font-black uppercase">--</span>
                     </div>
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-gray-400">Arsitektur:</span>
-                        <span id="os-arch" class="text-white font-semibold">--</span>
+                    <div class="flex justify-between border-b-2 border-zinc-200 pb-1.5">
+                        <span class="text-zinc-600 font-bold">Arsitektur:</span>
+                        <span id="os-arch" class="text-zinc-900 font-black">--</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Sistem Berjalan (Uptime):</span>
-                        <span id="os-uptime" class="text-yellow-400 font-semibold">--</span>
+                        <span class="text-zinc-600 font-bold">Uptime Sistem:</span>
+                        <span id="os-uptime" class="text-amber-600 font-black">--</span>
                     </div>
                 </div>
             </div>
 
             <!-- Card 4: Server Status & Controls -->
-            <div class="glass-card p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+            <div class="light-card p-5 flex flex-col justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-cyan-400 mb-3 flex items-center gap-2">
+                    <h3 class="text-sm font-black text-zinc-900 mb-2 uppercase tracking-wider code-font flex items-center gap-2">
                         <span class="relative flex h-3 w-3">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-zinc-900"></span>
                         </span>
                         Network Ping Status
                     </h3>
-                    <p class="text-xs text-gray-400 leading-relaxed">ArulzXD REST API server ditenangkan oleh sistem cluster yang memantau performa hardware secara berkala demi menjamin uptime 99.9%.</p>
+                    <p class="text-xs font-semibold text-zinc-600 leading-relaxed">
+                        ArulzXD REST API server ditenagai oleh sistem cluster yang memantau performa hardware secara berkala demi menjamin uptime 99.9%.
+                    </p>
                 </div>
-                <div class="mt-4 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
-                    <button onclick="fetchStatus()" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition duration-200 uppercase tracking-wider text-center">
-                        Refresh Manual
+                <div class="mt-4 pt-3 border-t-2 border-zinc-200 flex flex-col sm:flex-row gap-2">
+                    <button onclick="fetchStatus()" class="btn-brutalism-light yellow-accent flex-1">
+                        REFRESH MANUAL
                     </button>
-                    <a href="/docs" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-200 border border-white/5 text-center block">
-                        Kembali Ke Doc
+                    <a href="/docs" class="btn-brutalism-light flex-1">
+                        KEMBALI KE DOCS
                     </a>
                 </div>
             </div>
 
         </div>
 
-        <footer class="mt-8 text-center text-[11px] text-gray-500">
-            © 2026 Arulz-XD API • Automated System Telemetry
-        </footer>
-    </div>
+    </main>
+
+    <!-- Footer Halaman -->
+    <footer class="w-full max-w-4xl mx-auto px-4 py-6 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest relative z-10">
+        &copy; 2026 ARULZ-XD API · AUTOMATED SYSTEM TELEMETRY
+    </footer>
 
     <script>
-        // Fungsi untuk format durasi detik ke format Hari, Jam, Menit, Detik
+        // Memblokir Pinch Zoom & Gesture Zoom
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+        });
+        document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+        // Format Uptime Seconds ke Hari, Jam, Menit, Detik
         function formatUptime(seconds) {
             const d = Math.floor(seconds / (3600 * 24));
             const h = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -352,14 +636,14 @@
                 document.getElementById('ram-used').innerText = data.usedMemory;
                 document.getElementById('ram-free').innerText = data.freeMemory;
 
-                // Atur warna bar sesuai beban
+                // Warna bar disesuaikan tingkat beban
                 const ramBar = document.getElementById('ram-bar');
                 if (parseFloat(data.memoryUsagePercent) > 85) {
-                    ramBar.className = "progress-bar bg-red-500 h-full";
+                    ramBar.className = "progress-bar-smooth bg-red-500 h-full rounded-full";
                 } else if (parseFloat(data.memoryUsagePercent) > 60) {
-                    ramBar.className = "progress-bar bg-yellow-500 h-full";
+                    ramBar.className = "progress-bar-smooth bg-amber-400 h-full rounded-full";
                 } else {
-                    ramBar.className = "progress-bar bg-cyan-500 h-full";
+                    ramBar.className = "progress-bar-smooth bg-blue-500 h-full rounded-full";
                 }
 
                 // 2. CPU UI
@@ -378,44 +662,144 @@
             }
         }
 
-        // Fetch pertama saat loading awal
-        fetchStatus();
+        // Sidebar Drawer Handlers
+        function closeSidebarMenu() {
+            const bioDropdown = document.getElementById('bioDropdown');
+            const menuOverlay = document.getElementById('menuOverlay');
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
+            }
+        }
 
-        // Refresh data otomatis setiap 3 detik (3000ms)
+        const THEME_PRESETS = {
+        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+    };
+
+    let rgbInterval = null;
+
+    function setAppTheme(themeName) {
+        const root = document.documentElement;
+        const dropdown = document.getElementById('themeMenuDropdown');
+
+        if (rgbInterval) {
+            clearInterval(rgbInterval);
+            rgbInterval = null;
+        }
+
+        localStorage.setItem('selectedThemeStyle', themeName);
+
+        if (themeName === 'rgb') {
+            document.body.classList.add('rgb-mode-active');
+            let angle = 0;
+
+            // Rotasi Rotasi Conic Gradient RGB 360°
+            rgbInterval = setInterval(() => {
+                angle = (angle + 3) % 360;
+                root.style.setProperty('--rgb-angle', angle + 'deg');
+            }, 20);
+        } else {
+            document.body.classList.remove('rgb-mode-active');
+            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            root.style.setProperty('--theme-border', t.border);
+            root.style.setProperty('--theme-accent', t.accent);
+            root.style.setProperty('--theme-text', t.text);
+            root.style.setProperty('--theme-light', t.light);
+        }
+
+        if (dropdown) dropdown.classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+        const themeBtn = document.getElementById('themePickerBtn');
+        const themeDropdown = document.getElementById('themeMenuDropdown');
+
+        if (themeBtn && themeDropdown) {
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
+                    themeDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        // Muat Tema Tersimpan
+        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        setAppTheme(savedTheme);
+
+        function playBannerVideo() {
+            if (sidebarBannerVideo) {
+                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
+            }
+        }
+
+        function closeSidebarMenu() {
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
+            }
+        }
+
+        if (bioMenuBtn && bioDropdown && menuOverlay) {
+            bioMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bioDropdown.style.transform = 'translateX(0)';
+                menuOverlay.classList.remove('hidden');
+                playBannerVideo();
+            });
+            if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+            menuOverlay.addEventListener('click', closeSidebarMenu);
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+        }
+
+        playBannerVideo();
+
+        // Cek Status Login
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('sidebarAuthBtnContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
+                                    <div class="truncate text-left leading-tight">
+                                        <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                        <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+                            </a>
+                        `;
+                    }
+                }
+            })
+            .catch(err => console.error("Gagal mengecek status user:", err));
+    });
+
+        // Polling status server setiap 3 detik
+        fetchStatus();
         setInterval(fetchStatus, 3000);
 
-        function getPageDisplayName() {
-            const path = window.location.pathname;
-            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-            const pageMap = {
-                'home': 'Home',
-                'docs': 'Dokumentasi',
-                'doc': 'Dokumentasi',
-                'status': 'Status Server',
-                'store': 'Store API',
-                'changelog': 'Changelog',
-                'uploader': 'Uploader File',
-                'pastecode': 'Pastecode',
-                'feedback': 'Feedback',
-                'privacy': 'Kebijakan Privasi',
-                'support': 'Dukungan Support',
-                'login': 'Halaman Login'
-            };
-
-            if (pageMap[fileName]) return pageMap[fileName];
-            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-        }
-
-        const pageName = getPageDisplayName();
-        const loaderTitleEl = document.getElementById('loader-title-text');
-        if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
-        }
-
-        // Progress Loader 0% - 100%
+        // Progress Loader
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
@@ -443,7 +827,6 @@
             }, 400);
         });
 
-        // Fallback Safety (Maksimal 4 detik)
         setTimeout(() => {
             clearInterval(progressInterval);
             updateProgress(100);
