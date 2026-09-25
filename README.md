@@ -6,7 +6,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/API-ONLINE-success?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Version-v1-blue?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Version-v2-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/Status-Active-green?style=for-the-badge">
 </p>
 
