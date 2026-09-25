@@ -61,7 +61,8 @@
         #themeMenuDropdown,
         .cyber-loader-box,
         .cyber-bar,
-        .theme-input {
+        .theme-input,
+        .status-pill-badge {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
@@ -86,7 +87,7 @@
         }
 
         /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°)   */
+        /* MODE RGB DYNAMIC ROTATING BORDER (HANYA OUTLINE/BORDER) */
         /* ======================================================= */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
@@ -95,12 +96,23 @@
         .rgb-mode-active #themeMenuDropdown,
         .rgb-mode-active .cyber-loader-box,
         .rgb-mode-active .cyber-bar,
-        .rgb-mode-active .theme-input {
+        .rgb-mode-active .theme-input,
+        .rgb-mode-active .status-pill-badge {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
             background-origin: border-box !important;
             background-clip: padding-box, border-box !important;
+        }
+
+        /* Tombol Aksen & Badge (Latar Solid Tema + Outline RGB) */
+        .rgb-mode-active .theme-bg-accent {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: var(--theme-text) !important;
         }
 
         .rgb-mode-active header,
@@ -110,12 +122,6 @@
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
             background-origin: border-box !important;
             background-clip: padding-box, border-box !important;
-        }
-
-        .rgb-mode-active .theme-bg-accent {
-            background-image: conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            color: #ffffff !important;
-            border-color: #121212 !important;
         }
 
         /* Dropdown Nav Card Base */
@@ -470,7 +476,7 @@
         
         <!-- Header Section -->
         <div class="light-card p-6 mb-6">
-            <span class="px-3 py-1 theme-bg-accent border-2 brutal-border text-[10px] font-black uppercase rounded-full inline-block mb-3 shadow-xs">
+            <span class="status-pill-badge px-3 py-1 theme-bg-accent border-2 brutal-border text-[10px] font-black uppercase rounded-full inline-block mb-3 shadow-xs">
                 REALTIME TELEMETRY
             </span>
             <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 mb-2 tracking-tight">
