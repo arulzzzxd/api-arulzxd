@@ -2950,6 +2950,7 @@ app.get('/docs', (req, res) => {
         --theme-text: #121212;
         --theme-light: #fef9c3;
         --theme-ring: #facc15;
+        --theme-border: #121212;
     }
 
     * {
@@ -2986,13 +2987,65 @@ app.get('/docs', (req, res) => {
     }
 
     .theme-border-accent {
-        border-color: var(--theme-accent) !important;
+        border-color: var(--theme-border) !important;
         transition: border-color 0.15s ease;
     }
 
     .theme-light-bg {
         background-color: var(--theme-light) !important;
         transition: background-color 0.15s ease;
+    }
+
+    /* =========================================================
+       ANIMASI RGB FLOWING RAINBOW (SEPERTI MINECRAFT PE RGB GUI)
+       ========================================================= */
+    @keyframes rgbGradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    html.theme-rgb .banner-video-container,
+    html.theme-rgb .stat-box,
+    html.theme-rgb #apiList .api-item,
+    html.theme-rgb #searchInput,
+    html.theme-rgb .cyber-loader-box,
+    html.theme-rgb .dropdown-nav-card,
+    html.theme-rgb #bioDropdown,
+    html.theme-rgb .light-card-box,
+    html.theme-rgb .light-popup-bg,
+    html.theme-rgb #themePickerBtn,
+    html.theme-rgb #bioMenuBtn,
+    html.theme-rgb #welcomePopup > div > div,
+    html.theme-rgb #apiList [id^="response-content-"] > div {
+        border: 3px solid transparent !important;
+        background-image: linear-gradient(var(--card-bg, #FFFDF8), var(--card-bg, #FFFDF8)), 
+                          linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+        background-size: 100% 100%, 300% 300% !important;
+        animation: rgbGradientMove 3.5s linear infinite !important;
+    }
+
+    html.theme-rgb #bioDropdown,
+    html.theme-rgb #cyber-loader-overlay .cyber-loader-box {
+        background-image: linear-gradient(#FAF7EF, #FAF7EF), 
+                          linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+    }
+
+    html.theme-rgb .theme-bg-accent {
+        background: linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+        background-size: 300% 300% !important;
+        animation: rgbGradientMove 3.5s linear infinite !important;
+        color: #ffffff !important;
+    }
+
+    html.theme-rgb .theme-text-accent {
+        background: linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 300% 300%;
+        animation: rgbGradientMove 3.5s linear infinite;
     }
 
     /* CYBERPUNK LOADER ANIMATION */
@@ -3015,7 +3068,7 @@ app.get('/docs', (req, res) => {
     }
     .cyber-loader-box {
         background: var(--card-bg);
-        border: 2.5px solid var(--border-dark);
+        border: 2.5px solid var(--theme-border);
         box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
         border-radius: 24px;
         padding: 32px 28px;
@@ -3024,6 +3077,7 @@ app.get('/docs', (req, res) => {
         align-items: center;
         position: relative;
         width: 320px;
+        transition: border-color 0.15s ease;
     }
     .cyber-avatar-wrap {
         position: relative;
@@ -3037,8 +3091,8 @@ app.get('/docs', (req, res) => {
         position: absolute;
         inset: -6px;
         border: 3.5px solid #e4e4e7;
-        border-top-color: var(--border-dark);
-        border-right-color: #3b82f6;
+        border-top-color: var(--theme-border);
+        border-right-color: var(--theme-accent);
         border-radius: 50%;
         animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
@@ -3056,22 +3110,22 @@ app.get('/docs', (req, res) => {
         width: 100%;
         height: 10px;
         background: #e4e4e7;
-        border: 2px solid var(--border-dark);
+        border: 2px solid var(--theme-border);
         border-radius: 9999px;
         overflow: hidden;
     }
     .cyber-bar-fill {
         height: 100%;
-        background: var(--border-dark);
+        background: var(--theme-accent);
         width: 0%;
-        transition: width 0.15s ease;
+        transition: width 0.15s ease, background-color 0.15s ease;
         border-radius: 9999px;
     }
 
-    /* Video Banner Radius Melengkung & Pemotongan Presisi */
+    /* Video Banner Radius Melengkung */
     .banner-video-container {
         width: 100% !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 22px !important;
         overflow: hidden !important;
         position: relative !important;
@@ -3079,6 +3133,7 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
         -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
         isolation: isolate !important;
+        transition: border-color 0.15s ease;
     }
     .banner-video-el {
         width: 100% !important;
@@ -3091,7 +3146,7 @@ app.get('/docs', (req, res) => {
     /* Kotak Statistik */
     .stat-box {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 18px !important;
         padding: 12px 14px !important;
         min-height: 98px !important;
@@ -3099,6 +3154,7 @@ app.get('/docs', (req, res) => {
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        transition: border-color 0.15s ease;
     }
     .stat-label {
         font-size: 10px !important;
@@ -3130,11 +3186,12 @@ app.get('/docs', (req, res) => {
 
     #apiList .api-item {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 16px !important;
         margin-bottom: 14px !important;
         box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
         overflow: hidden !important;
+        transition: border-color 0.15s ease;
     }
 
     #apiList .api-item > button {
@@ -3143,19 +3200,19 @@ app.get('/docs', (req, res) => {
         color: var(--border-dark) !important;
     }
     #apiList .api-item > button p { color: var(--border-dark) !important; font-weight: 900 !important; }
-    #apiList .api-item > button .bg-cyan-500 { background-color: var(--border-dark) !important; color: #fff !important; border-radius: 6px !important; }
+    #apiList .api-item > button .bg-cyan-500 { background-color: var(--theme-border) !important; color: #fff !important; border-radius: 6px !important; }
     #apiList .api-item > button code, #apiList .api-item > button .text-cyan-200, #apiList .api-item > button .text-cyan-700 { color: var(--border-dark) !important; font-weight: 700 !important; }
 
     #apiList .api-item > div[id^="ep-"] {
         background-color: #FAF7EF !important; 
-        border-top: 2.5px dashed var(--border-dark) !important;
+        border-top: 2.5px dashed var(--theme-border) !important;
     }
     
     #apiList .api-item > div[id^="ep-"] .bg-slate-900\/60,
     #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
     #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         box-shadow: none !important;
         color: var(--border-dark) !important;
     }
@@ -3175,7 +3232,7 @@ app.get('/docs', (req, res) => {
     #apiList form select,
     #apiList form button[id^="custom-select-"] {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         font-weight: 800 !important;
         border-radius: 8px !important;
@@ -3185,14 +3242,14 @@ app.get('/docs', (req, res) => {
 
     .select-modal-container {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
     }
     .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
-    .select-modal-container .select-modal-item.selected { background-color: var(--border-dark) !important; color: #fff !important; }
+    .select-modal-container .select-modal-item.selected { background-color: var(--theme-border) !important; color: #fff !important; }
     .select-modal-container p, .select-modal-container span, .select-modal-container svg { color: var(--border-dark) !important; }
 
     #apiList button {
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         font-weight: 900 !important;
         color: var(--border-dark) !important;
     }
@@ -3201,7 +3258,7 @@ app.get('/docs', (req, res) => {
         padding: 4px 12px !important;
     }
     #apiList button[type="submit"] {
-        background-color: var(--border-dark) !important;
+        background-color: var(--theme-border) !important;
         color: #ffffff !important;
         box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
     }
@@ -3215,59 +3272,110 @@ app.get('/docs', (req, res) => {
 
     #apiList svg { color: var(--border-dark) !important; }
 
-    /* RESPONSE CONTAINER OUTPUT */
+    /* =========================================================
+       RESPONSE CONTAINER OUTPUT (LIGHT THEME MATCHING SCRIPT.JS)
+       ========================================================= */
     #apiList [id^="response-content-"] > div {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--border-dark) !important;
-        box-shadow: none !important;
-        border-radius: 16px !important;
+        border: 2.5px solid var(--theme-border) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        overflow: hidden !important;
     }
 
+    /* Response Header Bar */
     #apiList [id^="response-content-"] .bg-black\/60,
-    #apiList [id^="response-content-"] .bg-black\/40,
-    #apiList [id^="response-content-"] .bg-black\/30,
-    #apiList [id^="response-content-"] .bg-black\/20,
-    #apiList [id^="response-content-"] .bg-black\/10,
-    #apiList [id^="response-content-"] .bg-slate-950\/40 {
+    #apiList [id^="response-content-"] .bg-black\/40 {
         background-color: #FAF7EF !important;
-        border-color: var(--border-dark) !important;
+        border-bottom: 2px solid var(--theme-border) !important;
+    }
+
+    #apiList [id^="response-content-"] .bg-black\/60 span,
+    #apiList [id^="response-content-"] .bg-black\/40 span {
+        color: var(--border-dark) !important;
+        font-weight: 900 !important;
+    }
+
+    /* Grid Statistik Response */
+    #apiList [id^="response-content-"] .grid {
+        background-color: #FAF7EF !important;
+        border-bottom: 2px solid var(--theme-border) !important;
+        padding: 10px !important;
+        gap: 8px !important;
     }
 
     #apiList [id^="response-content-"] .grid > div {
         background-color: #FFFDF8 !important;
-        border: 1.5px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
+        border-radius: 12px !important;
         box-shadow: none !important;
     }
 
-    #apiList [id^="response-content-"] span,
-    #apiList [id^="response-content-"] p,
-    #apiList [id^="response-content-"] div,
-    #apiList [id^="response-content-"] code {
-        color: var(--border-dark) !important;
+    #apiList [id^="response-content-"] .grid span.text-slate-500,
+    #apiList [id^="response-content-"] .grid span[class*="text-slate"] {
+        color: #64748b !important;
+        font-weight: 800 !important;
     }
 
+    /* Status, Time, dan Size Badges */
+    #apiList [id^="response-content-"] .grid .text-amber-400,
+    #apiList [id^="response-content-"] .grid .text-amber-600 {
+        color: #d97706 !important;
+        font-weight: 900 !important;
+    }
+
+    #apiList [id^="response-content-"] .grid .text-cyan-400,
+    #apiList [id^="response-content-"] .grid .text-cyan-600 {
+        color: #0284c7 !important;
+        font-weight: 900 !important;
+    }
+
+    /* Pre Code JSON Text Output */
     #apiList [id^="response-content-"] pre {
         background-color: #FFFDF8 !important;
-        color: var(--border-dark) !important;
-        border-top: 2px dashed var(--border-dark) !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        padding: 16px !important;
     }
+
     #apiList [id^="response-content-"] pre code {
-        color: var(--border-dark) !important;
+        color: #0284c7 !important;
+        font-family: 'JetBrains Mono', monospace !important;
         font-weight: 700 !important;
+    }
+
+    /* Action Buttons Bar di Bawah Response */
+    #apiList [id^="response-content-"] .border-t-2 {
+        background-color: #FAF7EF !important;
+        border-top: 2px solid var(--theme-border) !important;
+        padding: 12px 16px !important;
     }
 
     #apiList [id^="response-content-"] button {
         background-color: #FFFDF8 !important;
         color: var(--border-dark) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
+        border-radius: 10px !important;
         font-weight: 800 !important;
-        box-shadow: none !important;
+        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.08) !important;
+        transition: all 0.15s ease !important;
     }
+
     #apiList [id^="response-content-"] button:hover {
         background-color: #FAF7EF !important;
+        transform: translateY(-1px) !important;
     }
+
+    #apiList [id^="response-content-"] button:active {
+        transform: translateY(1px) !important;
+        box-shadow: none !important;
+    }
+
     #apiList [id^="response-content-"] button span {
         color: var(--border-dark) !important;
+        font-weight: 800 !important;
     }
 
     /* BADGES */
@@ -3278,12 +3386,11 @@ app.get('/docs', (req, res) => {
     #apiList .api-item span.bg-blue-500\/20 { background-color: #bfdbfe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
     #apiList .api-item span.bg-amber-500\/20 { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
     #apiList .api-item span.bg-purple-500\/20 { background-color: #d8b4fe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-    #apiList .api-item span.bg-blue-500\/20 svg, #apiList .api-item span.bg-amber-500\/20 svg, #apiList .api-item span.bg-purple-500\/20 svg { color: #121212 !important; }
 
     /* Menu Navigasi Kartu Dropdown */
     .dropdown-nav-card {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 14px !important;
         padding: 10px 14px !important;
         font-weight: 800 !important;
@@ -3304,26 +3411,28 @@ app.get('/docs', (req, res) => {
     /* Search Bar */
     #searchInput {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         border-radius: 16px !important;
         font-weight: 700 !important;
         box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
+        transition: border-color 0.15s ease;
     }
     #searchInput::placeholder { color: #71717a !important; }
 
     #categoryFilters button, .filter-btn {
         background-color: #FAF7EF !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         border-radius: 9999px !important;
         font-weight: 800 !important;
         font-size: 11px !important;
         padding: 6px 16px !important;
         cursor: pointer;
+        transition: border-color 0.15s ease;
     }
     #categoryFilters button.active, .filter-btn.active {
-        background-color: var(--border-dark) !important;
+        background-color: var(--theme-border) !important;
         color: #ffffff !important;
     }
 
@@ -3332,13 +3441,13 @@ app.get('/docs', (req, res) => {
         font-size: 10px;
         font-weight: 800;
         padding: 4px 10px;
-        border: 1.5px solid var(--border-dark);
+        border: 1.5px solid var(--theme-border);
         background-color: #FAF7EF;
         color: var(--border-dark);
         border-radius: 8px;
     }
     .lang-btn.active {
-        background-color: var(--border-dark);
+        background-color: var(--theme-border);
         color: #ffffff;
     }
 
@@ -3348,31 +3457,31 @@ app.get('/docs', (req, res) => {
     /* Popup Modal Styling */
     .light-popup-bg {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
         color: var(--border-dark) !important;
     }
     .light-card-box {
         background-color: #FAF7EF !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 16px !important;
     }
     .light-pill-capsule {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 9999px !important;
         color: var(--border-dark) !important;
         font-weight: 800 !important;
     }
     .light-solid-header {
-        background-color: var(--border-dark) !important;
+        background-color: var(--theme-border) !important;
         color: #ffffff !important;
         font-weight: 900 !important;
         border-radius: 10px !important;
     }
     </style>
 </head>
-<body class="min-h-screen pb-12 antialiased">
+<body class="min-h-screen pb-12 antialiased light-mode text-slate-900">
 
 <!-- Loader Overlay Cyberpunk -->
 <div id="cyber-loader-overlay">
@@ -3838,47 +3947,30 @@ app.get('/docs', (req, res) => {
 <script>
     // System Theme Switcher Presets
     const THEME_PRESETS = {
-        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15' },
-        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171' },
-        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa' },
-        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee' },
-        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc' },
-        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399' }
+        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#121212' },
+        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#121212' },
+        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#121212' },
+        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee', border: '#121212' },
+        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#121212' },
+        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399', border: '#121212' }
     };
-
-    let rgbInterval = null;
 
     function setAppTheme(themeName) {
         const root = document.documentElement;
         const dropdown = document.getElementById('themeMenuDropdown');
 
-        if (rgbInterval) {
-            clearInterval(rgbInterval);
-            rgbInterval = null;
-        }
-
         localStorage.setItem('selectedThemeStyle', themeName);
 
         if (themeName === 'rgb') {
-            let hue = 0;
-            rgbInterval = setInterval(() => {
-                hue = (hue + 2) % 360;
-                const accentColor = \`hsl(\${hue}, 85%, 50%)\`;
-                const lightBg = \`hsl(\${hue}, 85%, 92%)\`;
-                const ringColor = \`hsl(\${hue}, 85%, 60%)\`;
-                const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
-
-                root.style.setProperty('--theme-accent', accentColor);
-                root.style.setProperty('--theme-text', textColor);
-                root.style.setProperty('--theme-light', lightBg);
-                root.style.setProperty('--theme-ring', ringColor);
-            }, 30);
+            root.classList.add('theme-rgb');
         } else {
+            root.classList.remove('theme-rgb');
             const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
             root.style.setProperty('--theme-accent', t.accent);
             root.style.setProperty('--theme-text', t.text);
             root.style.setProperty('--theme-light', t.light);
             root.style.setProperty('--theme-ring', t.ring);
+            root.style.setProperty('--theme-border', t.border);
         }
 
         if (dropdown) dropdown.classList.add('hidden');
