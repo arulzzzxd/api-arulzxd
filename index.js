@@ -2947,12 +2947,12 @@ app.get('/docs', (req, res) => {
         --card-bg: #FFFDF8;
         --border-dark: #121212;
         
-        /* Variabel Sistem Tema Dinamis */
+        /* Variabel Warna Tema & Outline Dinamis */
+        --theme-border: #a16207;
         --theme-accent: #fde047;
         --theme-text: #121212;
         --theme-light: #fef9c3;
-        --theme-ring: #facc15;
-        --theme-border: #eab308; /* Dinamis mengikuti tema */
+        --rgb-angle: 0deg;
     }
 
     * {
@@ -2983,29 +2983,72 @@ app.get('/docs', (req, res) => {
     .theme-bg-accent {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        border-color: var(--theme-border) !important;
+        transition: all 0.15s ease;
     }
 
     .theme-text-accent {
-        color: var(--theme-accent) !important;
-        transition: color 0.2s ease;
+        color: var(--theme-border) !important;
+        transition: color 0.15s ease;
     }
 
     .theme-border-accent {
         border-color: var(--theme-border) !important;
-        transition: border-color 0.2s ease;
+        transition: border-color 0.15s ease;
     }
 
     .theme-light-bg {
         background-color: var(--theme-light) !important;
-        transition: background-color 0.2s ease;
+        border-color: var(--theme-border) !important;
+        transition: all 0.15s ease;
     }
 
     /* Focus Ring Dinamis Input Form */
     .theme-input:focus {
         outline: none !important;
         border-color: var(--theme-border) !important;
-        box-shadow: 0 0 0 3px var(--theme-ring) !important;
+        box-shadow: 0 0 0 3px var(--theme-accent) !important;
+    }
+
+    /* ======================================================= */
+    /* MODE RGB DYNAMIC ROTATING BORDER (SAMA SEPERTI HOME.HTML) */
+    /* ======================================================= */
+    .rgb-mode-active .light-card,
+    .rgb-mode-active .stat-box,
+    .rgb-mode-active .banner-video-container,
+    .rgb-mode-active .category-group > div.glass-panel,
+    .rgb-mode-active #searchInput,
+    .rgb-mode-active .dropdown-nav-card,
+    .rgb-mode-active #themeMenuDropdown,
+    .rgb-mode-active .cyber-loader-box,
+    .rgb-mode-active .cyber-bar,
+    .rgb-mode-active .light-popup-bg,
+    .rgb-mode-active .light-card-box {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+    }
+
+    .rgb-mode-active .theme-bg-accent,
+    .rgb-mode-active #categoryFilters button.active,
+    .rgb-mode-active .filter-btn.active {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+        color: var(--theme-text) !important;
+    }
+
+    .rgb-mode-active header,
+    .rgb-mode-active #bioDropdown {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
     }
 
     /* CYBERPUNK LOADER LIGHT STYLE */
@@ -3037,7 +3080,6 @@ app.get('/docs', (req, res) => {
         align-items: center;
         position: relative;
         width: 320px;
-        transition: border-color 0.2s ease;
     }
     .cyber-avatar-wrap {
         position: relative;
@@ -3052,7 +3094,7 @@ app.get('/docs', (req, res) => {
         inset: -6px;
         border: 3.5px solid #e4e4e7;
         border-top-color: var(--theme-border);
-        border-right-color: var(--theme-accent);
+        border-right-color: #3b82f6;
         border-radius: 50%;
         animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
@@ -3078,11 +3120,11 @@ app.get('/docs', (req, res) => {
         height: 100%;
         background: var(--theme-border);
         width: 0%;
-        transition: width 0.15s ease, background-color 0.2s ease;
+        transition: width 0.15s ease;
         border-radius: 9999px;
     }
 
-    /* Banner Video Container dengan Outline Dinamis */
+    /* Banner Video Container */
     .banner-video-container {
         width: 100% !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3091,7 +3133,6 @@ app.get('/docs', (req, res) => {
         position: relative !important;
         background-color: #000000 !important;
         box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
-        transition: border-color 0.2s ease;
     }
     .banner-video-el {
         width: 100% !important;
@@ -3100,7 +3141,7 @@ app.get('/docs', (req, res) => {
         display: block !important;
     }
 
-    /* Kotak Statistik dengan Outline Dinamis */
+    /* Kotak Statistik Neubrutalism */
     .stat-box {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3111,7 +3152,6 @@ app.get('/docs', (req, res) => {
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.08) !important;
-        transition: border-color 0.2s ease;
     }
     .stat-label {
         font-size: 10px !important;
@@ -3151,13 +3191,12 @@ app.get('/docs', (req, res) => {
         border-radius: 20px !important;
         box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         overflow: hidden !important;
-        transition: border-color 0.2s ease;
     }
 
     #apiList .api-item {
         background-color: var(--card-bg) !important;
         border-top: 2px solid var(--theme-border) !important;
-        transition: background-color 0.15s ease, border-color 0.2s ease;
+        transition: background-color 0.15s ease;
     }
 
     #apiList .api-item > button {
@@ -3203,7 +3242,6 @@ app.get('/docs', (req, res) => {
         font-weight: 700 !important;
         border-radius: 12px !important;
         box-shadow: none !important;
-        transition: border-color 0.2s ease;
     }
     #apiList form input::placeholder { color: #a1a1aa !important; font-weight: 600 !important; }
 
@@ -3332,7 +3370,6 @@ app.get('/docs', (req, res) => {
         border-radius: 18px !important;
         font-weight: 700 !important;
         box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.06) !important;
-        transition: border-color 0.2s ease;
     }
     #searchInput::placeholder { color: #71717a !important; }
 
@@ -3601,33 +3638,37 @@ app.get('/docs', (req, res) => {
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                 
-                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
                     <span>YELLOW</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
                 </button>
-                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
                     <span>RED</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
                 </button>
-                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
                     <span>BLUE</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
                 </button>
-                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
                     <span>CYAN</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
                 </button>
-                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
                     <span>PURPLE</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
                 </button>
-                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
                     <span>GREEN</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-zinc-900"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
                 </button>
-                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
                     <span>RGB DYNAMIC</span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-zinc-900 animate-pulse"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
 
@@ -3865,14 +3906,15 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-    // System Theme Switcher Presets (Sintaks border disinkronkan dengan warna tema)
+    // Presets Tema Warna & Border (Identik dengan home.html)
     const THEME_PRESETS = {
-        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#eab308' },
-        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#ef4444' },
-        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#3b82f6' },
-        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee', border: '#06b6d4' },
-        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#a855f7' },
-        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399', border: '#10b981' }
+        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
     };
 
     let rgbInterval = null;
@@ -3889,27 +3931,21 @@ app.get('/docs', (req, res) => {
         localStorage.setItem('selectedThemeStyle', themeName);
 
         if (themeName === 'rgb') {
-            let hue = 0;
-            rgbInterval = setInterval(() => {
-                hue = (hue + 2) % 360;
-                const accentColor = \`hsl(\${hue}, 85%, 50%)\`;
-                const lightBg = \`hsl(\${hue}, 85%, 92%)\`;
-                const ringColor = \`hsl(\${hue}, 85%, 60%)\`;
-                const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
+            document.body.classList.add('rgb-mode-active');
+            let angle = 0;
 
-                root.style.setProperty('--theme-accent', accentColor);
-                root.style.setProperty('--theme-border', accentColor); // Synchronize outline with RGB hue
-                root.style.setProperty('--theme-text', textColor);
-                root.style.setProperty('--theme-light', lightBg);
-                root.style.setProperty('--theme-ring', ringColor);
-            }, 30);
+            // Rotasi 360 Derajat Conic Gradient RGB (Sama persis seperti home.html)
+            rgbInterval = setInterval(() => {
+                angle = (angle + 3) % 360;
+                root.style.setProperty('--rgb-angle', angle + 'deg');
+            }, 20);
         } else {
+            document.body.classList.remove('rgb-mode-active');
             const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            root.style.setProperty('--theme-border', t.border);
             root.style.setProperty('--theme-accent', t.accent);
-            root.style.setProperty('--theme-border', t.border); // Synchronize outline with theme preset
             root.style.setProperty('--theme-text', t.text);
             root.style.setProperty('--theme-light', t.light);
-            root.style.setProperty('--theme-ring', t.ring);
         }
 
         if (dropdown) dropdown.classList.add('hidden');
