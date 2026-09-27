@@ -2978,35 +2978,67 @@ app.get('/docs', (req, res) => {
     .theme-bg-accent {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
-        transition: background-color 0.15s ease, color 0.15s ease;
+        transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .theme-text-accent {
         color: var(--theme-accent) !important;
-        transition: color 0.15s ease;
+        transition: color 0.2s ease;
     }
 
     .theme-border-accent {
         border-color: var(--theme-border) !important;
-        transition: border-color 0.15s ease;
+        transition: border-color 0.2s ease;
     }
 
     .theme-light-bg {
         background-color: var(--theme-light) !important;
-        transition: background-color 0.15s ease;
+        transition: background-color 0.2s ease;
     }
 
     /* =========================================================
-       ANIMASI RGB FLOWING RAINBOW (SEPERTI MINECRAFT PE RGB GUI)
+       SINKRONISASI OUTLINE KESELURAHAN ELEMEN (PRESET COLOR)
        ========================================================= */
-    @keyframes rgbGradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    .banner-video-container,
+    .stat-box,
+    .category-group > div,
+    .glass-panel,
+    #apiList .api-item,
+    #searchInput,
+    .cyber-loader-box,
+    .dropdown-nav-card,
+    #bioDropdown,
+    .light-card-box,
+    .light-popup-bg,
+    #themePickerBtn,
+    #bioMenuBtn,
+    #welcomePopup > div > div,
+    #apiList [id^="response-content-"] > div,
+    #categoryFilters button,
+    .filter-btn,
+    .lang-btn {
+        border-color: var(--theme-border) !important;
+        transition: border-color 0.2s ease;
+    }
+
+    .category-group > div {
+        border: 2.5px solid var(--theme-border) !important;
+        border-radius: 18px !important;
+        background-color: var(--card-bg) !important;
+    }
+
+    /* =========================================================
+       ANIMASI RGB RINGAN & SMOOTH (HARDWARE ACCELERATED GPU)
+       ========================================================= */
+    @keyframes rgbHueRotate {
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(360deg); }
     }
 
     html.theme-rgb .banner-video-container,
     html.theme-rgb .stat-box,
+    html.theme-rgb .category-group > div,
+    html.theme-rgb .glass-panel,
     html.theme-rgb #apiList .api-item,
     html.theme-rgb #searchInput,
     html.theme-rgb .cyber-loader-box,
@@ -3018,34 +3050,34 @@ app.get('/docs', (req, res) => {
     html.theme-rgb #bioMenuBtn,
     html.theme-rgb #welcomePopup > div > div,
     html.theme-rgb #apiList [id^="response-content-"] > div {
-        border: 3px solid transparent !important;
+        border: 2.5px solid transparent !important;
         background-image: linear-gradient(var(--card-bg, #FFFDF8), var(--card-bg, #FFFDF8)), 
-                          linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+                          linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
         background-origin: border-box !important;
         background-clip: padding-box, border-box !important;
-        background-size: 100% 100%, 300% 300% !important;
-        animation: rgbGradientMove 3.5s linear infinite !important;
+        animation: rgbHueRotate 4s linear infinite !important;
+        will-change: filter;
     }
 
     html.theme-rgb #bioDropdown,
-    html.theme-rgb #cyber-loader-overlay .cyber-loader-box {
+    html.theme-rgb .cyber-loader-box {
         background-image: linear-gradient(#FAF7EF, #FAF7EF), 
-                          linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+                          linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
     }
 
     html.theme-rgb .theme-bg-accent {
-        background: linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
-        background-size: 300% 300% !important;
-        animation: rgbGradientMove 3.5s linear infinite !important;
+        background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
+        animation: rgbHueRotate 4s linear infinite !important;
         color: #ffffff !important;
+        will-change: filter;
     }
 
     html.theme-rgb .theme-text-accent {
-        background: linear-gradient(120deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000);
+        background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        background-size: 300% 300%;
-        animation: rgbGradientMove 3.5s linear infinite;
+        animation: rgbHueRotate 4s linear infinite;
+        will-change: filter;
     }
 
     /* CYBERPUNK LOADER ANIMATION */
@@ -3077,7 +3109,6 @@ app.get('/docs', (req, res) => {
         align-items: center;
         position: relative;
         width: 320px;
-        transition: border-color 0.15s ease;
     }
     .cyber-avatar-wrap {
         position: relative;
@@ -3133,7 +3164,6 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
         -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
         isolation: isolate !important;
-        transition: border-color 0.15s ease;
     }
     .banner-video-el {
         width: 100% !important;
@@ -3146,7 +3176,7 @@ app.get('/docs', (req, res) => {
     /* Kotak Statistik */
     .stat-box {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 18px !important;
         padding: 12px 14px !important;
         min-height: 98px !important;
@@ -3154,7 +3184,6 @@ app.get('/docs', (req, res) => {
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        transition: border-color 0.15s ease;
     }
     .stat-label {
         font-size: 10px !important;
@@ -3191,7 +3220,6 @@ app.get('/docs', (req, res) => {
         margin-bottom: 14px !important;
         box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
         overflow: hidden !important;
-        transition: border-color 0.15s ease;
     }
 
     #apiList .api-item > button {
@@ -3408,15 +3436,14 @@ app.get('/docs', (req, res) => {
         background-color: #FAF7EF !important;
     }
 
-    /* Search Bar */
+    /* Search Bar & Category Filters */
     #searchInput {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2.5px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         border-radius: 16px !important;
         font-weight: 700 !important;
         box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
-        transition: border-color 0.15s ease;
     }
     #searchInput::placeholder { color: #71717a !important; }
 
@@ -3429,7 +3456,6 @@ app.get('/docs', (req, res) => {
         font-size: 11px !important;
         padding: 6px 16px !important;
         cursor: pointer;
-        transition: border-color 0.15s ease;
     }
     #categoryFilters button.active, .filter-btn.active {
         background-color: var(--theme-border) !important;
@@ -3947,12 +3973,12 @@ app.get('/docs', (req, res) => {
 <script>
     // System Theme Switcher Presets
     const THEME_PRESETS = {
-        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#121212' },
-        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#121212' },
-        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#121212' },
-        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee', border: '#121212' },
-        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#121212' },
-        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399', border: '#121212' }
+        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#eab308' },
+        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#ef4444' },
+        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#3b82f6' },
+        cyan:   { accent: '#06b6d4', text: '#121212', light: '#cff4fc', ring: '#22d3ee', border: '#06b6d4' },
+        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#a855f7' },
+        green:  { accent: '#10b981', text: '#121212', light: '#d1fae5', ring: '#34d399', border: '#10b981' }
     };
 
     function setAppTheme(themeName) {
