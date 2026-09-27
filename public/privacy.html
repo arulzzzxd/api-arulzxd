@@ -352,9 +352,17 @@
             </span>
         </div>
 
-        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
     </div>
 
     <!-- Banner Video -->
@@ -385,12 +393,6 @@
 
     <!-- Tombol Navigasi Dropdown -->
     <nav class="space-y-2 flex-1 pb-4">
-        <a href="/" class="dropdown-nav-card">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                <span>BACK TO DASHBOARD</span>
-            </div>
-        </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -444,22 +446,6 @@
 
 <!-- Main Container (pt-20 agar tidak tertutup header fixed) -->
 <main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
-    
-    <!-- Tombol Kembali / Header Nav Mini -->
-    <div class="flex items-center justify-between">
-        <a href="/docs" class="dropdown-nav-card inline-flex items-center gap-2 border-2 brutal-border py-2 px-4 shadow-xs active:scale-95">
-            <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span id="lbl-btn-back" class="font-extrabold text-xs">Kembali</span>
-        </a>
-
-        <!-- Switcher Bahasa Singkat (ID / EN) -->
-        <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
-            <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
-            <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
-        </div>
-    </div>
 
     <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
@@ -543,7 +529,6 @@
 
     const docTranslations = {
         id: {
-            btnBack: "Kembali ke Beranda",
             mainTitle: "Kebijakan Privasi",
             updated: "Terakhir Diperbarui: 29 Juni 2026",
             footerTitle: "Punya pertanyaan atau kendala?",
@@ -558,7 +543,6 @@
             ]
         },
         en: {
-            btnBack: "Back to Home",
             mainTitle: "Privacy Policy",
             updated: "Last Updated: June 29, 2026",
             footerTitle: "Have any questions or concerns?",
@@ -582,12 +566,14 @@
         
         const btnId = document.getElementById('lang-btn-id');
         const btnEn = document.getElementById('lang-btn-en');
-        if (lang === 'id') {
-            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
-        } else {
-            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+        if (btnId && btnEn) {
+            if (lang === 'id') {
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            } else {
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            }
         }
         
         renderPrivacyContent();
@@ -596,7 +582,6 @@
     function renderPrivacyContent() {
         const data = docTranslations[currentLang] || docTranslations['id'];
         
-        document.getElementById('lbl-btn-back').innerText = data.btnBack;
         document.getElementById('lbl-main-title').innerText = data.mainTitle;
         document.getElementById('lbl-updated').innerText = data.updated;
         document.getElementById('lbl-footer-title').innerText = data.footerTitle;
