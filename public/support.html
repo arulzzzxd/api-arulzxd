@@ -67,7 +67,8 @@
         .cyber-loader-box,
         .cyber-bar,
         .qris-frame,
-        .payment-box {
+        .payment-box,
+        .tab-qris-btn {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
@@ -101,7 +102,8 @@
         .rgb-mode-active .cyber-loader-box,
         .rgb-mode-active .cyber-bar,
         .rgb-mode-active .qris-frame,
-        .rgb-mode-active .payment-box {
+        .rgb-mode-active .payment-box,
+        .rgb-mode-active .tab-qris-btn {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
@@ -264,16 +266,38 @@
             box-shadow: 1px 1px 0px rgba(18, 18, 18, 0.12);
         }
 
-        /* QRIS Frame Disesuaikan dengan Ukuran Presisi Lama */
+        /* Tab Version Buttons */
+        .tab-qris-btn {
+            background-color: #FFFDF8;
+            color: #121212;
+            border: 2.5px solid var(--theme-border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .tab-qris-btn.active {
+            background-color: var(--theme-accent) !important;
+            color: var(--theme-text) !important;
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.15);
+        }
+
+        /* QRIS Frame & Payment Badges */
         .qris-frame {
             background: #FFFFFF;
             border: 2.5px solid var(--theme-border);
             border-radius: 18px;
-            padding: 16px;
+            padding: 20px;
             box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08);
-            max-width: 420px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .payment-box {
@@ -281,9 +305,6 @@
             border: 2px solid var(--theme-border);
             border-radius: 16px;
             padding: 14px;
-            max-width: 420px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .pay-badge {
@@ -548,34 +569,28 @@
         <!-- Main Support Content Card -->
         <div class="light-card p-6 sm:p-8 space-y-6">
             
-            <!-- Tab Selector 2 Versi QRIS -->
-            <div class="max-w-[420px] mx-auto">
-                <div class="text-[10px] font-black code-font uppercase text-zinc-500 mb-2 text-center">PILIH VERSI QRIS DONASI</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="switchQris(1)" id="btnQris1" class="btn-brutalism-light theme-bg-accent text-xs py-2.5">
-                        <i class="fa-solid fa-qrcode"></i> QRIS UTAMA
+            <!-- Tab Switcher Versi QRIS -->
+            <div>
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <span class="text-[10px] font-black code-font uppercase text-zinc-600">PILIH VERSI QRIS DONASI //</span>
+                    <span id="activeQrisTag" class="text-[9px] font-mono font-bold bg-zinc-900 text-white px-2 py-0.5 rounded-md uppercase">VERSI 1 ACTIVE</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button id="tabQrisV1" onclick="switchQrisVersion('v1')" class="tab-qris-btn active">
+                        <i class="fa-solid fa-qrcode"></i> VERSI 1 (ALL PAYMENT)
                     </button>
-                    <button onclick="switchQris(2)" id="btnQris2" class="btn-brutalism-light text-xs py-2.5">
-                        <i class="fa-solid fa-qrcode"></i> QRIS CADANGAN
+                    <button id="tabQrisV2" onclick="switchQrisVersion('v2')" class="tab-qris-btn">
+                        <i class="fa-solid fa-wallet"></i> VERSI 2 (ALTERNATIF)
                     </button>
                 </div>
             </div>
 
-            <!-- QRIS Display Frame Versi 1 -->
-            <div id="qrisFrame1" class="qris-frame text-center">
-                <div class="text-[10px] font-black code-font uppercase text-zinc-800 mb-2.5 bg-zinc-100 border border-zinc-900 rounded-md py-1 px-2 inline-block">
-                    <i class="fa-solid fa-bolt theme-text-accent mr-1"></i> QRIS VERSI 1 (ALL PAYMENT)
-                </div>
-                <img src="https://arulz-xd.my.id/files/CVmlrD.jpg" alt="QRIS Arulz Versi 1" class="w-full h-auto object-contain rounded-xl max-h-96 mx-auto" id="qrisImg1">
-            </div>
-
-            <!-- QRIS Display Frame Versi 2 (Alternatif) -->
-            <div id="qrisFrame2" class="qris-frame text-center hidden">
-                <div class="text-[10px] font-black code-font uppercase text-zinc-800 mb-2.5 bg-zinc-100 border border-zinc-900 rounded-md py-1 px-2 inline-block">
-                    <i class="fa-solid fa-shield-halved theme-text-accent mr-1"></i> QRIS VERSI 2 (ALTERNATIF)
-                </div>
-                <!-- Gambar QRIS Versi 2 (Bisa diganti URL khusus jika ada) -->
-                <img src="https://arulz-xd.my.id/files/CVmlrD.jpg" alt="QRIS Arulz Versi 2" class="w-full h-auto object-contain rounded-xl max-h-96 mx-auto" id="qrisImg2">
+            <!-- QRIS Display Frame (Ukuran Tetap Besar Maksimal) -->
+            <div class="qris-frame text-center">
+                <img src="https://arulz-xd.my.id/files/CVmlrD.jpg" alt="QRIS Arulz" class="w-full h-auto object-contain rounded-xl max-h-[480px] mx-auto transition-all duration-300" id="qrisImg">
+                <span id="qrisSubTitle" class="inline-block mt-3 px-3 py-1 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-wider rounded-lg code-font">
+                    QRIS UTAMA — ALL PAYMENT GATEWAY
+                </span>
             </div>
 
             <!-- Payment Apps Box -->
@@ -599,10 +614,10 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="space-y-3 max-w-[420px] mx-auto">
+            <div class="space-y-3">
                 <button class="btn-brutalism-light theme-bg-accent w-full text-xs py-3.5" id="downloadBtn" onclick="downloadQris()">
                     <i class="fa-solid fa-download" id="downloadIcon"></i>
-                    <span>SIMPAN QR KE GALERI</span>
+                    <span id="downloadBtnText">SIMPAN QRIS VERSI 1 KE GALERI</span>
                 </button>
 
                 <button class="btn-brutalism-light w-full text-xs py-3.5" onclick="shareLink()">
@@ -636,26 +651,52 @@
 
     <!-- JavaScript Handling -->
     <script>
-        // Switcher 2 Versi QRIS
-        let activeQrisVersion = 1;
+        // Data URL Gambar QRIS Dua Versi (Ganti URL Versi 2 Sesuai Kebutuhan)
+        const QRIS_VERSIONS = {
+            v1: {
+                title: "QRIS UTAMA — ALL PAYMENT GATEWAY",
+                tag: "VERSI 1 ACTIVE",
+                imgUrl: "https://arulz-xd.my.id/files/CVmlrD.jpg",
+                btnText: "SIMPAN QRIS VERSI 1 KE GALERI"
+            },
+            v2: {
+                title: "QRIS ALTERNATIF — E-WALLET & BANK",
+                tag: "VERSI 2 ACTIVE",
+                imgUrl: "https://arulz-xd.my.id/files/CVmlrD.jpg", // Dapat diganti dengan URL QRIS Versi 2 Anda
+                btnText: "SIMPAN QRIS VERSI 2 KE GALERI"
+            }
+        };
 
-        function switchQris(version) {
-            activeQrisVersion = version;
-            const q1 = document.getElementById('qrisFrame1');
-            const q2 = document.getElementById('qrisFrame2');
-            const b1 = document.getElementById('btnQris1');
-            const b2 = document.getElementById('btnQris2');
+        let currentActiveVersion = 'v1';
 
-            if (version === 1) {
-                q1.classList.remove('hidden');
-                q2.classList.add('hidden');
-                b1.classList.add('theme-bg-accent');
-                b2.classList.remove('theme-bg-accent');
+        function switchQrisVersion(version) {
+            const data = QRIS_VERSIONS[version];
+            if (!data) return;
+
+            currentActiveVersion = version;
+
+            // Transisi Gambar QRIS
+            const qrisImg = document.getElementById('qrisImg');
+            qrisImg.style.opacity = '0.3';
+
+            setTimeout(() => {
+                qrisImg.src = data.imgUrl;
+                document.getElementById('qrisSubTitle').innerText = data.title;
+                document.getElementById('activeQrisTag').innerText = data.tag;
+                document.getElementById('downloadBtnText').innerText = data.btnText;
+                qrisImg.style.opacity = '1';
+            }, 150);
+
+            // Update Status Class Tombol Tab
+            const tabV1 = document.getElementById('tabQrisV1');
+            const tabV2 = document.getElementById('tabQrisV2');
+
+            if (version === 'v1') {
+                tabV1.classList.add('active');
+                tabV2.classList.remove('active');
             } else {
-                q1.classList.add('hidden');
-                q2.classList.remove('hidden');
-                b1.classList.remove('theme-bg-accent');
-                b2.classList.add('theme-bg-accent');
+                tabV2.classList.add('active');
+                tabV1.classList.remove('active');
             }
         }
 
@@ -726,12 +767,11 @@
             }, 3500);
         }
 
-        // QRIS Download Proxy (Mengunduh QRIS sesuai versi yang dipilih)
+        // QRIS Download Proxy (Mengunduh Gambar Versi Aktif)
         async function downloadQris() {
             const btn = document.getElementById('downloadBtn');
             const originalText = btn.innerHTML;
-            const qrImgEl = activeQrisVersion === 1 ? document.getElementById('qrisImg1') : document.getElementById('qrisImg2');
-            const qrImgSrc = qrImgEl.src;
+            const qrImgSrc = document.getElementById('qrisImg').src;
 
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>MENGUNDUH...</span>`;
             btn.disabled = true;
@@ -744,14 +784,14 @@
                 const downloadUrl = URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
-                a.download = `qris-v${activeQrisVersion}-arulzxd-${Date.now()}.jpg`;
+                a.download = `qris-arulzxd-${currentActiveVersion}-${Date.now()}.jpg`;
 
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
 
                 URL.revokeObjectURL(downloadUrl);
-                showAlert("Berhasil", `QRIS Versi ${activeQrisVersion} berhasil disimpan ke galeri Anda.`, true);
+                showAlert("Berhasil", "QRIS berhasil disimpan ke galeri perangkat Anda.", true);
             } catch (err) {
                 console.error(err);
                 showAlert("Gagal", "Gagal mengunduh otomatis. Silakan simpan manual dengan menekan lama gambar QRIS.", false);
