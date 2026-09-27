@@ -2952,6 +2952,7 @@ app.get('/docs', (req, res) => {
         --theme-text: #121212;
         --theme-light: #fef9c3;
         --theme-ring: #facc15;
+        --theme-border: #eab308; /* Dinamis mengikuti tema */
     }
 
     * {
@@ -2982,37 +2983,29 @@ app.get('/docs', (req, res) => {
     .theme-bg-accent {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
-        transition: background-color 0.15s ease, color 0.15s ease;
+        transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .theme-text-accent {
         color: var(--theme-accent) !important;
-        transition: color 0.15s ease;
+        transition: color 0.2s ease;
     }
 
     .theme-border-accent {
-        border-color: var(--theme-accent) !important;
-        transition: border-color 0.15s ease;
+        border-color: var(--theme-border) !important;
+        transition: border-color 0.2s ease;
     }
 
     .theme-light-bg {
         background-color: var(--theme-light) !important;
-        transition: background-color 0.15s ease;
+        transition: background-color 0.2s ease;
     }
 
     /* Focus Ring Dinamis Input Form */
     .theme-input:focus {
         outline: none !important;
-        border-color: var(--border-dark) !important;
+        border-color: var(--theme-border) !important;
         box-shadow: 0 0 0 3px var(--theme-ring) !important;
-    }
-
-    /* Neubrutalism Base Card Style */
-    .light-card {
-        background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
-        border-radius: 20px !important;
-        box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
     /* CYBERPUNK LOADER LIGHT STYLE */
@@ -3035,7 +3028,7 @@ app.get('/docs', (req, res) => {
     }
     .cyber-loader-box {
         background: var(--card-bg);
-        border: 2.5px solid var(--border-dark);
+        border: 2.5px solid var(--theme-border);
         box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
         border-radius: 24px;
         padding: 32px 28px;
@@ -3044,6 +3037,7 @@ app.get('/docs', (req, res) => {
         align-items: center;
         position: relative;
         width: 320px;
+        transition: border-color 0.2s ease;
     }
     .cyber-avatar-wrap {
         position: relative;
@@ -3057,8 +3051,8 @@ app.get('/docs', (req, res) => {
         position: absolute;
         inset: -6px;
         border: 3.5px solid #e4e4e7;
-        border-top-color: var(--border-dark);
-        border-right-color: #3b82f6;
+        border-top-color: var(--theme-border);
+        border-right-color: var(--theme-accent);
         border-radius: 50%;
         animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
@@ -3076,27 +3070,28 @@ app.get('/docs', (req, res) => {
         width: 100%;
         height: 10px;
         background: #e4e4e7;
-        border: 2px solid var(--border-dark);
+        border: 2px solid var(--theme-border);
         border-radius: 9999px;
         overflow: hidden;
     }
     .cyber-bar-fill {
         height: 100%;
-        background: var(--border-dark);
+        background: var(--theme-border);
         width: 0%;
-        transition: width 0.15s ease;
+        transition: width 0.15s ease, background-color 0.2s ease;
         border-radius: 9999px;
     }
 
-    /* Banner Video Container */
+    /* Banner Video Container dengan Outline Dinamis */
     .banner-video-container {
         width: 100% !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 20px !important;
         overflow: hidden !important;
         position: relative !important;
         background-color: #000000 !important;
         box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
+        transition: border-color 0.2s ease;
     }
     .banner-video-el {
         width: 100% !important;
@@ -3105,10 +3100,10 @@ app.get('/docs', (req, res) => {
         display: block !important;
     }
 
-    /* Kotak Statistik Neubrutalism */
+    /* Kotak Statistik dengan Outline Dinamis */
     .stat-box {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 18px !important;
         padding: 12px 14px !important;
         min-height: 98px !important;
@@ -3116,6 +3111,7 @@ app.get('/docs', (req, res) => {
         flex-direction: column !important;
         justify-content: space-between !important;
         box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.08) !important;
+        transition: border-color 0.2s ease;
     }
     .stat-label {
         font-size: 10px !important;
@@ -3151,16 +3147,17 @@ app.get('/docs', (req, res) => {
 
     .category-group > div.glass-panel {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 20px !important;
         box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         overflow: hidden !important;
+        transition: border-color 0.2s ease;
     }
 
     #apiList .api-item {
         background-color: var(--card-bg) !important;
-        border-top: 2px solid var(--border-dark) !important;
-        transition: background-color 0.15s ease;
+        border-top: 2px solid var(--theme-border) !important;
+        transition: background-color 0.15s ease, border-color 0.2s ease;
     }
 
     #apiList .api-item > button {
@@ -3171,7 +3168,7 @@ app.get('/docs', (req, res) => {
 
     #apiList .api-item > div[id^="ep-"] {
         background-color: #FAF7EF !important; 
-        border-top: 2px dashed var(--border-dark) !important;
+        border-top: 2px dashed var(--theme-border) !important;
         padding: 16px !important;
     }
     
@@ -3179,7 +3176,7 @@ app.get('/docs', (req, res) => {
     #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
     #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         box-shadow: none !important;
         color: var(--border-dark) !important;
         border-radius: 14px !important;
@@ -3201,27 +3198,28 @@ app.get('/docs', (req, res) => {
     #apiList form select,
     #apiList form button[id^="custom-select-"] {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         font-weight: 700 !important;
         border-radius: 12px !important;
         box-shadow: none !important;
+        transition: border-color 0.2s ease;
     }
     #apiList form input::placeholder { color: #a1a1aa !important; font-weight: 600 !important; }
 
     .select-modal-container {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 20px !important;
     }
     .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
-    .select-modal-container .select-modal-item.selected { background-color: var(--border-dark) !important; color: #fff !important; }
+    .select-modal-container .select-modal-item.selected { background-color: var(--theme-border) !important; color: #fff !important; }
 
     /* Action Buttons in API Item */
     #apiList button[type="submit"] {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 12px !important;
         font-weight: 900 !important;
         box-shadow: 3px 3px 0px rgba(18,18,18,0.12) !important;
@@ -3232,7 +3230,7 @@ app.get('/docs', (req, res) => {
     #apiList button[onclick^="clearResponse"] {
         background-color: #FFFDF8 !important;
         color: var(--border-dark) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 12px !important;
         font-weight: 800 !important;
         box-shadow: 2px 2px 0px rgba(18,18,18,0.08) !important;
@@ -3241,7 +3239,7 @@ app.get('/docs', (req, res) => {
     /* RESPONSE CONTAINER OUTPUT */
     #apiList [id^="response-content-"] > div {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         border-radius: 18px !important;
         box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         overflow: hidden !important;
@@ -3250,7 +3248,7 @@ app.get('/docs', (req, res) => {
     #apiList [id^="response-content-"] .bg-black\/60,
     #apiList [id^="response-content-"] .bg-black\/40 {
         background-color: #FAF7EF !important;
-        border-bottom: 2px solid var(--border-dark) !important;
+        border-bottom: 2px solid var(--theme-border) !important;
     }
 
     #apiList [id^="response-content-"] .bg-black\/60 span,
@@ -3261,14 +3259,14 @@ app.get('/docs', (req, res) => {
 
     #apiList [id^="response-content-"] .grid {
         background-color: #FAF7EF !important;
-        border-bottom: 2px solid var(--border-dark) !important;
+        border-bottom: 2px solid var(--theme-border) !important;
         padding: 10px !important;
         gap: 8px !important;
     }
 
     #apiList [id^="response-content-"] .grid > div {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 12px !important;
     }
 
@@ -3287,28 +3285,28 @@ app.get('/docs', (req, res) => {
 
     #apiList [id^="response-content-"] .border-t-2 {
         background-color: #FAF7EF !important;
-        border-top: 2px solid var(--border-dark) !important;
+        border-top: 2px solid var(--theme-border) !important;
         padding: 12px 16px !important;
     }
 
     #apiList [id^="response-content-"] button {
         background-color: #FFFDF8 !important;
         color: var(--border-dark) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
         box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
     /* BADGES */
-    #apiList .api-item .status-ready { background-color: #86efac !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-    #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-    #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
+    #apiList .api-item .status-ready { background-color: #86efac !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
+    #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
+    #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
     
     /* Menu Navigasi Kartu Dropdown Sidebar */
     .dropdown-nav-card {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 14px !important;
         padding: 10px 14px !important;
         font-weight: 800 !important;
@@ -3329,17 +3327,18 @@ app.get('/docs', (req, res) => {
     /* Search Bar & Category Filters */
     #searchInput {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         border-radius: 18px !important;
         font-weight: 700 !important;
         box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.06) !important;
+        transition: border-color 0.2s ease;
     }
     #searchInput::placeholder { color: #71717a !important; }
 
     #categoryFilters button, .filter-btn {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         color: var(--border-dark) !important;
         border-radius: 9999px !important;
         font-weight: 800 !important;
@@ -3352,6 +3351,7 @@ app.get('/docs', (req, res) => {
     #categoryFilters button.active, .filter-btn.active {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
+        border-color: var(--theme-border) !important;
         transform: translateY(-1px);
         box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.12);
     }
@@ -3361,13 +3361,13 @@ app.get('/docs', (req, res) => {
         font-size: 10px;
         font-weight: 800;
         padding: 4px 10px;
-        border: 1.5px solid var(--border-dark);
+        border: 1.5px solid var(--theme-border);
         background-color: #FAF7EF;
         color: var(--border-dark);
         border-radius: 8px;
     }
     .lang-btn.active {
-        background-color: var(--border-dark);
+        background-color: var(--theme-border);
         color: #ffffff;
     }
 
@@ -3377,24 +3377,24 @@ app.get('/docs', (req, res) => {
     /* Popup Modal Styling */
     .light-popup-bg {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--border-dark) !important;
+        border: 2.5px solid var(--theme-border) !important;
         box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
         color: var(--border-dark) !important;
     }
     .light-card-box {
         background-color: #FAF7EF !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 16px !important;
     }
     .light-pill-capsule {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--border-dark) !important;
+        border: 2px solid var(--theme-border) !important;
         border-radius: 9999px !important;
         color: var(--border-dark) !important;
         font-weight: 800 !important;
     }
     .light-solid-header {
-        background-color: var(--border-dark) !important;
+        background-color: var(--theme-border) !important;
         color: #ffffff !important;
         font-weight: 900 !important;
         border-radius: 10px !important;
@@ -3865,14 +3865,14 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-    // System Theme Switcher Presets (Sama persis seperti feedback_2.html)
+    // System Theme Switcher Presets (Sintaks border disinkronkan dengan warna tema)
     const THEME_PRESETS = {
-        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15' },
-        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171' },
-        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa' },
-        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee' },
-        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc' },
-        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399' }
+        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#eab308' },
+        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#ef4444' },
+        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#3b82f6' },
+        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee', border: '#06b6d4' },
+        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#a855f7' },
+        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399', border: '#10b981' }
     };
 
     let rgbInterval = null;
@@ -3898,6 +3898,7 @@ app.get('/docs', (req, res) => {
                 const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
 
                 root.style.setProperty('--theme-accent', accentColor);
+                root.style.setProperty('--theme-border', accentColor); // Synchronize outline with RGB hue
                 root.style.setProperty('--theme-text', textColor);
                 root.style.setProperty('--theme-light', lightBg);
                 root.style.setProperty('--theme-ring', ringColor);
@@ -3905,6 +3906,7 @@ app.get('/docs', (req, res) => {
         } else {
             const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
             root.style.setProperty('--theme-accent', t.accent);
+            root.style.setProperty('--theme-border', t.border); // Synchronize outline with theme preset
             root.style.setProperty('--theme-text', t.text);
             root.style.setProperty('--theme-light', t.light);
             root.style.setProperty('--theme-ring', t.ring);
