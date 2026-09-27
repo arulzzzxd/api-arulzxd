@@ -2931,8 +2931,10 @@ app.get('/docs', (req, res) => {
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-    <title>Arulzxd API - Documentation</title>
+    <title>Arulz-XD API - Documentation</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -2950,7 +2952,6 @@ app.get('/docs', (req, res) => {
         --theme-text: #121212;
         --theme-light: #fef9c3;
         --theme-ring: #facc15;
-        --theme-border: #121212;
     }
 
     * {
@@ -2958,15 +2959,18 @@ app.get('/docs', (req, res) => {
     }
 
     html, body {
-        margin: 0;
-        padding: 0;
         width: 100%;
         min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        touch-action: pan-x pan-y;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        -webkit-user-select: none;
+        user-select: none;
         background-color: var(--bg-cream) !important;
         color: var(--border-dark) !important;
         background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
         background-size: 16px 16px !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
         overflow-x: hidden;
     }
 
@@ -2978,109 +2982,40 @@ app.get('/docs', (req, res) => {
     .theme-bg-accent {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition: background-color 0.15s ease, color 0.15s ease;
     }
 
     .theme-text-accent {
         color: var(--theme-accent) !important;
-        transition: color 0.2s ease;
+        transition: color 0.15s ease;
     }
 
     .theme-border-accent {
-        border-color: var(--theme-border) !important;
-        transition: border-color 0.2s ease;
+        border-color: var(--theme-accent) !important;
+        transition: border-color 0.15s ease;
     }
 
     .theme-light-bg {
         background-color: var(--theme-light) !important;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.15s ease;
     }
 
-    /* =========================================================
-       SINKRONISASI OUTLINE KESELURAHAN ELEMEN (PRESET COLOR)
-       ========================================================= */
-    .banner-video-container,
-    .stat-box,
-    .category-group > div,
-    .glass-panel,
-    #apiList .api-item,
-    #searchInput,
-    .cyber-loader-box,
-    .dropdown-nav-card,
-    #bioDropdown,
-    .light-card-box,
-    .light-popup-bg,
-    #themePickerBtn,
-    #bioMenuBtn,
-    #welcomePopup > div > div,
-    #apiList [id^="response-content-"] > div,
-    #categoryFilters button,
-    .filter-btn,
-    .lang-btn {
-        border-color: var(--theme-border) !important;
-        transition: border-color 0.2s ease;
+    /* Focus Ring Dinamis Input Form */
+    .theme-input:focus {
+        outline: none !important;
+        border-color: var(--border-dark) !important;
+        box-shadow: 0 0 0 3px var(--theme-ring) !important;
     }
 
-    .category-group > div {
-        border: 2.5px solid var(--theme-border) !important;
-        border-radius: 18px !important;
+    /* Neubrutalism Base Card Style */
+    .light-card {
         background-color: var(--card-bg) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
+        box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
-    /* =========================================================
-       ANIMASI RGB RINGAN & SMOOTH (HARDWARE ACCELERATED GPU)
-       ========================================================= */
-    @keyframes rgbHueRotate {
-        0% { filter: hue-rotate(0deg); }
-        100% { filter: hue-rotate(360deg); }
-    }
-
-    html.theme-rgb .banner-video-container,
-    html.theme-rgb .stat-box,
-    html.theme-rgb .category-group > div,
-    html.theme-rgb .glass-panel,
-    html.theme-rgb #apiList .api-item,
-    html.theme-rgb #searchInput,
-    html.theme-rgb .cyber-loader-box,
-    html.theme-rgb .dropdown-nav-card,
-    html.theme-rgb #bioDropdown,
-    html.theme-rgb .light-card-box,
-    html.theme-rgb .light-popup-bg,
-    html.theme-rgb #themePickerBtn,
-    html.theme-rgb #bioMenuBtn,
-    html.theme-rgb #welcomePopup > div > div,
-    html.theme-rgb #apiList [id^="response-content-"] > div {
-        border: 2.5px solid transparent !important;
-        background-image: linear-gradient(var(--card-bg, #FFFDF8), var(--card-bg, #FFFDF8)), 
-                          linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
-        background-origin: border-box !important;
-        background-clip: padding-box, border-box !important;
-        animation: rgbHueRotate 4s linear infinite !important;
-        will-change: filter;
-    }
-
-    html.theme-rgb #bioDropdown,
-    html.theme-rgb .cyber-loader-box {
-        background-image: linear-gradient(#FAF7EF, #FAF7EF), 
-                          linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
-    }
-
-    html.theme-rgb .theme-bg-accent {
-        background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000) !important;
-        animation: rgbHueRotate 4s linear infinite !important;
-        color: #ffffff !important;
-        will-change: filter;
-    }
-
-    html.theme-rgb .theme-text-accent {
-        background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf8, #7a00ff, #ff00c8, #ff0000);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: rgbHueRotate 4s linear infinite;
-        will-change: filter;
-    }
-
-    /* CYBERPUNK LOADER ANIMATION */
+    /* CYBERPUNK LOADER LIGHT STYLE */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3100,7 +3035,7 @@ app.get('/docs', (req, res) => {
     }
     .cyber-loader-box {
         background: var(--card-bg);
-        border: 2.5px solid var(--theme-border);
+        border: 2.5px solid var(--border-dark);
         box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
         border-radius: 24px;
         padding: 32px 28px;
@@ -3122,8 +3057,8 @@ app.get('/docs', (req, res) => {
         position: absolute;
         inset: -6px;
         border: 3.5px solid #e4e4e7;
-        border-top-color: var(--theme-border);
-        border-right-color: var(--theme-accent);
+        border-top-color: var(--border-dark);
+        border-right-color: #3b82f6;
         border-radius: 50%;
         animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
@@ -3141,55 +3076,52 @@ app.get('/docs', (req, res) => {
         width: 100%;
         height: 10px;
         background: #e4e4e7;
-        border: 2px solid var(--theme-border);
+        border: 2px solid var(--border-dark);
         border-radius: 9999px;
         overflow: hidden;
     }
     .cyber-bar-fill {
         height: 100%;
-        background: var(--theme-accent);
+        background: var(--border-dark);
         width: 0%;
-        transition: width 0.15s ease, background-color 0.15s ease;
+        transition: width 0.15s ease;
         border-radius: 9999px;
     }
 
-    /* Video Banner Radius Melengkung */
+    /* Banner Video Container */
     .banner-video-container {
         width: 100% !important;
-        border: 2.5px solid var(--theme-border) !important;
-        border-radius: 22px !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
         overflow: hidden !important;
         position: relative !important;
         background-color: #000000 !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
-        -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-        isolation: isolate !important;
+        box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
     }
     .banner-video-el {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
         display: block !important;
-        border-radius: 20px !important;
     }
 
-    /* Kotak Statistik */
+    /* Kotak Statistik Neubrutalism */
     .stat-box {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--theme-border) !important;
+        border: 2.5px solid var(--border-dark) !important;
         border-radius: 18px !important;
         padding: 12px 14px !important;
         min-height: 98px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
-        box-shadow: 0 4px 0px rgba(18, 18, 18, 0.08) !important;
+        box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.08) !important;
     }
     .stat-label {
         font-size: 10px !important;
         font-weight: 900 !important;
         letter-spacing: 0.05em !important;
-        color: #121212 !important;
+        color: var(--border-dark) !important;
         text-transform: uppercase !important;
         margin: 0 !important;
         line-height: 1.2 !important;
@@ -3198,7 +3130,7 @@ app.get('/docs', (req, res) => {
         font-size: 22px !important;
         font-weight: 900 !important;
         font-family: 'JetBrains Mono', monospace !important;
-        color: #121212 !important;
+        color: var(--border-dark) !important;
         line-height: 1.1 !important;
         margin: 0 !important;
     }
@@ -3208,41 +3140,49 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* OVERRIDE LIST ENDPOINT & FORM PARAMETER */
+    /* API LIST & CATEGORY GROUP OVERRIDES */
     #apiList {
         background-color: transparent !important;
     }
 
-    #apiList .api-item {
+    .category-group {
+        margin-bottom: 16px !important;
+    }
+
+    .category-group > div.glass-panel {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--theme-border) !important;
-        border-radius: 16px !important;
-        margin-bottom: 14px !important;
-        box-shadow: 4px 4px 0px rgba(18,18,18,0.06) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
+        box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         overflow: hidden !important;
     }
 
-    #apiList .api-item > button {
+    #apiList .api-item {
         background-color: var(--card-bg) !important;
-        border-bottom: none !important;
+        border-top: 2px solid var(--border-dark) !important;
+        transition: background-color 0.15s ease;
+    }
+
+    #apiList .api-item > button {
+        background-color: transparent !important;
         color: var(--border-dark) !important;
     }
-    #apiList .api-item > button p { color: var(--border-dark) !important; font-weight: 900 !important; }
-    #apiList .api-item > button .bg-cyan-500 { background-color: var(--theme-border) !important; color: #fff !important; border-radius: 6px !important; }
-    #apiList .api-item > button code, #apiList .api-item > button .text-cyan-200, #apiList .api-item > button .text-cyan-700 { color: var(--border-dark) !important; font-weight: 700 !important; }
+    #apiList .api-item > button p { color: var(--border-dark) !important; font-weight: 800 !important; }
 
     #apiList .api-item > div[id^="ep-"] {
         background-color: #FAF7EF !important; 
-        border-top: 2.5px dashed var(--theme-border) !important;
+        border-top: 2px dashed var(--border-dark) !important;
+        padding: 16px !important;
     }
     
     #apiList .api-item > div[id^="ep-"] .bg-slate-900\/60,
     #apiList .api-item > div[id^="ep-"] .bg-slate-900\/40,
     #apiList .api-item > div[id^="ep-"] > div.mb-4 > div.bg-slate-900\/40 {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         box-shadow: none !important;
         color: var(--border-dark) !important;
+        border-radius: 14px !important;
     }
 
     #apiList .api-item > div[id^="ep-"] h4,
@@ -3256,66 +3196,61 @@ app.get('/docs', (req, res) => {
         color: var(--border-dark) !important;
         font-weight: 900 !important;
     }
+
     #apiList form input,
     #apiList form select,
     #apiList form button[id^="custom-select-"] {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
-        font-weight: 800 !important;
-        border-radius: 8px !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
         box-shadow: none !important;
     }
-    #apiList form input::placeholder { color: #71717a !important; font-weight: 700 !important; }
+    #apiList form input::placeholder { color: #a1a1aa !important; font-weight: 600 !important; }
 
     .select-modal-container {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--theme-border) !important;
+        border: 2.5px solid var(--border-dark) !important;
+        border-radius: 20px !important;
     }
     .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
-    .select-modal-container .select-modal-item.selected { background-color: var(--theme-border) !important; color: #fff !important; }
-    .select-modal-container p, .select-modal-container span, .select-modal-container svg { color: var(--border-dark) !important; }
+    .select-modal-container .select-modal-item.selected { background-color: var(--border-dark) !important; color: #fff !important; }
 
-    #apiList button {
-        border: 2px solid var(--theme-border) !important;
-        font-weight: 900 !important;
-        color: var(--border-dark) !important;
-    }
-    #apiList .api-item > div[id^="ep-"] button[onclick^="copyFromElement"] {
-        background-color: #FFFDF8 !important;
-        padding: 4px 12px !important;
-    }
+    /* Action Buttons in API Item */
     #apiList button[type="submit"] {
-        background-color: var(--theme-border) !important;
-        color: #ffffff !important;
-        box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
+        background-color: var(--theme-accent) !important;
+        color: var(--theme-text) !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 12px !important;
+        font-weight: 900 !important;
+        box-shadow: 3px 3px 0px rgba(18,18,18,0.12) !important;
+        transition: all 0.15s ease !important;
     }
-    #apiList button[type="submit"]:active { box-shadow: 0 0 0 transparent !important; transform: translate(2px, 2px) !important; }
-    #apiList button[type="submit"] * { color: #ffffff !important; }
-    
+    #apiList button[type="submit"]:active { transform: translateY(1px) !important; box-shadow: 1px 1px 0px rgba(18,18,18,0.12) !important; }
+
     #apiList button[onclick^="clearResponse"] {
         background-color: #FFFDF8 !important;
+        color: var(--border-dark) !important;
+        border: 2px solid var(--border-dark) !important;
+        border-radius: 12px !important;
+        font-weight: 800 !important;
+        box-shadow: 2px 2px 0px rgba(18,18,18,0.08) !important;
     }
-    #apiList button[onclick^="clearResponse"]:hover { background-color: #FAF7EF !important; }
 
-    #apiList svg { color: var(--border-dark) !important; }
-
-    /* =========================================================
-       RESPONSE CONTAINER OUTPUT (LIGHT THEME MATCHING SCRIPT.JS)
-       ========================================================= */
+    /* RESPONSE CONTAINER OUTPUT */
     #apiList [id^="response-content-"] > div {
         background-color: #FFFDF8 !important;
-        border: 2.5px solid var(--theme-border) !important;
+        border: 2.5px solid var(--border-dark) !important;
         border-radius: 18px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         overflow: hidden !important;
     }
 
-    /* Response Header Bar */
     #apiList [id^="response-content-"] .bg-black\/60,
     #apiList [id^="response-content-"] .bg-black\/40 {
         background-color: #FAF7EF !important;
-        border-bottom: 2px solid var(--theme-border) !important;
+        border-bottom: 2px solid var(--border-dark) !important;
     }
 
     #apiList [id^="response-content-"] .bg-black\/60 span,
@@ -3324,45 +3259,21 @@ app.get('/docs', (req, res) => {
         font-weight: 900 !important;
     }
 
-    /* Grid Statistik Response */
     #apiList [id^="response-content-"] .grid {
         background-color: #FAF7EF !important;
-        border-bottom: 2px solid var(--theme-border) !important;
+        border-bottom: 2px solid var(--border-dark) !important;
         padding: 10px !important;
         gap: 8px !important;
     }
 
     #apiList [id^="response-content-"] .grid > div {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 12px !important;
-        box-shadow: none !important;
     }
 
-    #apiList [id^="response-content-"] .grid span.text-slate-500,
-    #apiList [id^="response-content-"] .grid span[class*="text-slate"] {
-        color: #64748b !important;
-        font-weight: 800 !important;
-    }
-
-    /* Status, Time, dan Size Badges */
-    #apiList [id^="response-content-"] .grid .text-amber-400,
-    #apiList [id^="response-content-"] .grid .text-amber-600 {
-        color: #d97706 !important;
-        font-weight: 900 !important;
-    }
-
-    #apiList [id^="response-content-"] .grid .text-cyan-400,
-    #apiList [id^="response-content-"] .grid .text-cyan-600 {
-        color: #0284c7 !important;
-        font-weight: 900 !important;
-    }
-
-    /* Pre Code JSON Text Output */
     #apiList [id^="response-content-"] pre {
         background-color: #FFFDF8 !important;
-        border-top: none !important;
-        border-bottom: none !important;
         color: #0f172a !important;
         font-weight: 600 !important;
         padding: 16px !important;
@@ -3374,36 +3285,19 @@ app.get('/docs', (req, res) => {
         font-weight: 700 !important;
     }
 
-    /* Action Buttons Bar di Bawah Response */
     #apiList [id^="response-content-"] .border-t-2 {
         background-color: #FAF7EF !important;
-        border-top: 2px solid var(--theme-border) !important;
+        border-top: 2px solid var(--border-dark) !important;
         padding: 12px 16px !important;
     }
 
     #apiList [id^="response-content-"] button {
         background-color: #FFFDF8 !important;
         color: var(--border-dark) !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 10px !important;
         font-weight: 800 !important;
-        box-shadow: 0 2px 0px rgba(18, 18, 18, 0.08) !important;
-        transition: all 0.15s ease !important;
-    }
-
-    #apiList [id^="response-content-"] button:hover {
-        background-color: #FAF7EF !important;
-        transform: translateY(-1px) !important;
-    }
-
-    #apiList [id^="response-content-"] button:active {
-        transform: translateY(1px) !important;
-        box-shadow: none !important;
-    }
-
-    #apiList [id^="response-content-"] button span {
-        color: var(--border-dark) !important;
-        font-weight: 800 !important;
+        box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
     /* BADGES */
@@ -3411,14 +3305,10 @@ app.get('/docs', (req, res) => {
     #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
     #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
     
-    #apiList .api-item span.bg-blue-500\/20 { background-color: #bfdbfe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-    #apiList .api-item span.bg-amber-500\/20 { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-    #apiList .api-item span.bg-purple-500\/20 { background-color: #d8b4fe !important; color: #121212 !important; border: 1.5px solid #121212 !important; }
-
-    /* Menu Navigasi Kartu Dropdown */
+    /* Menu Navigasi Kartu Dropdown Sidebar */
     .dropdown-nav-card {
         background-color: #FFFDF8 !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 14px !important;
         padding: 10px 14px !important;
         font-weight: 800 !important;
@@ -3439,27 +3329,31 @@ app.get('/docs', (req, res) => {
     /* Search Bar & Category Filters */
     #searchInput {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--theme-border) !important;
+        border: 2.5px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
-        border-radius: 16px !important;
+        border-radius: 18px !important;
         font-weight: 700 !important;
-        box-shadow: 0 3px 0px rgba(18, 18, 18, 0.05) !important;
+        box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.06) !important;
     }
     #searchInput::placeholder { color: #71717a !important; }
 
     #categoryFilters button, .filter-btn {
-        background-color: #FAF7EF !important;
-        border: 2px solid var(--theme-border) !important;
+        background-color: #FFFDF8 !important;
+        border: 2px solid var(--border-dark) !important;
         color: var(--border-dark) !important;
         border-radius: 9999px !important;
         font-weight: 800 !important;
         font-size: 11px !important;
         padding: 6px 16px !important;
         cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.05);
     }
     #categoryFilters button.active, .filter-btn.active {
-        background-color: var(--theme-border) !important;
-        color: #ffffff !important;
+        background-color: var(--theme-accent) !important;
+        color: var(--theme-text) !important;
+        transform: translateY(-1px);
+        box-shadow: 3px 3px 0px rgba(18, 18, 18, 0.12);
     }
 
     .lang-btn {
@@ -3467,13 +3361,13 @@ app.get('/docs', (req, res) => {
         font-size: 10px;
         font-weight: 800;
         padding: 4px 10px;
-        border: 1.5px solid var(--theme-border);
+        border: 1.5px solid var(--border-dark);
         background-color: #FAF7EF;
         color: var(--border-dark);
         border-radius: 8px;
     }
     .lang-btn.active {
-        background-color: var(--theme-border);
+        background-color: var(--border-dark);
         color: #ffffff;
     }
 
@@ -3483,24 +3377,24 @@ app.get('/docs', (req, res) => {
     /* Popup Modal Styling */
     .light-popup-bg {
         background-color: var(--card-bg) !important;
-        border: 2.5px solid var(--theme-border) !important;
+        border: 2.5px solid var(--border-dark) !important;
         box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
         color: var(--border-dark) !important;
     }
     .light-card-box {
         background-color: #FAF7EF !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 16px !important;
     }
     .light-pill-capsule {
         background-color: var(--card-bg) !important;
-        border: 2px solid var(--theme-border) !important;
+        border: 2px solid var(--border-dark) !important;
         border-radius: 9999px !important;
         color: var(--border-dark) !important;
         font-weight: 800 !important;
     }
     .light-solid-header {
-        background-color: var(--theme-border) !important;
+        background-color: var(--border-dark) !important;
         color: #ffffff !important;
         font-weight: 900 !important;
         border-radius: 10px !important;
@@ -3509,7 +3403,7 @@ app.get('/docs', (req, res) => {
 </head>
 <body class="min-h-screen pb-12 antialiased light-mode text-slate-900">
 
-<!-- Loader Overlay Cyberpunk -->
+<!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
@@ -3542,7 +3436,7 @@ app.get('/docs', (req, res) => {
 <div id="welcomePopup" class="fixed inset-0 z-[99999] hidden">
   <div class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl">
+    <div class="p-6 w-full max-w-md relative font-['Plus_Jakarta_Sans'] text-zinc-900 bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl shadow-xl">
       <button id="closePopupBtn" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-900 bg-zinc-200 rounded-full p-1.5 focus:outline-none border border-zinc-900">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -3921,7 +3815,7 @@ app.get('/docs', (req, res) => {
                 type="text" 
                 id="searchInput" 
                 placeholder="Cari Endpoint Atau Kategori...."
-                class="w-full py-4 pl-11 pr-4 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm"
+                class="theme-input w-full py-4 pl-11 pr-4 text-xs font-bold rounded-2xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none"
             >
             <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -3971,32 +3865,49 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-    // System Theme Switcher Presets
+    // System Theme Switcher Presets (Sama persis seperti feedback_2.html)
     const THEME_PRESETS = {
-        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15', border: '#eab308' },
-        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171', border: '#ef4444' },
-        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa', border: '#3b82f6' },
-        cyan:   { accent: '#06b6d4', text: '#121212', light: '#cff4fc', ring: '#22d3ee', border: '#06b6d4' },
-        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc', border: '#a855f7' },
-        green:  { accent: '#10b981', text: '#121212', light: '#d1fae5', ring: '#34d399', border: '#10b981' }
+        yellow: { accent: '#fde047', text: '#121212', light: '#fef9c3', ring: '#facc15' },
+        red:    { accent: '#ef4444', text: '#ffffff', light: '#fee2e2', ring: '#f87171' },
+        blue:   { accent: '#3b82f6', text: '#ffffff', light: '#dbeafe', ring: '#60a5fa' },
+        cyan:   { accent: '#06b6d4', text: '#ffffff', light: '#cff4fc', ring: '#22d3ee' },
+        purple: { accent: '#a855f7', text: '#ffffff', light: '#f3e8ff', ring: '#c084fc' },
+        green:  { accent: '#10b981', text: '#ffffff', light: '#d1fae5', ring: '#34d399' }
     };
+
+    let rgbInterval = null;
 
     function setAppTheme(themeName) {
         const root = document.documentElement;
         const dropdown = document.getElementById('themeMenuDropdown');
 
+        if (rgbInterval) {
+            clearInterval(rgbInterval);
+            rgbInterval = null;
+        }
+
         localStorage.setItem('selectedThemeStyle', themeName);
 
         if (themeName === 'rgb') {
-            root.classList.add('theme-rgb');
+            let hue = 0;
+            rgbInterval = setInterval(() => {
+                hue = (hue + 2) % 360;
+                const accentColor = \`hsl(\${hue}, 85%, 50%)\`;
+                const lightBg = \`hsl(\${hue}, 85%, 92%)\`;
+                const ringColor = \`hsl(\${hue}, 85%, 60%)\`;
+                const textColor = (hue >= 35 && hue <= 165) ? '#121212' : '#ffffff';
+
+                root.style.setProperty('--theme-accent', accentColor);
+                root.style.setProperty('--theme-text', textColor);
+                root.style.setProperty('--theme-light', lightBg);
+                root.style.setProperty('--theme-ring', ringColor);
+            }, 30);
         } else {
-            root.classList.remove('theme-rgb');
             const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
             root.style.setProperty('--theme-accent', t.accent);
             root.style.setProperty('--theme-text', t.text);
             root.style.setProperty('--theme-light', t.light);
             root.style.setProperty('--theme-ring', t.ring);
-            root.style.setProperty('--theme-border', t.border);
         }
 
         if (dropdown) dropdown.classList.add('hidden');
