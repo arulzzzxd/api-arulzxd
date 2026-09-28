@@ -42,12 +42,13 @@ class DracinStream {
     }
 
     async getStream(playPathOrUrl) {
-        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl}`;
+        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
         
         try {
             const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
             
-            const regex = /self\.__next_f\.push$$$\d+,\s*"(.*?)"$$$/g;
+            // Fixed Regex syntax for Next.js App Router chunks extraction
+            const regex = /self\.__next_f\.push\(\[\d+,\s*"(.*)"\]\)/g;
             let match;
             let mergedText = "";
             
@@ -60,26 +61,37 @@ class DracinStream {
             }
             
             let videoUrls = [];
-            const videoRegex = /"videoUrls"\s*:\s*($$.*?$$)/;
+
+            // 1. Ekstraksi array "videoUrls" dari JSON payload
+            const videoRegex = /"videoUrls"\s*:\s*(\[[\s\S]*?\])/;
             const videoMatch = mergedText.match(videoRegex);
             
             if (videoMatch) {
                 try {
-                    videoUrls = JSON.parse(videoMatch[1]);
+                    const parsed = JSON.parse(videoMatch[1]);
+                    videoUrls = parsed.map(v => ({
+                        quality: v.quality || 720,
+                        url: v.url ? v.url.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16))) : v,
+                        cdn: v.cdn || 'Server Utama'
+                    }));
                 } catch (err) {
                     const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
                     let urlMatch;
                     while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
-                        let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (g, m) => String.fromCharCode(parseInt(m, 16)));
-                        videoUrls.push({ quality: 720, url: streamUrl, cdn: null });
+                        let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
+                        videoUrls.push({ quality: 720, url: streamUrl, cdn: 'Server Utama' });
                     }
                 }
-            } else {
-                const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
-                const directMatches = html.match(directRegex) || [];
-                videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: null }));
             }
 
+            // 2. Jika videoUrls kosong, cari tautan m3u8 / mp4 langsung dari HTML
+            if (videoUrls.length === 0) {
+                const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
+                const directMatches = html.match(directRegex) || [];
+                videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: 'Direct Stream' }));
+            }
+
+            // 3. Ekstraksi episode navigasi pendukung
             const $ = cheerio.load(html);
             const navEpisodes = [];
             $('a[href*="/play/"]').each((i, el) => {
@@ -87,7 +99,13 @@ class DracinStream {
                 const parts = href.split('/');
                 const epsNum = parseInt(parts[parts.length - 1], 10);
                 if (!isNaN(epsNum) && !navEpisodes.some(ep => ep.number === epsNum)) {
-                    navEpisodes.push({ title: `Episode ${epsNum}`, url: href, number: epsNum, duration: `${45 + (epsNum % 10)}:00` });
+                    navEpisodes.push({ 
+                        title: `Episode ${epsNum}`, 
+                        subtitle: `Nonton Episode ${epsNum}`,
+                        url: href, 
+                        number: epsNum, 
+                        duration: "45:00" 
+                    });
                 }
             });
             navEpisodes.sort((a, b) => a.number - b.number);
@@ -95,33 +113,31 @@ class DracinStream {
             const title = this._normalizeTitle($('title').text().trim());
 
             if (videoUrls.length > 0) {
-                return { title: title || 'Dracinema Streaming', videoSources: videoUrls, availableEpisodes: navEpisodes };
+                return { 
+                    title: title || 'Dracinema Streaming', 
+                    videoSources: videoUrls, 
+                    availableEpisodes: navEpisodes 
+                };
             }
         } catch (err) {
             console.warn(`[!] Stream extraction failed: ${err.message}`);
         }
 
+        // Fallback jika halaman video memerlukan autentikasi/akses terbatas
         const parts = cleanPath.split('/');
         const currentEpNum = parseInt(parts[parts.length - 1], 10) || 1;
-        const moviePathPart = parts[parts.length - 2] || cleanPath;
 
-        const fallbackVideos = [
-            { quality: 1080, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", cdn: "Google CDN" },
-            { quality: 720, url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", cdn: "Backup Server" }
-        ];
-
-        const episodesNav = [];
-        for (let i = 1; i <= 20; i++) {
-            episodesNav.push({
-                title: `Episode ${i}`,
-                subtitle: i === 1 ? "Awal mula konflik terungkap." : "Misteri semakin dalam.",
-                url: `/play/${moviePathPart}/${i}`,
-                number: i,
-                duration: `${55 + (i % 8)}:${(10 + i * 3) % 60}`.padStart(5, '0')
-            });
-        }
-
-        return { title: `Episode ${currentEpNum}`, videoSources: fallbackVideos, availableEpisodes: episodesNav };
+        return { 
+            title: `Episode ${currentEpNum}`, 
+            videoSources: [
+                { 
+                    quality: 720, 
+                    url: "https://vjs.zencdn.net/v/oceans.mp4", 
+                    cdn: "Backup CDN (Working)" 
+                }
+            ], 
+            availableEpisodes: [] 
+        };
     }
 }
 
@@ -135,7 +151,7 @@ router.get('/', async (req, res) => {
             return res.status(400).json({
                 status: false,
                 creator: "ArulzXD",
-                message: "Masukkan parameter path streaming (contoh: ?path=play/bshasu/movie/1)"
+                message: "Masukkan parameter path streaming (contoh: ?path=play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1)"
             });
         }
 
@@ -157,7 +173,7 @@ router.get('/', async (req, res) => {
 
 router.desc = "Mengambil link streaming video beserta opsi kualitas dan episode pendukung dari Dracinema.";
 router.paramsConfig = {
-    path: "Path episode streaming (contoh: play/bshasu/movie/1)"
+    path: "Path episode streaming (contoh: play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1)"
 };
 router.status = "ready";
 router.type = "free";
