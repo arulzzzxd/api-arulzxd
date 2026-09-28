@@ -44,99 +44,82 @@ class DracinStream {
     async getStream(playPathOrUrl) {
         const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
         
-        try {
-            const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
-            
-            // Fixed Regex syntax for Next.js App Router chunks extraction
-            const regex = /self\.__next_f\.push\(\[\d+,\s*"(.*)"\]\)/g;
-            let match;
-            let mergedText = "";
-            
-            while ((match = regex.exec(html)) !== null) {
-                let chunk = match[1]
-                    .replace(/\\"/g, '"')
-                    .replace(/\\\\/g, '\\')
-                    .replace(/\\\//g, '/');
-                mergedText += chunk;
-            }
-            
-            let videoUrls = [];
+        const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
+        
+        // Ekstraksi chunk data Next.js
+        const regex = /self\.__next_f\.push\(\[\d+,\s*"(.*)"\]\)/g;
+        let match;
+        let mergedText = "";
+        
+        while ((match = regex.exec(html)) !== null) {
+            let chunk = match[1]
+                .replace(/\\"/g, '"')
+                .replace(/\\\\/g, '\\')
+                .replace(/\\\//g, '/');
+            mergedText += chunk;
+        }
+        
+        let videoUrls = [];
 
-            // 1. Ekstraksi array "videoUrls" dari JSON payload
-            const videoRegex = /"videoUrls"\s*:\s*(\[[\s\S]*?\])/;
-            const videoMatch = mergedText.match(videoRegex);
-            
-            if (videoMatch) {
-                try {
-                    const parsed = JSON.parse(videoMatch[1]);
-                    videoUrls = parsed.map(v => ({
-                        quality: v.quality || 720,
-                        url: v.url ? v.url.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16))) : v,
-                        cdn: v.cdn || 'Server Utama'
-                    }));
-                } catch (err) {
-                    const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
-                    let urlMatch;
-                    while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
-                        let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
-                        videoUrls.push({ quality: 720, url: streamUrl, cdn: 'Server Utama' });
-                    }
+        // 1. Ekstraksi array "videoUrls" dari JSON payload
+        const videoRegex = /"videoUrls"\s*:\s*(\[[\s\S]*?\])/;
+        const videoMatch = mergedText.match(videoRegex);
+        
+        if (videoMatch) {
+            try {
+                const parsed = JSON.parse(videoMatch[1]);
+                videoUrls = parsed.map(v => ({
+                    quality: v.quality || 720,
+                    url: typeof v === 'string' 
+                        ? v.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)))
+                        : (v.url ? v.url.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16))) : ''),
+                    cdn: v.cdn || 'Server Utama'
+                })).filter(v => v.url);
+            } catch (err) {
+                const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
+                let urlMatch;
+                while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
+                    let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
+                    videoUrls.push({ quality: 720, url: streamUrl, cdn: 'Server Utama' });
                 }
             }
-
-            // 2. Jika videoUrls kosong, cari tautan m3u8 / mp4 langsung dari HTML
-            if (videoUrls.length === 0) {
-                const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
-                const directMatches = html.match(directRegex) || [];
-                videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: 'Direct Stream' }));
-            }
-
-            // 3. Ekstraksi episode navigasi pendukung
-            const $ = cheerio.load(html);
-            const navEpisodes = [];
-            $('a[href*="/play/"]').each((i, el) => {
-                const href = $(el).attr('href') || '';
-                const parts = href.split('/');
-                const epsNum = parseInt(parts[parts.length - 1], 10);
-                if (!isNaN(epsNum) && !navEpisodes.some(ep => ep.number === epsNum)) {
-                    navEpisodes.push({ 
-                        title: `Episode ${epsNum}`, 
-                        subtitle: `Nonton Episode ${epsNum}`,
-                        url: href, 
-                        number: epsNum, 
-                        duration: "45:00" 
-                    });
-                }
-            });
-            navEpisodes.sort((a, b) => a.number - b.number);
-
-            const title = this._normalizeTitle($('title').text().trim());
-
-            if (videoUrls.length > 0) {
-                return { 
-                    title: title || 'Dracinema Streaming', 
-                    videoSources: videoUrls, 
-                    availableEpisodes: navEpisodes 
-                };
-            }
-        } catch (err) {
-            console.warn(`[!] Stream extraction failed: ${err.message}`);
         }
 
-        // Fallback jika halaman video memerlukan autentikasi/akses terbatas
-        const parts = cleanPath.split('/');
-        const currentEpNum = parseInt(parts[parts.length - 1], 10) || 1;
+        // 2. Jika tidak ketemu di JSON, cari URL m3u8 / mp4 langsung di HTML
+        if (videoUrls.length === 0) {
+            const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
+            const directMatches = html.match(directRegex) || [];
+            videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: 'Direct Stream' }));
+        }
+
+        // Jika setelah diekstrak tetap tidak ada video, lemparkan error
+        if (videoUrls.length === 0) {
+            throw new Error("Gagal mengambil sumber video streaming. Halaman mungkin memerlukan autentikasi atau struktur link telah berubah.");
+        }
+
+        // 3. Ekstraksi episode navigasi
+        const $ = cheerio.load(html);
+        const navEpisodes = [];
+        $('a[href*="/play/"]').each((i, el) => {
+            const href = $(el).attr('href') || '';
+            const parts = href.split('/');
+            const epsNum = parseInt(parts[parts.length - 1], 10);
+            if (!isNaN(epsNum) && !navEpisodes.some(ep => ep.number === epsNum)) {
+                navEpisodes.push({ 
+                    title: `Episode ${epsNum}`, 
+                    url: href, 
+                    number: epsNum 
+                });
+            }
+        });
+        navEpisodes.sort((a, b) => a.number - b.number);
+
+        const title = this._normalizeTitle($('title').text().trim());
 
         return { 
-            title: `Episode ${currentEpNum}`, 
-            videoSources: [
-                { 
-                    quality: 720, 
-                    url: "https://vjs.zencdn.net/v/oceans.mp4", 
-                    cdn: "Backup CDN (Working)" 
-                }
-            ], 
-            availableEpisodes: [] 
+            title: title || 'Dracinema Streaming', 
+            videoSources: videoUrls, 
+            availableEpisodes: navEpisodes 
         };
     }
 }
@@ -162,16 +145,15 @@ router.get('/', async (req, res) => {
             result: data
         });
     } catch (err) {
-        console.error(err);
         return res.status(500).json({
             status: false,
             creator: "ArulzXD",
-            message: err.message || "Terjadi kesalahan pada server."
+            message: err.message || "Gagal memproses permintaan streaming."
         });
     }
 });
 
-router.desc = "Mengambil link streaming video beserta opsi kualitas dan episode pendukung dari Dracinema.";
+router.desc = "Mengambil link streaming video murni tanpa fallback dari Dracinema.";
 router.paramsConfig = {
     path: "Path episode streaming (contoh: play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1)"
 };
