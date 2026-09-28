@@ -9,6 +9,7 @@ class DracinStream {
         this.baseUrl = 'https://dracinema.com';
         this.htmlClient = axios.create({
             timeout: 15000,
+            validateStatus: status => status < 500, // Menghindari crash otomatis axios saat 404
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -41,15 +42,32 @@ class DracinStream {
             .trim();
     }
 
+    _cleanPath(playPathOrUrl) {
+        let raw = playPathOrUrl.trim().replace(/^\/+/, '');
+        if (raw.startsWith('play/')) {
+            return `/${raw}`;
+        }
+        return `/play/${raw}`;
+    }
+
     async getStream(playPathOrUrl) {
-        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
+        const cleanPath = this._cleanPath(playPathOrUrl);
         
-        const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
+        const response = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
         
-        // Ekstraksi chunk data Next.js
+        if (response.status === 404) {
+            throw { status: 404, message: "Halaman/Episode tidak ditemukan di Dracinema." };
+        }
+
+        const html = response.data;
+        if (typeof html !== 'string') {
+            throw { status: 500, message: "Gagal memuat struktur HTML dari target." };
+        }
+        
+        // 1. Ekstraksi chunk data Next.js App Router
         const regex = /self\.__next_f\.push\(\[\d+,\s*"(.*)"\]\)/g;
         let match;
-        let mergedText = "";
+        let mergedText = html; // Gabungkan HTML asli untuk jaga-jaga
         
         while ((match = regex.exec(html)) !== null) {
             let chunk = match[1]
@@ -61,22 +79,29 @@ class DracinStream {
         
         let videoUrls = [];
 
-        // 1. Ekstraksi array "videoUrls" dari JSON payload
+        // 2. Ekstraksi JSON "videoUrls"
         const videoRegex = /"videoUrls"\s*:\s*(\[[\s\S]*?\])/;
         const videoMatch = mergedText.match(videoRegex);
         
         if (videoMatch) {
             try {
-                const parsed = JSON.parse(videoMatch[1]);
-                videoUrls = parsed.map(v => ({
-                    quality: v.quality || 720,
-                    url: typeof v === 'string' 
-                        ? v.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)))
-                        : (v.url ? v.url.replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16))) : ''),
-                    cdn: v.cdn || 'Server Utama'
-                })).filter(v => v.url);
-            } catch (err) {
-                const urlRegex = /"url"\s*:\s*"([^"]+)"/g;
+                // Bersihkan escape unicode jika ada
+                const unescapedJson = videoMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
+                const parsed = JSON.parse(unescapedJson);
+                
+                videoUrls = parsed.map(v => {
+                    if (typeof v === 'string') {
+                        return { quality: 720, url: v, cdn: 'Server Utama' };
+                    }
+                    return {
+                        quality: v.quality || 720,
+                        url: v.url || '',
+                        cdn: v.cdn || 'Server Utama'
+                    };
+                }).filter(v => v.url && v.url.startsWith('http'));
+            } catch (_) {
+                // Manual regex parsing jika JSON.parse gagal karena string terpotong
+                const urlRegex = /"(?:url|src)"\s*:\s*"([^"]+\.(?:m3u8|mp4)[^"]*)"/gi;
                 let urlMatch;
                 while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
                     let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
@@ -85,29 +110,29 @@ class DracinStream {
             }
         }
 
-        // 2. Jika tidak ketemu di JSON, cari URL m3u8 / mp4 langsung di HTML
+        // 3. Pencarian langsung tautan m3u8/mp4 jika poin #2 tidak menemukan tautan
         if (videoUrls.length === 0) {
-            const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/g;
+            const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/gi;
             const directMatches = html.match(directRegex) || [];
             videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: 'Direct Stream' }));
         }
 
-        // Jika setelah diekstrak tetap tidak ada video, lemparkan error
+        // Jika tidak ada sumber video sama sekali
         if (videoUrls.length === 0) {
-            throw new Error("Gagal mengambil sumber video streaming. Halaman mungkin memerlukan autentikasi atau struktur link telah berubah.");
+            throw { status: 404, message: "Link streaming video tidak ditemukan pada halaman ini." };
         }
 
-        // 3. Ekstraksi episode navigasi
+        // 4. Ekstraksi episode navigasi
         const $ = cheerio.load(html);
         const navEpisodes = [];
         $('a[href*="/play/"]').each((i, el) => {
             const href = $(el).attr('href') || '';
-            const parts = href.split('/');
+            const parts = href.replace(/\/$/, '').split('/');
             const epsNum = parseInt(parts[parts.length - 1], 10);
             if (!isNaN(epsNum) && !navEpisodes.some(ep => ep.number === epsNum)) {
                 navEpisodes.push({ 
                     title: `Episode ${epsNum}`, 
-                    url: href, 
+                    url: href.startsWith('/') ? href : `/${href}`, 
                     number: epsNum 
                 });
             }
@@ -145,7 +170,8 @@ router.get('/', async (req, res) => {
             result: data
         });
     } catch (err) {
-        return res.status(500).json({
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
             status: false,
             creator: "ArulzXD",
             message: err.message || "Gagal memproses permintaan streaming."
