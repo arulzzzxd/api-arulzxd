@@ -772,6 +772,17 @@ async function setCache(key, data) {
     }
 }
 
+// Menyembunyikan DeprecationWarning Mongoose dari log
+const originalEmit = process.emit;
+process.emit = function (name, data, ...args) {
+    if (name === 'warning' && typeof data === 'object' && data.name === 'DeprecationWarning') {
+        if (data.message && data.message.includes('findOneAndUpdate')) {
+            return false;
+        }
+    }
+    return originalEmit.apply(process, [name, data, ...args]);
+};
+
 async function getCache(key) {
     try {
         const cached = await CacheModel.findOne({ key });
