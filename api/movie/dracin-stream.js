@@ -32,7 +32,9 @@ class DracinStreamScraper {
     }
 
     async getDirectStreamUrl(playPathOrUrl) {
-        const cleanPath = playPathOrUrl.startsWith('/play/') ? playPathOrUrl : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
+        const cleanPath = playPathOrUrl.startsWith('/play/') 
+            ? playPathOrUrl 
+            : `/play/${playPathOrUrl.replace(/^\/+/, '')}`;
         
         try {
             const { data: html } = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
@@ -71,11 +73,11 @@ class DracinStreamScraper {
                 return videoUrls[0].url;
             }
         } catch (err) {
-            console.warn(`[!] Extraction failed for '${cleanPath}', using fallback stream.`);
+            console.warn(`[!] Extraction failed for '${cleanPath}':`, err.message);
         }
 
-        // Fallback video yang dipastikan valid dan bisa diputar
-        return "https://v.ftcdn.net/05/61/81/20/700_F_561812064_aXy4N4hF6x7k31P39fS0yE.mp4";
+        // Kembalikan null jika gagal ekstrak, hindari memakai link fallback yang mati
+        return null;
     }
 }
 
@@ -95,7 +97,16 @@ router.get('/', async (req, res) => {
 
         const videoUrl = await scraper.getDirectStreamUrl(text);
 
-        // Langsung pipe/stream video dengan Content-Type video/mp4
+        // Jika URL video tidak ditemukan / ekstraksi gagal
+        if (!videoUrl) {
+            return res.status(404).json({
+                status: false,
+                creator: 'ArulzXD',
+                message: 'Gagal mengekstrak URL video atau video tidak ditemukan.'
+            });
+        }
+
+        // Streaming file video ke client
         const videoResponse = await axios.get(videoUrl, {
             responseType: 'stream',
             headers: {
@@ -112,11 +123,11 @@ router.get('/', async (req, res) => {
         return videoResponse.data.pipe(res);
 
     } catch (err) {
-        console.error(err);
+        console.error('Streaming Error:', err.message);
         return res.status(500).json({
             status: false,
             creator: 'ArulzXD',
-            message: err.message
+            message: `Gagal memproses stream video: ${err.message}`
         });
     }
 });
