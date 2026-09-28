@@ -153,7 +153,7 @@ const scraper = new DracinStream();
 
 router.get('/', async (req, res) => {
     try {
-        const path = req.query.path || req.query.url;
+        const path = req.query.path;
 
         if (!path) {
             return res.status(400).json({
