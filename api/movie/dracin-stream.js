@@ -9,7 +9,7 @@ class DracinStream {
         this.baseUrl = 'https://dracinema.com';
         this.htmlClient = axios.create({
             timeout: 15000,
-            validateStatus: status => status < 500, // Menghindari crash otomatis axios saat 404
+            validateStatus: status => status < 500,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -42,32 +42,46 @@ class DracinStream {
             .trim();
     }
 
-    _cleanPath(playPathOrUrl) {
-        let raw = playPathOrUrl.trim().replace(/^\/+/, '');
-        if (raw.startsWith('play/')) {
-            return `/${raw}`;
+    _cleanPath(input) {
+        if (!input) return '';
+        let cleaned = input.trim();
+        
+        // Jika parameter berupa URL lengkap, ambil pathname-nya saja
+        if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
+            try {
+                const parsed = new URL(cleaned);
+                cleaned = parsed.pathname;
+            } catch (_) {}
         }
-        return `/play/${raw}`;
+        
+        cleaned = cleaned.replace(/^\/+/, '');
+        if (!cleaned.startsWith('play/')) {
+            cleaned = `play/${cleaned}`;
+        }
+        return `/${cleaned}`;
     }
 
     async getStream(playPathOrUrl) {
         const cleanPath = this._cleanPath(playPathOrUrl);
+        const targetUrl = `${this.baseUrl}${cleanPath}`;
         
-        const response = await this.htmlClient.get(`${this.baseUrl}${cleanPath}`);
+        const response = await this.htmlClient.get(targetUrl);
         
         if (response.status === 404) {
-            throw { status: 404, message: "Halaman/Episode tidak ditemukan di Dracinema." };
+            throw { status: 404, message: `Halaman episode tidak ditemukan di Dracinema (${cleanPath}).` };
         }
 
         const html = response.data;
         if (typeof html !== 'string') {
-            throw { status: 500, message: "Gagal memuat struktur HTML dari target." };
+            throw { status: 500, message: "Gagal memuat HTML dari server target." };
         }
-        
-        // 1. Ekstraksi chunk data Next.js App Router
+
+        let videoUrls = [];
+
+        // 1. Ekstraksi Next.js App Router Chunks
         const regex = /self\.__next_f\.push\(\[\d+,\s*"(.*)"\]\)/g;
         let match;
-        let mergedText = html; // Gabungkan HTML asli untuk jaga-jaga
+        let mergedText = html;
         
         while ((match = regex.exec(html)) !== null) {
             let chunk = match[1]
@@ -76,54 +90,46 @@ class DracinStream {
                 .replace(/\\\//g, '/');
             mergedText += chunk;
         }
-        
-        let videoUrls = [];
 
-        // 2. Ekstraksi JSON "videoUrls"
+        // 2. Cari dari JSON "videoUrls"
         const videoRegex = /"videoUrls"\s*:\s*(\[[\s\S]*?\])/;
         const videoMatch = mergedText.match(videoRegex);
         
         if (videoMatch) {
             try {
-                // Bersihkan escape unicode jika ada
                 const unescapedJson = videoMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
                 const parsed = JSON.parse(unescapedJson);
                 
                 videoUrls = parsed.map(v => {
-                    if (typeof v === 'string') {
-                        return { quality: 720, url: v, cdn: 'Server Utama' };
-                    }
-                    return {
-                        quality: v.quality || 720,
-                        url: v.url || '',
-                        cdn: v.cdn || 'Server Utama'
-                    };
+                    if (typeof v === 'string') return { quality: 720, url: v, cdn: 'Server Utama' };
+                    return { quality: v.quality || 720, url: v.url || '', cdn: v.cdn || 'Server Utama' };
                 }).filter(v => v.url && v.url.startsWith('http'));
-            } catch (_) {
-                // Manual regex parsing jika JSON.parse gagal karena string terpotong
-                const urlRegex = /"(?:url|src)"\s*:\s*"([^"]+\.(?:m3u8|mp4)[^"]*)"/gi;
-                let urlMatch;
-                while ((urlMatch = urlRegex.exec(videoMatch[1])) !== null) {
-                    let streamUrl = urlMatch[1].replace(/\\u([0-9a-fA-F]{4})/g, (_, m) => String.fromCharCode(parseInt(m, 16)));
-                    videoUrls.push({ quality: 720, url: streamUrl, cdn: 'Server Utama' });
-                }
-            }
+            } catch (_) {}
         }
 
-        // 3. Pencarian langsung tautan m3u8/mp4 jika poin #2 tidak menemukan tautan
+        // 3. Cari Tag HTML <video>, <source>, atau <iframe> jika JSON kosong
+        const $ = cheerio.load(html);
+        if (videoUrls.length === 0) {
+            $('video source, video, iframe').each((_, el) => {
+                const src = $(el).attr('src');
+                if (src && (src.includes('.m3u8') || src.includes('.mp4') || src.includes('embed'))) {
+                    videoUrls.push({ quality: 720, url: src, cdn: 'Player Embed' });
+                }
+            });
+        }
+
+        // 4. Fallback Regex M3U8/MP4 langsung
         if (videoUrls.length === 0) {
             const directRegex = /https?:\/\/[^\s"']+\.(?:m3u8|mp4)[^\s"']*/gi;
             const directMatches = html.match(directRegex) || [];
             videoUrls = [...new Set(directMatches)].map(u => ({ quality: 720, url: u, cdn: 'Direct Stream' }));
         }
 
-        // Jika tidak ada sumber video sama sekali
         if (videoUrls.length === 0) {
-            throw { status: 404, message: "Link streaming video tidak ditemukan pada halaman ini." };
+            throw { status: 404, message: "Link streaming video tidak ditemukan pada halaman episode ini." };
         }
 
-        // 4. Ekstraksi episode navigasi
-        const $ = cheerio.load(html);
+        // Ekstraksi episode navigasi
         const navEpisodes = [];
         $('a[href*="/play/"]').each((i, el) => {
             const href = $(el).attr('href') || '';
@@ -153,13 +159,13 @@ const scraper = new DracinStream();
 
 router.get('/', async (req, res) => {
     try {
-        const path = req.query.path;
+        const path = req.query.path || req.query.url;
 
         if (!path) {
             return res.status(400).json({
                 status: false,
                 creator: "ArulzXD",
-                message: "Masukkan parameter path streaming (contoh: ?path=play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1)"
+                message: "Masukkan parameter path streaming. Contoh: ?path=play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1"
             });
         }
 
@@ -181,7 +187,7 @@ router.get('/', async (req, res) => {
 
 router.desc = "Mengambil link streaming video murni tanpa fallback dari Dracinema.";
 router.paramsConfig = {
-    path: "Path episode streaming (contoh: play/mahkota-cahaya-untuk-istri-apollo-ns-2064962492755087362/1)"
+    path: "Path atau URL episode streaming"
 };
 router.status = "ready";
 router.type = "free";
