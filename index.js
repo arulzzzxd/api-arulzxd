@@ -2985,23 +2985,23 @@ app.get('/docs', (req, res) => {
     }
 
     /* MODE RGB DYNAMIC ROTATING BORDER */
-    .rgb-mode-active .light-card,
-    .rgb-mode-active .stat-box,
-    .rgb-mode-active .banner-video-container,
-    .rgb-mode-active .category-group > div.glass-panel,
-    .rgb-mode-active #searchInput,
-    .rgb-mode-active .dropdown-nav-card,
-    .rgb-mode-active #themeMenuDropdown,
-    .rgb-mode-active .cyber-loader-box,
-    .rgb-mode-active .cyber-bar,
-    .rgb-mode-active .light-popup-bg,
-    .rgb-mode-active .light-card-box {
-        border-color: transparent !important;
-        background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
-                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-        background-origin: border-box !important;
-        background-clip: padding-box, border-box !important;
-    }
+.rgb-mode-active .light-card,
+.rgb-mode-active .stat-box,
+.rgb-mode-active .banner-video-container,
+.rgb-mode-active .category-group > div.glass-panel,
+.rgb-mode-active #searchInput,
+.rgb-mode-active .dropdown-nav-card,
+.rgb-mode-active #themeMenuDropdown,
+.rgb-mode-active .cyber-loader-box,
+.rgb-mode-active .cyber-bar,
+.rgb-mode-active .light-popup-bg,
+.rgb-mode-active .light-card-box {
+    border-color: transparent !important;
+    background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                      conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+}
 
     .rgb-mode-active .theme-bg-accent,
     .rgb-mode-active #categoryFilters button.active,
