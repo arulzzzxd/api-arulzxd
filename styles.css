@@ -340,7 +340,6 @@ audio {
     .theme-toggle-btn { width: 52px; height: 52px; bottom: 16px; right: 16px; }
 }
 
-/* Efek teks Loading berkedip lembut */
 @keyframes pulseText {
    0%, 100% { opacity: 1; }
    50% { opacity: 0.5; }
@@ -362,15 +361,11 @@ audio {
   animation: spin 0.8s linear infinite;
   display: inline-block;
 }
-@keyframes blink {
-  50% { opacity: 0; }
-}
 
 .animate-blink {
   animation: blink 0.8s step-end infinite;
 }
 
-/* Mengunci scroll body dan memberikan transisi halus saat modal terbuka */
 body.overflow-hidden {
   overflow: hidden;
 }
@@ -397,7 +392,6 @@ body.overflow-hidden {
   80% { transform: rotate(-5deg); }
 }
 
-/* Scrollbar Kustom Halus Untuk Box JSON */
 .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -413,7 +407,6 @@ body.overflow-hidden {
     background: rgba(6, 182, 212, 0.3);
 }
 
-/* Penyesuaian skema warna Light Mode */
 .light-mode .scrollbar-thin::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.1);
 }
@@ -424,7 +417,6 @@ body.overflow-hidden {
     }
 }
 
-/* Container Modal Bottom Sheet */
 .select-modal-overlay {
     position: fixed;
     inset: 0;
@@ -442,7 +434,6 @@ body.overflow-hidden {
     pointer-events: auto;
 }
 
-/* Container Modal Bottom Sheet */
 .select-modal-container {
     position: fixed;
     bottom: 0;
@@ -467,7 +458,6 @@ body.overflow-hidden {
     transform: translateY(0);
 }
 
-/* Handle garis di atas modal */
 .select-modal-handle {
     width: 40px;
     height: 5px;
@@ -482,7 +472,6 @@ body.overflow-hidden {
     background-color: rgba(0, 240, 255, 0.6);
 }
 
-/* Styling Opsi List */
 .select-modal-list {
     display: flex;
     flex-direction: column;
@@ -515,7 +504,6 @@ body.overflow-hidden {
     border-color: rgba(0, 240, 255, 0.5);
 }
 
-/* ANIMASI BINTANG TEBAL (CYBERPUNK NEON PULSE) */
 .star-bold-animated {
     filter: drop-shadow(0 0 6px #00f0ff) drop-shadow(0 0 12px #00f0ff);
     animation: starPulseBold 1.8s infinite ease-in-out;
@@ -534,7 +522,6 @@ body.overflow-hidden {
     }
 }
 
-/* PERBAIKAN LIGHT MODE AGAR KONTRAST & TERANG */
 body.light-mode .api-item p.text-white,
 body.light-mode .api-item p {
     color: #0f172a !important;
@@ -575,7 +562,6 @@ body.light-mode .api-item code {
     color: #0284c7 !important;
 }
 
-/* Perbaikan Tombol Copy & Bersihkan di Light Mode */
 body.light-mode button[onclick*="copyFromElement"],
 body.light-mode button[onclick*="clearResponse"] {
     background-color: #e2e8f0 !important;
@@ -589,7 +575,6 @@ body.light-mode button[onclick*="clearResponse"]:hover {
     background-color: #cbd5e1 !important;
 }
 
-/* Menjamin teks di dalam box select terbaca di Light Mode */
 body.light-mode button[id*="custom-select"] span {
     color: #0f172a !important;
 }
@@ -599,7 +584,6 @@ body.light-mode button[id*="custom-select"] {
     border-color: #cbd5e1 !important;
 }
 
-/* PENYESUAIAN SIDEBAR & DROPDOWN DI LIGHT MODE */
 body.light-mode #bioDropdown {
     background-color: #ffffff !important;
     border-color: #e2e8f0 !important;
@@ -629,7 +613,6 @@ body.light-mode #bioDropdown .menu-link span {
     color: #0f172a !important;
 }
 
-/* PENYESUAIAN CYBER POPUP MODAL DI LIGHT MODE */
 body.light-mode .cyber-popup-bg {
     background-color: #ffffff !important;
     background-image: none !important;

@@ -2957,8 +2957,6 @@ app.get('/docs', (req, res) => {
         --bg-cream: #FAF7EF;
         --card-bg: #FFFDF8;
         --border-dark: #121212;
-        
-        /* Variabel Warna Tema & Outline Dinamis */
         --theme-border: #a16207;
         --theme-accent: #fde047;
         --theme-text: #121212;
@@ -2990,7 +2988,6 @@ app.get('/docs', (req, res) => {
         font-family: 'JetBrains Mono', monospace !important;
     }
 
-    /* Class Aksen Tema Keseluruhan */
     .theme-bg-accent {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
@@ -3014,16 +3011,13 @@ app.get('/docs', (req, res) => {
         transition: all 0.15s ease;
     }
 
-    /* Focus Ring Dinamis Input Form */
     .theme-input:focus {
         outline: none !important;
         border-color: var(--theme-border) !important;
         box-shadow: 0 0 0 3px var(--theme-accent) !important;
     }
 
-    /* ======================================================= */
-    /* MODE RGB DYNAMIC ROTATING BORDER (SAMA SEPERTI HOME.HTML) */
-    /* ======================================================= */
+    /* MODE RGB DYNAMIC ROTATING BORDER */
     .rgb-mode-active .light-card,
     .rgb-mode-active .stat-box,
     .rgb-mode-active .banner-video-container,
@@ -3062,7 +3056,6 @@ app.get('/docs', (req, res) => {
         background-clip: padding-box, border-box !important;
     }
 
-    /* CYBERPUNK LOADER LIGHT STYLE */
     #cyber-loader-overlay {
         position: fixed;
         inset: 0;
@@ -3135,7 +3128,6 @@ app.get('/docs', (req, res) => {
         border-radius: 9999px;
     }
 
-    /* Banner Video Container */
     .banner-video-container {
         width: 100% !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3152,7 +3144,6 @@ app.get('/docs', (req, res) => {
         display: block !important;
     }
 
-    /* Kotak Statistik Neubrutalism */
     .stat-box {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3187,7 +3178,6 @@ app.get('/docs', (req, res) => {
         color: #52525b !important;
     }
 
-    /* API LIST & CATEGORY GROUP OVERRIDES */
     #apiList {
         background-color: transparent !important;
     }
@@ -3264,7 +3254,6 @@ app.get('/docs', (req, res) => {
     .select-modal-container .select-modal-item { color: var(--border-dark) !important; border-bottom: 1px solid rgba(18,18,18,0.1) !important; }
     .select-modal-container .select-modal-item.selected { background-color: var(--theme-border) !important; color: #fff !important; }
 
-    /* Action Buttons in API Item */
     #apiList button[type="submit"] {
         background-color: var(--theme-accent) !important;
         color: var(--theme-text) !important;
@@ -3285,7 +3274,6 @@ app.get('/docs', (req, res) => {
         box-shadow: 2px 2px 0px rgba(18,18,18,0.08) !important;
     }
 
-    /* RESPONSE CONTAINER OUTPUT */
     #apiList [id^="response-content-"] > div {
         background-color: #FFFDF8 !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3347,12 +3335,10 @@ app.get('/docs', (req, res) => {
         box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.08) !important;
     }
 
-    /* BADGES */
     #apiList .api-item .status-ready { background-color: #86efac !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
     #apiList .api-item .status-update { background-color: #fde047 !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
     #apiList .api-item .status-error { background-color: #fca5a5 !important; color: #121212 !important; border: 1.5px solid var(--theme-border) !important; }
     
-    /* Menu Navigasi Kartu Dropdown Sidebar */
     .dropdown-nav-card {
         background-color: #FFFDF8 !important;
         border: 2px solid var(--theme-border) !important;
@@ -3373,7 +3359,6 @@ app.get('/docs', (req, res) => {
         background-color: #FAF7EF !important;
     }
 
-    /* Search Bar & Category Filters */
     #searchInput {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3422,7 +3407,6 @@ app.get('/docs', (req, res) => {
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Popup Modal Styling */
     .light-popup-bg {
         background-color: var(--card-bg) !important;
         border: 2.5px solid var(--theme-border) !important;
@@ -3615,7 +3599,7 @@ app.get('/docs', (req, res) => {
 
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
-<!-- Header Top Bar (Fixed Solid Krem z-30) -->
+<!-- Header Top Bar -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 border-zinc-900 z-30 shadow-xs">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -3628,24 +3612,19 @@ app.get('/docs', (req, res) => {
             </div>
         </div>
 
-        <!-- Tombol Aksi Kanan -->
         <div class="flex items-center gap-2 relative">
-            
-            <!-- Tombol Switcher Tema Warna -->
             <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 border-zinc-900 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
             </button>
 
-            <!-- Tombol Menu Sidebar -->
             <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </button>
 
-            <!-- Dropdown Pilihan Tema Warna -->
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                 
@@ -3682,18 +3661,14 @@ app.get('/docs', (req, res) => {
                     <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
-
         </div>
     </div>
 </header>
 
-<!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (z-50) -->
+<!-- Sidebar Dropdown Nav -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
-    
-    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
         <div class="flex items-center gap-2">
             <span class="px-2.5 py-1 theme-bg-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
@@ -3713,14 +3688,12 @@ app.get('/docs', (req, res) => {
         </div>
     </div>
 
-    <!-- Banner Video -->
     <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
         <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
         </video>
     </div>
 
-    <!-- Auth / Profile Status Container (Di atas Dashboard) -->
     <div id="sidebarAuthBtnContainer" class="mb-3">
         ${req.user ? `
         <button onclick="openProfilePopup()" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
@@ -3752,7 +3725,6 @@ app.get('/docs', (req, res) => {
         `}
     </div>
 
-    <!-- Tombol Navigasi Dropdown -->
     <nav class="space-y-2 flex-1 pb-4">
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -3818,7 +3790,7 @@ app.get('/docs', (req, res) => {
     </nav>
 </div>
 
-<!-- Main Mobile & Desktop Container (pt-20 agar tidak tertutup header fixed) -->
+<!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
     
     <!-- 1. Banner Video Utama -->
@@ -3876,7 +3848,7 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Elemen Tersembunyi untuk Mencegah TypeError pada script.js -->
+    <!-- Container Audio & Visual Player -->
     <div class="hidden">
         <audio id="audioElement"></audio>
         <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
@@ -3917,7 +3889,6 @@ app.get('/docs', (req, res) => {
 <script src="script.js"></script>
 
 <script>
-    // Presets Tema Warna & Border (Identik dengan home.html)
     const THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -3944,8 +3915,6 @@ app.get('/docs', (req, res) => {
         if (themeName === 'rgb') {
             document.body.classList.add('rgb-mode-active');
             let angle = 0;
-
-            // Rotasi 360 Derajat Conic Gradient RGB (Sama persis seperti home.html)
             rgbInterval = setInterval(() => {
                 angle = (angle + 3) % 360;
                 root.style.setProperty('--rgb-angle', angle + 'deg');
@@ -4120,7 +4089,7 @@ app.get('/docs', (req, res) => {
                                             
                     setRoleTheme(data.user.role || 'Free User');
 
-                    fetchUserActivityLogs(userKey);
+                    fetchUserActivityLogs();
                     if (typeof fetchAndUpdateUserLimit === 'function') {
                         fetchAndUpdateUserLimit();
                     }
@@ -4182,7 +4151,6 @@ app.get('/docs', (req, res) => {
             });
         }
 
-        // Muat Tema dari LocalStorage
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
 
