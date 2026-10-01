@@ -1,559 +1,985 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id" class="notranslate" translate="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autentikasi - ArulzXD REST API</title>
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate" />
+    <!-- Mencegah zoom di HP / Touch Screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Autentikasi - Arulz-XD API</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tambahan: SweetAlert2 untuk Alert Estetik -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { 
-                extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
-                } 
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { 
-            background-image: linear-gradient(rgba(11, 15, 25, 0.8), rgba(11, 15, 25, 0.8)), url('https://arulz-xd.my.id/files/5zkZru.png'); 
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        
-        /* Glass Card dengan Animasi Glow Border */
-        .glass-card {
-            background: rgba(17, 24, 39, 0.75);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 243, 255, 0.25);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.05);
-            animation: cardGlowPulse 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes cardGlowPulse {
-            0% {
-                border-color: rgba(0, 243, 255, 0.25);
-                box-shadow: 0 0 20px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.05);
-            }
-            50% {
-                border-color: rgba(168, 85, 247, 0.35);
-                box-shadow: 0 0 25px rgba(168, 85, 247, 0.2), inset 0 0 20px rgba(168, 85, 247, 0.08);
-            }
-            100% {
-                border-color: rgba(0, 243, 255, 0.4);
-                box-shadow: 0 0 30px rgba(0, 243, 255, 0.25), inset 0 0 25px rgba(0, 243, 255, 0.1);
-            }
-        }
-
-        /* Glowing Text FX */
-        .glow-text-cyan {
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.6), 0 0 20px rgba(0, 243, 255, 0.3);
-        }
-
-        /* Glowing Input Focus FX */
-        .glow-input:focus {
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
-            border-color: #00f3ff !important;
-        }
-
-        /* Glowing Buttons */
-        .glow-btn-cyan {
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glow-btn-cyan:hover {
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.7);
-            transform: translateY(-1px);
-        }
-
-        .glow-btn-purple {
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-            transition: all 0.3s ease;
-        }
-        .glow-btn-purple:hover {
-            box-shadow: 0 0 25px rgba(168, 85, 247, 0.7);
-            transform: translateY(-1px);
-        }
-
-        .hidden-form { display: none; }
-
-        /* Styling khusus kustomisasi SweetAlert2 agar tema serasi dengan ArulzXD API */
-        .swal2-popup-custom {
-            background: rgba(17, 24, 39, 0.95) !important;
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(6, 182, 212, 0.3) !important;
-            border-radius: 1.5rem !important;
-            color: #f3f4f6 !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.25) !important;
-        }
-        .swal2-title-custom {
-            color: #ffffff !important;
-            font-size: 1.25rem !important;
-            font-weight: 800 !important;
-        }
-        .swal2-html-custom {
-            color: #9ca3af !important;
-            font-size: 0.875rem !important;
-        }
-        .swal2-confirm-custom {
-            background: linear-gradient(to right, #0891b2, #06b6d4) !important;
-            color: #020617 !important;
-            font-weight: 700 !important;
-            font-size: 0.875rem !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.05em !important;
-            padding: 0.75rem 2rem !important;
-            border-radius: 0.75rem !important;
-            box-shadow: 0 0 15px rgba(8, 145, 178, 0.5) !important;
-        }
-
         :root {
-            --neon-cyan: #00f3ff;
-            --neon-glow: rgba(0, 243, 255, 0.4);
-            --bg-dark: #030712;
-            --bg-card: rgba(15, 23, 42, 0.75);
-            --border-color: rgba(0, 243, 255, 0.2);
+            --bg-cream: #FAF7EF;
+            --card-bg: #FFFDF8;
+            
+            /* Variabel Warna Tema & Outline Dinamis */
+            --theme-border: #a16207;
+            --theme-accent: #fde047;
+            --theme-text: #121212;
+            --theme-light: #fef9c3;
+            --rgb-angle: 0deg;
         }
 
-        /* Support Light Theme Mode */
-        html.light {
-            --neon-cyan: #008b9b;
-            --neon-glow: rgba(0, 139, 155, 0.25);
-            --bg-dark: #f0fdfa;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(0, 139, 155, 0.3);
+        * {
+            box-sizing: border-box;
         }
 
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            touch-action: pan-x pan-y;
+            background-color: var(--bg-cream) !important;
+            color: #121212 !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            overflow-x: hidden;
+        }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
+        .brutal-border,
+        .light-card,
+        .dropdown-nav-card,
+        .btn-brutalism-light,
+        .stat-box,
+        .light-popup-bg,
+        .light-card-box,
+        header,
+        #bioDropdown,
+        #themeMenuDropdown,
+        .cyber-loader-box,
+        .cyber-bar,
+        .auth-card,
+        .brutal-input {
+            border-color: var(--theme-border) !important;
+            transition: border-color 0.15s ease;
+        }
+
+        /* Class Aksen Tema */
+        .theme-bg-accent {
+            background-color: var(--theme-accent) !important;
+            color: var(--theme-text) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        .theme-text-accent {
+            color: var(--theme-border) !important;
+            transition: color 0.15s ease;
+        }
+
+        .theme-light-bg {
+            background-color: var(--theme-light) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
+        /* ======================================================= */
+        .rgb-mode-active .light-card,
+        .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light,
+        .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box,
+        .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .auth-card,
+        .rgb-mode-active .light-card-box {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        .rgb-mode-active .theme-bg-accent {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: var(--theme-text) !important;
+        }
+
+        .rgb-mode-active header,
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-
         #cyber-loader-overlay.fade-out {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
-
-        /* Laser Scanner Beam */
-        .scanner-beam {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 300%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-            animation: scanAnimation 4s infinite linear;
-        }
-        @keyframes scanAnimation {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-
-        /* Concentric Hologram HUD Rotating Rings */
-        .hud-ring {
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--theme-border);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: relative;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
+            width: 320px;
+        }
+        .cyber-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        .ring-outer {
+        .cyber-ring {
             position: absolute;
-            inset: 0;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--theme-border);
+            border-right-color: #3b82f6;
             border-radius: 50%;
-            border: 2px dashed var(--neon-cyan);
-            opacity: 0.6;
-            animation: spinClockwise 10s linear infinite;
-            box-shadow: 0 0 15px var(--neon-glow);
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .cyber-text-glitch {
+            color: #121212;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--theme-border);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--theme-border);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
         }
 
-        .ring-middle {
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        /* Menu Navigasi Kartu Dropdown */
+        .dropdown-nav-card {
+            background-color: #FFFDF8 !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            font-weight: 800 !important;
+            font-size: 11px !important;
+            color: #121212 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-transform: uppercase !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+        }
+        .dropdown-nav-card:active {
+            transform: translateY(1px) !important;
+            background-color: #FAF7EF !important;
         }
 
-        .ring-inner {
-            position: absolute;
-            inset: 20px;
-            border-radius: 50%;
-            border: 1px dotted var(--neon-cyan);
-            opacity: 0.8;
-            animation: spinClockwise 6s linear infinite;
+        /* Style Kartu Autentikasi */
+        .auth-card {
+            background-color: var(--card-bg) !important;
+            border: 2.5px solid var(--theme-border) !important;
+            border-radius: 24px !important;
+            padding: 24px sm:padding-32px !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.12) !important;
         }
 
-        .hud-avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            z-index: 10;
+        .hidden-form { display: none !important; }
+
+        /* Custom SweetAlert2 Neo-Brutalism Style */
+        .swal2-popup-custom {
+            background: #FFFDF8 !important;
+            border: 2.5px solid var(--theme-border) !important;
+            border-radius: 20px !important;
+            color: #121212 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15) !important;
+        }
+        .swal2-title-custom {
+            color: #121212 !important;
+            font-size: 1.25rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+        }
+        .swal2-html-custom {
+            color: #3f3f46 !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+        }
+        .swal2-confirm-custom {
+            background-color: var(--theme-accent) !important;
+            color: #121212 !important;
+            font-weight: 900 !important;
+            font-size: 0.875rem !important;
+            text-transform: uppercase !important;
+            padding: 0.75rem 2rem !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
-        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
-
-        /* Animated Dot Pulse */
-        .animated-dots::after {
-            content: '';
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            animation: dotsAnimation 1.5s steps(4, end) infinite;
-        }
-        @keyframes dotsAnimation {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
-        }
-
-        .neon-progress-bar {
-            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-            box-shadow: 0 0 12px var(--neon-cyan);
-            transition: width 0.15s ease-out;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-gray-200">
-    <div id="cyber-loader-overlay">
-        <div class="scanner-beam"></div>
+<body class="min-h-screen pb-12 antialiased">
 
-        <!-- Central Holographic HUD Ring Spinner -->
-        <div class="hud-ring mb-6">
-            <div class="ring-outer"></div>
-            <div class="ring-middle"></div>
-            <div class="ring-inner"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
+<!-- Loader Overlay Cyberpunk Light Style -->
+<div id="cyber-loader-overlay">
+    <div class="cyber-loader-box">
+        <div class="cyber-avatar-wrap mb-4">
+            <div class="cyber-ring"></div>
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
         </div>
-
-        <!-- Dynamic Page Name & Animated Dot Text -->
-        <div class="text-center px-4">
-            <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-                Memuat Halaman<span class="animated-dots"></span>
+        <div class="text-center">
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                MEMUAT HALAMAN LOGIN...
             </div>
-            <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-                SYSTEM INITIALIZING // CORE GATEWAY
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                ARULZ-XD API REST CORE
             </div>
         </div>
-
-        <!-- Progress Bar (0% - 100%) -->
-        <div class="w-64 sm:w-80 mt-6">
-            <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-                <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-                <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+        <div class="w-full mt-5">
+            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                <span>SYSTEM LOADING</span>
+                <span id="loader-percentage" class="font-black">0%</span>
             </div>
-            <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-                <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+            <div class="cyber-bar">
+                <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="themeBg" class="fixed inset-0 -z-10"></div>
+
+<!-- Header Top Bar (Fixed Solid Krem z-30) -->
+<header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+            </div>
+            <div>
+                <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
             </div>
         </div>
 
-        <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            BACKEND DEV - ARULZ-XD API v2.0
+        <!-- Tombol Aksi Kanan -->
+        <div class="flex items-center gap-2 relative">
+            
+            <!-- Tombol Switcher Style Warna -->
+            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </button>
+
+            <!-- Tombol Menu Sidebar -->
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            <!-- Dropdown Pilihan Tema Warna -->
+            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+                <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                </button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                </button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                </button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                </button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                </button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                </button>
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<!-- Overlay Latar Belakang (z-40) -->
+<div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+
+<!-- Sidebar Dropdown Nav (z-50) -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Header Dropdown -->
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                ARULZXD API
+            </span>
+        </div>
+
+        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
     </div>
 
-    <div class="glass-card p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
-        
-        <!-- Ornamen Dekoratif Glowing Bubbles -->
-        <div class="absolute -top-10 -right-10 w-36 h-36 bg-cyan-500/20 rounded-full blur-2xl animate-pulse"></div>
-        <div class="absolute -bottom-10 -left-10 w-36 h-36 bg-purple-500/20 rounded-full blur-2xl animate-pulse"></div>
+    <!-- Banner Video -->
+    <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+        </video>
+    </div>
 
-        <!-- Logo/Header -->
+    <!-- Auth / Profile Status Container -->
+    <div id="sidebarAuthBtnContainer" class="mb-3">
+        <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
+            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>PERINGATAN!</span>
+            </div>
+            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+            </p>
+            <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                <span>LOGIN / REGISTER</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tombol Navigasi Dropdown -->
+    <nav class="space-y-2 flex-1 pb-4">
+        <a href="/docs" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>DOCS / ENDPOINTS</span>
+            </div>
+        </a>
+        <a href="/store" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                <span>STORE / BUY PLAN</span>
+            </div>
+        </a>
+        <a href="/uploader" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span>UPLOADER FILE</span>
+            </div>
+        </a>
+        <a href="/pastecode" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                <span>PASTECODE SNIPPET</span>
+            </div>
+        </a>
+        <a href="/feedback" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                <span>REQUEST FITUR</span>
+            </div>
+        </a>
+        <a href="/status" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                <span>SERVER STATUS</span>
+            </div>
+        </a>
+        <a href="/support" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <span>SUPPORT / DONASI</span>
+            </div>
+        </a>
+        <a href="/privacy" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                <span>PRIVACY POLICY</span>
+            </div>
+        </a>
+    </nav>
+</div>
+
+<!-- Main Container (pt-24 agar presisi) -->
+<main class="max-w-md mx-auto px-4 pt-24 pb-12 relative z-10">
+    
+    <!-- Kartu Utama Form Autentikasi -->
+    <div class="auth-card relative overflow-hidden">
+
+        <!-- Logo / Header Form -->
         <div class="text-center mb-6 relative z-10">
-            <h1 class="text-2xl font-extrabold tracking-tight text-white mb-1">
-                Arulz<span class="text-cyan-400 glow-text-cyan">XD</span> API
+            <div class="w-12 h-12 rounded-2xl border-2 brutal-border bg-black flex items-center justify-center mx-auto mb-3 shadow-xs">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-9 h-9 rounded-xl object-cover">
+            </div>
+            <h1 id="lbl-auth-title" class="text-2xl font-black tracking-tight text-zinc-900 uppercase">
+                Autentikasi User
             </h1>
-            <p id="form-description" class="text-xs text-gray-400">Masuk untuk mengelola token dan akses API Anda.</p>
+            <p id="form-description" class="text-xs font-semibold text-zinc-600 mt-1">
+                Masuk untuk mengelola token dan akses API Anda.
+            </p>
         </div>
 
         <!-- ================= FORM SIGN IN ================= -->
         <div id="signin-form" class="space-y-4 relative z-10">
             <form id="loginForm" action="/auth/login" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Username / Email</label>
-                    <input type="text" name="username" required placeholder="Masukkan username atau email" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
+                    <label id="lbl-user-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">
+                        Username / Email
+                    </label>
+                    <input type="text" name="username" required placeholder="Masukkan username atau email" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Kata Sandi</label>
-                        <button type="button" onclick="switchForm('forgot')" class="text-xs font-medium text-cyan-400 hover:underline hover:drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Lupa Password?</button>
+                        <label id="lbl-password" class="block text-xs font-black uppercase tracking-wider text-zinc-800">
+                            Kata Sandi
+                        </label>
+                        <button type="button" onclick="switchForm('forgot')" id="lbl-btn-forgot" class="text-xs font-extrabold theme-text-accent hover:underline">
+                            Lupa Password?
+                        </button>
                     </div>
                     <div class="relative">
-                        <input id="login-password" type="password" name="password" required placeholder="••••••••" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
-                        <button type="button" onclick="togglePassword('login-password', 'eye-icon-login')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-cyan-400 transition">
-                            <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <input id="login-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-4 pr-11 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                        <button type="button" onclick="togglePassword('login-password', 'eye-icon-login')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-600 hover:text-zinc-900 transition">
+                            <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="glow-btn-cyan w-full bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Masuk</button>
+                <button type="submit" id="lbl-btn-signin" class="w-full theme-bg-accent border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                    Masuk
+                </button>
             </form>
 
-            <!-- Oauth Divider -->
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-white/5"></div>
-                <span class="flex-shrink mx-4 text-gray-500 text-[10px] font-bold tracking-widest uppercase">Atau masuk dengan</span>
-                <div class="flex-grow border-t border-white/5"></div>
+            <!-- Divider -->
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t-2 border-zinc-300"></div>
+                <span id="lbl-divider-or" class="flex-shrink mx-3 text-zinc-500 text-[10px] font-black tracking-widest uppercase">Atau masuk dengan</span>
+                <div class="flex-grow border-t-2 border-zinc-300"></div>
             </div>
 
             <!-- OAuth Buttons -->
-            <div class="grid grid-cols-2 gap-3">
-                <a href="/auth/google" class="flex items-center justify-center gap-2 bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-cyan-500/50 py-2.5 rounded-xl text-xs font-semibold transition text-white hover:shadow-[0_0_12px_rgba(0,243,255,0.2)]">
-                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-4 h-4" alt="Google"> Google
+            <div class="grid grid-cols-2 gap-2.5">
+                <a href="/auth/google" class="dropdown-nav-card justify-center py-2.5 px-3 text-center flex items-center gap-2 active:scale-95">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-4 h-4 shrink-0" alt="Google"> 
+                    <span class="font-black text-xs">Google</span>
                 </a>
-                <a href="/auth/github" class="flex items-center justify-center gap-2 bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-purple-500/50 py-2.5 rounded-xl text-xs font-semibold transition text-white hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]">
-                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" class="w-4 h-4 invert" alt="GitHub"> GitHub
+                <a href="/auth/github" class="dropdown-nav-card justify-center py-2.5 px-3 text-center flex items-center gap-2 active:scale-95">
+                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" class="w-4 h-4 shrink-0" alt="GitHub"> 
+                    <span class="font-black text-xs">GitHub</span>
                 </a>
             </div>
 
-            <p class="text-center text-xs text-gray-400 mt-4">Belum punya akun? <button onclick="switchForm('signup')" class="text-cyan-400 font-bold hover:underline hover:drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Daftar sekarang</button></p>
+            <p id="lbl-no-account" class="text-center text-xs font-bold text-zinc-600 mt-4">
+                Belum punya akun? <button onclick="switchForm('signup')" id="lbl-btn-register-link" class="theme-text-accent font-black underline">Daftar sekarang</button>
+            </p>
         </div>
 
         <!-- ================= FORM SIGN UP ================= -->
         <div id="signup-form" class="space-y-4 relative z-10 hidden-form">
             <form id="registerForm" action="/auth/register" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Username</label>
-                    <input type="text" name="username" required placeholder="pilih username" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
+                    <label id="lbl-reg-username" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Username</label>
+                    <input type="text" name="username" required placeholder="pilih username" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Alamat Email</label>
-                    <input type="email" name="email" required placeholder="nama@email.com" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
+                    <label id="lbl-reg-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Alamat Email</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Kata Sandi</label>
+                    <label id="lbl-reg-pass" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Kata Sandi</label>
                     <div class="relative">
-                        <input id="register-password" type="password" name="password" required placeholder="••••••••" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
-                        <button type="button" onclick="togglePassword('register-password', 'eye-icon-register')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-purple-400 transition">
-                            <svg id="eye-icon-register" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <input id="register-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-4 pr-11 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                        <button type="button" onclick="togglePassword('register-password', 'eye-icon-register')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-600 hover:text-zinc-900 transition">
+                            <svg id="eye-icon-register" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="glow-btn-purple w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Buat Akun Baru</button>
+                <button type="submit" id="lbl-btn-signup" class="w-full bg-zinc-900 text-white border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                    Buat Akun Baru
+                </button>
             </form>
-            <p class="text-center text-xs text-gray-400 mt-4">Sudah punya akun? <button onclick="switchForm('signin')" class="text-cyan-400 font-bold hover:underline hover:drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Masuk</button></p>
+            <p id="lbl-has-account" class="text-center text-xs font-bold text-zinc-600 mt-4">
+                Sudah punya akun? <button onclick="switchForm('signin')" id="lbl-btn-login-link" class="theme-text-accent font-black underline">Masuk</button>
+            </p>
         </div>
 
         <!-- ================= FORM FORGOT PASSWORD ================= -->
         <div id="forgot-form" class="space-y-4 relative z-10 hidden-form">
             <form id="forgotForm" action="/auth/forgot-password" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Alamat Email Terdaftar</label>
-                    <input type="email" name="email" required placeholder="nama@email.com" class="glow-input w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none font-medium transition">
+                    <label id="lbl-forgot-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Alamat Email Terdaftar</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
-                <button type="submit" class="glow-btn-cyan w-full bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Kirim Instruksi Reset</button>
+                <button type="submit" id="lbl-btn-forgot-submit" class="w-full theme-bg-accent border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                    Kirim Instruksi Reset
+                </button>
             </form>
-            <p class="text-center text-xs text-gray-400 mt-4"><button onclick="switchForm('signin')" class="text-cyan-400 font-bold hover:underline hover:drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Kembali ke Halaman Login</button></p>
+            <p class="text-center text-xs font-bold text-zinc-600 mt-4">
+                <button onclick="switchForm('signin')" id="lbl-btn-back-login" class="theme-text-accent font-black underline">Kembali ke Halaman Login</button>
+            </p>
         </div>
 
     </div>
 
-    <!-- JavaScript Logika Form dan Show/Hide Password -->
-    <script>
-        // Konfigurasi Dasar Custom Classes SweetAlert2
-        const swalConfig = {
-            customClass: {
-                popup: 'swal2-popup-custom',
-                title: 'swal2-title-custom',
-                htmlContainer: 'swal2-html-custom',
-                confirmButton: 'swal2-confirm-custom'
-            },
-            buttonsStyling: false
-        };
+    <!-- Footer Support -->
+    <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
+        <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
+        <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
+            Hubungi tim support teknis melalui email resmi kami di: 
+            <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>
+        </p>
+        <div class="pt-3 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+            &copy; 2026 ARULZ-XD API REST CORE
+        </div>
+    </footer>
+</main>
 
-        // Fungsi Utama Show/Hide Password
-        function togglePassword(inputId, iconId) {
-            const passwordInput = document.getElementById(inputId);
-            const eyeIcon = document.getElementById(iconId);
+<script>
+    // Memblokir Pinch Zoom & Gesture Zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+    });
+    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                `;
+    // Presets Tema Warna & Border
+    const THEME_PRESETS = {
+        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+    };
+
+    let rgbInterval = null;
+
+    function setAppTheme(themeName) {
+        const root = document.documentElement;
+        const dropdown = document.getElementById('themeMenuDropdown');
+
+        if (rgbInterval) {
+            clearInterval(rgbInterval);
+            rgbInterval = null;
+        }
+
+        localStorage.setItem('selectedThemeStyle', themeName);
+
+        if (themeName === 'rgb') {
+            document.body.classList.add('rgb-mode-active');
+            let angle = 0;
+            rgbInterval = setInterval(() => {
+                angle = (angle + 3) % 360;
+                root.style.setProperty('--rgb-angle', angle + 'deg');
+            }, 20);
+        } else {
+            document.body.classList.remove('rgb-mode-active');
+            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            root.style.setProperty('--theme-border', t.border);
+            root.style.setProperty('--theme-accent', t.accent);
+            root.style.setProperty('--theme-text', t.text);
+            root.style.setProperty('--theme-light', t.light);
+        }
+
+        if (dropdown) dropdown.classList.add('hidden');
+    }
+
+    // Terjemahan Bahasa Multi-Language
+    const docTranslations = {
+        id: {
+            authTitle: "Autentikasi User",
+            descSignin: "Masuk untuk mengelola token dan akses API Anda.",
+            descSignup: "Daftarkan akun baru Anda untuk mendapatkan API Key gratis.",
+            descForgot: "Masukkan email Anda untuk memproses penyetelan ulang sandi.",
+            userEmail: "Username / Email",
+            password: "Kata Sandi",
+            btnForgot: "Lupa Password?",
+            btnSignin: "Masuk",
+            dividerOr: "Atau masuk dengan",
+            noAccount: "Belum punya akun?",
+            btnRegisterLink: "Daftar sekarang",
+            regUsername: "Username",
+            regEmail: "Alamat Email",
+            regPass: "Kata Sandi",
+            btnSignup: "Buat Akun Baru",
+            hasAccount: "Sudah punya akun?",
+            btnLoginLink: "Masuk",
+            forgotEmail: "Alamat Email Terdaftar",
+            btnForgotSubmit: "Kirim Instruksi Reset",
+            btnBackLogin: "Kembali ke Halaman Login",
+            footerTitle: "Punya pertanyaan atau kendala?",
+            footerDesc: "Hubungi tim support teknis melalui email resmi kami di:"
+        },
+        en: {
+            authTitle: "User Authentication",
+            descSignin: "Sign in to manage your tokens and API access.",
+            descSignup: "Register a new account to get a free API Key.",
+            descForgot: "Enter your email to request a password reset.",
+            userEmail: "Username / Email",
+            password: "Password",
+            btnForgot: "Forgot Password?",
+            btnSignin: "Sign In",
+            dividerOr: "Or sign in with",
+            noAccount: "Don't have an account?",
+            btnRegisterLink: "Register now",
+            regUsername: "Username",
+            regEmail: "Email Address",
+            regPass: "Password",
+            btnSignup: "Create New Account",
+            hasAccount: "Already have an account?",
+            btnLoginLink: "Sign In",
+            forgotEmail: "Registered Email Address",
+            btnForgotSubmit: "Send Reset Instructions",
+            btnBackLogin: "Back to Login Page",
+            footerTitle: "Have any questions or concerns?",
+            footerDesc: "Contact our technical support team via our official email at:"
+        }
+    };
+
+    let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
+    let currentActiveForm = 'signin';
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('arulzxd_lang', lang);
+        
+        const btnId = document.getElementById('lang-btn-id');
+        const btnEn = document.getElementById('lang-btn-en');
+        if (btnId && btnEn) {
+            if (lang === 'id') {
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
             } else {
-                passwordInput.type = 'password';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                `;
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            }
+        }
+        
+        renderAuthContent();
+    }
+
+    function renderAuthContent() {
+        const data = docTranslations[currentLang] || docTranslations['id'];
+        
+        document.getElementById('lbl-auth-title').innerText = data.authTitle;
+        document.getElementById('lbl-user-email').innerText = data.userEmail;
+        document.getElementById('lbl-password').innerText = data.password;
+        document.getElementById('lbl-btn-forgot').innerText = data.btnForgot;
+        document.getElementById('lbl-btn-signin').innerText = data.btnSignin;
+        document.getElementById('lbl-divider-or').innerText = data.dividerOr;
+        document.getElementById('lbl-btn-register-link').innerText = data.btnRegisterLink;
+        
+        document.getElementById('lbl-reg-username').innerText = data.regUsername;
+        document.getElementById('lbl-reg-email').innerText = data.regEmail;
+        document.getElementById('lbl-reg-pass').innerText = data.regPass;
+        document.getElementById('lbl-btn-signup').innerText = data.btnSignup;
+        document.getElementById('lbl-btn-login-link').innerText = data.btnLoginLink;
+
+        document.getElementById('lbl-forgot-email').innerText = data.forgotEmail;
+        document.getElementById('lbl-btn-forgot-submit').innerText = data.btnForgotSubmit;
+        document.getElementById('lbl-btn-back-login').innerText = data.btnBackLogin;
+
+        document.getElementById('lbl-no-account').childNodes[0].nodeValue = data.noAccount + " ";
+        document.getElementById('lbl-has-account').childNodes[0].nodeValue = data.hasAccount + " ";
+
+        document.getElementById('lbl-footer-title').innerText = data.footerTitle;
+        document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>`;
+
+        const description = document.getElementById('form-description');
+        if (currentActiveForm === 'signin') description.innerText = data.descSignin;
+        else if (currentActiveForm === 'signup') description.innerText = data.descSignup;
+        else if (currentActiveForm === 'forgot') description.innerText = data.descForgot;
+    }
+
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const eyeIcon = document.getElementById(iconId);
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+            `;
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            `;
+        }
+    }
+
+    function switchForm(formType) {
+        currentActiveForm = formType;
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        const forgotForm = document.getElementById('forgot-form');
+
+        signinForm.classList.add('hidden-form');
+        signupForm.classList.add('hidden-form');
+        forgotForm.classList.add('hidden-form');
+
+        if (formType === 'signin') {
+            signinForm.classList.remove('hidden-form');
+        } else if (formType === 'signup') {
+            signupForm.classList.remove('hidden-form');
+        } else if (formType === 'forgot') {
+            forgotForm.classList.remove('hidden-form');
+        }
+
+        renderAuthContent();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+        const themeBtn = document.getElementById('themePickerBtn');
+        const themeDropdown = document.getElementById('themeMenuDropdown');
+
+        if (themeBtn && themeDropdown) {
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
+                    themeDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        setAppTheme(savedTheme);
+
+        function playBannerVideo() {
+            if (sidebarBannerVideo) {
+                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
             }
         }
 
-        // Fungsi Switch Form
-        function switchForm(formType) {
-            const signinForm = document.getElementById('signin-form');
-            const signupForm = document.getElementById('signup-form');
-            const forgotForm = document.getElementById('forgot-form');
-            const description = document.getElementById('form-description');
-
-            signinForm.classList.add('hidden-form');
-            signupForm.classList.add('hidden-form');
-            forgotForm.classList.add('hidden-form');
-
-            if (formType === 'signin') {
-                signinForm.classList.remove('hidden-form');
-                description.innerText = "Masuk untuk mengelola token dan akses API Anda.";
-            } else if (formType === 'signup') {
-                signupForm.classList.remove('hidden-form');
-                description.innerText = "Daftarkan akun baru Anda untuk mendapatkan API Key gratis.";
-            } else if (formType === 'forgot') {
-                forgotForm.classList.remove('hidden-form');
-                description.innerText = "Masukkan email Anda untuk memproses penyetelan ulang sandi.";
+        function closeSidebarMenu() {
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
             }
         }
 
-        // --- INTERSEPT SUBMIT & SWEETALERT LOGIC ---
+        if (bioMenuBtn && bioDropdown && menuOverlay) {
+            bioMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bioDropdown.style.transform = 'translateX(0)';
+                menuOverlay.classList.remove('hidden');
+                playBannerVideo();
+            });
+            if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+            menuOverlay.addEventListener('click', closeSidebarMenu);
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+        }
 
-        // 1. Alert Form Login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                ...swalConfig,
-                icon: 'success',
-                iconColor: '#06b6d4',
-                title: 'Autentikasi Berhasil',
-                text: 'Memproses login Anda, mohon tunggu...',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
+        playBannerVideo();
+        switchLanguage(currentLang);
+
+        // Dynamic User Status Sync for Sidebar
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('sidebarAuthBtnContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
+                                    <div class="truncate text-left leading-tight">
+                                        <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                        <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+                            </a>
+                        `;
+                    }
+                }
+            })
+            .catch(err => console.error("Gagal mengecek status user:", err));
+    });
+
+    // SweetAlert Interception Logika Submit Form
+    const swalConfig = {
+        customClass: {
+            popup: 'swal2-popup-custom',
+            title: 'swal2-title-custom',
+            htmlContainer: 'swal2-html-custom',
+            confirmButton: 'swal2-confirm-custom'
+        },
+        buttonsStyling: false
+    };
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            ...swalConfig,
+            icon: 'success',
+            title: currentLang === 'en' ? 'Authentication Successful' : 'Autentikasi Berhasil',
+            text: currentLang === 'en' ? 'Processing your login, please wait...' : 'Memproses login Anda, mohon tunggu...',
+            showConfirmButton: false,
+            timer: 1500
+        }).then(() => {
+            e.target.submit();
+        });
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            ...swalConfig,
+            icon: 'success',
+            title: currentLang === 'en' ? 'Registration Successful' : 'Pendaftaran Berhasil',
+            text: currentLang === 'en' ? 'Account created! Redirecting...' : 'Akun Anda berhasil dibuat! Mengalihkan ke dashboard...',
+            confirmButtonText: currentLang === 'en' ? 'Continue' : 'Lanjutkan'
+        }).then((result) => {
+            if (result.isConfirmed) {
                 e.target.submit();
-            });
-        });
-
-        // 2. Alert Form Register
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                ...swalConfig,
-                icon: 'success',
-                iconColor: '#a855f7', // Warna ungu mengikuti tema registrasi Anda
-                title: 'Pendaftaran Berhasil',
-                text: 'Akun Anda berhasil dibuat! Mengalihkan ke dashboard...',
-                confirmButtonText: 'Lanjutkan'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.target.submit();
-                }
-            });
-        });
-
-        // 3. Alert Form Lupa Password
-        document.getElementById('forgotForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                ...swalConfig,
-                icon: 'info',
-                iconColor: '#3b82f6',
-                title: 'Instruksi Dikirim',
-                text: 'Silakan periksa kotak masuk email Anda untuk menyetel ulang kata sandi.',
-                confirmButtonText: 'Mengerti'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.target.submit();
-                }
-            });
-        });
-
-        function getPageDisplayName() {
-            const path = window.location.pathname;
-            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-            const pageMap = {
-                'home': 'Home',
-                'docs': 'Dokumentasi',
-                'doc': 'Dokumentasi',
-                'status': 'Status Server',
-                'store': 'Store API',
-                'changelog': 'Changelog',
-                'uploader': 'Uploader File',
-                'pastecode': 'Pastecode',
-                'feedback': 'Feedback',
-                'privacy': 'Kebijakan Privasi',
-                'support': 'Dukungan Support',
-                'login': 'Halaman Login'
-            };
-
-            if (pageMap[fileName]) return pageMap[fileName];
-            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-        }
-
-        const pageName = getPageDisplayName();
-        const loaderTitleEl = document.getElementById('loader-title-text');
-        if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
-        }
-
-        // Progress Loader 0% - 100%
-        let currentProgress = 0;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
-        const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
             }
-        }, 120);
-
-        window.addEventListener('load', () => {
-            clearInterval(progressInterval);
-            updateProgress(100);
-
-            setTimeout(() => {
-                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-            }, 400);
         });
+    });
 
-        // Fallback Safety (Maksimal 4 detik)
+    document.getElementById('forgotForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            ...swalConfig,
+            icon: 'info',
+            title: currentLang === 'en' ? 'Instructions Sent' : 'Instruksi Dikirim',
+            text: currentLang === 'en' ? 'Check your email inbox for password reset link.' : 'Silakan periksa inbox email Anda untuk reset password.',
+            confirmButtonText: currentLang === 'en' ? 'Understood' : 'Mengerti'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                e.target.submit();
+            }
+        });
+    });
+
+    // Loader Progress Logic
+    let currentProgress = 0;
+    let hasFinishedLoading = false;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
         setTimeout(() => {
-            clearInterval(progressInterval);
-            updateProgress(100);
-            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+            if (loaderOverlay) {
                 loaderOverlay.classList.add('fade-out');
             }
-        }, 4000);
-    </script>
+        }, 300);
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 100);
+
+    window.addEventListener('load', finishLoader);
+    setTimeout(finishLoader, 1200);
+</script>
+
 </body>
 </html>

@@ -1,428 +1,919 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="notranslate" translate="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arulz-XD - Upload File</title>
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate" />
+    <!-- Mencegah zoom di HP / Touch Screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Uploader File - Arulz-XD API</title>
     <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/x-icon" href="https://files.catbox.moe/4j9u3m.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = { 
-            darkMode: 'class', 
-            theme: { 
-                extend: {
-                    colors: {
-                        darkBg: '#090a0f',
-                        cardBg: '#0f111a',
-                        accentBlue: '#38bdf8'
-                    }
-                } 
-            } 
-        }
-    </script>
+    
     <style>
-        * { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
-        body { background-color: #050508; }
         :root {
-            --neon-cyan: #00f3ff;
-            --neon-glow: rgba(0, 243, 255, 0.4);
-            --bg-dark: #030712;
-            --bg-card: rgba(15, 23, 42, 0.75);
-            --border-color: rgba(0, 243, 255, 0.2);
+            --bg-cream: #FAF7EF;
+            --card-bg: #FFFDF8;
+            
+            /* Variabel Warna Tema & Outline Dinamis */
+            --theme-border: #a16207;
+            --theme-accent: #fde047;
+            --theme-text: #121212;
+            --theme-light: #fef9c3;
+            --rgb-angle: 0deg;
         }
 
-        /* Support Light Theme Mode */
-        html.light {
-            --neon-cyan: #008b9b;
-            --neon-glow: rgba(0, 139, 155, 0.25);
-            --bg-dark: #f0fdfa;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(0, 139, 155, 0.3);
+        * {
+            box-sizing: border-box;
         }
 
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            touch-action: pan-x pan-y;
+            background-color: var(--bg-cream) !important;
+            color: #121212 !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            overflow-x: hidden;
+        }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
+        .brutal-border,
+        .light-card,
+        .dropdown-nav-card,
+        .btn-brutalism-light,
+        .stat-box,
+        .light-popup-bg,
+        .light-card-box,
+        header,
+        #bioDropdown,
+        #themeMenuDropdown,
+        .cyber-loader-box,
+        .cyber-bar,
+        .uploader-card,
+        .file-badge,
+        .brutal-dropzone {
+            border-color: var(--theme-border) !important;
+            transition: border-color 0.15s ease;
+        }
+
+        /* Class Aksen Tema */
+        .theme-bg-accent {
+            background-color: var(--theme-accent) !important;
+            color: var(--theme-text) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        .theme-text-accent {
+            color: var(--theme-border) !important;
+            transition: color 0.15s ease;
+        }
+
+        .theme-light-bg {
+            background-color: var(--theme-light) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
+        /* ======================================================= */
+        .rgb-mode-active .light-card,
+        .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light,
+        .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box,
+        .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .uploader-card,
+        .rgb-mode-active .brutal-dropzone,
+        .rgb-mode-active .light-card-box {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        .rgb-mode-active .theme-bg-accent {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: var(--theme-text) !important;
+        }
+
+        .rgb-mode-active header,
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-
         #cyber-loader-overlay.fade-out {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
-
-        /* Laser Scanner Beam */
-        .scanner-beam {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 300%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-            animation: scanAnimation 4s infinite linear;
-        }
-        @keyframes scanAnimation {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-
-        /* Concentric Hologram HUD Rotating Rings */
-        .hud-ring {
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--theme-border);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: relative;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
+            width: 320px;
+        }
+        .cyber-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        .ring-outer {
+        .cyber-ring {
             position: absolute;
-            inset: 0;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--theme-border);
+            border-right-color: #3b82f6;
             border-radius: 50%;
-            border: 2px dashed var(--neon-cyan);
-            opacity: 0.6;
-            animation: spinClockwise 10s linear infinite;
-            box-shadow: 0 0 15px var(--neon-glow);
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .cyber-text-glitch {
+            color: #121212;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--theme-border);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--theme-border);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
         }
 
-        .ring-middle {
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        /* Menu Navigasi Kartu Dropdown */
+        .dropdown-nav-card {
+            background-color: #FFFDF8 !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            font-weight: 800 !important;
+            font-size: 11px !important;
+            color: #121212 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-transform: uppercase !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+        }
+        .dropdown-nav-card:active {
+            transform: translateY(1px) !important;
+            background-color: #FAF7EF !important;
         }
 
-        .ring-inner {
-            position: absolute;
-            inset: 20px;
-            border-radius: 50%;
-            border: 1px dotted var(--neon-cyan);
-            opacity: 0.8;
-            animation: spinClockwise 6s linear infinite;
+        /* Style Kartu Uploader Neo-Brutalism */
+        .uploader-card {
+            background-color: var(--card-bg) !important;
+            border: 2.5px solid var(--theme-border) !important;
+            border-radius: 24px !important;
+            padding: 24px sm:padding-32px !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
-        .hud-avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            z-index: 10;
+        .brutal-dropzone {
+            background-color: #FFFDF8 !important;
+            border: 2.5px dashed var(--theme-border) !important;
+            border-radius: 20px !important;
+            transition: all 0.2s ease !important;
+        }
+        .brutal-dropzone:hover {
+            background-color: #FAF7EF !important;
+            transform: translateY(-2px);
         }
 
-        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
+        /* Custom SweetAlert2 Neo-Brutalism Style */
+        .swal2-popup-custom {
+            background: #FFFDF8 !important;
+            border: 2.5px solid var(--theme-border) !important;
+            border-radius: 20px !important;
+            color: #121212 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15) !important;
+        }
+        .swal2-title-custom {
+            color: #121212 !important;
+            font-size: 1.25rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+        }
+        .swal2-html-custom {
+            color: #3f3f46 !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+        }
+        .swal2-confirm-custom {
+            background-color: var(--theme-accent) !important;
+            color: #121212 !important;
+            font-weight: 900 !important;
+            font-size: 0.875rem !important;
+            text-transform: uppercase !important;
+            padding: 0.75rem 2rem !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1) !important;
+        }
 
-        /* Animated Dot Pulse */
-        .animated-dots::after {
-            content: '';
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            animation: dotsAnimation 1.5s steps(4, end) infinite;
-        }
-        @keyframes dotsAnimation {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
-        }
-
-        .neon-progress-bar {
-            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-            box-shadow: 0 0 12px var(--neon-cyan);
-            transition: width 0.15s ease-out;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-zinc-300 min-h-screen flex flex-col items-center p-4 sm:p-6 font-sans">
+<body class="min-h-screen pb-12 antialiased">
 
-    <div id="cyber-loader-overlay">
-        <div class="scanner-beam"></div>
-
-        <!-- Central Holographic HUD Ring Spinner -->
-        <div class="hud-ring mb-6">
-            <div class="ring-outer"></div>
-            <div class="ring-middle"></div>
-            <div class="ring-inner"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
+<!-- Loader Overlay Cyberpunk Light Style -->
+<div id="cyber-loader-overlay">
+    <div class="cyber-loader-box">
+        <div class="cyber-avatar-wrap mb-4">
+            <div class="cyber-ring"></div>
+            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
         </div>
-
-        <!-- Dynamic Page Name & Animated Dot Text -->
-        <div class="text-center px-4">
-            <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-                Memuat Halaman<span class="animated-dots"></span>
+        <div class="text-center">
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                MEMUAT UPLOADER FILE...
             </div>
-            <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-                SYSTEM INITIALIZING // CORE GATEWAY
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                ARULZ-XD API REST CORE
             </div>
         </div>
-
-        <!-- Progress Bar (0% - 100%) -->
-        <div class="w-64 sm:w-80 mt-6">
-            <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-                <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-                <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+        <div class="w-full mt-5">
+            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                <span>SYSTEM LOADING</span>
+                <span id="loader-percentage" class="font-black">0%</span>
             </div>
-            <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-                <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
+            <div class="cyber-bar">
+                <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="themeBg" class="fixed inset-0 -z-10"></div>
+
+<!-- Header Top Bar (Fixed Solid Krem z-30) -->
+<header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
+                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+            </div>
+            <div>
+                <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
             </div>
         </div>
 
-        <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            Arulz-XD API v2.0
+        <!-- Tombol Aksi Kanan -->
+        <div class="flex items-center gap-2 relative">
+            
+            <!-- Tombol Switcher Style Warna -->
+            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </button>
+
+            <!-- Tombol Menu Sidebar -->
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            <!-- Dropdown Pilihan Tema Warna -->
+            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+                <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                </button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                </button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                </button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                </button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                </button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                </button>
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<!-- Overlay Latar Belakang (z-40) -->
+<div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+
+<!-- Sidebar Dropdown Nav (z-50) -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Header Dropdown -->
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                ARULZXD API
+            </span>
+        </div>
+
+        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
     </div>
 
-    <header class="w-full max-w-4xl bg-[#0b0d16] border border-zinc-900 rounded-xl px-6 py-4 flex items-center justify-between mb-6 shadow-lg">
-        <div class="flex items-center space-x-3">
-            <div class="bg-sky-900/40 text-sky-400 font-bold px-3 py-1.5 rounded-lg text-sm tracking-wide border border-sky-800/30">AD</div>
-            <span class="font-bold text-white tracking-wider text-sm">Arulz-XD<span class="text-zinc-500 font-medium text-xs">UPLOAD</span></span>
-        </div>
-        <div class="flex items-center space-x-2">
-            <a href="/" class="bg-sky-900/30 text-sky-400 hover:bg-sky-900/50 border border-sky-800/40 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition">
-                <i class="fa-solid fa-book text-[11px]"></i> Docs
+    <!-- Banner Video -->
+    <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Auth / Profile Status Container -->
+    <div id="sidebarAuthBtnContainer" class="mb-3">
+        <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
+            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>PERINGATAN!</span>
+            </div>
+            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+            </p>
+            <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                <span>LOGIN / REGISTER</span>
             </a>
-            <a href="/docs" class="bg-[#121522] border border-zinc-800 px-4 py-2 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center gap-1.5">
-                <i class="fa-solid fa-arrow-left text-[10px]"></i> Kembali
-            </a>
         </div>
+    </div>
+
+    <!-- Tombol Navigasi Dropdown -->
+    <nav class="space-y-2 flex-1 pb-4">
+        <a href="/docs" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>DOCS / ENDPOINTS</span>
+            </div>
+        </a>
+        <a href="/store" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                <span>STORE / BUY PLAN</span>
+            </div>
+        </a>
+        <a href="/uploader" class="dropdown-nav-card theme-light-bg">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span>UPLOADER FILE</span>
+            </div>
+        </a>
+        <a href="/pastecode" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                <span>PASTECODE SNIPPET</span>
+            </div>
+        </a>
+        <a href="/feedback" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                <span>REQUEST FITUR</span>
+            </div>
+        </a>
+        <a href="/status" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                <span>SERVER STATUS</span>
+            </div>
+        </a>
+        <a href="/support" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <span>SUPPORT / DONASI</span>
+            </div>
+        </a>
+        <a href="/privacy" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                <span>PRIVACY POLICY</span>
+            </div>
+        </a>
+    </nav>
+</div>
+
+<!-- Main Container (pt-20 agar presisi) -->
+<main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
+    
+    <!-- Title Header Halaman -->
+    <header class="text-center md:text-left pt-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="lbl-badge-status">ONLINE FILE STORAGE</span>
+        </div>
+        <h1 id="lbl-main-title" class="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight mb-1">
+            Uploader File Instan
+        </h1>
+        <p id="lbl-main-desc" class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed">
+            Unggah file Anda secara aman dan dapatkan URL publik langsung. Tanpa ribet, langsung pakai.
+        </p>
     </header>
 
-    <main class="w-full max-w-4xl bg-[#0b0d16] border border-zinc-900 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-8">
+    <!-- Kartu Utama Uploader Neo-Brutalism -->
+    <div class="uploader-card relative space-y-6">
         
-        <div class="space-y-4 max-w-2xl">
-            <div class="inline-flex items-center gap-1.5 bg-sky-950/40 border border-sky-900/40 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-sky-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span> File Uploader
-            </div>
-            
-            <h1 class="text-3xl font-extrabold text-white tracking-tight leading-tight">
-                <span class="text-sky-400">Upload</span> File <br class="sm:hidden"> Gratis & Instan
-            </h1>
-            
-            <p class="text-xs sm:text-sm text-zinc-500 leading-relaxed">
-                Upload <strong class="text-zinc-300">1 file</strong> dan dapatkan URL publik instan via <span class="text-zinc-400 underline decoration-zinc-600">https://arulz-xd.my.id/uploader</span>. Support hampir semua format termasuk <strong class="text-zinc-400">DOCX</strong> — maksimal <strong class="text-zinc-300">4.5MB</strong> per file. Tanpa login, langsung pakai.
-            </p>
-
-            <div class="flex flex-wrap items-center gap-3 pt-2">
-                <a href="/docs" class="bg-transparent border border-zinc-800 text-zinc-300 hover:bg-zinc-900/50 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition">
-                    <i class="fa-solid fa-book"></i> API Docs
-                </a>
-                <a href="/docs" class="bg-sky-500 hover:bg-sky-400 text-black px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition">
-                    <i class="fa-solid fa-layer-group text-[11px]"></i> Semua API
-                </a>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2 pt-2">
-                <span class="bg-[#0f1220] border border-emerald-950 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ONLINE
-                </span>
-                <span class="bg-[#0f1220] border border-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5">
-                    <i class="fa-solid fa-hard-drive text-[9px]"></i> 4m5MB MAX
-                </span>
-                <span class="bg-[#0f1220] border border-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5">
-                    <i class="fa-solid fa-key text-[9px]"></i> YES KEY
-                </span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 text-zinc-700 text-[10px] font-bold tracking-widest uppercase">
-            <span>//</span> <span>Upload File</span>
-            <div class="h-[1px] bg-zinc-900 flex-1"></div>
+        <!-- Badges Spesifikasi -->
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-emerald-100 text-emerald-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ONLINE
+            </span>
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-800 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-hard-drive text-[10px]"></i> MAX 4.5MB
+            </span>
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border theme-light-bg text-zinc-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-bolt text-[10px]"></i> PUBLIC URL
+            </span>
         </div>
 
         <form id="uploadForm" action="/uploadfile" method="post" enctype="multipart/form-data" class="space-y-6">
             
-            <div id="file-drop-area" class="border border-dashed border-sky-900/60 hover:border-sky-500 bg-[#07080e] rounded-xl p-8 text-center cursor-pointer transition group">
+            <!-- Area Dropzone Brutalism -->
+            <div id="file-drop-area" class="brutal-dropzone p-6 sm:p-8 text-center cursor-pointer relative group shadow-xs">
                 <input type="file" name="file" id="fileInput" class="hidden" required />
                 
-                <div class="mx-auto w-12 h-12 mb-4 bg-sky-950/50 border border-sky-900/40 rounded-xl flex items-center justify-center text-sky-400 group-hover:scale-105 transition">
-                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl border-2 brutal-border theme-bg-accent flex items-center justify-center text-zinc-900 group-hover:scale-105 transition-transform shadow-xs">
+                    <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
                 </div>
 
-                <h3 class="text-sm font-bold text-zinc-200 tracking-wider mb-2 uppercase">Drag & Drop File Di Sini</h3>
-                <p class="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
-                    atau <span class="text-zinc-300 font-semibold group-hover:text-sky-400">klik untuk pilih file</span> · Maks <span class="text-zinc-400">1 file</span> · Maksimal <span class="text-zinc-400">4.5MB</span> · Semua format video didukung
+                <h3 id="lbl-dropzone-title" class="text-sm sm:text-base font-black text-zinc-900 uppercase tracking-wider mb-1">
+                    Seret & Lepas File di Sini
+                </h3>
+                <p id="lbl-dropzone-sub" class="text-xs text-zinc-600 font-semibold max-w-md mx-auto leading-relaxed mb-4">
+                    atau <span class="theme-text-accent font-extrabold underline">klik untuk memilih file</span> · Maksimal <strong class="text-zinc-900 font-black">4.5MB</strong> per file
                 </p>
 
-                <div class="flex flex-wrap justify-center gap-1.5 mt-6 max-w-xl mx-auto">
-                    <span class="bg-sky-950/40 border border-sky-800/50 text-[9px] font-bold text-sky-400 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-image"></i> GAMBAR</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-pdf"></i> PDF</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-word"></i> DOCX</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-excel"></i> XLSX</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-zipper"></i> ZIP</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-audio"></i> AUDIO</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-video"></i> WEBM / MOV</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-video"></i> MP4</span>
-                    <span class="bg-[#0e1017] border border-zinc-800 text-[9px] font-bold text-zinc-500 px-2 py-1 rounded flex items-center gap-1"><i class="fa-regular fa-file-lines"></i> TEXT</span>
+                <!-- Format Badges -->
+                <div class="flex flex-wrap justify-center gap-1.5 max-w-xl mx-auto pt-2">
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-image"></i> GAMBAR</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-pdf"></i> PDF</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-word"></i> DOCX</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-excel"></i> XLSX</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-zipper"></i> ZIP</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-audio"></i> AUDIO</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-video"></i> MP4 / WEBM</span>
                 </div>
             </div>
 
-            <div id="preview-area" class="hidden text-left p-4 bg-[#07080e] border border-zinc-900 rounded-xl space-y-2">
-                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">File Terpilih:</span>
-                <div id="file-list" class="space-y-1 text-xs text-zinc-300"></div>
-                <button type="button" id="remove-file" class="mt-2 text-xs text-red-400 hover:text-red-300 font-medium transition flex items-center gap-1">
-                    <i class="fa-regular fa-trash-can"></i> Hapus File
+            <!-- Preview Box File Terpilih -->
+            <div id="preview-area" class="hidden p-4 bg-[#FAF7EF] border-2 brutal-border rounded-xl space-y-2 shadow-xs">
+                <span id="lbl-preview-title" class="text-xs font-black text-zinc-800 uppercase tracking-wider block">File Terpilih:</span>
+                <div id="file-list" class="space-y-1 text-xs font-bold text-zinc-900 code-font"></div>
+                <button type="button" id="remove-file" class="mt-2 text-xs text-red-600 hover:text-red-700 font-black transition flex items-center gap-1 active:scale-95">
+                    <i class="fa-regular fa-trash-can"></i> <span id="lbl-btn-remove">Hapus File</span>
                 </button>
             </div>
             
-            <button type="submit" id="uploadButton" class="w-full py-3.5 bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-black font-bold rounded-xl transition shadow-lg shadow-sky-950/20 text-sm tracking-wider uppercase">Mulai Proses Upload</button>
+            <button type="submit" id="uploadButton" class="w-full theme-bg-accent border-2 brutal-border font-black py-3.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                Mulai Proses Upload
+            </button>
         </form>
 
-        <footer class="bg-[#07080e] border border-zinc-900 rounded-xl p-4 flex items-start gap-3">
-            <i class="fa-solid fa-circle-info text-sky-500 text-xs mt-0.5"></i>
-            <p class="text-xs text-zinc-500 leading-normal">
-                File disimpan di <span class="text-zinc-400 bg-zinc-900/60 px-1.5 py-0.5 rounded border border-zinc-800/50 font-mono text-[11px]">https://arulz-xd.my.id/uploader</span>. Butuh integrasi via kode? <a href="/" class="text-sky-400 hover:underline font-medium">Lihat API Docs</a>.
+        <div class="p-3.5 bg-[#FAF7EF] border-2 brutal-border rounded-xl flex items-start gap-3 shadow-xs">
+            <i class="fa-solid fa-circle-info theme-text-accent text-sm mt-0.5"></i>
+            <p id="lbl-footer-note" class="text-xs text-zinc-700 font-semibold leading-snug">
+                File akan disimpan di server terisolasi secara otomatis. Butuh integrasi via kustom kode REST API? <a href="/docs" class="theme-text-accent font-black underline">Lihat Dokumentasi API</a>.
             </p>
-        </footer>
-    </main>
+        </div>
 
-    <script>
-        const fileDropArea = document.getElementById('file-drop-area');
-        const fileInput = document.getElementById('fileInput');
-        const previewArea = document.getElementById('preview-area');
-        const fileList = document.getElementById('file-list');
-        const removeFile = document.getElementById('remove-file');
+    </div>
 
-        fileDropArea.addEventListener('click', () => fileInput.click());
+    <!-- Footer Support -->
+    <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
+        <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
+        <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
+            Hubungi tim support teknis melalui email resmi kami di: 
+            <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>
+        </p>
+        <div class="pt-3 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+            &copy; 2026 ARULZ-XD API REST CORE
+        </div>
+    </footer>
+</main>
 
-        // Drag and Drop Events
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            fileDropArea.addEventListener(eventName, preventDefaults, false);
-        });
+<script>
+    // Memblokir Pinch Zoom & Gesture Zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+    });
+    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-        function preventDefaults(e) {
+    // Presets Tema Warna & Border
+    const THEME_PRESETS = {
+        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+    };
+
+    let rgbInterval = null;
+
+    function setAppTheme(themeName) {
+        const root = document.documentElement;
+        const dropdown = document.getElementById('themeMenuDropdown');
+
+        if (rgbInterval) {
+            clearInterval(rgbInterval);
+            rgbInterval = null;
+        }
+
+        localStorage.setItem('selectedThemeStyle', themeName);
+
+        if (themeName === 'rgb') {
+            document.body.classList.add('rgb-mode-active');
+            let angle = 0;
+            rgbInterval = setInterval(() => {
+                angle = (angle + 3) % 360;
+                root.style.setProperty('--rgb-angle', angle + 'deg');
+            }, 20);
+        } else {
+            document.body.classList.remove('rgb-mode-active');
+            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            root.style.setProperty('--theme-border', t.border);
+            root.style.setProperty('--theme-accent', t.accent);
+            root.style.setProperty('--theme-text', t.text);
+            root.style.setProperty('--theme-light', t.light);
+        }
+
+        if (dropdown) dropdown.classList.add('hidden');
+    }
+
+    // Terjemahan Bahasa Multi-Language
+    const docTranslations = {
+        id: {
+            badgeStatus: "ONLINE FILE STORAGE",
+            mainTitle: "Uploader File Instan",
+            mainDesc: "Unggah file Anda secara aman dan dapatkan URL publik langsung. Tanpa ribet, langsung pakai.",
+            dropTitle: "Seret & Lepas File di Sini",
+            dropSub: "atau <span class='theme-text-accent font-extrabold underline'>klik untuk memilih file</span> · Maksimal <strong class='text-zinc-900 font-black'>4.5MB</strong> per file",
+            previewTitle: "File Terpilih:",
+            btnRemove: "Hapus File",
+            btnUpload: "Mulai Proses Upload",
+            footerNote: "File akan disimpan di server terisolasi secara otomatis. Butuh integrasi via kustom kode REST API? <a href='/docs' class='theme-text-accent font-black underline'>Lihat Dokumentasi API</a>.",
+            footerTitle: "Punya pertanyaan atau kendala?",
+            footerDesc: "Hubungi tim support teknis melalui email resmi kami di:"
+        },
+        en: {
+            badgeStatus: "ONLINE FILE STORAGE",
+            mainTitle: "Instant File Uploader",
+            mainDesc: "Upload your files securely and get an instant public URL. Fast and effortless.",
+            dropTitle: "Drag & Drop File Here",
+            dropSub: "or <span class='theme-text-accent font-extrabold underline'>click to select file</span> · Maximum <strong class='text-zinc-900 font-black'>4.5MB</strong> per file",
+            previewTitle: "Selected File:",
+            btnRemove: "Remove File",
+            btnUpload: "Start Upload Process",
+            footerNote: "Files are automatically stored in an isolated server. Need code integration via REST API? <a href='/docs' class='theme-text-accent font-black underline'>View API Documentation</a>.",
+            footerTitle: "Have any questions or concerns?",
+            footerDesc: "Contact our technical support team via our official email at:"
+        }
+    };
+
+    let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('arulzxd_lang', lang);
+        
+        const btnId = document.getElementById('lang-btn-id');
+        const btnEn = document.getElementById('lang-btn-en');
+        if (btnId && btnEn) {
+            if (lang === 'id') {
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            } else {
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            }
+        }
+        
+        renderUploaderContent();
+    }
+
+    function renderUploaderContent() {
+        const data = docTranslations[currentLang] || docTranslations['id'];
+        
+        document.getElementById('lbl-badge-status').innerText = data.badgeStatus;
+        document.getElementById('lbl-main-title').innerText = data.mainTitle;
+        document.getElementById('lbl-main-desc').innerText = data.mainDesc;
+        document.getElementById('lbl-dropzone-title').innerText = data.dropTitle;
+        document.getElementById('lbl-dropzone-sub').innerHTML = data.dropSub;
+        document.getElementById('lbl-preview-title').innerText = data.previewTitle;
+        document.getElementById('lbl-btn-remove').innerText = data.btnRemove;
+        document.getElementById('uploadButton').innerText = data.btnUpload;
+        document.getElementById('lbl-footer-note').innerHTML = data.footerNote;
+
+        document.getElementById('lbl-footer-title').innerText = data.footerTitle;
+        document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>`;
+    }
+
+    // Drag & Drop Handling
+    const fileDropArea = document.getElementById('file-drop-area');
+    const fileInput = document.getElementById('fileInput');
+    const previewArea = document.getElementById('preview-area');
+    const fileList = document.getElementById('file-list');
+    const removeFile = document.getElementById('remove-file');
+
+    fileDropArea.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, e => {
             e.preventDefault();
             e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, () => {
+            fileDropArea.classList.add('bg-amber-100');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileDropArea.addEventListener(eventName, () => {
+            fileDropArea.classList.remove('bg-amber-100');
+        }, false);
+    });
+
+    fileDropArea.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+            fileInput.files = files;
+            handleFiles(files);
         }
+    });
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            fileDropArea.addEventListener(eventName, () => {
-                fileDropArea.classList.add('border-sky-400', 'bg-sky-950/20');
-            }, false);
+    fileInput.addEventListener('change', e => {
+        if (e.target.files.length) {
+            handleFiles(e.target.files);
+        }
+    });
+
+    function handleFiles(files) {
+        fileList.innerHTML = '';
+        Array.from(files).forEach(file => {
+            const fileRow = document.createElement('div');
+            fileRow.className = 'flex items-center gap-2 text-zinc-900 py-0.5';
+            fileRow.innerHTML = `<i class="fa-regular fa-file text-xs"></i> <span class="truncate font-bold">${file.name}</span> <span class="text-[10px] text-zinc-600 font-extrabold">(${(file.size/1024/1024).toFixed(2)} MB)</span>`;
+            fileList.appendChild(fileRow);
         });
+        previewArea.classList.remove('hidden');
+    }
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            fileDropArea.addEventListener(eventName, () => {
-                fileDropArea.classList.remove('border-sky-400', 'bg-sky-950/20');
-            }, false);
-        });
+    removeFile.addEventListener('click', () => {
+        fileInput.value = '';
+        fileList.innerHTML = '';
+        previewArea.classList.add('hidden');
+    });
 
-        fileDropArea.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length) {
-                fileInput.files = files;
-                handleFiles(files);
-            }
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleFiles(e.target.files);
-            }
-        });
+        const themeBtn = document.getElementById('themePickerBtn');
+        const themeDropdown = document.getElementById('themeMenuDropdown');
 
-        function handleFiles(files) {
-            fileList.innerHTML = '';
-            Array.from(files).forEach((file) => {
-                const fileRow = document.createElement('div');
-                fileRow.className = 'flex items-center gap-2 text-zinc-400 py-0.5';
-                fileRow.innerHTML = `<i class="fa-regular fa-file text-[10px]"></i> <span class="truncate">${file.name}</span> <span class="text-[10px] text-zinc-600">(${(file.size/1024/1024).toFixed(2)} MB)</span>`;
-                fileList.appendChild(fileRow);
+        if (themeBtn && themeDropdown) {
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('hidden');
             });
-            previewArea.classList.remove('hidden');
+
+            document.addEventListener('click', (e) => {
+                if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
+                    themeDropdown.classList.add('hidden');
+                }
+            });
         }
 
-        removeFile.addEventListener('click', () => {
-            fileInput.value = '';
-            fileList.innerHTML = '';
-            previewArea.classList.add('hidden');
-        });
+        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        setAppTheme(savedTheme);
 
-        function getPageDisplayName() {
-            const path = window.location.pathname;
-            let fileName = path.split('/').pop().replace('.html', '').toLowerCase();
-
-            if (!fileName || fileName === '' || fileName === 'index') return 'Home';
-
-            const pageMap = {
-                'home': 'Home',
-                'docs': 'Dokumentasi',
-                'doc': 'Dokumentasi',
-                'status': 'Status Server',
-                'store': 'Store API',
-                'changelog': 'Changelog',
-                'uploader': 'Uploader File',
-                'pastecode': 'Pastecode',
-                'feedback': 'Feedback',
-                'privacy': 'Kebijakan Privasi',
-                'support': 'Dukungan Support',
-                'login': 'Halaman Login'
-            };
-
-            if (pageMap[fileName]) return pageMap[fileName];
-            return fileName.charAt(0).toUpperCase() + fileName.slice(1);
-        }
-
-        const pageName = getPageDisplayName();
-        const loaderTitleEl = document.getElementById('loader-title-text');
-        if (loaderTitleEl) {
-            loaderTitleEl.innerHTML = `Memuat ${pageName}<span class="animated-dots"></span>`;
-        }
-
-        // Progress Loader 0% - 100%
-        let currentProgress = 0;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
-        const loaderOverlay = document.getElementById('cyber-loader-overlay');
-
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
-
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
+        function playBannerVideo() {
+            if (sidebarBannerVideo) {
+                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
             }
-        }, 120);
+        }
 
-        window.addEventListener('load', () => {
-            clearInterval(progressInterval);
-            updateProgress(100);
+        function closeSidebarMenu() {
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
+            }
+        }
 
-            setTimeout(() => {
-                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-            }, 400);
+        if (bioMenuBtn && bioDropdown && menuOverlay) {
+            bioMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bioDropdown.style.transform = 'translateX(0)';
+                menuOverlay.classList.remove('hidden');
+                playBannerVideo();
+            });
+            if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+            menuOverlay.addEventListener('click', closeSidebarMenu);
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+        }
+
+        playBannerVideo();
+        switchLanguage(currentLang);
+
+        // Dynamic User Status Sync for Sidebar
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('sidebarAuthBtnContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
+                                    <div class="truncate text-left leading-tight">
+                                        <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                        <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+                            </a>
+                        `;
+                    }
+                }
+            })
+            .catch(err => console.error("Gagal mengecek status user:", err));
+    });
+
+    // SweetAlert Interception Logika Submit Upload
+    const swalConfig = {
+        customClass: {
+            popup: 'swal2-popup-custom',
+            title: 'swal2-title-custom',
+            htmlContainer: 'swal2-html-custom',
+            confirmButton: 'swal2-confirm-custom'
+        },
+        buttonsStyling: false
+    };
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            Swal.fire({
+                ...swalConfig,
+                icon: 'warning',
+                title: currentLang === 'en' ? 'No File Selected' : 'File Belum Dipilih',
+                text: currentLang === 'en' ? 'Please choose or drop a file before uploading.' : 'Silakan pilih atau seret file terlebih dahulu sebelum mengunggah.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        e.preventDefault();
+        Swal.fire({
+            ...swalConfig,
+            icon: 'info',
+            title: currentLang === 'en' ? 'Uploading File...' : 'Mengunggah File...',
+            text: currentLang === 'en' ? 'Please wait while your file is being uploaded.' : 'Mohon tunggu, file Anda sedang diproses...',
+            showConfirmButton: false,
+            allowOutsideClick: false
         });
 
-        // Fallback Safety (Maksimal 4 detik)
+        e.target.submit();
+    });
+
+    // Loader Progress Logic
+    let currentProgress = 0;
+    let hasFinishedLoading = false;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
         setTimeout(() => {
-            clearInterval(progressInterval);
-            updateProgress(100);
-            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+            if (loaderOverlay) {
                 loaderOverlay.classList.add('fade-out');
             }
-        }, 4000);
-    </script>
+        }, 300);
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 100);
+
+    window.addEventListener('load', finishLoader);
+    setTimeout(finishLoader, 1200);
+</script>
+
 </body>
 </html>
