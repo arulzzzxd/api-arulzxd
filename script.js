@@ -955,52 +955,60 @@ function loadApis() {
                 <div id="cat-${catIdx}" class="hidden">`;
 
         category.items.forEach((item, epIdx) => {
-            const method = item.methods && item.methods.length ? item.methods[0] : 'GET';
-            const pathParts = item.path.split('?');
-            const path = pathParts[0];
-            const epType = item.type || 'free';
+    const method = item.methods && item.methods.length ? item.methods[0] : 'GET';
+    const pathParts = item.path.split('?');
+    const path = pathParts[0];
+    const epType = item.type || 'free';
 
-            let statusClass = "status-ready";
-            let statusText = "READY"; 
-            if (item.status === 'update') { statusClass = 'status-update'; statusText = "UPDATE"; }
-            else if (item.status === 'error' || item.status === 'perbaikan') { statusClass = 'status-error'; statusText = "MAINTENANCE"; }
+    let statusClass = "status-ready";
+    let statusText = "READY"; 
+    if (item.status === 'update') { statusClass = 'status-update'; statusText = "UPDATE"; }
+    else if (item.status === 'error' || item.status === 'perbaikan') { statusClass = 'status-error'; statusText = "MAINTENANCE"; }
 
-            let badgeTypeHtml = '';
-            if (epType === 'vip') {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-100 text-purple-700 border border-purple-300 font-bold uppercase tracking-wider animate-pulse">
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8.25l-7 11.5-7-11.5L9.25 3h5.5L19 8.25z"/></svg> VIP
-                </span>`;
-            } else if (epType === 'premium') {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-amber-100 text-amber-700 border border-amber-300 font-bold uppercase tracking-wider animate-pulse">
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg> PREMIUM
-                </span>`;
-            } else {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-blue-100 text-blue-700 border border-blue-300 font-bold uppercase tracking-wider">
-                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> FREE
-                </span>`;
-            }
+    let badgeTypeHtml = '';
+    if (epType === 'vip') {
+        badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-md bg-purple-100 text-purple-800 border border-purple-400 font-extrabold uppercase tracking-wider">VIP</span>`;
+    } else if (epType === 'premium') {
+        badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-md bg-amber-100 text-amber-800 border border-amber-400 font-extrabold uppercase tracking-wider">PREMIUM</span>`;
+    } else {
+        badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-md bg-blue-100 text-blue-800 border border-blue-400 font-extrabold uppercase tracking-wider">FREE</span>`;
+    }
 
-            html += `
-            <div class="api-item border-t-2 border-slate-300 hover:bg-slate-50 transition-colors" 
-    data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
-             <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
-             <div class="flex items-center gap-3 flex-1 min-w-0">
-               <span class="bg-cyan-600 text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
-                <div class="text-left flex-1 min-w-0">
-                   <p class="font-bold text-base text-slate-900 truncate">${item.name}</p>
-                 
-                   <div class="flex items-center gap-2 mt-0.5">
-                       <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
-                       <span class="px-1.5 py-0.5 text-[9px] rounded-sm ${statusClass} flex-shrink-0 uppercase tracking-wider font-bold">${statusText}</span>
-                      ${badgeTypeHtml}
-                   </div>
-                  </div>
+    html += `
+    <div class="api-item border-t-2 brutal-border bg-[#FFFDF8] transition-colors" 
+         data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
+        
+        <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-3.5 py-3 flex items-center justify-between gap-2.5 text-left active:bg-zinc-100/60 transition-all">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                <!-- Badge Method -->
+                <span class="bg-sky-600 text-white px-2 py-1 rounded-lg text-[10px] font-black code-font shrink-0 tracking-wider">
+                    ${method}
+                </span>
+
+                <!-- Info Endpoint -->
+                <div class="min-w-0 flex-1">
+                    <p class="font-extrabold text-xs sm:text-sm text-zinc-900 truncate leading-tight mb-1">
+                        ${item.name}
+                    </p>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="code-font text-[11px] font-bold text-sky-700 truncate max-w-[180px] sm:max-w-none">
+                            ${path}
+                        </span>
+                        <span class="px-1.5 py-0.5 text-[9px] rounded-md ${statusClass} uppercase font-extrabold tracking-wider">
+                            ${statusText}
+                        </span>
+                        ${badgeTypeHtml}
+                    </div>
                 </div>
-                <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-600 px-2 flex items-center justify-center">
-                   ${SVG_PLUS}
-                  </span>
-                </button>
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-50 px-4 py-4 border-t-2 border-slate-300 backdrop-blur-sm transition-colors">
+            </div>
+
+            <!-- Tombol Expand Plus/Minus -->
+            <div id="ep-icon-${catIdx}-${epIdx}" class="w-7 h-7 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 shrink-0 font-black shadow-2xs">
+                ${SVG_PLUS}
+            </div>
+        </button>
+
+        <div id="ep-${catIdx}-${epIdx}" class="hidden bg-[#FAF7EF] p-3.5 border-t-2 dashed brutal-border">
     
     <div class="mb-4 p-3.5 rounded-xl bg-white border border-slate-300 shadow-inner backdrop-blur-md">
         <div class="flex items-center gap-2 mb-1.5">
