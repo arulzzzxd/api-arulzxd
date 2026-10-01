@@ -32,17 +32,17 @@
         }
 
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-            touch-action: pan-x pan-y;
-            background-color: var(--bg-cream) !important;
-            color: #121212 !important;
-            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
-            background-size: 16px 16px !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            overflow-x: hidden;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          min-height: 100dvh; /* Menggunakan dvh agar pas di browser mobile */
+          touch-action: pan-x pan-y;
+          background-color: var(--bg-cream) !important;
+          color: #121212 !important;
+          background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+          background-size: 16px 16px !important;
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          overflow-x: hidden;
         }
 
         .code-font {
@@ -221,9 +221,18 @@
         .auth-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
+            border-radius: 20px !important;
+            padding: 20px !important;
+            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.12) !important;
+            width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+          .auth-card {
+            padding: 32px !important;
             border-radius: 24px !important;
-            padding: 24px sm:padding-32px !important;
             box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.12) !important;
+          }
         }
 
         .hidden-form { display: none !important; }
@@ -475,17 +484,17 @@
 </div>
 
 <!-- Main Container (pt-24 agar presisi) -->
-<main class="max-w-md mx-auto px-4 pt-24 pb-12 relative z-10">
+<main class="min-h-[calc(100dvh-60px)] w-full max-w-md mx-auto px-4 pt-16 pb-8 flex flex-col justify-center items-center relative z-10">
     
     <!-- Kartu Utama Form Autentikasi -->
-    <div class="auth-card relative overflow-hidden">
+    <div class="auth-card relative overflow-hidden my-auto">
 
         <!-- Logo / Header Form -->
-        <div class="text-center mb-6 relative z-10">
-            <div class="w-12 h-12 rounded-2xl border-2 brutal-border bg-black flex items-center justify-center mx-auto mb-3 shadow-xs">
+        <div class="text-center mb-5 relative z-10">
+            <div class="w-12 h-12 rounded-2xl border-2 brutal-border bg-black flex items-center justify-center mx-auto mb-2.5 shadow-xs">
                 <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-9 h-9 rounded-xl object-cover">
             </div>
-            <h1 id="lbl-auth-title" class="text-2xl font-black tracking-tight text-zinc-900 uppercase">
+            <h1 id="lbl-auth-title" class="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 uppercase">
                 Autentikasi User
             </h1>
             <p id="form-description" class="text-xs font-semibold text-zinc-600 mt-1">
@@ -495,15 +504,15 @@
 
         <!-- ================= FORM SIGN IN ================= -->
         <div id="signin-form" class="space-y-4 relative z-10">
-            <form id="loginForm" action="/auth/login" method="POST" class="space-y-4">
+            <form id="loginForm" action="/auth/login" method="POST" class="space-y-3.5">
                 <div>
-                    <label id="lbl-user-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">
+                    <label id="lbl-user-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">
                         Username / Email
                     </label>
-                    <input type="text" name="username" required placeholder="Masukkan username atau email" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                    <input type="text" name="username" required placeholder="Masukkan username atau email" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
-                    <div class="flex justify-between items-center mb-1.5">
+                    <div class="flex justify-between items-center mb-1">
                         <label id="lbl-password" class="block text-xs font-black uppercase tracking-wider text-zinc-800">
                             Kata Sandi
                         </label>
@@ -512,88 +521,88 @@
                         </button>
                     </div>
                     <div class="relative">
-                        <input id="login-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-4 pr-11 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
-                        <button type="button" onclick="togglePassword('login-password', 'eye-icon-login')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-600 hover:text-zinc-900 transition">
-                            <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <input id="login-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-3.5 pr-10 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                        <button type="button" onclick="togglePassword('login-password', 'eye-icon-login')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-600 hover:text-zinc-900 transition">
+                            <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </button>
                     </div>
                 </div>
-                <button type="submit" id="lbl-btn-signin" class="w-full theme-bg-accent border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                <button type="submit" id="lbl-btn-signin" class="w-full theme-bg-accent border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Masuk
                 </button>
             </form>
 
             <!-- Divider -->
-            <div class="relative flex py-1 items-center">
+            <div class="relative flex py-0.5 items-center">
                 <div class="flex-grow border-t-2 border-zinc-300"></div>
-                <span id="lbl-divider-or" class="flex-shrink mx-3 text-zinc-500 text-[10px] font-black tracking-widest uppercase">Atau masuk dengan</span>
+                <span id="lbl-divider-or" class="flex-shrink mx-2 text-zinc-500 text-[9px] font-black tracking-widest uppercase">Atau masuk dengan</span>
                 <div class="flex-grow border-t-2 border-zinc-300"></div>
             </div>
 
             <!-- OAuth Buttons -->
-            <div class="grid grid-cols-2 gap-2.5">
-                <a href="/auth/google" class="dropdown-nav-card justify-center py-2.5 px-3 text-center flex items-center gap-2 active:scale-95">
+            <div class="grid grid-cols-2 gap-2">
+                <a href="/auth/google" class="dropdown-nav-card justify-center py-2 px-2.5 text-center flex items-center gap-2 active:scale-95">
                     <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-4 h-4 shrink-0" alt="Google"> 
                     <span class="font-black text-xs">Google</span>
                 </a>
-                <a href="/auth/github" class="dropdown-nav-card justify-center py-2.5 px-3 text-center flex items-center gap-2 active:scale-95">
+                <a href="/auth/github" class="dropdown-nav-card justify-center py-2 px-2.5 text-center flex items-center gap-2 active:scale-95">
                     <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" class="w-4 h-4 shrink-0" alt="GitHub"> 
                     <span class="font-black text-xs">GitHub</span>
                 </a>
             </div>
 
-            <p id="lbl-no-account" class="text-center text-xs font-bold text-zinc-600 mt-4">
+            <p id="lbl-no-account" class="text-center text-xs font-bold text-zinc-600 mt-3">
                 Belum punya akun? <button onclick="switchForm('signup')" id="lbl-btn-register-link" class="theme-text-accent font-black underline">Daftar sekarang</button>
             </p>
         </div>
 
         <!-- ================= FORM SIGN UP ================= -->
         <div id="signup-form" class="space-y-4 relative z-10 hidden-form">
-            <form id="registerForm" action="/auth/register" method="POST" class="space-y-4">
+            <form id="registerForm" action="/auth/register" method="POST" class="space-y-3.5">
                 <div>
-                    <label id="lbl-reg-username" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Username</label>
-                    <input type="text" name="username" required placeholder="pilih username" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                    <label id="lbl-reg-username" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">Username</label>
+                    <input type="text" name="username" required placeholder="pilih username" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
-                    <label id="lbl-reg-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Alamat Email</label>
-                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                    <label id="lbl-reg-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">Alamat Email</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
                 <div>
-                    <label id="lbl-reg-pass" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Kata Sandi</label>
+                    <label id="lbl-reg-pass" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">Kata Sandi</label>
                     <div class="relative">
-                        <input id="register-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-4 pr-11 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
-                        <button type="button" onclick="togglePassword('register-password', 'eye-icon-register')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-600 hover:text-zinc-900 transition">
-                            <svg id="eye-icon-register" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <input id="register-password" type="password" name="password" required placeholder="••••••••" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl pl-3.5 pr-10 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                        <button type="button" onclick="togglePassword('register-password', 'eye-icon-register')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-600 hover:text-zinc-900 transition">
+                            <svg id="eye-icon-register" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
                         </button>
                     </div>
                 </div>
-                <button type="submit" id="lbl-btn-signup" class="w-full bg-zinc-900 text-white border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                <button type="submit" id="lbl-btn-signup" class="w-full bg-zinc-900 text-white border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Buat Akun Baru
                 </button>
             </form>
-            <p id="lbl-has-account" class="text-center text-xs font-bold text-zinc-600 mt-4">
+            <p id="lbl-has-account" class="text-center text-xs font-bold text-zinc-600 mt-3">
                 Sudah punya akun? <button onclick="switchForm('signin')" id="lbl-btn-login-link" class="theme-text-accent font-black underline">Masuk</button>
             </p>
         </div>
 
         <!-- ================= FORM FORGOT PASSWORD ================= -->
         <div id="forgot-form" class="space-y-4 relative z-10 hidden-form">
-            <form id="forgotForm" action="/auth/forgot-password" method="POST" class="space-y-4">
+            <form id="forgotForm" action="/auth/forgot-password" method="POST" class="space-y-3.5">
                 <div>
-                    <label id="lbl-forgot-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Alamat Email Terdaftar</label>
-                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                    <label id="lbl-forgot-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">Alamat Email Terdaftar</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
-                <button type="submit" id="lbl-btn-forgot-submit" class="w-full theme-bg-accent border-2 brutal-border font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                <button type="submit" id="lbl-btn-forgot-submit" class="w-full theme-bg-accent border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Kirim Instruksi Reset
                 </button>
             </form>
-            <p class="text-center text-xs font-bold text-zinc-600 mt-4">
+            <p class="text-center text-xs font-bold text-zinc-600 mt-3">
                 <button onclick="switchForm('signin')" id="lbl-btn-back-login" class="theme-text-accent font-black underline">Kembali ke Halaman Login</button>
             </p>
         </div>
@@ -601,13 +610,13 @@
     </div>
 
     <!-- Footer Support -->
-    <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
-        <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
-        <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
+    <footer class="mt-6 pt-4 border-t-2 border-zinc-300 text-center space-y-1 w-full">
+        <h3 id="lbl-footer-title" class="text-[11px] font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
+        <p id="lbl-footer-desc" class="text-[10px] text-zinc-600 font-semibold">
             Hubungi tim support teknis melalui email resmi kami di: 
-            <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>
+            <a href="mailto:sevicesrulzxd@gmail.com" class="theme-text-accent font-black underline code-font">sevicesrulzxd@gmail.com</a>
         </p>
-        <div class="pt-3 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+        <div class="pt-1.5 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
             &copy; 2026 ARULZ-XD API REST CORE
         </div>
     </footer>
