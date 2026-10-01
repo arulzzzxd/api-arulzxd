@@ -10,22 +10,22 @@ const body = document.body;
 const themeBg = document.getElementById('themeBg');
 
 const categoryIcons = {
-    'ai': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2 2 0 1 1 12 2zm-2 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm4 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>',
-    'download': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm9 4H3v-2h18v2z"/></svg>',
-    'search': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>',
-    'image': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
-    'tools': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.1L9 6 6 9 1.8 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>',
-    'maker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
-    'stalker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
-    'canvas': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>',
-    'security': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>',
-    'news': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H5V5h14v14zm-9-2h8v-2h-8v2zm0-4h8v-2h-8v2zm0-4h8V7h-8v2zm-4 8h2v-8H6v8z"/></svg>',
-    'random': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>',
-    'islam': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
-    'game': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M7 8h10a4 4 0 0 1 4 4v4a3 3 0 0 1-5.12 2.12L13.76 16H10.24l-2.12 2.12A3 3 0 0 1 3 16v-4a4 4 0 0 1 4-4zm0 3v2H5v2h2v2h2v-2h2v-2H9v-2H7zm9 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm3 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
-    'quotes': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M7 17H3V9h6v6c0 1.1-.9 2-2 2zm10 0h-4V9h6v6c0 1.1-.9 2-2 2z"/></svg>',
-    'sticker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M5 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 1v4h4M8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-4 5c2.2 0 4-1.3 4-3H8c0 1.7 1.8 3 4 3z"/></svg>',
-    'default': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-400"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
+    'ai': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73A2 2 0 1 1 12 2zm-2 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm4 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>',
+    'download': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm9 4H3v-2h18v2z"/></svg>',
+    'search': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>',
+    'image': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+    'tools': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.1L9 6 6 9 1.8 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>',
+    'maker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+    'stalker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+    'canvas': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>',
+    'security': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>',
+    'news': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H5V5h14v14zm-9-2h8v-2h-8v2zm0-4h8v-2h-8v2zm0-4h8V7h-8v2zm-4 8h2v-8H6v8z"/></svg>',
+    'random': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>',
+    'islam': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>',
+    'game': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M7 8h10a4 4 0 0 1 4 4v4a3 3 0 0 1-5.12 2.12L13.76 16H10.24l-2.12 2.12A3 3 0 0 1 3 16v-4a4 4 0 0 1 4-4zm0 3v2H5v2h2v2h2v-2h2v-2H9v-2H7zm9 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm3 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
+    'quotes': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M7 17H3V9h6v6c0 1.1-.9 2-2 2zm10 0h-4V9h6v6c0 1.1-.9 2-2 2z"/></svg>',
+    'sticker': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M5 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 1v4h4M8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-4 5c2.2 0 4-1.3 4-3H8c0 1.7 1.8 3 4 3z"/></svg>',
+    'default': '<svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-cyan-600"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>'
 };
 
 const i18n = {
@@ -109,12 +109,12 @@ function createMediaPreview(url, contentType, fullPath) {
     const type = contentType || '';
     if (type.startsWith('image/') || url.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
         return `
-            <div class="w-full flex justify-center bg-black/20 p-2 rounded-xl border border-white/10">
+            <div class="w-full flex justify-center bg-slate-100 p-2 rounded-xl border border-slate-300">
                 <img src="${url}" class="media-image w-full h-auto max-h-[80vh] rounded-lg object-contain cursor-pointer transition-transform hover:scale-[1.01]" alt="Preview">
             </div>`;
     } else if (type.startsWith('video/') || url.match(/\.(mp4|webm|mov)/i)) {
         return `
-            <div class="w-full bg-black/40 p-2 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="w-full bg-slate-100 p-2 rounded-xl border border-slate-300 overflow-hidden shadow-md">
                 <video src="${url}" 
                        controls
                        autoplay
@@ -124,27 +124,20 @@ function createMediaPreview(url, contentType, fullPath) {
                 </video>
             </div>`;
     } else if (type.startsWith('audio/') || url.match(/\.(mp3|wav|ogg)/i)) {
-        return `<div class="mt-2 bg-black/20 p-3 rounded-lg border border-white/5"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
+        return `<div class="mt-2 bg-slate-100 p-3 rounded-lg border border-slate-300"><audio src="${url}" controls autoplay class="w-full"></audio></div>`;
     } else if (type.includes('application/pdf') || url.match(/\.pdf/i)) {
-        return `<div class="mt-2 bg-black/20 p-2 rounded-lg border border-white/5"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
+        return `<div class="mt-2 bg-slate-100 p-2 rounded-lg border border-slate-300"><iframe src="${url}" class="w-full h-96 rounded-lg border-0"></iframe></div>`;
     }
-    return `<div class="mt-2 p-3 bg-cyan-500/10 text-cyan-400 rounded-lg text-xs break-all border border-cyan-500/20">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-300">${url}</a></div>`;
+    return `<div class="mt-2 p-3 bg-cyan-50 text-cyan-700 rounded-lg text-xs break-all border border-cyan-300">Media URL: <a href="${url}" target="_blank" class="underline hover:text-cyan-800">${url}</a></div>`;
 }
 
-function updateThemeBackground(theme) {
+function updateThemeBackground(theme = 'light') {
     if (themeBg) {
         themeBg.className = "fixed inset-0 -z-50 transition-all duration-300";
-        if (theme === 'light') {
-            document.body.style.backgroundColor = "#ffffff";
-            themeBg.style.backgroundColor = "#ffffff";
-            themeBg.style.backgroundImage = "radial-gradient(#cbd5e1 1.5px, transparent 1.5px)";
-            themeBg.style.backgroundSize = "24px 24px";
-        } else {
-            document.body.style.backgroundColor = "#030712";
-            themeBg.style.backgroundColor = "#030712";
-            themeBg.style.backgroundImage = "radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)";
-            themeBg.style.backgroundSize = "24px 24px";
-        }
+        document.body.style.backgroundColor = "#ffffff";
+        themeBg.style.backgroundColor = "#ffffff";
+        themeBg.style.backgroundImage = "radial-gradient(#cbd5e1 1.5px, transparent 1.5px)";
+        themeBg.style.backgroundSize = "24px 24px";
     }
 }
 
@@ -214,29 +207,29 @@ function showToast(message, isError = false) {
     if (!container) return;
 
     const toast = document.createElement('div');
-    toast.className = "flex items-center gap-3.5 px-5 py-3.5 rounded-xl border backdrop-blur-xl min-w-[300px] max-w-[420px] transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] opacity-0 translate-y-[-20px] scale-95 pointer-events-auto will-change-[transform,opacity] select-none";
+    toast.className = "flex items-center gap-3.5 px-5 py-3.5 rounded-xl border backdrop-blur-xl min-w-[300px] max-w-[420px] transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] opacity-0 translate-y-[-20px] scale-95 pointer-events-auto will-change-[transform,opacity] select-none bg-white/95 shadow-lg";
 
     let iconHTML = '';
     let iconColor = '';
 
     if (isError) {
         iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>';
-        iconColor = '#ff2a74';
-        toast.classList.add('border-pink-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(255,42,116,0.15)]');
+        iconColor = '#ef4444';
+        toast.classList.add('border-pink-500/50', 'shadow-[0_0_20px_rgba(239,68,68,0.15)]');
     } else {
         iconHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>';
-        iconColor = '#00f0ff';
-        toast.classList.add('border-cyan-500/50', 'bg-slate-950/90', 'shadow-[0_0_20px_rgba(0,240,255,0.15)]');
+        iconColor = '#0891b2';
+        toast.classList.add('border-cyan-500/50', 'shadow-[0_0_20px_rgba(8,145,178,0.15)]');
     }
 
     toast.innerHTML = `
-        <div class="flex-shrink-0 p-1.5 rounded-lg bg-white/5">
+        <div class="flex-shrink-0 p-1.5 rounded-lg bg-slate-100">
             <svg class="w-6 h-6 flex-shrink-0 transition-all duration-500 scale-100" viewBox="0 0 20 20" fill="currentColor" style="color: ${iconColor};">
                 ${iconHTML}
             </svg>
         </div>
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-sans font-semibold tracking-wider leading-relaxed break-words text-slate-100 dark:text-slate-100 light-mode:text-slate-900 uppercase">
+            <p class="text-sm font-sans font-semibold tracking-wider leading-relaxed break-words text-slate-800 uppercase">
                 ${message}
             </p>
         </div>
@@ -259,9 +252,33 @@ function showToast(message, isError = false) {
 }
 
 function copyText(text, type = 'path') {
+    if (!text) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Gagal Disalin',
+            text: 'Tidak ada data teks yang dapat disalin!',
+            confirmButtonColor: '#06b6d4'
+        });
+        showToast('Tidak ada data untuk disalin', true);
+        return;
+    }
+
     navigator.clipboard.writeText(text).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil Disalin!',
+            text: `${type} telah berhasil disalin ke papan klip.`,
+            timer: 1800,
+            showConfirmButton: false
+        });
         showToast(`${type} berhasil disalin ke papan klip!`);
-    }).catch(() => {
+    }).catch((err) => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal Menyalin',
+            text: `Terjadi kesalahan: ${err.message || err}`,
+            confirmButtonColor: '#ef4444'
+        });
         showToast('Gagal menyalin text', true);
     });
 }
@@ -363,12 +380,12 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
     responseDiv.classList.remove('hidden');
 
     responseContent.innerHTML = `
-        <div class="flex flex-col items-center justify-center p-12 text-sm font-mono tracking-wider text-cyan-400 gap-3">
+        <div class="flex flex-col items-center justify-center p-12 text-sm font-mono tracking-wider text-cyan-600 gap-3">
             <div class="relative flex h-4 w-4">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-4 w-4 bg-cyan-500"></span>
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-500 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-4 w-4 bg-cyan-600"></span>
             </div>
-            <span class="animate-pulse text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-400 light-mode:text-slate-500">Fetching Response...</span>
+            <span class="animate-pulse text-xs uppercase tracking-widest font-semibold text-slate-600">Fetching Response...</span>
         </div>
     `;
 
@@ -435,16 +452,16 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             const data = await response.json().catch(() => ({ message: "Akses Ditolak" }));
             const rawErrText = JSON.stringify(data, null, 2);
             responseContent.innerHTML = `
-                <div class="rounded-xl overflow-hidden border-2 border-red-500 bg-slate-950/50 backdrop-blur-md shadow-2xl">
-                    <div class="flex items-center justify-between px-4 py-3 bg-red-950/20 border-b-2 border-red-500">
-                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider uppercase border border-red-500 bg-red-500/10 text-red-400">
+                <div class="rounded-xl overflow-hidden border-2 border-red-500 bg-white shadow-xl">
+                    <div class="flex items-center justify-between px-4 py-3 bg-red-50 border-b-2 border-red-500">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider uppercase border border-red-500 bg-red-100 text-red-600">
                             STATUS: ${response.status}
                         </span>
-                        <button type="button" onclick="copyText(\`${rawErrText.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, 'Error Response')" class="p-1.5 text-slate-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all">
+                        <button type="button" onclick="copyText(\`${rawErrText.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`, 'Error Response')" class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                         </button>
                     </div>
-                    <pre class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-red-400 max-h-96 scrollbar-thin bg-black/20 shadow-inner"><code>${escapeHtml(rawErrText)}</code></pre>
+                    <pre class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-red-600 max-h-96 scrollbar-thin bg-slate-50 shadow-inner"><code>${escapeHtml(rawErrText)}</code></pre>
                 </div>
             `;
             showToast(data.message || "Akses Ditolak!", true);
@@ -500,17 +517,17 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 }
 
                 finalInnerContent = `
-                   <div class="p-3 bg-black/30 flex justify-center items-center w-full max-w-full overflow-hidden">
+                   <div class="p-3 bg-slate-100 flex justify-center items-center w-full max-w-full overflow-hidden">
                        <div class="w-full flex justify-center items-center">
                            ${mediaMarkup}
                        </div>
                    </div>
-                   <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
-                   <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-80 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+                   <div class="px-4 pt-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">RAW JSON DATA</div>
+                   <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-800 max-h-80 scrollbar-thin bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
                 `;
                 isMedia = true;
             } else {
-                finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
+                finalInnerContent = `<pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-cyan-800 max-h-96 scrollbar-thin bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>`;
             }
         } else if (cleanContentType.startsWith("image/") || cleanContentType.startsWith("video/") || cleanContentType.startsWith("audio/") || cleanContentType.includes("application/pdf")) {
             isMedia = true;
@@ -521,7 +538,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
             if (cleanContentType.startsWith("audio/")) {
                 finalInnerContent = `
-                    <div class="p-6 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
+                    <div class="p-6 bg-slate-50 shadow-inner flex justify-center items-center w-full max-w-full">
                         <audio controls autoplay class="w-full max-w-md mx-auto block" src="${blobUrl}">
                             Browser Anda tidak mendukung pemutar audio.
                         </audio>
@@ -529,7 +546,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                 `;
             } else {
                 finalInnerContent = `
-                    <div class="p-3 bg-black/20 dark:bg-black/30 light-mode:bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden">
+                    <div class="p-3 bg-slate-50 shadow-inner flex justify-center items-center cursor-zoom-in w-full max-w-full overflow-hidden">
                         <div class="w-full flex justify-center items-center">
                             ${createMediaPreview(blobUrl, cleanContentType, fullPath)}
                         </div>
@@ -541,8 +558,8 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             if (!bytes) bytes = new Blob([rawResponseText]).size;
             hintText = "Teks mentah dari server";
             finalInnerContent = `
-                <div class="px-4 pt-3 text-[10px] font-bold text-slate-400 dark:text-slate-400 light-mode:text-slate-500 uppercase tracking-widest font-mono">RAW TEXT DATA</div>
-                <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-slate-300 dark:text-slate-300 light-mode:text-slate-700 max-h-96 scrollbar-thin bg-black/10 dark:bg-black/20 light-mode:bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
+                <div class="px-4 pt-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">RAW TEXT DATA</div>
+                <pre id="raw-text-${catIdx}-${epIdx}" class="p-4 overflow-x-auto text-xs font-mono leading-relaxed text-slate-700 max-h-96 scrollbar-thin bg-slate-50 shadow-inner"><code>${escapeHtml(rawResponseText)}</code></pre>
             `;
         }
 
@@ -551,46 +568,46 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
         else sizeText = `${bytes} B`;
 
         const statusColor = response.ok 
-            ? 'text-emerald-400 bg-emerald-500/10 border-2 border-emerald-500/50 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-2 dark:border-emerald-500/50 light-mode:text-emerald-700 light-mode:bg-emerald-500/5 light-mode:border-2 light-mode:border-emerald-500/60' 
-            : 'text-red-400 bg-red-500/10 border-2 border-red-500/50 dark:text-red-400 dark:bg-red-500/10 dark:border-2 dark:border-red-500/50 light-mode:text-red-700 light-mode:bg-red-500/5 light-mode:border-2 light-mode:border-red-500/60';
+            ? 'text-emerald-700 bg-emerald-50 border-2 border-emerald-400' 
+            : 'text-red-700 bg-red-50 border-2 border-red-400';
 
         let downloadButtonHtml = `
-            <button type="button" id="download-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-2 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <button type="button" id="download-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold border-2 border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 <span>Download ${isMedia ? 'Media' : 'Response'}</span>
             </button>
         `;
 
         responseContent.innerHTML = `
-            <div class="rounded-xl overflow-hidden border-2 border-cyan-500/40 dark:border-2 dark:border-cyan-500/40 light-mode:border-2 light-mode:border-slate-400 bg-slate-950/40 dark:bg-slate-950/40 light-mode:bg-white shadow-2xl transition-all duration-300">
-                <div class="px-4 py-2.5 bg-black/60 dark:bg-black/60 light-mode:bg-slate-100 border-b-2 border-white/20 light-mode:border-slate-300 flex items-center justify-between">
+            <div class="rounded-xl overflow-hidden border-2 border-slate-300 bg-white shadow-lg transition-all duration-300">
+                <div class="px-4 py-2.5 bg-slate-100 border-b-2 border-slate-300 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                        <span class="text-xs font-bold tracking-wider font-mono text-slate-300 dark:text-slate-300 light-mode:text-slate-700 uppercase">Server Response</span>
+                        <span class="w-2 h-2 rounded-full bg-cyan-600 animate-pulse"></span>
+                        <span class="text-xs font-bold tracking-wider font-mono text-slate-700 uppercase">Server Response</span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-black/30 dark:bg-black/30 light-mode:bg-slate-50 border-b-2 border-white/20 light-mode:border-slate-300 text-center text-xs font-mono">
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 border-b-2 border-slate-300 text-center text-xs font-mono">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-slate-200 bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Status</span>
                         <span class="px-2 py-0.5 rounded text-[11px] font-black ${statusColor}">${response.status}</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-slate-200 bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Time</span>
-                        <span class="text-[11px] text-amber-400 dark:text-amber-400 light-mode:text-amber-600 font-bold">${duration} ms</span>
+                        <span class="text-[11px] text-amber-600 font-bold">${duration} ms</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-slate-200 bg-white">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Size</span>
-                        <span class="text-[11px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-bold">${sizeText}</span>
+                        <span class="text-[11px] text-cyan-600 font-bold">${sizeText}</span>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-white/10 light-mode:border-2 light-mode:border-slate-200 bg-black/10 dark:bg-black/10 light-mode:bg-white col-span-2 sm:col-span-2 text-left px-3">
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-slate-200 bg-white col-span-2 sm:col-span-2 text-left px-3">
                         <span class="text-[10px] text-slate-500 uppercase font-semibold mb-1">Content Type</span>
-                        <span class="text-[11px] text-slate-300 dark:text-slate-300 light-mode:text-slate-600 truncate max-w-full font-semibold" title="${cleanContentType}">${cleanContentType}</span>
+                        <span class="text-[11px] text-slate-600 truncate max-w-full font-semibold" title="${cleanContentType}">${cleanContentType}</span>
                     </div>
                     ${hintText ? `
-                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-500/30 bg-cyan-950/20 col-span-2 sm:col-span-1">
-                        <span class="text-[9px] text-cyan-500 uppercase font-bold tracking-wider mb-0.5">Action Hint</span>
-                        <span class="text-[10px] text-cyan-400 dark:text-cyan-400 light-mode:text-cyan-600 font-black tracking-tight uppercase text-center">${hintText}</span>
+                    <div class="flex flex-col justify-center items-center p-2 rounded-lg border-2 border-cyan-300 bg-cyan-50 col-span-2 sm:col-span-1">
+                        <span class="text-[9px] text-cyan-600 uppercase font-bold tracking-wider mb-0.5">Action Hint</span>
+                        <span class="text-[10px] text-cyan-700 font-black tracking-tight uppercase text-center">${hintText}</span>
                     </div>
                     ` : ''}
                 </div>
@@ -599,9 +616,9 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
                     ${finalInnerContent}
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3 px-4 py-3 bg-black/40 dark:bg-black/40 light-mode:bg-slate-50 border-t-2 border-white/20 light-mode:border-slate-300">
-                    <button type="button" id="copy-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-900/80 dark:bg-slate-900/80 light-mode:bg-slate-200/80 hover:bg-slate-800 light-mode:hover:bg-slate-300 text-white light-mode:text-slate-800 rounded-lg text-xs font-semibold border-2 border-white/20 dark:border-2 dark:border-white/20 light-mode:border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                <div class="flex flex-wrap items-center gap-3 px-4 py-3 bg-slate-50 border-t-2 border-slate-300">
+                    <button type="button" id="copy-btn-${catIdx}-${epIdx}" class="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold border-2 border-slate-300 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         <span>Copy Response</span>
                     </button>
                     ${downloadButtonHtml}
@@ -609,44 +626,95 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
             </div>
         `;
 
-        document.getElementById(`copy-btn-${catIdx}-${epIdx}`).onclick = () => {
-            copyText(rawResponseText || JSON.stringify({status: response.status, info: cleanContentType}), "Response");
-        };
+        const copyBtn = document.getElementById(`copy-btn-${catIdx}-${epIdx}`);
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                const textToCopy = rawResponseText || JSON.stringify({ status: response.status, info: cleanContentType });
+                copyText(textToCopy, "Data Response");
+            };
+        }
 
         const downloadBtn = document.getElementById(`download-btn-${catIdx}-${epIdx}`);
-        if (!isMedia) {
+        if (downloadBtn) {
             downloadBtn.onclick = () => {
-                const blob = new Blob([rawResponseText], { type: cleanContentType });
-                const extension = cleanContentType.includes('json') ? 'json' : (cleanContentType.includes('html') ? 'html' : 'txt');
-                const downloadUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `response-${Date.now()}.${extension}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(downloadUrl);
-            };
-        } else {
-            downloadBtn.onclick = async () => {
-                try {
-                    let finalBlob = mediaBlobObject;
-                    if (!finalBlob) {
-                        const mediaRes = await fetch(fullPath);
-                        finalBlob = await mediaRes.blob();
+                Swal.fire({
+                    title: 'Konfirmasi Unduh',
+                    text: `Apakah Anda ingin mengunduh ${isMedia ? 'file media' : 'data response'} ini?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Unduh',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#06b6d4',
+                    cancelButtonColor: '#64748b',
+                    reverseButtons: true
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            if (!isMedia) {
+                                const blob = new Blob([rawResponseText], { type: cleanContentType });
+                                const extension = cleanContentType.includes('json') ? 'json' : (cleanContentType.includes('html') ? 'html' : 'txt');
+                                const downloadUrl = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = downloadUrl;
+                                a.download = `response-${Date.now()}.${extension}`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(downloadUrl);
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Unduhan Dimulai!',
+                                    text: 'File response berhasil diunduh.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                showToast('Response berhasil diunduh!');
+                            } else {
+                                Swal.fire({
+                                    title: 'Mengunduh Media...',
+                                    text: 'Mohon tunggu sebentar',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+
+                                let finalBlob = mediaBlobObject;
+                                if (!finalBlob) {
+                                    const mediaRes = await fetch(fullPath);
+                                    finalBlob = await mediaRes.blob();
+                                }
+                                const downloadUrl = URL.createObjectURL(finalBlob);
+                                const a = document.createElement('a');
+                                a.href = downloadUrl;
+                                const ext = cleanContentType.split('/')[1] || 'bin';
+                                a.download = `media-${Date.now()}.${ext}`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(downloadUrl);
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Unduhan Selesai!',
+                                    text: 'File media berhasil diunduh.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                showToast('File media berhasil diunduh!');
+                            }
+                        } catch (err) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Mengunduh',
+                                text: 'Terjadi kesalahan saat memproses unduhan.',
+                                confirmButtonColor: '#ef4444'
+                            });
+                            showToast('Gagal mengunduh file', true);
+                        }
                     }
-                    const downloadUrl = URL.createObjectURL(finalBlob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    const ext = cleanContentType.split('/')[1] || 'bin';
-                    a.download = `media-${Date.now()}.${ext}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(downloadUrl);
-                } catch (err) {
-                    showToast('Gagal mengunduh file media', true);
-                }
+                });
             };
         }
 
@@ -658,7 +726,7 @@ async function executeRequest(e, catIdx, epIdx, method, path, endpointType) {
 
     } catch (error) {
         responseContent.innerHTML = `
-            <div class="p-4 rounded-xl border-2 border-red-500 bg-red-500/5 text-red-400 text-xs font-mono break-all flex items-center gap-2">
+            <div class="p-4 rounded-xl border-2 border-red-500 bg-red-50 text-red-600 text-xs font-mono break-all flex items-center gap-2">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span>Error: ${error.message}</span>
             </div>
@@ -843,7 +911,7 @@ function loadApis() {
     if (!apiList) return;
 
     if (!apiData || !apiData.categories) {
-        apiList.innerHTML = '<p class="text-center">No API data loaded.</p>';
+        apiList.innerHTML = '<p class="text-center text-slate-600">No API data loaded.</p>';
         return;
     }
 
@@ -855,9 +923,9 @@ function loadApis() {
     updateTotalCategories();
     renderCategoryFilters();
 
-    const isLightMode = body.classList.contains('light-mode');
-    const pathColorClass = isLightMode ? 'text-cyan-700' : 'text-cyan-200';
-    const subTextColorClass = isLightMode ? 'text-slate-600' : 'opacity-70';
+    body.classList.add('light-mode');
+    const pathColorClass = 'text-cyan-700';
+    const subTextColorClass = 'text-slate-600';
 
     let html = '';
     apiData.categories.forEach((category, catIdx) => {
@@ -869,18 +937,18 @@ function loadApis() {
 
         html += `
         <div class="category-group" data-category="${catNameLower}">
-            <div class="glass-panel border rounded-xl overflow-hidden shadow-lg mb-4">
-                <button onclick="toggleCategory(${catIdx})" class="w-full px-4 py-4 flex items-center justify-between hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors">
+            <div class="glass-panel border border-slate-300 rounded-xl overflow-hidden shadow-lg mb-4 bg-white">
+                <button onclick="toggleCategory(${catIdx})" class="w-full px-4 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 flex items-center justify-center bg-slate-950/40 light-mode:bg-slate-200/50 rounded-xl border border-white/10 light-mode:border-slate-300 shadow-inner flex-shrink-0">
+                        <div class="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-xl border border-slate-300 shadow-inner flex-shrink-0">
                             ${iconSvg}
                         </div>
                         <div class="text-left">
-                            <h3 class="font-bold text-sm tracking-widest text-cyan-400 light-mode:text-cyan-600 uppercase font-['Space_Grotesk']">${category.name}</h3>
+                            <h3 class="font-bold text-sm tracking-widest text-cyan-600 uppercase font-['Space_Grotesk']">${category.name}</h3>
                             <p class="text-[11px] code-font ${subTextColorClass}">${category.items.length} ${i18n[currentLang].endpointsCount}</p>
                         </div>
                     </div>
-                    <svg id="cat-icon-${catIdx}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="cat-icon-${catIdx}" class="w-5 h-5 text-slate-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
@@ -899,27 +967,27 @@ function loadApis() {
 
             let badgeTypeHtml = '';
             if (epType === 'vip') {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold uppercase tracking-wider animate-pulse">
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-purple-100 text-purple-700 border border-purple-300 font-bold uppercase tracking-wider animate-pulse">
                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8.25l-7 11.5-7-11.5L9.25 3h5.5L19 8.25z"/></svg> VIP
                 </span>`;
             } else if (epType === 'premium') {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold uppercase tracking-wider animate-pulse">
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-amber-100 text-amber-700 border border-amber-300 font-bold uppercase tracking-wider animate-pulse">
                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg> PREMIUM
                 </span>`;
             } else {
-                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
+                badgeTypeHtml = `<span class="flex items-center px-1.5 py-0.5 text-[9px] rounded-sm bg-blue-100 text-blue-700 border border-blue-300 font-bold uppercase tracking-wider">
                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> FREE
                 </span>`;
             }
 
             html += `
-            <div class="api-item border-t-2 border-white/20 light-mode:border-slate-300 hover:bg-white/5 light-mode:hover:bg-black/5 transition-colors" 
+            <div class="api-item border-t-2 border-slate-300 hover:bg-slate-50 transition-colors" 
     data-method="${method}" data-path="${path}" data-alias="${item.name.toLowerCase()}" data-description="${item.desc.toLowerCase()}" data-category="${category.name.toLowerCase()}">
              <button onclick="toggleEndpoint(${catIdx}, ${epIdx})" class="w-full px-4 py-3 flex items-center justify-between">
              <div class="flex items-center gap-3 flex-1 min-w-0">
-               <span class="bg-cyan-500 light-mode:bg-cyan-600 text-slate-950 light-mode:text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
+               <span class="bg-cyan-600 text-white px-2 py-0.5 rounded text-[10px] flex-shrink-0 code-font font-black">${method}</span>
                 <div class="text-left flex-1 min-w-0">
-                   <p class="font-bold text-base text-slate-100 dark:text-slate-100 light-mode:text-slate-900 truncate">${item.name}</p>
+                   <p class="font-bold text-base text-slate-900 truncate">${item.name}</p>
                  
                    <div class="flex items-center gap-2 mt-0.5">
                        <p class="code-font text-sm font-medium ${pathColorClass} truncate">${path}</p>
@@ -928,48 +996,48 @@ function loadApis() {
                    </div>
                   </div>
                 </div>
-                <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-400 light-mode:text-cyan-600 px-2 flex items-center justify-center">
+                <span id="ep-icon-${catIdx}-${epIdx}" class="text-cyan-600 px-2 flex items-center justify-center">
                    ${SVG_PLUS}
                   </span>
                 </button>
-                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-950/80 dark:bg-slate-950/80 light-mode:bg-slate-100 px-4 py-4 border-t-2 border-white/20 light-mode:border-slate-300 backdrop-blur-sm transition-colors">
+                <div id="ep-${catIdx}-${epIdx}" class="hidden bg-slate-50 px-4 py-4 border-t-2 border-slate-300 backdrop-blur-sm transition-colors">
     
-    <div class="mb-4 p-3.5 rounded-xl bg-slate-900/60 light-mode:bg-white border border-white/10 light-mode:border-slate-300 shadow-inner backdrop-blur-md">
+    <div class="mb-4 p-3.5 rounded-xl bg-white border border-slate-300 shadow-inner backdrop-blur-md">
         <div class="flex items-center gap-2 mb-1.5">
-            <svg class="w-4 h-4 text-cyan-400 light-mode:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h12M3.75 17.25h16.5"/>
             </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 light-mode:text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">DESKRIPSI ENDPOINT</span>
         </div>
-        <p class="text-xs font-medium text-slate-200 light-mode:text-slate-800 leading-relaxed break-words pl-6">
+        <p class="text-xs font-medium text-slate-800 leading-relaxed break-words pl-6">
             ${item.desc}
         </p>
     </div>
 
     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
-                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy URL</button>
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-600 code-font">ENDPOINT / REQUEST URL</h4>
+                            <button type="button" onclick="copyFromElement('live-url-${catIdx}-${epIdx}', 'URL')" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-800">Copy URL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
-                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-400 light-mode:text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
+                        <div class="bg-slate-100 border border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-url-${catIdx}-${epIdx}" class="code-font text-xs text-cyan-700 font-medium break-all">${BASE_URL}${path}</code>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 code-font">cURL Command</h4>
-                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-white/5 hover:bg-white/10 light-mode:bg-slate-200 light-mode:hover:bg-slate-300 border border-white/10 light-mode:border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-300 light-mode:text-slate-800">Copy cURL</button>
+                            <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-600 code-font">cURL Command</h4>
+                            <button type="button" onclick="copyFromElement('live-curl-${catIdx}-${epIdx}', 'cURL')" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-300 rounded-lg text-[10px] transition-all active:scale-95 code-font text-slate-800">Copy cURL</button>
                         </div>
-                        <div class="bg-slate-900/40 light-mode:bg-slate-200/60 border border-white/10 light-mode:border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
-                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-300 light-mode:text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
+                        <div class="bg-slate-100 border border-slate-300 px-4 py-3 rounded-xl backdrop-blur-md shadow-inner">
+                            <code id="live-curl-${catIdx}-${epIdx}" class="code-font text-xs text-slate-700 block overflow-x-auto whitespace-pre">curl -X ${method} "${BASE_URL}${path}"</code>
                         </div>
                     </div>`;
 
             if (item.status === 'ready' || item.status === 'update') {
                 html += `
                     <div>
-                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-400 light-mode:text-slate-600 mb-3">Parameter</h4>
+                        <h4 class="font-bold text-[11px] uppercase tracking-wider text-slate-600 mb-3">Parameter</h4>
                         <form id="form-${catIdx}-${epIdx}" onsubmit="executeRequest(event, ${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')">
                             <div class="space-y-4 mb-4">`;
 
@@ -1005,14 +1073,14 @@ function loadApis() {
                         html += `
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-semibold text-slate-300 light-mode:text-slate-800 code-font">
+                                <label class="block text-xs font-semibold text-slate-800 code-font">
                                     ${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}
                                 </label>
-                                <span class="text-[10px] text-cyan-400 light-mode:text-cyan-700 font-semibold font-mono tracking-tight break-all pl-2 text-right">${paramDesc}</span>
+                                <span class="text-[10px] text-cyan-700 font-semibold font-mono tracking-tight break-all pl-2 text-right">${paramDesc}</span>
                             </div>`;
 
                         if ((pType && pType.type === 'file') || pType === 'file' || paramName.toLowerCase() === 'file') {
-                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="file" name="${paramName}" onchange="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-cyan-600 code-font text-sm file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-100 file:text-cyan-700 hover:file:bg-cyan-200 cursor-pointer" ${isRequired ? 'required' : ''}>`;
                         } else if (pType && pType.type === 'select' && Array.isArray(pType.options)) {
                             const defaultVal = pType.default || pType.options[0] || '';
                             const uniqueId = `custom-select-${catIdx}-${epIdx}-${paramName}`;
@@ -1021,9 +1089,9 @@ function loadApis() {
                             html += `
                             <div class="relative w-full">
                                 <input type="hidden" name="${paramName}" id="${uniqueId}-input" value="${defaultVal}">
-                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-cyan-400 hover:border-cyan-500/50 flex items-center justify-between transition-all code-font text-sm">
-                                    <span id="${uniqueId}-label" class="truncate text-slate-100 light-mode:text-slate-900 font-semibold">${defaultVal}</span>
-                                    <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <button type="button" id="${uniqueId}-btn" onclick="openCustomSelectModal('${uniqueId}')" class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-cyan-700 hover:border-cyan-500 flex items-center justify-between transition-all code-font text-sm">
+                                    <span id="${uniqueId}-label" class="truncate text-slate-900 font-semibold">${defaultVal}</span>
+                                    <svg class="w-4 h-4 text-cyan-600 flex-shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                                     </svg>
                                 </button>
@@ -1031,21 +1099,21 @@ function loadApis() {
                                 
                                 <div id="${uniqueId}-modal" class="select-modal-container hidden">
                                     <div class="select-modal-handle" onclick="closeCustomSelectModal('${uniqueId}')"></div>
-                                    <div class="pb-3 mb-2 border-b border-white/10">
+                                    <div class="pb-3 mb-2 border-b border-slate-200">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center gap-2">
-                                                <svg class="w-5 h-5 text-cyan-400 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                                <svg class="w-5 h-5 text-cyan-600 star-bold-animated flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                                 </svg>
-                                                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
+                                                <span class="text-xs font-bold text-cyan-700 uppercase tracking-wider font-mono">PILIH ${paramName.toUpperCase()}</span>
                                             </div>
-                                            <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                            <button type="button" onclick="closeCustomSelectModal('${uniqueId}')" class="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
                                             </button>
                                         </div>
-                                        <p class="text-[11px] text-slate-400 font-sans mt-1.5 pl-7 leading-relaxed">${selectSubDesc}</p>
+                                        <p class="text-[11px] text-slate-500 font-sans mt-1.5 pl-7 leading-relaxed">${selectSubDesc}</p>
                                     </div>
                                     <ul class="select-modal-list">`;
 
@@ -1062,7 +1130,7 @@ function loadApis() {
                                 </div>
                             </div>`;
                         } else {
-                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-black/40 light-mode:bg-white border border-white/10 light-mode:border-slate-300 text-white light-mode:text-slate-900 focus:outline-none focus:border-cyan-500 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
+                            html += `<input type="text" name="${paramName}" value="${inputValue}" oninput="updateLivePreview(${catIdx}, ${epIdx}, '${method}', '${path}', '${epType}')" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-cyan-600 code-font text-sm" placeholder="${inputPlaceholder}" ${isRequired ? 'required' : ''}>`;
                         }
                         html += `</div>`;
                     });
@@ -1071,227 +1139,26 @@ function loadApis() {
                 html += `
                             </div>
                             <div class="flex gap-3">
-                                <button type="submit" class="px-5 py-2 bg-cyan-500 light-mode:bg-cyan-600 hover:bg-cyan-400 light-mode:hover:bg-cyan-500 text-slate-950 light-mode:text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
-                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-transparent border border-white/20 light-mode:border-slate-300 hover:border-white/40 light-mode:hover:bg-slate-100 text-slate-300 light-mode:text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
+                                <button type="submit" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md font-bold text-xs tracking-wider transition-all flex items-center justify-center">EKSEKUSI</button>
+                                <button type="button" onclick="clearResponse(${catIdx}, ${epIdx}, '${epType}')" class="px-5 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-md font-bold text-xs transition-colors">BERSIHKAN</button>
                             </div>
                         </form>
 
                         <div id="response-${catIdx}-${epIdx}" class="hidden mt-6 space-y-4">
                             <div>
-                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-400 light-mode:text-slate-500">Response</h5>
-                                <div class="bg-slate-950/80 light-mode:bg-slate-100 border border-white/10 light-mode:border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
+                                <h5 class="text-[11px] uppercase tracking-wider font-bold mb-2 text-slate-500">Response</h5>
+                                <div class="bg-slate-100 border border-slate-300 p-3 rounded-lg min-h-[100px] overflow-x-auto" id="response-content-${catIdx}-${epIdx}"></div>
                             </div>
                         </div>
                     </div>`;
             } else {
-                html += `<div class="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-medium">${i18n[currentLang].endpointNotAvailable}</div>`;
+                html += `<div class="px-4 py-3 bg-red-100 border border-red-300 rounded-lg text-xs text-red-600 font-medium">${i18n[currentLang].endpointNotAvailable}</div>`;
             }
-            html += `</div></div>`;
+            html += `</div></div></div>`;
         });
         html += `</div></div></div>`;
     });
     apiList.innerHTML = html;
-}
-
-function initMultiMusicPlayer() {
-    const playlist = window.musicPlaylist || [];
-    if (!playlist.length) return;
-
-    let currentTrackIdx = 0;
-    const audio = document.getElementById('audioElement');
-    const playBtn = document.getElementById('playBtn');
-    const playIcon = document.getElementById('playIcon');
-    const progressBar = document.getElementById('progressBar');
-    const progressContainer = document.getElementById('progressContainer');
-    const currentTimeEl = document.getElementById('currentTime');
-    const totalDurationEl = document.getElementById('totalDuration');
-    const coverImg = document.getElementById('musicCoverImg');
-    const titleEl = document.getElementById('musicTitle');
-    const artistEl = document.getElementById('musicArtist');
-    const playlistPanel = document.getElementById('playlistPanel');
-
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
-    function formatTime(secs) {
-        if (isNaN(secs)) return "0:00";
-        const mins = Math.floor(secs / 60);
-        const remainingSecs = Math.floor(secs % 60);
-        return `${mins}:${remainingSecs < 10 ? '0' : ''}${remainingSecs}`;
-    }
-
-    function updateMediaSessionPosition() {
-        if ('mediaSession' in navigator && audio && !isNaN(audio.duration) && audio.duration > 0) {
-            try {
-                navigator.mediaSession.setPositionState({
-                    duration: audio.duration,
-                    playbackRate: audio.playbackRate || 1.0,
-                    position: audio.currentTime
-                });
-            } catch (error) {
-                console.error("Error MediaSession:", error);
-            }
-        }
-    }
-
-    function loadTrack(index) {
-        currentTrackIdx = index;
-        const track = playlist[index];
-
-        if (audio) audio.src = track.url || '';
-        if (titleEl) titleEl.textContent = track.title || 'Unknown Title';
-        if (artistEl) artistEl.textContent = track.artist || 'Unknown Artist';
-        if (coverImg) coverImg.src = track.cover || 'default-cover.png';
-
-        if (progressBar) progressBar.style.width = '0%';
-        if (currentTimeEl) currentTimeEl.textContent = '0:00';
-
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: track.title || 'Unknown Title',
-                artist: track.artist || 'Unknown Artist',
-                album: 'Web Player',
-                artwork: [
-                    { src: track.cover || 'default-cover.png', sizes: '96x96', type: 'image/png' },
-                    { src: track.cover || 'default-cover.png', sizes: '128x128', type: 'image/png' },
-                    { src: track.cover || 'default-cover.png', sizes: '192x192', type: 'image/png' },
-                    { src: track.cover || 'default-cover.png', sizes: '256x256', type: 'image/png' },
-                    { src: track.cover || 'default-cover.png', sizes: '384x384', type: 'image/png' },
-                    { src: track.cover || 'default-cover.png', sizes: '512x512', type: 'image/png' },
-                ]
-            });
-
-            if ('setPositionState' in navigator.mediaSession) {
-                navigator.mediaSession.setPositionState({
-                    duration: 0,
-                    playbackRate: 1.0,
-                    position: 0
-                });
-            }
-
-            navigator.mediaSession.setActionHandler('previoustrack', () => { if (prevBtn) prevBtn.click(); });
-            navigator.mediaSession.setActionHandler('nexttrack', () => { if (nextBtn) nextBtn.click(); });
-            navigator.mediaSession.setActionHandler('play', () => { if (audio) audio.play().catch(e => console.log(e)); });
-            navigator.mediaSession.setActionHandler('pause', () => { if (audio) audio.pause(); });
-
-            navigator.mediaSession.setActionHandler('seekto', (details) => {
-                if (audio && details.seekTime) {
-                    audio.currentTime = details.seekTime;
-                    updateMediaSessionPosition();
-                }
-            });
-        }
-
-        renderPlaylistItems();
-    }
-
-    function renderPlaylistItems() {
-        if (!playlistPanel) return;
-        playlistPanel.innerHTML = '';
-
-        playlist.forEach((track, idx) => {
-            const isActive = idx === currentTrackIdx;
-            const itemBtn = document.createElement('button');
-            itemBtn.className = `w-full text-left px-3 py-2 text-xs rounded-xl flex items-center justify-between transition-all ${
-                isActive 
-                ? 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-500 light-mode:text-cyan-700 font-bold' 
-                : 'hover:bg-white/5 light-mode:hover:bg-black/5 text-slate-400 light-mode:text-slate-600'
-            }`;
-
-            itemBtn.innerHTML = `
-                <div class="flex items-center gap-2 truncate">
-                    <span class="opacity-50 text-[10px] code-font">${String(idx + 1).padStart(2, '0')}</span>
-                    <span class="truncate">${track.title} <span class="opacity-60 font-normal">- ${track.artist}</span></span>
-                </div>
-                ${isActive ? '<span class="text-[9px] tracking-wider text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded animate-pulse font-bold">PLAYING</span>' : ''}
-            `;
-
-            itemBtn.addEventListener('click', () => {
-                loadTrack(idx);
-                if (audio) audio.play().catch(e => console.log(e));
-            });
-            playlistPanel.appendChild(itemBtn);
-        });
-    }
-
-    if (playBtn && audio) {
-        playBtn.addEventListener('click', () => { 
-            audio.paused ? audio.play().catch(e => console.log(e)) : audio.pause(); 
-        });
-    }
-
-    if (audio) {
-        audio.addEventListener('play', () => {
-            if (playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-            if (coverImg) coverImg.classList.add('scale-105', 'rotate-3');
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "playing";
-            }
-            updateMediaSessionPosition();
-        });
-
-        audio.addEventListener('pause', () => {
-            if (playIcon) playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-            if (coverImg) coverImg.classList.remove('scale-105', 'rotate-3');
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "paused";
-            }
-        });
-
-        audio.addEventListener('timeupdate', () => {
-            if (audio.duration && progressBar && currentTimeEl) {
-                progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-                currentTimeEl.textContent = formatTime(audio.currentTime);
-            }
-            updateMediaSessionPosition();
-        });
-
-        audio.addEventListener('loadedmetadata', () => { 
-            if (totalDurationEl) totalDurationEl.textContent = formatTime(audio.duration); 
-            setTimeout(() => {
-                updateMediaSessionPosition();
-            }, 250);
-        });
-
-        audio.addEventListener('ended', () => { 
-            loadTrack(currentTrackIdx + 1 >= playlist.length ? 0 : currentTrackIdx + 1); 
-            if (audio) audio.play().catch(e => console.log(e)); 
-        });
-    }
-
-    if (progressContainer && audio) {
-        progressContainer.addEventListener('click', (e) => { 
-            if (audio.duration) {
-                audio.currentTime = (e.offsetX / progressContainer.clientWidth) * audio.duration; 
-                updateMediaSessionPosition();
-            }
-        });
-    }
-
-    if (prevBtn && audio) {
-        prevBtn.addEventListener('click', () => { 
-            loadTrack(currentTrackIdx - 1 < 0 ? playlist.length - 1 : currentTrackIdx - 1); 
-            if (audio) audio.play().catch(e => console.log(e)); 
-        });
-    }
-
-    if (nextBtn && audio) {
-        nextBtn.addEventListener('click', () => { 
-            loadTrack(currentTrackIdx + 1 >= playlist.length ? 0 : currentTrackIdx + 1); 
-            if (audio) audio.play().catch(e => console.log(e)); 
-        });
-    }
-
-    const playlistToggleBtn = document.getElementById('playlistToggleBtn');
-    if (playlistToggleBtn && playlistPanel) {
-        playlistToggleBtn.addEventListener('click', () => { 
-            playlistPanel.classList.toggle('hidden'); 
-        });
-    }
-
-    loadTrack(0);
 }
 
 function initImageLightbox() {
@@ -1386,11 +1253,11 @@ async function fetchAndUpdateUserLimit() {
         if (limitBadgeEl && data.type) {
             limitBadgeEl.textContent = data.type.toUpperCase();
             if (data.type === 'vip') {
-                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-500/20 text-purple-400 uppercase tracking-widest border border-purple-500/30";
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-purple-100 text-purple-700 uppercase tracking-widest border border-purple-300";
             } else if (data.type === 'premium') {
-                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-500/20 text-amber-400 uppercase tracking-widest border border-amber-500/30";
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-amber-100 text-amber-700 uppercase tracking-widest border border-amber-300";
             } else {
-                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest border border-white/5";
+                limitBadgeEl.className = "text-[9px] font-bold px-2 py-0.5 mt-1 rounded bg-slate-200 text-slate-700 uppercase tracking-widest border border-slate-300";
             }
         }
     } catch (error) {
@@ -1399,6 +1266,9 @@ async function fetchAndUpdateUserLimit() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    body.classList.add('light-mode');
+    updateThemeBackground('light');
+
     const savedLang = localStorage.getItem('lang') || 'id';
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -1406,7 +1276,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initImageLightbox(); 
     setLanguage(savedLang);
     fetchAndUpdateUserLimit();
-    initMultiMusicPlayer();
 
     const notifBtn = document.getElementById('notifMenuBtn');
     const notifPopup = document.getElementById('notifPopup');
@@ -1479,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(err => {
             const apiListEl = document.getElementById('apiList');
             if(apiListEl) {
-               apiListEl.innerHTML = `<div class="text-center p-8 bg-red-900/20 border border-red-700 rounded-lg"><div class="text-4xl mb-4">⚠️</div><h3 class="font-bold text-lg mb-2">Failed to load API data</h3></div>`;
+               apiListEl.innerHTML = `<div class="text-center p-8 bg-red-100 border border-red-300 rounded-lg text-red-700"><div class="text-4xl mb-4">⚠️</div><h3 class="font-bold text-lg mb-2">Failed to load API data</h3></div>`;
             }
         });
 });

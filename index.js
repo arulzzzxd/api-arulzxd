@@ -96,7 +96,6 @@ userSchema.pre('save', function() {
     }
 });
 
-
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 app.use(session({
@@ -1308,26 +1307,27 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
             <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
             <style>
                 body {
-                    background-color: #0b0f19;
+                    background-color: #FAF7EF;
                     font-family: 'Plus Jakarta Sans', sans-serif;
                 }
                 .swal2-popup {
-                    background: #111827 !important;
-                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    background: #FFFDF8 !important;
+                    border: 2px solid #121212 !important;
                     border-radius: 16px !important;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
                 }
                 .swal2-title {
-                    color: #ffffff !important;
+                    color: #121212 !important;
                     font-weight: 700 !important;
                 }
                 .swal2-html-container {
-                    color: #9ca3af !important;
+                    color: #374151 !important;
                 }
                 .swal2-confirm {
-                    background: linear-gradient(to right, #0891b2, #06b6d4) !important;
-                    color: #0f172a !important;
+                    background: #fde047 !important;
+                    color: #121212 !important;
                     font-weight: 700 !important;
+                    border: 2px solid #121212 !important;
                     border-radius: 12px !important;
                     padding: 10px 24px !important;
                 }
@@ -1529,30 +1529,30 @@ app.post('/auth/forgot-password', async (req, res) => {
             to: user.email,
             subject: 'Permintaan Reset Kata Sandi',
             html: `
-<div style="background-color: #0b0f19; padding: 40px 20px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100%;">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #111827; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
+<div style="background-color: #FAF7EF; padding: 40px 20px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100%;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #FFFDF8; border-radius: 16px; border: 2px solid #121212; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
         <tr>
             <td style="padding: 32px 32px 24px 32px; text-align: center;">
-                <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; tracking-tight: -0.025em;">
-                    Arulz<span style="color: #22d3ee;">XD</span> API
+                <h1 style="margin: 0; color: #121212; font-size: 24px; font-weight: 800; tracking-tight: -0.025em;">
+                    Arulz<span style="color: #0284c7;">XD</span> API
                 </h1>
             </td>
         </tr>
         <tr>
             <td style="padding: 0 32px 24px 32px;">
-                <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.2), transparent);"></div>
+                <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(2, 132, 199, 0.2), transparent);"></div>
             </td>
         </tr>
         <tr>
-            <td style="padding: 0 32px 32px 32px; color: #9ca3af; font-size: 14px; line-height: 24px;">
-                <p style="margin: 0 0 16px 0; color: #ffffff; font-size: 16px; font-weight: 600;">Halo ${user.username},</p>
+            <td style="padding: 0 32px 32px 32px; color: #374151; font-size: 14px; line-height: 24px;">
+                <p style="margin: 0 0 16px 0; color: #121212; font-size: 16px; font-weight: 600;">Halo ${user.username},</p>
                 <p style="margin: 0 0 16px 0;">Kami menerima permintaan untuk mengatur ulang kata sandi akun ArulzXD API Anda.</p>
                 <p style="margin: 0 0 24px 0;">Silakan klik tombol di bawah ini untuk membuat kata sandi baru:</p>
                 
                 <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                     <tr>
-                        <td align="center" bgcolor="#06b6d4" style="border-radius: 12px;">
-                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #0f172a; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
+                        <td align="center" bgcolor="#fde047" style="border-radius: 12px; border: 2px solid #121212;">
+                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #121212; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
                         </td>
                     </tr>
                 </table>
@@ -1560,8 +1560,8 @@ app.post('/auth/forgot-password', async (req, res) => {
         </tr>
         <tr>
             <td style="padding: 0 32px 32px 32px; color: #6b7280; font-size: 12px; line-height: 20px;">
-                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                    <strong style="color: #ef4444;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #9ca3af; font-weight: 600;">1 jam</span> demi keamanan akun Anda.
+                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 1px solid rgba(0, 0, 0, 0.08);">
+                    <strong style="color: #ef4444;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #374151; font-weight: 600;">1 jam</span> demi keamanan akun Anda.
                 </p>
                 <p style="margin: 0;">Jika Anda tidak merasa meminta reset password ini, Anda dapat mengabaikan email ini dengan aman.</p>
             </td>
@@ -1601,33 +1601,33 @@ app.get('/reset-password/:token', async (req, res) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-            body { background-color: #0b0f19; }
-            .solid-card { background: #111827; border: 1px solid rgba(255, 255, 255, 0.08); }
+            body { background-color: #FAF7EF; }
+            .solid-card { background: #FFFDF8; border: 2px solid #121212; }
         </style>
     </head>
-    <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-gray-200">
+    <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-zinc-900">
         <div class="solid-card p-8 rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden">
             <div class="text-center mb-6 relative z-10">
-                <h1 class="text-xl font-extrabold tracking-tight text-white mb-1">
-                    Atur Ulang <span class="text-cyan-400">Kata Sandi</span>
+                <h1 class="text-xl font-extrabold tracking-tight text-zinc-900 mb-1">
+                    Atur Ulang <span class="text-amber-600">Kata Sandi</span>
                 </h1>
-                <p class="text-xs text-gray-400">Silakan masukkan kata sandi baru Anda yang aman.</p>
+                <p class="text-xs text-zinc-600">Silakan masukkan kata sandi baru Anda yang aman.</p>
             </div>
 
             <form action="/reset-password/${req.params.token}" method="POST" class="space-y-4 relative z-10">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Password Baru</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-700 mb-1.5">Password Baru</label>
                     <input id="new-password" type="password" name="password" required placeholder="••••••••" 
-                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                        class="w-full bg-white border-2 border-zinc-900 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none font-medium transition">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Konfirmasi Password Baru</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-700 mb-1.5">Konfirmasi Password Baru</label>
                     <input id="confirm-password" type="password" name="confirmPassword" required placeholder="••••••••" 
-                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-medium transition">
+                        class="w-full bg-white border-2 border-zinc-900 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none font-medium transition">
                 </div>
 
-                <button type="submit" class="w-full mt-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-slate-950 font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Simpan Password Baru</button>
+                <button type="submit" class="w-full mt-2 bg-yellow-400 text-zinc-900 border-2 border-zinc-900 font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Simpan Password Baru</button>
             </form>
         </div>
     </body>
@@ -1636,34 +1636,6 @@ app.get('/reset-password/:token', async (req, res) => {
 
     } catch (err) {
         res.status(500).send("Error server.");
-    }
-});
-
-app.post('/reset-password/:token', async (req, res) => {
-    try {
-        const { password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            return sendSweetAlert(res, 'warning', 'Tidak Cocok', 'Password dan konfirmasi password tidak cocok!', '/login');
-        }
-
-        const user = await User.findOne({ 
-            resetPasswordToken: req.params.token, 
-            resetPasswordExpires: { $gt: Date.now() } 
-        });
-
-        if (!user) {
-            return sendSweetAlert(res, 'error', 'Gagal', 'Link reset password tidak valid atau sudah kedaluwarsa.', '/login');
-        }
-
-        user.password = await bcrypt.hash(password, 10);
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
-
-        return sendSweetAlert(res, 'success', 'Berhasil!', 'Password berhasil diubah! Silakan login dengan password baru Anda.', '/login');
-    } catch (err) {
-        res.status(500).send("Gagal menyimpan password baru.");
     }
 });
 
@@ -1907,8 +1879,6 @@ app.get('/auth/logout', (req, res, next) => {
         res.redirect('/docs');
     });
 });
-
-const playlist = require('./database/playlist');
 
 const localFileUploader = fileUpload({
     createParentPath: true,
@@ -2213,50 +2183,50 @@ app.post('/api/feedback', async (req, res) => {
             replyTo: email, 
             subject: `[${type.toUpperCase()}] Feedback Baru dari Dashboard API`,
             html: `
-            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, sans-serif; color: #f3f4f6;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
+            <div style="background-color: #FAF7EF; padding: 40px 15px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #121212;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2px solid #121212; box-shadow: 0 0 35px rgba(0, 0, 0, 0.05); overflow: hidden;">
                     <tr>
-                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff;">
-                                ARULZ<span style="color: #22d3ee;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b;">v2.0</span>
+                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 2px solid #121212;">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #121212;">
+                                ARULZ<span style="color: #0284c7;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b;">v2.0</span>
                             </h1>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 30px;">
                             <div style="text-align: center; margin-bottom: 25px;">
-                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 50px;">
-                                    <span style="color: #22d3ee; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 2px solid #121212; border-radius: 50px;">
+                                    <span style="color: #0284c7; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
                                         ⚡ NEW FEEDBACK TRANSMISSION
                                     </span>
                                 </div>
                             </div>
-                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px 0;">
-                                Halo Admin <strong style="color: #ffffff;">ArulzXD</strong>, sistem menerima laporan baru dari pengguna:
+                            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px 0;">
+                                Halo Admin <strong style="color: #121212;">ArulzXD</strong>, sistem menerima laporan baru dari pengguna:
                             </p>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #020617; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; margin-bottom: 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 12px; margin-bottom: 20px;">
                                 <tr>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; color: #22d3ee; font-family: monospace; text-align: right; font-weight: 600;">${email}</td>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); font-size: 13px; color: #0284c7; font-family: monospace; text-align: right; font-weight: 600;">${email}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
                                     <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
-                                        <span style="color: ${categoryColor}; background-color: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">${kategoriTeks}</span>
+                                        <span style="color: ${categoryColor}; background-color: #FFFDF8; padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">${kategoriTeks}</span>
                                     </td>
                                 </tr>
                             </table>
-                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; padding: 20px;">
-                                <div style="font-size: 10px; font-family: monospace; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">// LOG_MESSAGE_PAYLOAD</div>
-                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #e2e8f0; white-space: pre-wrap; line-height: 1.7;">${message}</p>
+                            <div style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 10px; font-family: monospace; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">// LOG_MESSAGE_PAYLOAD</div>
+                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #1e293b; white-space: pre-wrap; line-height: 1.7;">${message}</p>
                             </div>
                             <div style="text-align: center; margin-top: 30px;">
-                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;">Balas Email Pengguna</a>
+                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: #fde047; color: #121212; border: 2px solid #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;">Balas Email Pengguna</a>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                        <td style="padding: 20px 30px; background-color: #FAF7EF; border-top: 2px solid #121212; text-align: center;">
                             <p style="font-size: 11px; color: #64748b; margin: 0;">© 2026 Api ArulzXD. All rights reserved.</p>
                         </td>
                     </tr>
@@ -2270,60 +2240,60 @@ app.post('/api/feedback', async (req, res) => {
             to: email, 
             subject: `[Received] Terima Kasih atas Feedback Anda - API-ARULZXD`,
             html: `
-            <div style="background-color: #030712; padding: 40px 15px; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #f3f4f6;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #0b0f17; border-radius: 20px; border: 1px solid rgba(6, 182, 212, 0.3); box-shadow: 0 0 35px rgba(6, 182, 212, 0.15); overflow: hidden;">
+            <div style="background-color: #FAF7EF; padding: 40px 15px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #121212;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2px solid #121212; box-shadow: 0 0 35px rgba(0, 0, 0, 0.05); overflow: hidden;">
                     <tr>
-                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">
-                                ARULZ<span style="color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">API</span>
+                        <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 2px solid #121212;">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #121212;">
+                                ARULZ<span style="color: #0284c7;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">API</span>
                             </h1>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 30px;">
                             <div style="text-align: center; margin-bottom: 25px;">
-                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 50px;">
-                                    <span style="color: #34d399; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                <div style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); border: 2px solid #121212; border-radius: 50px;">
+                                    <span style="color: #059669; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
                                         ✔ TRANSMISSION CONFIRMED
                                     </span>
                                 </div>
                             </div>
-                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #ffffff; text-align: center;">
+                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #121212; text-align: center;">
                                 Halo, Agen Developer! 👋
                             </h2>
-                            <p style="font-size: 14px; color: #94a3b8; line-height: 1.7; text-align: center; margin: 0 0 25px 0;">
-                                Terima kasih telah menghubungi kami. Laporan/masukan Anda telah <strong style="color: #22d3ee;">berhasil diterima</strong> oleh server dan telah diteruskan ke tim pengembang kami untuk segera ditinjau.
+                            <p style="font-size: 14px; color: #475569; line-height: 1.7; text-align: center; margin: 0 0 25px 0;">
+                                Terima kasih telah menghubungi kami. Laporan/masukan Anda telah <strong style="color: #0284c7;">berhasil diterima</strong> oleh server dan telah diteruskan ke tim pengembang kami untuk segera ditinjau.
                             </p>
-                            <div style="background-color: #020617; border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 14px; padding: 20px; margin-bottom: 25px;">
-                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; margin-bottom: 12px; font-size: 12px;">
+                            <div style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 14px; padding: 20px; margin-bottom: 25px;">
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding-bottom: 10px; margin-bottom: 12px; font-size: 12px;">
                                     <span style="color: #64748b; font-family: monospace;">TIPE TRANSMISI:</span>
                                     <span style="color: ${categoryColor}; font-weight: 700; font-family: monospace;">${kategoriTeks.toUpperCase()}</span>
                                 </div>
                                 <div style="font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">// SALINAN_PESAN_ANDA</div>
-                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.6;">${message}</p>
+                                <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #334155; white-space: pre-wrap; line-height: 1.6;">${message}</p>
                             </div>
-                            <div style="background-color: rgba(6, 182, 212, 0.05); border-left: 3px solid #06b6d4; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 30px;">
-                                <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                                    📌 <strong style="color: #ffffff;">Catatan:</strong> Tim kami biasanya memproses dan membalas masukan dalam kurun waktu <span style="color: #22d3ee;">1x24 jam</span>. Pengguna paket Premium/VIP akan diprioritaskan.
+                            <div style="background-color: rgba(6, 182, 212, 0.05); border-left: 3px solid #0284c7; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 30px;">
+                                <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.5;">
+                                    📌 <strong style="color: #121212;">Catatan:</strong> Tim kami biasanya memproses dan membalas masukan dalam kurun waktu <span style="color: #0284c7;">1x24 jam</span>. Pengguna paket Premium/VIP akan diprioritaskan.
                                 </p>
                             </div>
                             <div style="text-align: center;">
-                                <a href="https://arulz-xd.my.id/doc" style="display: inline-block; padding: 12px 24px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                <a href="https://arulz-xd.my.id/doc" style="display: inline-block; padding: 12px 24px; background: #FAF7EF; border: 2px solid #121212; color: #121212; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
                                     Lihat Dokumentasi
                                 </a>
-                                <a href="https://arulz-xd.my.id" style="display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); color: #020617; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);">
+                                <a href="https://arulz-xd.my.id" style="display: inline-block; padding: 12px 24px; background: #fde047; border: 2px solid #121212; color: #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
                                     Kembali ke Dashboard
                                 </a>
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 20px 30px; background-color: #020617; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                        <td style="padding: 20px 30px; background-color: #FAF7EF; border-top: 2px solid #121212; text-align: center;">
                             <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; font-family: monospace;">
                                 EMAIL AUTOMATED RESPONSE | DO NOT REPLY DIRECTLY TO THIS EMAIL
                             </p>
                             <p style="font-size: 11px; color: #64748b; margin: 0;">
-                                © 2026 <a href="https://arulz-xd.my.id" style="color: #22d3ee; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
+                                © 2026 <a href="https://arulz-xd.my.id" style="color: #0284c7; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -2475,7 +2445,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
 
     res.send(`
       <!DOCTYPE html>
-      <html lang="id" class="dark">
+      <html lang="id">
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2486,7 +2456,6 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
           <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
           <script>
               tailwind.config = {
-                  darkMode: 'class',
                   theme: { 
                       extend: {
                           fontFamily: {
@@ -2498,47 +2467,47 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
           </script>
           <style>
               body { 
-                  background-color: #0b0f19; 
-                  color: #f3f4f6;
+                  background-color: #FAF7EF; 
+                  color: #121212;
               }
               .solid-card {
-                  background: #111827;
-                  border: 1px solid rgba(255, 255, 255, 0.07);
+                  background: #FFFDF8;
+                  border: 2px solid #121212;
               }
               .url-box {
-                  background: rgba(0, 0, 0, 0.25);
-                  border: 1px solid rgba(255, 255, 255, 0.05);
+                  background: #FAF7EF;
+                  border: 2px solid #121212;
               }
               .checkmark-circle {
-                  background: rgba(16, 185, 129, 0.06);
-                  border: 1px solid rgba(16, 185, 129, 0.2);
+                  background: rgba(16, 185, 129, 0.1);
+                  border: 2px solid #10b981;
               }
           </style>
       </head>
       <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
           <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
               <div class="mb-5 flex justify-center">
-                  <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-400">
+                  <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-600">
                       <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                       </svg>
                   </div>
               </div>
-              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-white">Unggahan Berhasil!</h1>
-              <p class="mb-5 text-xs text-gray-400">Berkas Anda telah aktif di cloud server:</p>
+              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-zinc-900">Unggahan Berhasil!</h1>
+              <p class="mb-5 text-xs text-zinc-600 font-semibold">Berkas Anda telah aktif di cloud server:</p>
               <div class="url-box p-3.5 rounded-xl break-all mb-6">
-                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
+                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-blue-600 hover:text-blue-700 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
               </div>
               <div class="flex space-x-3">
-                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border border-white/5">
+                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border-2 border-zinc-900">
                       Salin URL
                   </button>
-                  <a href="/uploader" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 block text-center">
+                  <a href="/uploader" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl border-2 border-zinc-900 shadow-md transition duration-200 block text-center">
                       Kembali
                   </a>
               </div>
           </div>
-          <div id="toast" class="fixed bottom-5 bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide">
+          <div id="toast" class="fixed bottom-5 bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide border-2 border-zinc-900">
               URL Berhasil disalin ke papan klip!
           </div>
           <script>
@@ -2975,8 +2944,6 @@ app.get('/docs', (req, res) => {
         padding: 0;
         touch-action: pan-x pan-y;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
-        -webkit-user-select: none;
-        user-select: none;
         background-color: var(--bg-cream) !important;
         color: var(--border-dark) !important;
         background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
@@ -3848,16 +3815,6 @@ app.get('/docs', (req, res) => {
         <div id="categoryFilters" class="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide"></div>
     </div>
 
-    <!-- Container Audio & Visual Player -->
-    <div class="hidden">
-        <audio id="audioElement"></audio>
-        <span id="musicCoverImg"></span><span id="musicTitle"></span><span id="musicArtist"></span>
-        <span id="currentTime"></span><div id="progressContainer"><div id="progressBar"></div></div>
-        <span id="totalDuration"></span><button id="prevBtn"></button><button id="playBtn"></button>
-        <button id="nextBtn"></button><button id="playlistToggleBtn"></button><div id="playlistPanel"></div>
-        <span id="mainTitle"></span><span id="mainDescription"></span>
-    </div>
-
     <div id="noResults" class="text-center py-8 hidden">
         <h3 id="no-results-title" class="text-xs font-black text-zinc-900 mb-1">Endpoint Tidak Ditemukan</h3>
         <p id="no-results-desc" class="text-[10px] font-semibold text-zinc-600">Coba gunakan kata kunci pencarian yang lain.</p>
@@ -3883,7 +3840,6 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
 <script class="notranslate" translate="no">
-    window.musicPlaylist = ${JSON.stringify(playlist || [])};
     const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
 </script>
 <script src="script.js"></script>
@@ -4031,8 +3987,8 @@ app.get('/docs', (req, res) => {
                 icon: icon,
                 title: title,
                 text: text,
-                background: '#010a17',
-                color: '#f8fafc',
+                background: '#FFFDF8',
+                color: '#121212',
                 confirmButtonText: 'OKE'
             });
         };
