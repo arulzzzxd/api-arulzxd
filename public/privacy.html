@@ -6,7 +6,7 @@
     <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Privacy Policy - Arulz-XD API</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
     <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,9 +86,7 @@
             transition: all 0.15s ease;
         }
 
-        /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
-        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active .btn-brutalism-light,
@@ -234,14 +232,14 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen pb-12 antialiased">
+<body class="min-h-screen pb-12">
 
 <!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
+            <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
         </div>
         <div class="text-center">
             <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
@@ -267,10 +265,10 @@
 
 <!-- Header Top Bar (Fixed Solid Krem z-30) -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
-    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
@@ -340,59 +338,45 @@
 <!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (z-50) -->
-<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+<!-- Sidebar Dropdown Nav (Ala Home) -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
     <!-- Header Dropdown -->
-    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
-        <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                ARULZXD API
-            </span>
-        </div>
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+        <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            ARULZXD API
+        </span>
 
-        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
-        <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
-                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
-                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
-            </div>
-
-            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
+        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
 
-    <!-- Banner Video -->
-    <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
-        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+    <!-- Banner Atas Dropdown -->
+    <div class="mb-3 rounded-2xl border-2 border-zinc-900 overflow-hidden bg-black h-36 relative shadow-sm">
+        <video autoplay loop muted playsinline class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
         </video>
     </div>
 
-    <!-- Auth / Profile Status Container -->
-    <div id="sidebarAuthBtnContainer" class="mb-3">
-        <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
-            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
-                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                </svg>
-                <span>PERINGATAN!</span>
-            </div>
-            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
-                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
-            </p>
-            <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
-                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                <span>LOGIN / REGISTER</span>
-            </a>
-        </div>
+    <!-- Profile Box Pengguna -->
+    <div class="mb-3">
+        <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
+            <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            LOGIN / REGISTER
+        </a>
     </div>
 
-    <!-- Tombol Navigasi Dropdown -->
-    <nav class="space-y-2 flex-1 pb-4">
+    <!-- Tombol Navigasi -->
+    <nav class="space-y-2 flex-1">
+        <a href="/" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                <span>BACK TO DASHBOARD</span>
+            </div>
+        </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -446,6 +430,22 @@
 
 <!-- Main Container (pt-20 agar tidak tertutup header fixed) -->
 <main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
+    
+    <!-- Tombol Kembali / Header Nav Mini -->
+    <div class="flex items-center justify-between">
+        <a href="/docs" class="dropdown-nav-card inline-flex items-center gap-2 border-2 brutal-border py-2 px-4 shadow-xs active:scale-95">
+            <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span id="lbl-btn-back" class="font-extrabold text-xs">Kembali</span>
+        </a>
+
+        <!-- Switcher Bahasa Singkat (ID / EN) -->
+        <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+            <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+            <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+        </div>
+    </div>
 
     <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
@@ -477,7 +477,7 @@
 </main>
 
 <script>
-    // Memblokir Pinch Zoom & Gesture Zoom
+    // Memblokir Pinch Zoom
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
@@ -529,6 +529,7 @@
 
     const docTranslations = {
         id: {
+            btnBack: "Kembali ke Beranda",
             mainTitle: "Kebijakan Privasi",
             updated: "Terakhir Diperbarui: 29 Juni 2026",
             footerTitle: "Punya pertanyaan atau kendala?",
@@ -543,6 +544,7 @@
             ]
         },
         en: {
+            btnBack: "Back to Home",
             mainTitle: "Privacy Policy",
             updated: "Last Updated: June 29, 2026",
             footerTitle: "Have any questions or concerns?",
@@ -566,14 +568,12 @@
         
         const btnId = document.getElementById('lang-btn-id');
         const btnEn = document.getElementById('lang-btn-en');
-        if (btnId && btnEn) {
-            if (lang === 'id') {
-                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
-            } else {
-                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
-            }
+        if (lang === 'id') {
+            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+        } else {
+            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
         }
         
         renderPrivacyContent();
@@ -582,6 +582,7 @@
     function renderPrivacyContent() {
         const data = docTranslations[currentLang] || docTranslations['id'];
         
+        document.getElementById('lbl-btn-back').innerText = data.btnBack;
         document.getElementById('lbl-main-title').innerText = data.mainTitle;
         document.getElementById('lbl-updated').innerText = data.updated;
         document.getElementById('lbl-footer-title').innerText = data.footerTitle;
@@ -604,7 +605,6 @@
         const bioDropdown = document.getElementById('bioDropdown');
         const closeMenuBtn = document.getElementById('closeMenuBtn');
         const menuOverlay = document.getElementById('menuOverlay');
-        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
         const themeBtn = document.getElementById('themePickerBtn');
         const themeDropdown = document.getElementById('themeMenuDropdown');
@@ -625,12 +625,6 @@
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
 
-        function playBannerVideo() {
-            if (sidebarBannerVideo) {
-                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
-            }
-        }
-
         function closeSidebarMenu() {
             if (bioDropdown && menuOverlay) {
                 bioDropdown.style.transform = 'translateX(100%)';
@@ -643,42 +637,16 @@
                 e.stopPropagation();
                 bioDropdown.style.transform = 'translateX(0)';
                 menuOverlay.classList.remove('hidden');
-                playBannerVideo();
             });
             if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
             menuOverlay.addEventListener('click', closeSidebarMenu);
             bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
         }
 
-        playBannerVideo();
         switchLanguage(currentLang);
-
-        // Dynamic User Status Sync for Sidebar
-        fetch('/api/user-status')
-            .then(res => res.json())
-            .then(data => {
-                if (data.loggedIn && data.user) {
-                    const container = document.getElementById('sidebarAuthBtnContainer');
-                    if (container) {
-                        container.innerHTML = `
-                            <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
-                                <div class="flex items-center gap-2.5 truncate">
-                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
-                                    <div class="truncate text-left leading-tight">
-                                        <span class="block text-xs font-black truncate">${data.user.username}</span>
-                                        <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
-                                    </div>
-                                </div>
-                                <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
-                            </a>
-                        `;
-                    }
-                }
-            })
-            .catch(err => console.error("Gagal mengecek status user:", err));
     });
 
-    // Loader Progress Logic
+    // Loader Progress 0% - 100%
     let currentProgress = 0;
     let hasFinishedLoading = false;
     const progressFill = document.getElementById('loader-progress-fill');

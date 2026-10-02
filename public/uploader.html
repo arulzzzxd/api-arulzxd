@@ -6,7 +6,7 @@
     <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Uploader File - Arulz-XD API</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
     <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -98,6 +98,7 @@
         .rgb-mode-active .cyber-loader-box,
         .rgb-mode-active .cyber-bar,
         .rgb-mode-active .uploader-card,
+        .rgb-mode-active .brutal-dropzone,
         .rgb-mode-active .light-card-box {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
@@ -223,13 +224,8 @@
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
             border-radius: 24px !important;
-            padding: 20px !important;
-            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.1) !important;
-        }
-        @media (min-width: 640px) {
-            .uploader-card {
-                padding: 28px !important;
-            }
+            padding: 24px sm:padding-32px !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
         .brutal-dropzone {
@@ -279,14 +275,14 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased">
+<body class="min-h-screen pb-12 antialiased">
 
 <!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
+            <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
         </div>
         <div class="text-center">
             <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
@@ -312,10 +308,10 @@
 
 <!-- Header Top Bar (Fixed Solid Krem z-30) -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
@@ -489,101 +485,99 @@
     </nav>
 </div>
 
-<!-- Main Container (flex-1 & justify-between agar mengisi seluruh tinggi layar HP) -->
-<main class="max-w-4xl w-full mx-auto px-4 pt-20 pb-6 flex-1 flex flex-col justify-between relative z-10 gap-6">
+<!-- Main Container (pt-20 agar presisi) -->
+<main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
     
-    <div class="space-y-5">
-        <!-- Title Header Halaman -->
-        <header class="text-center pt-2">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="lbl-badge-status">ONLINE FILE STORAGE</span>
-            </div>
-            <h1 id="lbl-main-title" class="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight mb-1">
-                Uploader File Instan
-            </h1>
-            <p id="lbl-main-desc" class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-xl mx-auto">
-                Unggah file Anda secara aman dan dapatkan URL publik langsung. Tanpa ribet, langsung pakai.
-            </p>
-        </header>
-
-        <!-- Kartu Utama Uploader Neo-Brutalism -->
-        <div class="uploader-card relative space-y-5">
-            
-            <!-- Badges Spesifikasi -->
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-emerald-100 text-emerald-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ONLINE
-                </span>
-                <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-800 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
-                    <i class="fa-solid fa-hard-drive text-[10px]"></i> MAX 4.5MB
-                </span>
-                <span class="px-2.5 py-1 rounded-lg border-2 brutal-border theme-light-bg text-zinc-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
-                    <i class="fa-solid fa-bolt text-[10px]"></i> PUBLIC URL
-                </span>
-            </div>
-
-            <form id="uploadForm" action="/uploadfile" method="post" enctype="multipart/form-data" class="space-y-5">
-                
-                <!-- Area Dropzone Brutalism -->
-                <div id="file-drop-area" class="brutal-dropzone p-5 sm:p-8 text-center cursor-pointer relative group shadow-xs">
-                    <input type="file" name="file" id="fileInput" class="hidden" required />
-                    
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 rounded-2xl border-2 brutal-border theme-bg-accent flex items-center justify-center text-zinc-900 group-hover:scale-105 transition-transform shadow-xs">
-                        <i class="fa-solid fa-cloud-arrow-up text-lg sm:text-xl"></i>
-                    </div>
-
-                    <h3 id="lbl-dropzone-title" class="text-sm sm:text-base font-black text-zinc-900 uppercase tracking-wider mb-1">
-                        Seret & Lepas File di Sini
-                    </h3>
-                    <p id="lbl-dropzone-sub" class="text-xs text-zinc-600 font-semibold max-w-md mx-auto leading-relaxed mb-4">
-                        atau <span class="theme-text-accent font-extrabold underline">klik untuk memilih file</span> · Maksimal <strong class="text-zinc-900 font-black">4.5MB</strong> per file
-                    </p>
-
-                    <!-- Format Badges -->
-                    <div class="flex flex-wrap justify-center gap-1.5 max-w-xl mx-auto pt-1">
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-image"></i> GAMBAR</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-pdf"></i> PDF</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-word"></i> DOCX</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-excel"></i> XLSX</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-zipper"></i> ZIP</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-audio"></i> AUDIO</span>
-                        <span class="px-2 py-0.5 rounded-md border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-video"></i> MP4 / WEBM</span>
-                    </div>
-                </div>
-
-                <!-- Preview Box File Terpilih -->
-                <div id="preview-area" class="hidden p-4 bg-[#FAF7EF] border-2 brutal-border rounded-xl space-y-2 shadow-xs">
-                    <span id="lbl-preview-title" class="text-xs font-black text-zinc-800 uppercase tracking-wider block">File Terpilih:</span>
-                    <div id="file-list" class="space-y-1 text-xs font-bold text-zinc-900 code-font"></div>
-                    <button type="button" id="remove-file" class="mt-2 text-xs text-red-600 hover:text-red-700 font-black transition flex items-center gap-1 active:scale-95">
-                        <i class="fa-regular fa-trash-can"></i> <span id="lbl-btn-remove">Hapus File</span>
-                    </button>
-                </div>
-                
-                <button type="submit" id="uploadButton" class="w-full theme-bg-accent border-2 brutal-border font-black py-3.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
-                    Mulai Proses Upload
-                </button>
-            </form>
-
-            <div class="p-3.5 bg-[#FAF7EF] border-2 brutal-border rounded-xl flex items-start gap-3 shadow-xs">
-                <i class="fa-solid fa-circle-info theme-text-accent text-sm mt-0.5"></i>
-                <p id="lbl-footer-note" class="text-xs text-zinc-700 font-semibold leading-snug">
-                    File akan disimpan di server terisolasi secara otomatis. Butuh integrasi via kustom kode REST API? <a href="/docs" class="theme-text-accent font-black underline">Lihat Dokumentasi API</a>.
-                </p>
-            </div>
-
+    <!-- Title Header Halaman -->
+    <header class="text-center md:text-left pt-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="lbl-badge-status">ONLINE FILE STORAGE</span>
         </div>
+        <h1 id="lbl-main-title" class="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight mb-1">
+            Uploader File Instan
+        </h1>
+        <p id="lbl-main-desc" class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed">
+            Unggah file Anda secara aman dan dapatkan URL publik langsung. Tanpa ribet, langsung pakai.
+        </p>
+    </header>
+
+    <!-- Kartu Utama Uploader Neo-Brutalism -->
+    <div class="uploader-card relative space-y-6">
+        
+        <!-- Badges Spesifikasi -->
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-emerald-100 text-emerald-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ONLINE
+            </span>
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-800 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-hard-drive text-[10px]"></i> MAX 4.5MB
+            </span>
+            <span class="px-2.5 py-1 rounded-lg border-2 brutal-border theme-light-bg text-zinc-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-bolt text-[10px]"></i> PUBLIC URL
+            </span>
+        </div>
+
+        <form id="uploadForm" action="/uploadfile" method="post" enctype="multipart/form-data" class="space-y-6">
+            
+            <!-- Area Dropzone Brutalism -->
+            <div id="file-drop-area" class="brutal-dropzone p-6 sm:p-8 text-center cursor-pointer relative group shadow-xs">
+                <input type="file" name="file" id="fileInput" class="hidden" required />
+                
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl border-2 brutal-border theme-bg-accent flex items-center justify-center text-zinc-900 group-hover:scale-105 transition-transform shadow-xs">
+                    <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                </div>
+
+                <h3 id="lbl-dropzone-title" class="text-sm sm:text-base font-black text-zinc-900 uppercase tracking-wider mb-1">
+                    Seret & Lepas File di Sini
+                </h3>
+                <p id="lbl-dropzone-sub" class="text-xs text-zinc-600 font-semibold max-w-md mx-auto leading-relaxed mb-4">
+                    atau <span class="theme-text-accent font-extrabold underline">klik untuk memilih file</span> · Maksimal <strong class="text-zinc-900 font-black">4.5MB</strong> per file
+                </p>
+
+                <!-- Format Badges -->
+                <div class="flex flex-wrap justify-center gap-1.5 max-w-xl mx-auto pt-2">
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-image"></i> GAMBAR</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-pdf"></i> PDF</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-word"></i> DOCX</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-excel"></i> XLSX</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-zipper"></i> ZIP</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-audio"></i> AUDIO</span>
+                    <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-video"></i> MP4 / WEBM</span>
+                </div>
+            </div>
+
+            <!-- Preview Box File Terpilih -->
+            <div id="preview-area" class="hidden p-4 bg-[#FAF7EF] border-2 brutal-border rounded-xl space-y-2 shadow-xs">
+                <span id="lbl-preview-title" class="text-xs font-black text-zinc-800 uppercase tracking-wider block">File Terpilih:</span>
+                <div id="file-list" class="space-y-1 text-xs font-bold text-zinc-900 code-font"></div>
+                <button type="button" id="remove-file" class="mt-2 text-xs text-red-600 hover:text-red-700 font-black transition flex items-center gap-1 active:scale-95">
+                    <i class="fa-regular fa-trash-can"></i> <span id="lbl-btn-remove">Hapus File</span>
+                </button>
+            </div>
+            
+            <button type="submit" id="uploadButton" class="w-full theme-bg-accent border-2 brutal-border font-black py-3.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
+                Mulai Proses Upload
+            </button>
+        </form>
+
+        <div class="p-3.5 bg-[#FAF7EF] border-2 brutal-border rounded-xl flex items-start gap-3 shadow-xs">
+            <i class="fa-solid fa-circle-info theme-text-accent text-sm mt-0.5"></i>
+            <p id="lbl-footer-note" class="text-xs text-zinc-700 font-semibold leading-snug">
+                File akan disimpan di server terisolasi secara otomatis. Butuh integrasi via kustom kode REST API? <a href="/docs" class="theme-text-accent font-black underline">Lihat Dokumentasi API</a>.
+            </p>
+        </div>
+
     </div>
 
     <!-- Footer Support -->
-    <footer class="pt-6 border-t-2 border-zinc-300 text-center space-y-1 mt-auto">
+    <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
         <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
         <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
             Hubungi tim support teknis melalui email resmi kami di: 
             <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>
         </p>
-        <div class="pt-2 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+        <div class="pt-3 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
             &copy; 2026 ARULZ-XD API REST CORE
         </div>
     </footer>
@@ -832,7 +826,7 @@
                         container.innerHTML = `
                             <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
                                 <div class="flex items-center gap-2.5 truncate">
-                                    <img src="${data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
+                                    <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
                                     <div class="truncate text-left leading-tight">
                                         <span class="block text-xs font-black truncate">${data.user.username}</span>
                                         <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
