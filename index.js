@@ -2414,7 +2414,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
   const origExt = path.extname(originalName);
 
   let extension = origExt ? origExt.replace(/^\./, '') : (mime.extension(uploadedFile.mimetype) || 'bin');
-  let id = generateId(6);
+  let id = generateId(8);
   let fileName = origExt ? `${id}${origExt}` : `${id}.${extension}`;
   let gitPath = `uploads/${fileName}`;
   let base64Content = Buffer.from(uploadedFile.data).toString('base64');
