@@ -71,7 +71,7 @@ const userSchema = new mongoose.Schema({
     roleExpiresAt: { type: Date, default: null }, // MASA BERLAKU ROLE
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
-    avatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' }, 
+    avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png' }, 
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -311,7 +311,7 @@ const reviewSchema = new mongoose.Schema({
     productId: { type: String, required: true, index: true },
     userId: { type: String, default: null, index: true },
     username: { type: String, required: true },
-    userAvatar: { type: String, default: 'https://arulz-xd.my.id/files/X1F0Cn.png' },
+    userAvatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png' },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true, trim: true },
     media: [{
@@ -358,7 +358,7 @@ app.post('/api/reviews', checkAuthSession, (req, res) => {
             }
 
             let username = 'Anonim';
-            let userAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            let userAvatar = 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
             let userId = getUserIdentifier(req);
 
             if (req.user) {
@@ -580,7 +580,7 @@ const productSchema = new mongoose.Schema({
     stok: { type: Number, default: 0 },
     gambar: { 
         type: [String], 
-        default: ["https://arulz-xd.my.id/files/X1F0Cn.png"] 
+        default: ["https://cdn.arulzzxd.my.id/files/X1F0Cn.png"] 
     },    
     deskripsi: { type: String, default: "" },
     link: { type: String, required: true },
@@ -1394,7 +1394,7 @@ app.post('/auth/login', (req, res, next) => {
                     username: user.username,
                     email: user.email,
                     name: user.username,
-                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    avatar: user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
                     role: user.role,     
                     apikey: user.apikey   
                 };
@@ -1445,7 +1445,7 @@ app.post('/auth/register', async (req, res) => {
         const userRole = 'Free User';
         const userApiKey = generateFreeApiKey();
 
-        const defaultAvatar = 'https://arulz-xd.my.id/files/X1F0Cn.png';
+        const defaultAvatar = 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
 
         const newUser = new User({
             username: cleanUsername,
@@ -1648,7 +1648,7 @@ app.get('/login', (req, res) => {
 
 const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
 const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
-const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://arulz-xd.my.id/auth/github/callback";
+const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://api.arulzzxd.my.id/auth/github/callback";
 
 const d = "613783942158";
 const e = "-63q31341ivgrlulq8";
@@ -1658,7 +1658,7 @@ const id = "googleusercontent.com";
 
 const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
 const GOOGLE_CLIENT_SECRET = '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';
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://arulz-xd.my.id/auth/google/callback";
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://api.arulzzxd.my.id/auth/google/callback";
 
 /* ==================== ENDPOINT AUTH GITHUB ==================== */
 app.get('/auth/github', (req, res) => {
@@ -1714,7 +1714,7 @@ app.get('/auth/github/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: generateFreeApiKey(),
                 role: 'Free User',
-                avatar: userData.avatar_url || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+                avatar: userData.avatar_url || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -1800,7 +1800,7 @@ app.get('/auth/google/callback', async (req, res) => {
                 providerId: String(userData.id),
                 apikey: generateFreeApiKey(),
                 role: 'Free User',
-                avatar: userData.picture || 'https://arulz-xd.my.id/files/X1F0Cn.png'
+                avatar: userData.picture || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'
             });
 
             await dbUser.save();
@@ -2278,10 +2278,10 @@ app.post('/api/feedback', async (req, res) => {
                                 </p>
                             </div>
                             <div style="text-align: center;">
-                                <a href="https://arulz-xd.my.id/doc" style="display: inline-block; padding: 12px 24px; background: #FAF7EF; border: 2px solid #121212; color: #121212; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                <a href="https://api.arulzzxd.my.id/docs" style="display: inline-block; padding: 12px 24px; background: #FAF7EF; border: 2px solid #121212; color: #121212; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
                                     Lihat Dokumentasi
                                 </a>
-                                <a href="https://arulz-xd.my.id" style="display: inline-block; padding: 12px 24px; background: #fde047; border: 2px solid #121212; color: #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                <a href="https://api.arulzzxd.my.id/" style="display: inline-block; padding: 12px 24px; background: #fde047; border: 2px solid #121212; color: #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
                                     Kembali ke Dashboard
                                 </a>
                             </div>
@@ -2293,7 +2293,7 @@ app.post('/api/feedback', async (req, res) => {
                                 EMAIL AUTOMATED RESPONSE | DO NOT REPLY DIRECTLY TO THIS EMAIL
                             </p>
                             <p style="font-size: 11px; color: #64748b; margin: 0;">
-                                © 2026 <a href="https://arulz-xd.my.id" style="color: #0284c7; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
+                                © 2026 <a href="https://api.arulzzxd.my.id/" style="color: #0284c7; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -2362,13 +2362,7 @@ app.get('/support', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'support.html'));
 });
 
-function getRequestProtocol(req) {
-  const forwarded = req.headers['x-forwarded-proto'];
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return req.secure ? 'https' : 'http';
-}
-
-function generateId(length = 6) {
+function generateId(length = 8) {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const bytes = crypto.randomBytes(length);
   let id = '';
@@ -2439,9 +2433,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
       },
     });
 
-    const protocol = getRequestProtocol(req);
-    const baseWebUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
-    const rawUrl = `${baseWebUrl}/files/${fileName}`;
+    const rawUrl = `https://cdn.arulzzxd.my.id/files/${fileName}`;
 
     res.send(`
       <!DOCTYPE html>
@@ -2868,7 +2860,7 @@ app.get('/store/:productId', async (req, res) => {
     <meta property="og:title" content="${product.nama} - ArulzXD Store" />
     <meta property="og:description" content="${deskripsiClean}... | Harga: ${hargaFormatted}" />
     <meta property="og:image" content="${product.gambar}" />
-    <meta property="og:url" content="https://arulz-xd.my.id/store/${product.Id}" />
+    <meta property="og:url" content="https://api.arulzzxd.my.id/store/${product.Id}" />
     <meta property="og:type" content="product" />
     <meta name="twitter:card" content="summary_large_image" />
             `;
@@ -2912,7 +2904,7 @@ app.get('/docs', (req, res) => {
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <title>Arulz-XD API - Documentation</title>
-    <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -3407,7 +3399,7 @@ app.get('/docs', (req, res) => {
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
+            <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
         </div>
         <div class="text-center">
             <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
@@ -3449,7 +3441,7 @@ app.get('/docs', (req, res) => {
       </div>
       
       <div class="mb-4 rounded-xl overflow-hidden border-2 border-zinc-900 bg-black relative">
-        <img src="https://arulz-xd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
+        <img src="https://cdn.arulzzxd.my.id/files/K4Sf61.png" alt="Welcome Banner" class="w-full h-auto object-cover max-h-44" />
       </div>
       
       <div class="text-center text-zinc-700 text-xs mb-5 leading-relaxed font-semibold">
@@ -3481,7 +3473,7 @@ app.get('/docs', (req, res) => {
                 <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                 <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
                     <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-sm overflow-hidden bg-white">
-                        <img id="userAvatar" src="https://arulz-xd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
+                        <img id="userAvatar" src="https://cdn.arulzzxd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                     </div>
                 </div>
             </div>
@@ -3571,7 +3563,7 @@ app.get('/docs', (req, res) => {
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
-                <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
@@ -3665,7 +3657,7 @@ app.get('/docs', (req, res) => {
         ${req.user ? `
         <button onclick="openProfilePopup()" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
             <div class="flex items-center gap-2.5 truncate">
-                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
+                <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
                 <div class="truncate text-left leading-tight">
                     <span class="block text-xs font-black truncate">${req.user.username}</span>
                     <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
@@ -4031,7 +4023,7 @@ app.get('/docs', (req, res) => {
             .then(res => res.json())
             .then(data => {
                 if (data.loggedIn && data.user) {
-                    const latestAvatar = data.user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+                    const latestAvatar = data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
 
                     document.querySelectorAll('#userAvatar, #sidebarUserAvatar').forEach(img => {
                         if (img) img.src = latestAvatar;
