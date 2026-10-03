@@ -719,6 +719,224 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
+// <=== payment ku
+
+// ====================================================
+// MONGOOSE SCHEMA BUKTI PEMBAYARAN (PAYMENT PROOF)
+// ====================================================
+const paymentProofSchema = new mongoose.Schema({
+    orderId: { type: String, required: true, unique: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    planType: { type: String, required: true }, // 'premium' atau 'vip'
+    roleName: { type: String, required: true }, // 'Premium User' atau 'VIP User'
+    days: { type: Number, required: true },
+    amount: { type: Number, required: true },
+    proofImage: { type: String, required: true }, // Base64 Data URL Gambar Bukti
+    status: { type: String, enum: ['pending', 'success', 'rejected'], default: 'pending' },
+    adminNote: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const PaymentProof = mongoose.models.PaymentProof || mongoose.model('PaymentProof', paymentProofSchema);
+
+// Multer Storage Memory untuk Bukti Pembayaran
+const uploadProofMedia = multer({
+    limits: { fileSize: 5 * 1024 * 1024 }, // Maksimal 5MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('File bukti pembayaran harus berupa gambar (JPG, PNG, WebP)!'));
+        }
+    }
+});
+
+// ====================================================
+// ENDPOINT USER: SUBMIT BUKTI PEMBAYARAN UPGRADE
+// ====================================================
+app.post('/api/upgrade/submit-proof', checkAuthSession, (req, res) => {
+    uploadProofMedia.single('proofImage')(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar bukti pembayaran.' });
+        }
+
+        try {
+            if (!req.user) {
+                return res.status(401).json({ status: false, message: 'Anda wajib login terlebih dahulu!' });
+            }
+
+            const { planType, days } = req.body;
+            const proofFile = req.file;
+
+            if (!planType || !['premium', 'vip'].includes(planType.toLowerCase())) {
+                return res.status(400).json({ status: false, message: 'Tipe paket tidak valid!' });
+            }
+
+            const numDays = Number(days);
+            if (!numDays || numDays <= 0) {
+                return res.status(400).json({ status: false, message: 'Durasi hari tidak valid!' });
+            }
+
+            if (!proofFile) {
+                return res.status(400).json({ status: false, message: 'Wajib mengunggah bukti transfer pembayaran!' });
+            }
+
+            // Hitung total harga paket
+            const rate = planType.toLowerCase() === 'vip' ? 500 : 100;
+            const minDays = planType.toLowerCase() === 'vip' ? 3 : 10;
+
+            if (numDays < minDays) {
+                return res.status(400).json({ status: false, message: `Minimal pembelian paket ${planType.toUpperCase()} adalah ${minDays} hari!` });
+            }
+
+            const totalAmount = numDays * rate;
+            const orderId = `TRX-QRIS-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+
+            // Convert buffer gambar ke Data URL Base64
+            const mimeType = proofFile.mimetype || 'image/png';
+            const base64Image = `data:${mimeType};base64,${proofFile.buffer.toString('base64')}`;
+
+            const userId = req.user.id || req.user._id;
+            const targetRoleName = planType.toLowerCase() === 'vip' ? 'VIP User' : 'Premium User';
+
+            const newProof = new PaymentProof({
+                orderId,
+                userId,
+                username: req.user.username || req.user.name,
+                email: req.user.email,
+                planType: planType.toLowerCase(),
+                roleName: targetRoleName,
+                days: numDays,
+                amount: totalAmount,
+                proofImage: base64Image,
+                status: 'pending'
+            });
+
+            await newProof.save();
+
+            return res.json({
+                status: true,
+                message: 'Bukti pembayaran berhasil terkirim! Menunggu verifikasi dari Admin.',
+                orderId: orderId,
+                amount: totalAmount
+            });
+
+        } catch (error) {
+            console.error("Error submit upgrade proof:", error);
+            return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat menyimpan bukti pembayaran.' });
+        }
+    });
+});
+
+// Endpoint User: Cek Riwayat Pembayaran Upgrade Pengguna
+app.get('/api/upgrade/my-proofs', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ status: false, message: 'Belum login' });
+        }
+        const userId = req.user.id || req.user._id;
+        const proofs = await PaymentProof.find({ userId }).sort({ createdAt: -1 });
+
+        return res.json({ status: true, proofs });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: 'Gagal mengambil data transaksi.' });
+    }
+});
+
+// ====================================================
+// ENDPOINT ADMIN: KELOLA BUKTI PEMBAYARAN USER
+// ====================================================
+
+// Serve Halaman Website Admin Dashboard
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Get List Semua Bukti Pembayaran User (Dapat difilter per status)
+app.get('/api/admin/proofs', async (req, res) => {
+    try {
+        const { status } = req.query;
+        let query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        const proofs = await PaymentProof.find(query).sort({ createdAt: -1 });
+        return res.json({ status: true, total: proofs.length, proofs });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: 'Gagal memuat data transaksi admin.' });
+    }
+});
+
+// Update Status Bukti Pembayaran (ACC / SUCCESS / REJECTED) + OTOMATIS UPGRADE ROLE USER
+app.post('/api/admin/proofs/:id/action', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, adminNote } = req.body; // action: 'success' atau 'rejected'
+
+        if (!['success', 'rejected'].includes(action)) {
+            return res.status(400).json({ status: false, message: 'Aksi admin tidak valid!' });
+        }
+
+        const proof = await PaymentProof.findById(id);
+        if (!proof) {
+            return res.status(404).json({ status: false, message: 'Data bukti pembayaran tidak ditemukan!' });
+        }
+
+        if (action === 'success' && proof.status !== 'success') {
+            // PROSES OTOMATIS UPGRADE AKUN & APIKEY USER
+            const user = await User.findById(proof.userId);
+            if (user) {
+                const daysToAdd = proof.days || 10;
+                const targetRole = proof.roleName || (proof.planType === 'vip' ? 'VIP User' : 'Premium User');
+
+                // Hitung akumulasi tanggal kadaluwarsa baru
+                let currentExpiry = (user.roleExpiresAt && new Date(user.roleExpiresAt) > new Date())
+                    ? new Date(user.roleExpiresAt)
+                    : new Date();
+
+                currentExpiry.setDate(currentExpiry.getDate() + daysToAdd);
+
+                user.role = targetRole;
+                user.roleExpiresAt = currentExpiry;
+
+                // Generate API Key sesuai role
+                if (targetRole === 'Premium User') {
+                    if (!user.apikey || !user.apikey.includes('prem-')) {
+                        user.apikey = generatePremiumApiKey(user.username);
+                    }
+                } else if (targetRole === 'VIP User') {
+                    if (!user.apikey || user.apikey.startsWith('arulzxdfree-')) {
+                        user.apikey = `${user.username.toLowerCase()}-custom-vip`;
+                    }
+                }
+
+                await user.save();
+                console.log(`✅ [ADMIN APPROVED] Role ${user.username} berhasil di-upgrade ke ${targetRole} (${daysToAdd} Hari).`);
+            }
+        }
+
+        proof.status = action;
+        if (adminNote) proof.adminNote = adminNote;
+        proof.updatedAt = new Date();
+        await proof.save();
+
+        return res.json({
+            status: true,
+            message: action === 'success' 
+                ? 'Bukti pembayaran disetujui! Role & API Key user telah otomatis diperbarui.' 
+                : 'Bukti pembayaran telah ditolak.'
+        });
+
+    } catch (error) {
+        console.error("Error admin action:", error);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server admin.' });
+    }
+});
+
 async function recordProductBuyer(productName, userIdentifier) {
     if (!productName || !userIdentifier) return;
     try {
@@ -1304,7 +1522,7 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Notification</title>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
             <style>
                 body {
                     background-color: #FAF7EF;
@@ -1312,24 +1530,26 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
                 }
                 .swal2-popup {
                     background: #FFFDF8 !important;
-                    border: 2px solid #121212 !important;
-                    border-radius: 16px !important;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+                    border: 2.5px solid #121212 !important;
+                    border-radius: 20px !important;
+                    box-shadow: 4px 4px 0px #121212 !important;
                 }
                 .swal2-title {
                     color: #121212 !important;
-                    font-weight: 700 !important;
+                    font-weight: 800 !important;
                 }
                 .swal2-html-container {
                     color: #374151 !important;
+                    font-weight: 600 !important;
                 }
                 .swal2-confirm {
                     background: #fde047 !important;
                     color: #121212 !important;
-                    font-weight: 700 !important;
+                    font-weight: 800 !important;
                     border: 2px solid #121212 !important;
                     border-radius: 12px !important;
                     padding: 10px 24px !important;
+                    box-shadow: 2px 2px 0px #121212 !important;
                 }
             </style>
         </head>
@@ -1530,29 +1750,29 @@ app.post('/auth/forgot-password', async (req, res) => {
             subject: 'Permintaan Reset Kata Sandi',
             html: `
 <div style="background-color: #FAF7EF; padding: 40px 20px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100%;">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #FFFDF8; border-radius: 16px; border: 2px solid #121212; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #FFFDF8; border-radius: 20px; border: 2.5px solid #121212; box-shadow: 4px 4px 0px #121212;">
         <tr>
             <td style="padding: 32px 32px 24px 32px; text-align: center;">
-                <h1 style="margin: 0; color: #121212; font-size: 24px; font-weight: 800; tracking-tight: -0.025em;">
+                <h1 style="margin: 0; color: #121212; font-size: 24px; font-weight: 900; tracking-tight: -0.025em;">
                     Arulz<span style="color: #0284c7;">XD</span> API
                 </h1>
             </td>
         </tr>
         <tr>
             <td style="padding: 0 32px 24px 32px;">
-                <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(2, 132, 199, 0.2), transparent);"></div>
+                <div style="height: 2px; background: #121212;"></div>
             </td>
         </tr>
         <tr>
             <td style="padding: 0 32px 32px 32px; color: #374151; font-size: 14px; line-height: 24px;">
-                <p style="margin: 0 0 16px 0; color: #121212; font-size: 16px; font-weight: 600;">Halo ${user.username},</p>
+                <p style="margin: 0 0 16px 0; color: #121212; font-size: 16px; font-weight: 800;">Halo ${user.username},</p>
                 <p style="margin: 0 0 16px 0;">Kami menerima permintaan untuk mengatur ulang kata sandi akun ArulzXD API Anda.</p>
                 <p style="margin: 0 0 24px 0;">Silakan klik tombol di bawah ini untuk membuat kata sandi baru:</p>
                 
                 <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                     <tr>
-                        <td align="center" bgcolor="#fde047" style="border-radius: 12px; border: 2px solid #121212;">
-                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #121212; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
+                        <td align="center" bgcolor="#fde047" style="border-radius: 12px; border: 2px solid #121212; box-shadow: 2px 2px 0px #121212;">
+                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 800; color: #121212; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
                         </td>
                     </tr>
                 </table>
@@ -1560,8 +1780,8 @@ app.post('/auth/forgot-password', async (req, res) => {
         </tr>
         <tr>
             <td style="padding: 0 32px 32px 32px; color: #6b7280; font-size: 12px; line-height: 20px;">
-                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 1px solid rgba(0, 0, 0, 0.08);">
-                    <strong style="color: #ef4444;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #374151; font-weight: 600;">1 jam</span> demi keamanan akun Anda.
+                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 2px border-zinc-300;">
+                    <strong style="color: #ef4444;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #374151; font-weight: 700;">1 jam</span> demi keamanan akun Anda.
                 </p>
                 <p style="margin: 0;">Jika Anda tidak merasa meminta reset password ini, Anda dapat mengabaikan email ini dengan aman.</p>
             </td>
@@ -1601,33 +1821,40 @@ app.get('/reset-password/:token', async (req, res) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-            body { background-color: #FAF7EF; }
-            .solid-card { background: #FFFDF8; border: 2px solid #121212; }
+            body { 
+                background-color: #FAF7EF; 
+                font-family: 'Plus Jakarta Sans', sans-serif;
+            }
+            .solid-card { 
+                background: #FFFDF8; 
+                border: 2.5px solid #121212; 
+                box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.12);
+            }
         </style>
     </head>
     <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-zinc-900">
-        <div class="solid-card p-8 rounded-2xl shadow-lg w-full max-w-md relative overflow-hidden">
+        <div class="solid-card p-6 sm:p-8 rounded-2xl w-full max-w-md relative overflow-hidden">
             <div class="text-center mb-6 relative z-10">
-                <h1 class="text-xl font-extrabold tracking-tight text-zinc-900 mb-1">
+                <h1 class="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 mb-1">
                     Atur Ulang <span class="text-amber-600">Kata Sandi</span>
                 </h1>
-                <p class="text-xs text-zinc-600">Silakan masukkan kata sandi baru Anda yang aman.</p>
+                <p class="text-xs font-semibold text-zinc-600">Silakan masukkan kata sandi baru Anda yang aman.</p>
             </div>
 
             <form action="/reset-password/${req.params.token}" method="POST" class="space-y-4 relative z-10">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-700 mb-1.5">Password Baru</label>
+                    <label class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Password Baru</label>
                     <input id="new-password" type="password" name="password" required placeholder="••••••••" 
-                        class="w-full bg-white border-2 border-zinc-900 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none font-medium transition">
+                        class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-4 py-3 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-bold transition shadow-xs">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-700 mb-1.5">Konfirmasi Password Baru</label>
+                    <label class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1.5">Konfirmasi Password Baru</label>
                     <input id="confirm-password" type="password" name="confirmPassword" required placeholder="••••••••" 
-                        class="w-full bg-white border-2 border-zinc-900 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none font-medium transition">
+                        class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-4 py-3 text-xs sm:text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-bold transition shadow-xs">
                 </div>
 
-                <button type="submit" class="w-full mt-2 bg-yellow-400 text-zinc-900 border-2 border-zinc-900 font-bold py-3 rounded-xl text-sm tracking-wide uppercase">Simpan Password Baru</button>
+                <button type="submit" class="w-full mt-2 bg-amber-400 text-zinc-900 border-2 border-zinc-900 font-black py-3 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">Simpan Password Baru</button>
             </form>
         </div>
     </body>
@@ -2184,10 +2411,10 @@ app.post('/api/feedback', async (req, res) => {
             subject: `[${type.toUpperCase()}] Feedback Baru dari Dashboard API`,
             html: `
             <div style="background-color: #FAF7EF; padding: 40px 15px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #121212;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2px solid #121212; box-shadow: 0 0 35px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2.5px solid #121212; box-shadow: 4px 4px 0px #121212; overflow: hidden;">
                     <tr>
                         <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 2px solid #121212;">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #121212;">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 900; color: #121212;">
                                 ARULZ<span style="color: #0284c7;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b;">v2.0</span>
                             </h1>
                         </td>
@@ -2196,7 +2423,7 @@ app.post('/api/feedback', async (req, res) => {
                         <td style="padding: 30px;">
                             <div style="text-align: center; margin-bottom: 25px;">
                                 <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 2px solid #121212; border-radius: 50px;">
-                                    <span style="color: #0284c7; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                    <span style="color: #0284c7; font-size: 11px; font-family: monospace; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
                                         ⚡ NEW FEEDBACK TRANSMISSION
                                     </span>
                                 </div>
@@ -2207,27 +2434,27 @@ app.post('/api/feedback', async (req, res) => {
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 12px; margin-bottom: 20px;">
                                 <tr>
                                     <td style="padding: 14px 18px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); font-size: 12px; color: #64748b; font-family: monospace;">EMAIL PENGIRIM</td>
-                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); font-size: 13px; color: #0284c7; font-family: monospace; text-align: right; font-weight: 600;">${email}</td>
+                                    <td style="padding: 14px 18px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); font-size: 13px; color: #0284c7; font-family: monospace; text-align: right; font-weight: 700;">${email}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 14px 18px; font-size: 12px; color: #64748b; font-family: monospace;">KATEGORI</td>
-                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 700;">
+                                    <td style="padding: 14px 18px; font-size: 12px; text-align: right; font-weight: 800;">
                                         <span style="color: ${categoryColor}; background-color: #FFFDF8; padding: 4px 10px; border-radius: 6px; border: 1px solid ${categoryColor}40;">${kategoriTeks}</span>
                                     </td>
                                 </tr>
                             </table>
                             <div style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 12px; padding: 20px;">
-                                <div style="font-size: 10px; font-family: monospace; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700;">// LOG_MESSAGE_PAYLOAD</div>
+                                <div style="font-size: 10px; font-family: monospace; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 800;">// LOG_MESSAGE_PAYLOAD</div>
                                 <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #1e293b; white-space: pre-wrap; line-height: 1.7;">${message}</p>
                             </div>
                             <div style="text-align: center; margin-top: 30px;">
-                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: #fde047; color: #121212; border: 2px solid #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px;">Balas Email Pengguna</a>
+                                <a href="mailto:${email}" style="display: inline-block; padding: 12px 28px; background: #fde047; color: #121212; border: 2px solid #121212; font-weight: 900; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 2px 2px 0px #121212;">Balas Email Pengguna</a>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 20px 30px; background-color: #FAF7EF; border-top: 2px solid #121212; text-align: center;">
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">© 2026 Api ArulzXD. All rights reserved.</p>
+                            <p style="font-size: 11px; color: #64748b; margin: 0; font-weight: 700;">© 2026 Api ArulzXD. All rights reserved.</p>
                         </td>
                     </tr>
                 </table>
@@ -2241,11 +2468,11 @@ app.post('/api/feedback', async (req, res) => {
             subject: `[Received] Terima Kasih atas Feedback Anda - API-ARULZXD`,
             html: `
             <div style="background-color: #FAF7EF; padding: 40px 15px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #121212;">
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2px solid #121212; box-shadow: 0 0 35px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFDF8; border-radius: 20px; border: 2.5px solid #121212; box-shadow: 4px 4px 0px #121212; overflow: hidden;">
                     <tr>
                         <td style="padding: 30px 30px 20px 30px; text-align: center; background: linear-gradient(180deg, rgba(6, 182, 212, 0.12) 0%, transparent 100%); border-bottom: 2px solid #121212;">
-                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; color: #121212;">
-                                ARULZ<span style="color: #0284c7;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 400;">API</span>
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.025em; color: #121212;">
+                                ARULZ<span style="color: #0284c7;">XD</span> <span style="font-size: 14px; font-family: monospace; color: #64748b; font-weight: 600;">API</span>
                             </h1>
                         </td>
                     </tr>
@@ -2253,35 +2480,35 @@ app.post('/api/feedback', async (req, res) => {
                         <td style="padding: 30px;">
                             <div style="text-align: center; margin-bottom: 25px;">
                                 <div style="display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); border: 2px solid #121212; border-radius: 50px;">
-                                    <span style="color: #059669; font-size: 11px; font-family: monospace; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">
+                                    <span style="color: #059669; font-size: 11px; font-family: monospace; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
                                         ✔ TRANSMISSION CONFIRMED
                                     </span>
                                 </div>
                             </div>
-                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; color: #121212; text-align: center;">
+                            <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 800; color: #121212; text-align: center;">
                                 Halo, Agen Developer! 👋
                             </h2>
-                            <p style="font-size: 14px; color: #475569; line-height: 1.7; text-align: center; margin: 0 0 25px 0;">
+                            <p style="font-size: 14px; color: #475569; line-height: 1.7; text-align: center; margin: 0 0 25px 0; font-weight: 600;">
                                 Terima kasih telah menghubungi kami. Laporan/masukan Anda telah <strong style="color: #0284c7;">berhasil diterima</strong> oleh server dan telah diteruskan ke tim pengembang kami untuk segera ditinjau.
                             </p>
                             <div style="background-color: #FAF7EF; border: 2px solid #121212; border-radius: 14px; padding: 20px; margin-bottom: 25px;">
                                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding-bottom: 10px; margin-bottom: 12px; font-size: 12px;">
                                     <span style="color: #64748b; font-family: monospace;">TIPE TRANSMISI:</span>
-                                    <span style="color: ${categoryColor}; font-weight: 700; font-family: monospace;">${kategoriTeks.toUpperCase()}</span>
+                                    <span style="color: ${categoryColor}; font-weight: 800; font-family: monospace;">${kategoriTeks.toUpperCase()}</span>
                                 </div>
                                 <div style="font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">// SALINAN_PESAN_ANDA</div>
                                 <p style="margin: 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #334155; white-space: pre-wrap; line-height: 1.6;">${message}</p>
                             </div>
                             <div style="background-color: rgba(6, 182, 212, 0.05); border-left: 3px solid #0284c7; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 30px;">
-                                <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.5;">
+                                <p style="margin: 0; font-size: 12px; color: #475569; line-height: 1.5; font-weight: 600;">
                                     📌 <strong style="color: #121212;">Catatan:</strong> Tim kami biasanya memproses dan membalas masukan dalam kurun waktu <span style="color: #0284c7;">1x24 jam</span>. Pengguna paket Premium/VIP akan diprioritaskan.
                                 </p>
                             </div>
                             <div style="text-align: center;">
-                                <a href="https://api.arulzzxd.my.id/docs" style="display: inline-block; padding: 12px 24px; background: #FAF7EF; border: 2px solid #121212; color: #121212; font-weight: 700; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                <a href="https://api.arulzzxd.my.id/docs" style="display: inline-block; padding: 12px 24px; background: #FAF7EF; border: 2px solid #121212; color: #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px; box-shadow: 2px 2px 0px #121212;">
                                     Lihat Dokumentasi
                                 </a>
-                                <a href="https://api.arulzzxd.my.id/" style="display: inline-block; padding: 12px 24px; background: #fde047; border: 2px solid #121212; color: #121212; font-weight: 800; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px;">
+                                <a href="https://api.arulzzxd.my.id/" style="display: inline-block; padding: 12px 24px; background: #fde047; border: 2px solid #121212; color: #121212; font-weight: 900; font-size: 12px; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 5px 10px 5px; box-shadow: 2px 2px 0px #121212;">
                                     Kembali ke Dashboard
                                 </a>
                             </div>
@@ -2289,10 +2516,10 @@ app.post('/api/feedback', async (req, res) => {
                     </tr>
                     <tr>
                         <td style="padding: 20px 30px; background-color: #FAF7EF; border-top: 2px solid #121212; text-align: center;">
-                            <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; font-family: monospace;">
+                            <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; font-family: monospace; font-weight: 700;">
                                 EMAIL AUTOMATED RESPONSE | DO NOT REPLY DIRECTLY TO THIS EMAIL
                             </p>
-                            <p style="font-size: 11px; color: #64748b; margin: 0;">
+                            <p style="font-size: 11px; color: #64748b; margin: 0; font-weight: 700;">
                                 © 2026 <a href="https://api.arulzzxd.my.id/" style="color: #0284c7; text-decoration: none;">Api ArulzXD</a>. All rights reserved.
                             </p>
                         </td>
@@ -2464,7 +2691,8 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
               }
               .solid-card {
                   background: #FFFDF8;
-                  border: 2px solid #121212;
+                  border: 2.5px solid #121212;
+                  box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.12);
               }
               .url-box {
                   background: #FAF7EF;
@@ -2477,7 +2705,7 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
           </style>
       </head>
       <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
-          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
+          <div class="solid-card p-7 rounded-2xl w-full max-w-md text-center">
               <div class="mb-5 flex justify-center">
                   <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-600">
                       <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
@@ -2485,21 +2713,21 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
                       </svg>
                   </div>
               </div>
-              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-zinc-900">Unggahan Berhasil!</h1>
+              <h1 class="text-xl font-black mb-1.5 tracking-tight text-zinc-900">Unggahan Berhasil!</h1>
               <p class="mb-5 text-xs text-zinc-600 font-semibold">Berkas Anda telah aktif di cloud server:</p>
               <div class="url-box p-3.5 rounded-xl break-all mb-6">
-                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-blue-600 hover:text-blue-700 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
+                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-sky-700 hover:text-sky-800 font-mono text-xs font-bold transition-colors">${rawUrl}</a>
               </div>
               <div class="flex space-x-3">
-                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border-2 border-zinc-900">
+                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-900 text-xs font-black py-3 px-4 rounded-xl transition duration-200 border-2 border-zinc-900 shadow-2xs active:scale-95">
                       Salin URL
                   </button>
-                  <a href="/uploader" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl border-2 border-zinc-900 shadow-md transition duration-200 block text-center">
+                  <a href="/uploader" class="flex-1 bg-amber-400 hover:bg-amber-500 text-zinc-900 text-xs font-black py-3 px-4 rounded-xl border-2 border-zinc-900 shadow-2xs transition duration-200 block text-center active:scale-95">
                       Kembali
                   </a>
               </div>
           </div>
-          <div id="toast" class="fixed bottom-5 bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide border-2 border-zinc-900">
+          <div id="toast" class="fixed bottom-5 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide border-2 border-zinc-900">
               URL Berhasil disalin ke papan klip!
           </div>
           <script>
@@ -2739,8 +2967,7 @@ const logApiActivity = async (req, res, next) => {
                         },
                         $push: { 
                             log: { 
-                                $each: [newLogItem], 
-                                $position: 0,
+                                $each: [newLogItem],$position: 0,
                             } 
                         }
                     },
