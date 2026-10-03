@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Seleksi Bukti Pembayaran</title>
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #FAF7EF;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #121212;
+        }
+        .brutal-border {
+            border: 2.5px solid #121212;
+        }
+        .brutal-card {
+            background-color: #FFFDF8;
+            border: 2.5px solid #121212;
+            border-radius: 20px;
+            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.15);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <main class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header Admin -->
+        <div class="brutal-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <span class="px-3 py-1 bg-amber-300 border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Admin Control Panel
+                </span>
+                <h1 class="text-2xl font-black uppercase mt-2">Seleksi Bukti Pembayaran User</h1>
+                <p class="text-xs text-zinc-600 font-semibold">Verifikasi bukti transfer QRIS untuk meng-upgrade Role & API Key pengguna secara otomatis.</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="fetchProofs()" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95 shadow-xs">
+                    <i class="fa-solid fa-rotate mr-1"></i> Refresh Data
+                </button>
+                <a href="/docs" class="px-4 py-2 bg-zinc-900 text-white border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95 shadow-xs">
+                    Dashboard API
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Status & Statistik -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <button onclick="filterStatus('pending')" id="btn-pending" class="px-4 py-2 bg-amber-300 border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95">
+                    Menunggu Verifikasi (Pending)
+                </button>
+                <button onclick="filterStatus('success')" id="btn-success" class="px-4 py-2 bg-[#FFFDF8] border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95">
+                    Disetujui (Success)
+                </button>
+                <button onclick="filterStatus('rejected')" id="btn-rejected" class="px-4 py-2 bg-[#FFFDF8] border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95">
+                    Ditolak (Rejected)
+                </button>
+                <button onclick="filterStatus('all')" id="btn-all" class="px-4 py-2 bg-[#FFFDF8] border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95">
+                    Semua Transaksi
+                </button>
+            </div>
+
+            <span class="text-xs font-mono font-black text-zinc-700">Total Data: <strong id="totalCount" class="text-amber-800">0</strong></span>
+        </div>
+
+        <!-- Grid Cards Bukti Pembayaran -->
+        <div id="proofsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="col-span-full text-center text-xs font-bold text-zinc-500 py-12">Memuat bukti pembayaran dari MongoDB...</p>
+        </div>
+
+    </main>
+
+    <!-- Modal Lightbox Preview Gambar Bukti -->
+    <div id="imageModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="relative max-w-3xl max-h-[90vh]">
+            <img id="modalImg" src="" class="max-w-full max-h-[85vh] rounded-2xl border-2 border-white object-contain">
+            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white font-black text-sm bg-zinc-900 px-3 py-1 rounded-xl border">✕ Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'pending';
+
+        function filterStatus(status) {
+            currentFilter = status;
+            ['pending', 'success', 'rejected', 'all'].forEach(s => {
+                const btn = document.getElementById(`btn-${s}`);
+                if (btn) {
+                    if (s === status) {
+                        btn.className = "px-4 py-2 bg-amber-300 border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95";
+                    } else {
+                        btn.className = "px-4 py-2 bg-[#FFFDF8] border-2 brutal-border rounded-xl text-xs font-black uppercase active:scale-95";
+                    }
+                }
+            });
+            fetchProofs();
+        }
+
+        async function fetchProofs() {
+            const grid = document.getElementById('proofsGrid');
+            grid.innerHTML = `<p class="col-span-full text-center text-xs font-bold text-zinc-500 py-12"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat data dari MongoDB...</p>`;
+
+            try {
+                const res = await fetch(`/api/admin/proofs?status=${currentFilter}`);
+                const result = await res.json();
+
+                document.getElementById('totalCount').innerText = result.total || 0;
+
+                if (result.status && result.proofs && result.proofs.length > 0) {
+                    grid.innerHTML = result.proofs.map(item => {
+                        let statusClass = "bg-amber-200 text-amber-900 border-amber-600";
+                        let statusText = "PENDING";
+
+                        if (item.status === 'success') {
+                            statusClass = "bg-emerald-200 text-emerald-900 border-emerald-600";
+                            statusText = "SUCCESS";
+                        } else if (item.status === 'rejected') {
+                            statusClass = "bg-red-200 text-red-900 border-red-600";
+                            statusText = "REJECTED";
+                        }
+
+                        return `
+                            <div class="brutal-card p-5 flex flex-col justify-between space-y-4">
+                                <div>
+                                    <div class="flex items-center justify-between border-b-2 border-zinc-200 pb-2 mb-3">
+                                        <span class="font-mono font-black text-xs text-zinc-900">${item.orderId}</span>
+                                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black border ${statusClass}">${statusText}</span>
+                                    </div>
+
+                                    <div class="space-y-1 text-xs text-zinc-800 font-semibold mb-3">
+                                        <p><i class="fa-solid fa-user text-amber-700 w-4"></i> User: <strong class="text-zinc-900 font-black">${item.username}</strong></p>
+                                        <p><i class="fa-solid fa-envelope text-amber-700 w-4"></i> Email: <span class="font-mono text-zinc-700">${item.email}</span></p>
+                                        <p><i class="fa-solid fa-box text-amber-700 w-4"></i> Paket: <strong class="uppercase text-amber-900 font-black">${item.roleName} (${item.days} Hari)</strong></p>
+                                        <p><i class="fa-solid fa-money-bill text-amber-700 w-4"></i> Nominal: <strong class="text-amber-800 font-black">Rp ${item.amount.toLocaleString('id-ID')}</strong></p>
+                                    </div>
+
+                                    <!-- Preview Gambar Bukti Transfer -->
+                                    <div class="relative group cursor-pointer bg-zinc-100 border-2 brutal-border rounded-xl overflow-hidden" onclick="openImageModal('${item.proofImage}')">
+                                        <img src="${item.proofImage}" class="w-full h-44 object-cover">
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-black uppercase">
+                                            <i class="fa-solid fa-magnifying-glass-plus mr-1"></i> Perbesar Bukti
+                                        </div>
+                                    </div>
+                                </div>
+
+                                ${item.status === 'pending' ? `
+                                    <div class="flex gap-2 pt-2 border-t-2 border-zinc-200">
+                                        <button onclick="processAction('${item._id}', 'success')" class="flex-1 bg-emerald-400 hover:bg-emerald-500 border-2 brutal-border font-black text-xs py-2 rounded-xl uppercase active:scale-95 shadow-xs">
+                                            <i class="fa-solid fa-check mr-1"></i> ACC / SUCCESS
+                                        </button>
+                                        <button onclick="processAction('${item._id}', 'rejected')" class="flex-1 bg-red-400 hover:bg-red-500 border-2 brutal-border font-black text-xs py-2 rounded-xl uppercase active:scale-95 shadow-xs">
+                                            <i class="fa-solid fa-xmark mr-1"></i> TOLAK
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="text-[10px] font-mono font-bold text-zinc-500 pt-2 border-t-2 border-zinc-200">
+                                        Diverifikasi pada: ${new Date(item.updatedAt).toLocaleString('id-ID')}
+                                    </div>
+                                `}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = `<p class="col-span-full text-center text-xs font-bold text-zinc-500 py-12">Tidak ada data bukti pembayaran (${currentFilter.toUpperCase()}).</p>`;
+                }
+            } catch (err) {
+                grid.innerHTML = `<p class="col-span-full text-center text-xs font-bold text-red-600 py-12">Gagal memuat data transaksi dari server.</p>`;
+            }
+        }
+
+        async function processAction(id, action) {
+            const actionText = action === 'success' ? 'MENYETUJUI' : 'MENOLAK';
+            
+            const confirm = await Swal.fire({
+                title: `${actionText} TRANSAKSI?`,
+                text: action === 'success' ? 'Role & API Key user akan langsung di-upgrade secara otomatis di MongoDB!' : 'Transaksi ini akan ditolak.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Lanjutkan',
+                cancelButtonText: 'Batal'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                const res = await fetch(`/api/admin/proofs/${id}/action`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+
+                const result = await res.json();
+                if (result.status) {
+                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: result.message });
+                    fetchProofs();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'GAGAL', text: result.message });
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'ERROR', text: 'Terjadi kesalahan koneksi server.' });
+            }
+        }
+
+        function openImageModal(imgUrl) {
+            document.getElementById('modalImg').src = imgUrl;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProofs();
+        });
+    </script>
+</body>
+</html>
