@@ -264,7 +264,6 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
             return res.status(400).json({ status: false, message: 'API Key kustom harus memiliki panjang 4 - 30 karakter!' });
         }
 
-        // Cek apakah API Key sudah dipakai oleh pengguna lain
         const existingKey = await User.findOne({ apikey: cleanKey, _id: { $ne: userId } });
         if (existingKey) {
             return res.status(400).json({ status: false, message: 'API Key tersebut sudah digunakan oleh user lain! Silakan pilih nama lain.' });
@@ -273,7 +272,6 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
         user.apikey = cleanKey;
         await user.save();
 
-        // Update Token JWT
         const userPayload = {
             id: user._id,
             username: user.username,
@@ -464,9 +462,6 @@ app.get('/api/reviews/:productId', async (req, res) => {
     }
 });
 
-// ====================================================
-// ENDPOINT DELETE REVIEWS (HAPUS ULASAN/RATING)
-// ====================================================
 app.delete('/api/reviews/:reviewId', checkAuthSession, async (req, res) => {
     try {
         const { reviewId } = req.params;
@@ -487,7 +482,6 @@ app.delete('/api/reviews/:reviewId', checkAuthSession, async (req, res) => {
             });
         }
 
-        // Dapatkan identitas pengguna yang sedang melakukan request
         let currentUserId = getUserIdentifier(req);
         if (req.user) {
             currentUserId = (req.user.id || req.user._id || req.user.email || req.user.username).toString();
@@ -495,7 +489,6 @@ app.delete('/api/reviews/:reviewId', checkAuthSession, async (req, res) => {
 
         const currentUsername = req.user ? req.user.username : null;
 
-        // Validasi: Pastikan pengguna hanya bisa menghapus ulasannya sendiri (atau admin jika ada)
         const isOwner = (review.userId && review.userId.toString() === currentUserId.toString()) ||
                         (currentUsername && review.username.toLowerCase() === currentUsername.toLowerCase());
 
@@ -522,30 +515,57 @@ app.delete('/api/reviews/:reviewId', checkAuthSession, async (req, res) => {
     }
 });
 
-const PAYWUZ_API_KEY = process.env.PAYWUZ_API_KEY || "pk_live_f1429e9285d76999cc3f8bb6c3df552f";
-const PAYWUZ_BASE_URL = "https://api.paywuz.id/v1";
-const PAYWUZ_HEADERS = {
-    "Authorization": `Bearer ${PAYWUZ_API_KEY}`,
-    "Content-Type": "application/json"
-};
+// ====================================================
+// HELPER DYNAMIC QRIS GENERATOR (EMVCo Standard)
+// ====================================================
+const DEFAULT_STATIC_QRIS = process.env.QRIS_STATIC || "00020101021126580014COM.GO-JEK.WWW011893600914300000221302090000022130303UMI51440014ID.CO.QRIS.WWW0215ID10200211221300303UMI5204581253033605802ID5913ARULZ-XD STORE6013KOTA BANDUNG6105401116304";
 
-async function axiosPaywuzWithRetry(config, maxRetries = 3, delayMs = 1500) {
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            return await axios(config);
-        } catch (error) {
-            const isRateLimited = error.response && error.response.status === 429;
-            const isLastAttempt = i === maxRetries - 1;
+function generateDynamicQris(staticQris, amount) {
+    let qris = (staticQris || DEFAULT_STATIC_QRIS).trim();
 
-            if (isRateLimited && !isLastAttempt) {
-                console.warn(`⚠️ Menerima 429 dari PayWuz. Retry ke-${i + 1} dalam ${delayMs}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delayMs));
-                delayMs *= 1.5; 
+    // 1. Ubah Point of Initiation Method dari 010211 (Statis) menjadi 010212 (Dinamis)
+    qris = qris.replace("010211", "010212");
+
+    // 2. Potong Tag CRC 6304 jika ada di bagian akhir
+    const crcIndex = qris.indexOf("6304");
+    if (crcIndex !== -1) {
+        qris = qris.slice(0, crcIndex);
+    }
+
+    // 3. Format Tag 54 (Nominal Transaksi)
+    const amountStr = Math.round(Number(amount)).toString();
+    const tag54 = `54${String(amountStr.length).padStart(2, '0')}${amountStr}`;
+
+    // 4. Sisipkan / ganti Tag 54 sebelum Tag 58 (Kode Negara ID)
+    if (qris.includes("54")) {
+        qris = qris.replace(/54\d{2}\d+/, tag54);
+    } else {
+        const tag58Index = qris.indexOf("5802ID");
+        if (tag58Index !== -1) {
+            qris = qris.slice(0, tag58Index) + tag54 + qris.slice(tag58Index);
+        } else {
+            qris += tag54;
+        }
+    }
+
+    // 5. Tambahkan Tag 6304 untuk kalkulasi CRC16
+    qris += "6304";
+
+    // 6. Hitung CRC16 CCITT (Polynomial 0x1021, Initial 0xFFFF)
+    let crc = 0xFFFF;
+    for (let i = 0; i < qris.length; i++) {
+        crc ^= (qris.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) {
+                crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
             } else {
-                throw error;
+                crc = (crc << 1) & 0xFFFF;
             }
         }
     }
+
+    const crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
+    return qris + crcHex;
 }
 
 const cacheSchema = new mongoose.Schema({
@@ -719,8 +739,6 @@ app.get('/api/vouchers/:code', async (req, res) => {
     }
 });
 
-// <=== payment ku
-
 // ====================================================
 // MONGOOSE SCHEMA BUKTI PEMBAYARAN (PAYMENT PROOF)
 // ====================================================
@@ -742,7 +760,6 @@ const paymentProofSchema = new mongoose.Schema({
 
 const PaymentProof = mongoose.models.PaymentProof || mongoose.model('PaymentProof', paymentProofSchema);
 
-// Multer Storage Memory untuk Bukti Pembayaran
 const uploadProofMedia = multer({
     limits: { fileSize: 5 * 1024 * 1024 }, // Maksimal 5MB
     fileFilter: (req, file, cb) => {
@@ -784,7 +801,6 @@ app.post('/api/upgrade/submit-proof', checkAuthSession, (req, res) => {
                 return res.status(400).json({ status: false, message: 'Wajib mengunggah bukti transfer pembayaran!' });
             }
 
-            // Hitung total harga paket
             const rate = planType.toLowerCase() === 'vip' ? 500 : 100;
             const minDays = planType.toLowerCase() === 'vip' ? 3 : 10;
 
@@ -795,7 +811,6 @@ app.post('/api/upgrade/submit-proof', checkAuthSession, (req, res) => {
             const totalAmount = numDays * rate;
             const orderId = `TRX-QRIS-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
 
-            // Convert buffer gambar ke Data URL Base64
             const mimeType = proofFile.mimetype || 'image/png';
             const base64Image = `data:${mimeType};base64,${proofFile.buffer.toString('base64')}`;
 
@@ -831,7 +846,6 @@ app.post('/api/upgrade/submit-proof', checkAuthSession, (req, res) => {
     });
 });
 
-// Endpoint User: Cek Riwayat Pembayaran Upgrade Pengguna
 app.get('/api/upgrade/my-proofs', checkAuthSession, async (req, res) => {
     try {
         if (!req.user) {
@@ -850,12 +864,10 @@ app.get('/api/upgrade/my-proofs', checkAuthSession, async (req, res) => {
 // ENDPOINT ADMIN: KELOLA BUKTI PEMBAYARAN USER
 // ====================================================
 
-// Serve Halaman Website Admin Dashboard
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Get List Semua Bukti Pembayaran User (Dapat difilter per status)
 app.get('/api/admin/proofs', async (req, res) => {
     try {
         const { status } = req.query;
@@ -871,11 +883,10 @@ app.get('/api/admin/proofs', async (req, res) => {
     }
 });
 
-// Update Status Bukti Pembayaran (ACC / SUCCESS / REJECTED) + OTOMATIS UPGRADE ROLE USER
 app.post('/api/admin/proofs/:id/action', async (req, res) => {
     try {
         const { id } = req.params;
-        const { action, adminNote } = req.body; // action: 'success' atau 'rejected'
+        const { action, adminNote } = req.body; 
 
         if (!['success', 'rejected'].includes(action)) {
             return res.status(400).json({ status: false, message: 'Aksi admin tidak valid!' });
@@ -887,13 +898,11 @@ app.post('/api/admin/proofs/:id/action', async (req, res) => {
         }
 
         if (action === 'success' && proof.status !== 'success') {
-            // PROSES OTOMATIS UPGRADE AKUN & APIKEY USER
             const user = await User.findById(proof.userId);
             if (user) {
                 const daysToAdd = proof.days || 10;
                 const targetRole = proof.roleName || (proof.planType === 'vip' ? 'VIP User' : 'Premium User');
 
-                // Hitung akumulasi tanggal kadaluwarsa baru
                 let currentExpiry = (user.roleExpiresAt && new Date(user.roleExpiresAt) > new Date())
                     ? new Date(user.roleExpiresAt)
                     : new Date();
@@ -903,7 +912,6 @@ app.post('/api/admin/proofs/:id/action', async (req, res) => {
                 user.role = targetRole;
                 user.roleExpiresAt = currentExpiry;
 
-                // Generate API Key sesuai role
                 if (targetRole === 'Premium User') {
                     if (!user.apikey || !user.apikey.includes('prem-')) {
                         user.apikey = generatePremiumApiKey(user.username);
@@ -989,7 +997,6 @@ async function setCache(key, data) {
     }
 }
 
-// Menyembunyikan DeprecationWarning Mongoose dari log
 const originalEmit = process.emit;
 process.emit = function (name, data, ...args) {
     if (name === 'warning' && typeof data === 'object' && data.name === 'DeprecationWarning') {
@@ -1056,24 +1063,9 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
-    if (!receivedSignature) return false;
-
-    const computedSignature = "sha256=" + crypto
-        .createHmac("sha256", apikey)
-        .update(typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody))
-        .digest("hex");
-
-    try {
-        return crypto.timingSafeEqual(
-            Buffer.from(receivedSignature),
-            Buffer.from(computedSignature)
-        );
-    } catch (err) {
-        return false;
-    }
-}
-
+// ====================================================
+// ENDPOINT MEMBUAT TRANSAKSI DENGAN QRIS DINAMIS (TANPA PAYWUZ)
+// ====================================================
 app.post('/transactions', async (req, res) => {
     try {
         const { orderId, amount, itemDetails, qty } = req.body;
@@ -1094,38 +1086,8 @@ app.post('/transactions', async (req, res) => {
 
         const inputAmount = Number(amount);
 
-        const paywuzRes = await axiosPaywuzWithRetry({
-            method: 'post',
-            url: `${PAYWUZ_BASE_URL}/transactions`,
-            data: {
-                orderId,
-                amount: inputAmount,
-                paymentMethod: "QRIS",
-                feeByMerchant: false
-            },
-            headers: PAYWUZ_HEADERS
-        });
-
-        const transactionData = paywuzRes.data?.data || paywuzRes.data;
-        const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
-
-        const safeNum = (val) => {
-            const num = Number(val);
-            return (!isNaN(num) && num > 0) ? num : null;
-        };
-
-        const feeFlatIdr = Number(transactionData.feeFlatIdr) || 290;
-        const feePercentBps = Number(transactionData.feePercentBps) || 70;
-        const calculatedFee = feeFlatIdr + Math.ceil((inputAmount * feePercentBps) / 10000);
-
-        let finalAmount = safeNum(transactionData.grossAmount) || 
-                          safeNum(transactionData.totalAmount) || 
-                          safeNum(transactionData.total);
-
-        if (!finalAmount) {
-            const feeVal = safeNum(transactionData.fee) || safeNum(transactionData.feeAdmin) || calculatedFee;
-            finalAmount = inputAmount + feeVal;
-        }
+        // Generate QRIS String Dinamis Otomatis
+        const dynamicQrisString = generateDynamicQris(process.env.QRIS_STATIC, inputAmount);
 
         let pLink = itemDetails?.link || null;
         if (!pLink && itemDetails?.nama) {
@@ -1139,10 +1101,10 @@ app.post('/transactions', async (req, res) => {
 
         const newTransaction = new Transaction({
             orderId,
-            amount: finalAmount,
-            paymentNumber: qrisNumber,
+            amount: inputAmount,
+            paymentNumber: dynamicQrisString,
             paymentMethod: "QRIS",
-            status: (transactionData.status || "pending").toLowerCase(),
+            status: "pending",
             itemDetails: {
                 ...itemDetails,
                 qty: buyQty
@@ -1159,11 +1121,11 @@ app.post('/transactions', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error Create TRX:", error.response?.data || error.message);
+        console.error("Error Create TRX:", error.message);
         return res.status(500).json({
             status: false,
             error: "CREATE_TRANSACTION_FAILED",
-            message: error.response?.data?.message || error.message || "Gagal membuat transaksi QRIS"
+            message: error.message || "Gagal membuat transaksi QRIS"
         });
     }
 });
@@ -1255,6 +1217,9 @@ app.get('/transactions/:orderId', async (req, res) => {
     }
 });
 
+// ====================================================
+// ENDPOINT BATALKAN TRANSAKSI (LOGIKA HAPUS DIDEFINISIKAN UTUH)
+// ====================================================
 app.post('/transactions/:orderId/cancel', async (req, res) => {
     try {
         const { orderId } = req.params;
@@ -1266,16 +1231,7 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 
         const prevStatus = localTrx.status.toLowerCase();
 
-        try {
-            await axiosPaywuzWithRetry({
-                method: 'post',
-                url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
-                headers: PAYWUZ_HEADERS
-            });
-        } catch (err) {
-            console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
-        }
-
+        // Rollback stok jika transaksi toko biasa dibatalkan setelah lunas
         if (["paid", "settlement", "success"].includes(prevStatus)) {
             if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                 const qtyPurchased = localTrx.itemDetails.qty || 1;
@@ -1304,25 +1260,16 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
     }
 });
 
+// ====================================================
+// WEBHOOK NOTIFIKASI PEMBAYARAN
+// ====================================================
 app.post('/webhook', async (req, res) => {
     try {
-        const signature = req.headers['x-paywuz-signature'];
-        const payloadToVerify = req.rawBody || req.body;
-
-        const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
-
-        if (!isValid && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({ 
-                error: "INVALID_SIGNATURE", 
-                message: "Signature webhook tidak valid!" 
-            });
-        }
-
         const payload = req.body;
         const eventName = payload?.event || payload?.type; 
         const payloadData = payload?.data || payload;
-        const orderId = payloadData?.orderId;
-        const status = payloadData?.status ? payloadData.status.toLowerCase() : null;
+        const orderId = payloadData?.orderId || payload?.orderId;
+        const status = payloadData?.status ? payloadData.status.toLowerCase() : (payload?.status ? payload.status.toLowerCase() : null);
 
         if (!orderId) {
             return res.status(400).json({ error: "MISSING_ORDER_ID", message: "orderId tidak ada!" });
@@ -1342,11 +1289,9 @@ app.post('/webhook', async (req, res) => {
                 if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
                     console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
 
-                    // 1. LOGIKA UNTUK PEMBELIAN PRODUK STORE
                     if (localTrx.itemDetails && localTrx.itemDetails.nama) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
 
-                        // Jika transaksi BUKAN upgrade role API Key, update stok toko biasa
                         if (!localTrx.itemDetails.nama.includes("Upgrade Role")) {
                             await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
 
@@ -1355,10 +1300,8 @@ app.post('/webhook', async (req, res) => {
                         }
                     }
 
-                    // 2. LOGIKA OTOMATISASI UPGRADE ROLE & API KEY USER
                     if (localTrx.itemDetails && localTrx.itemDetails.nama && localTrx.itemDetails.nama.includes("Upgrade Role")) {
                         try {
-                            // Identifikasi user dari email/username/IP
                             const buyerIdentifier = getUserIdentifier(req);
                             const daysToAdd = Number(localTrx.itemDetails.qty) || 3;
                             const isVip = localTrx.itemDetails.nama.toLowerCase().includes("vip");
@@ -1366,7 +1309,6 @@ app.post('/webhook', async (req, res) => {
 
                             let targetUser = null;
 
-                            // Cari user berdasarkan email, username, atau ID
                             if (buyerIdentifier) {
                                 targetUser = await User.findOne({
                                     $or: [
@@ -1376,13 +1318,11 @@ app.post('/webhook', async (req, res) => {
                                 });
                             }
 
-                            // Fallback: Jika tidak ditemukan via req, cari via session/IP jika ada
                             if (!targetUser && req.user) {
                                 targetUser = await User.findById(req.user.id || req.user._id);
                             }
 
                             if (targetUser) {
-                                // Hitung tanggal ekspirasi baru (akumulasi jika masa aktif masih berjalan)
                                 let currentExpiry = (targetUser.roleExpiresAt && new Date(targetUser.roleExpiresAt) > new Date())
                                     ? new Date(targetUser.roleExpiresAt)
                                     : new Date();
@@ -1392,7 +1332,6 @@ app.post('/webhook', async (req, res) => {
                                 targetUser.role = targetRole;
                                 targetUser.roleExpiresAt = currentExpiry;
 
-                                // Generate Apikey otomatis jika belum berkesesuaian
                                 if (targetRole === "Premium User") {
                                     targetUser.apikey = generatePremiumApiKey(targetUser.username);
                                 } else if (targetRole === "VIP User") {
@@ -1411,7 +1350,6 @@ app.post('/webhook', async (req, res) => {
                         }
                     }
 
-                    // Auto-fill link produk jika belum terisi
                     if (!localTrx.productLink && localTrx.itemDetails?.nama) {
                         const dbProduct = await Product.findOne({ 
                             nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
@@ -1420,7 +1358,6 @@ app.post('/webhook', async (req, res) => {
                     }
                 } 
                 else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
-                    // Rollback stok jika transaksi toko biasa dibatalkan setelah lunas
                     if (localTrx.itemDetails && localTrx.itemDetails.nama && !localTrx.itemDetails.nama.includes("Upgrade Role")) {
                         const qtyPurchased = localTrx.itemDetails.qty || 1;
                         await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
@@ -1570,7 +1507,7 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
     `);
 }
 
-// --- LOGIN ROUTE (MUREN MONGODB) ---
+// --- LOGIN ROUTE ---
 app.post('/auth/login', (req, res, next) => {
     passport.authenticate('local', async (err, user, info) => { 
         if (err) return next(err);
@@ -1584,7 +1521,6 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
-                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
 
@@ -1638,7 +1574,7 @@ app.post('/auth/login', (req, res, next) => {
     })(req, res, next);
 });
 
-// --- REGISTER ROUTE (MUREN MONGODB) ---
+// --- REGISTER ROUTE ---
 app.post('/auth/register', async (req, res) => {
     try {
         const username = req.body.username;
@@ -1989,7 +1925,6 @@ app.get('/auth/google/callback', async (req, res) => {
     if (!code) return res.send('Authentication failed: No code provided');
 
     try {
-        // Konversi payload ke format application/x-www-form-urlencoded
         const params = new URLSearchParams({
             client_id: GOOGLE_CLIENT_ID,
             client_secret: GOOGLE_CLIENT_SECRET,
@@ -2799,7 +2734,6 @@ function getEndpointsFromRouter(category, file) {
   const subRouter = route.stack ? route : route.router || route;
   if (!subRouter || !subRouter.stack) return endpoints;
 
-  // Gunakan route.title / route.name jika ada, atau buat Title Case dari nama file
   const endpointTitle = route.title || (route.name && route.name !== 'router' ? route.name : formatEndpointTitle(file));
   const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
 
@@ -2832,8 +2766,8 @@ function getEndpointsFromRouter(category, file) {
       }
 
       endpoints.push({
-        name: endpointTitle, // Misal: "Aio Downloader" / "Capcut"
-        path: `/api/${category}/${file.replace(/\.js$/, "")}`, // Misal: "/api/download/capcut"
+        name: endpointTitle,
+        path: `/api/${category}/${file.replace(/\.js$/, "")}`,
         desc: routeDesc,
         status: route.status || "ready",
         type: route.type || "free",
@@ -3133,7 +3067,6 @@ app.get('/docs', (req, res) => {
     <title>Arulz-XD API - Documentation</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
-    <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -3203,7 +3136,6 @@ app.get('/docs', (req, res) => {
         box-shadow: 0 0 0 3px var(--theme-accent) !important;
     }
 
-    /* MODE RGB DYNAMIC ROTATING BORDER */
 .rgb-mode-active .light-card,
 .rgb-mode-active .stat-box,
 .rgb-mode-active .banner-video-container,
