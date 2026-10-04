@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
+    <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Upgrade Apikey - Arulz-XD API</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
+    <!-- Tailwind CSS, SweetAlert2, QRCode, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -16,6 +19,8 @@
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
+            
+            /* Variabel Warna Tema & Outline Dinamis */
             --theme-border: #a16207;
             --theme-accent: #fde047;
             --theme-text: #121212;
@@ -23,10 +28,15 @@
             --rgb-angle: 0deg;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         html, body {
-            margin: 0; padding: 0; width: 100%; min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
             touch-action: pan-x pan-y;
             background-color: var(--bg-cream) !important;
             color: #121212 !important;
@@ -36,32 +46,194 @@
             overflow-x: hidden;
         }
 
-        .code-font { font-family: 'JetBrains Mono', monospace !important; }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
 
-        .brutal-border, .light-card, .plan-card, .modal-card {
+        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
+        .brutal-border,
+        .light-card,
+        .dropdown-nav-card,
+        .btn-brutalism-light,
+        .stat-box,
+        .light-popup-bg,
+        .light-card-box,
+        header,
+        #bioDropdown,
+        #themeMenuDropdown,
+        .cyber-loader-box,
+        .cyber-bar,
+        .plan-card,
+        .modal-card {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
 
+        /* Class Aksen Tema */
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
             border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        .theme-text-accent {
+            color: var(--theme-border) !important;
+            transition: color 0.15s ease;
         }
 
         .theme-light-bg {
             background-color: var(--theme-light) !important;
             border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
         }
 
+        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
+        /* ======================================================= */
+        .rgb-mode-active .light-card,
+        .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light,
+        .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box,
+        .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .plan-card,
+        .rgb-mode-active .modal-card,
+        .rgb-mode-active .light-card-box {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        .rgb-mode-active .theme-bg-accent {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: var(--theme-text) !important;
+        }
+
+        .rgb-mode-active header,
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        /* Cyber Loader Overlay */
+        #cyber-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background-color: var(--bg-cream);
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px) !important;
+            background-size: 16px 16px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        #cyber-loader-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .cyber-loader-box {
+            background: var(--card-bg);
+            border: 2.5px solid var(--theme-border);
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 320px;
+        }
+        .cyber-avatar-wrap {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cyber-ring {
+            position: absolute;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: var(--theme-border);
+            border-right-color: #3b82f6;
+            border-radius: 50%;
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .cyber-text-glitch {
+            color: #121212;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+        .cyber-bar {
+            width: 100%;
+            height: 10px;
+            background: #e4e4e7;
+            border: 2px solid var(--theme-border);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .cyber-bar-fill {
+            height: 100%;
+            background: var(--theme-border);
+            width: 0%;
+            transition: width 0.15s ease;
+            border-radius: 9999px;
+        }
+
+        /* Menu Navigasi Kartu Dropdown */
+        .dropdown-nav-card {
+            background-color: #FFFDF8 !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 14px !important;
+            padding: 10px 14px !important;
+            font-weight: 800 !important;
+            font-size: 11px !important;
+            color: #121212 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            text-transform: uppercase !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
+        }
+        .dropdown-nav-card:active {
+            transform: translateY(1px) !important;
+            background-color: #FAF7EF !important;
+        }
+
+        /* Style Kartu Paket Neo-Brutalism */
         .plan-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
             border-radius: 24px !important;
             padding: 24px !important;
             box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.1) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        .plan-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.15) !important;
         }
 
+        /* Modal Card */
         .modal-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -69,17 +241,81 @@
             box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
         }
 
+        /* Custom SweetAlert2 Neo-Brutalism Style */
         .swal2-popup-custom {
             background: #FFFDF8 !important;
             border: 2.5px solid var(--theme-border) !important;
             border-radius: 20px !important;
             color: #121212 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15) !important;
         }
+        .swal2-title-custom {
+            color: #121212 !important;
+            font-size: 1.25rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+        }
+        .swal2-html-custom {
+            color: #3f3f46 !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+        }
+        .swal2-confirm-custom {
+            background-color: var(--theme-accent) !important;
+            color: #121212 !important;
+            font-weight: 900 !important;
+            font-size: 0.875rem !important;
+            text-transform: uppercase !important;
+            padding: 0.75rem 2rem !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1) !important;
+        }
+
+        #qrcodeContainer canvas, #qrcodeContainer img {
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
-<!-- Header Top Bar -->
+<!-- Loader Overlay Cyberpunk Light Style -->
+<div id="cyber-loader-overlay">
+    <div class="cyber-loader-box">
+        <div class="cyber-avatar-wrap mb-4">
+            <div class="cyber-ring"></div>
+            <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
+        </div>
+        <div class="text-center">
+            <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
+                MEMUAT STORE PAKET API...
+            </div>
+            <div class="text-[9px] font-mono text-zinc-600 font-bold uppercase tracking-widest">
+                ARULZ-XD API REST CORE
+            </div>
+        </div>
+        <div class="w-full mt-5">
+            <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                <span>SYSTEM LOADING</span>
+                <span id="loader-percentage" class="font-black">0%</span>
+            </div>
+            <div class="cyber-bar">
+                <div id="loader-progress-fill" class="cyber-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="themeBg" class="fixed inset-0 -z-10"></div>
+
+<!-- Header Top Bar (Fixed Solid Krem z-30) -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -88,38 +324,196 @@
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">UPGRADE PAKET REST</span>
+                <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <button onclick="openHistoryModal()" class="px-3 py-1.5 theme-bg-accent border-2 brutal-border rounded-xl text-xs font-black uppercase flex items-center gap-1.5 active:scale-95 shadow-xs">
-                <i class="fa-solid fa-receipt"></i>
-                <span>Riwayat Transaksi</span>
+        <!-- Tombol Aksi Kanan -->
+        <div class="flex items-center gap-2 relative">
+            
+            <!-- Tombol Switcher Style Warna -->
+            <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
             </button>
-            <a href="/docs" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FFFDF8] flex items-center justify-center text-zinc-900 active:scale-95">
-                <i class="fa-solid fa-house"></i>
-            </a>
+
+            <!-- Tombol Menu Sidebar -->
+            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            <!-- Dropdown Pilihan Tema Warna -->
+            <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+                <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                
+                <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                </button>
+                <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                </button>
+                <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                </button>
+                <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                </button>
+                <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                </button>
+                <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                </button>
+                <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                </button>
+                <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                </button>
+            </div>
+
         </div>
     </div>
 </header>
 
+<!-- Overlay Latar Belakang (z-40) -->
+<div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+
+<!-- Sidebar Dropdown Nav (z-50) -->
+<div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    
+    <!-- Header Dropdown -->
+    <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
+        <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                ARULZXD API
+            </span>
+        </div>
+
+        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Banner Video -->
+    <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+            <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Auth / Profile Status Container -->
+    <div id="sidebarAuthBtnContainer" class="mb-3">
+        <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
+            <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span>PERINGATAN!</span>
+            </div>
+            <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+            </p>
+            <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                <span>LOGIN / REGISTER</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tombol Navigasi Dropdown -->
+    <nav class="space-y-2 flex-1 pb-4">
+        <a href="/docs" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>DOCS / ENDPOINTS</span>
+            </div>
+        </a>
+        <a href="/store" class="dropdown-nav-card theme-light-bg">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                <span>STORE / BUY PLAN</span>
+            </div>
+        </a>
+        <a href="/uploader" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span>UPLOADER FILE</span>
+            </div>
+        </a>
+        <a href="/pastecode" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                <span>PASTECODE SNIPPET</span>
+            </div>
+        </a>
+        <a href="/feedback" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                <span>REQUEST FITUR</span>
+            </div>
+        </a>
+        <a href="/status" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
+                <span>SERVER STATUS</span>
+            </div>
+        </a>
+        <a href="/support" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                <span>SUPPORT / DONASI</span>
+            </div>
+        </a>
+        <a href="/privacy" class="dropdown-nav-card">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                <span>PRIVACY POLICY</span>
+            </div>
+        </a>
+    </nav>
+</div>
+
+<!-- Main Container (pt-20 agar presisi) -->
 <main class="max-w-5xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
+    
+    <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>PRICING PLANS 2026</span>
+            <span id="lbl-badge-pricing">PRICING PLANS 2026</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight mb-1">
+        <h1 id="lbl-main-title" class="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight mb-1">
             Pilih Paket API Terbaik Anda
         </h1>
-        <p class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-2xl">
+        <p id="lbl-main-desc" class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-2xl">
             Tingkatkan limit request, dapatkan performa maksimal, dan nikmati fitur eksklusif untuk kebutuhan aplikasi Anda.
         </p>
 
+        <!-- User Logged Status Banner -->
         <div id="userLoggedInfoBanner" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 brutal-border bg-[#FFFDF8] text-xs font-bold text-zinc-800 shadow-xs">
-            <i class="fa-solid fa-user-check text-amber-700"></i>
-            <span>Akun Terhubung: <strong id="userBannerUsername" class="text-zinc-900 font-black">Loading...</strong> (<span id="userBannerEmail" class="text-amber-800 font-black code-font">Loading...</span>)</span>
+            <i class="fa-solid fa-user-check theme-text-accent"></i>
+            <span><span id="lbl-user-connected">Akun Terhubung:</span> <strong id="userBannerUsername" class="text-zinc-900 font-black">Loading...</strong> (<span id="userBannerEmail" class="theme-text-accent font-black code-font">Loading...</span>)</span>
         </div>
     </header>
 
@@ -130,100 +524,112 @@
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-black text-zinc-800 uppercase tracking-widest">Free Plan</span>
-                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-zinc-200 text-zinc-900">DASAR</span>
+                    <span id="lbl-plan-free-title" class="text-xs font-black text-zinc-800 uppercase tracking-widest">Free Plan</span>
+                    <span id="lbl-badge-free" class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-zinc-200 text-zinc-900">DASAR</span>
                 </div>
                 <div class="mb-5">
                     <span class="text-3xl font-black text-zinc-900">Rp 0</span>
-                    <span class="text-zinc-600 text-xs font-bold block mt-0.5">Selamanya Gratis</span>
+                    <span id="lbl-free-sub" class="text-zinc-600 text-xs font-bold block mt-0.5">Selamanya Gratis</span>
                 </div>
-                <p class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
+                <p id="lbl-free-desc" class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
                     Cocok untuk uji coba awal, eksperimen lokal, dan mempelajari integrasi endpoint Arulzxd API.
                 </p>
                 <div class="border-t-2 border-zinc-200 pt-4 space-y-3">
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-800">
-                        <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Limit <strong class="text-zinc-900 font-black">100 Request</strong> / hari</span>
                     </div>
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-800">
-                        <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Akses Standar ke Semua Endpoint</span>
+                    </div>
+                    <div class="flex items-start gap-2.5 text-xs font-semibold text-zinc-400 line-through">
+                        <svg class="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <span>Tanpa Apikey Custom</span>
                     </div>
                 </div>
             </div>
             <div class="mt-8">
-                <a href="/docs" class="block w-full text-center bg-zinc-900 text-white text-xs font-black py-3 px-4 rounded-xl border-2 brutal-border uppercase shadow-xs">
+                <a href="/docs" id="lbl-btn-free" class="block w-full text-center bg-zinc-900 text-white text-xs font-black py-3 px-4 rounded-xl border-2 brutal-border transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
                     Coba Fitur
                 </a>
             </div>
         </div>
 
-        <!-- PREMIUM PLAN -->
+        <!-- PREMIUM PLAN (MINIMAL 10 HARI) -->
         <div class="plan-card theme-light-bg flex flex-col justify-between relative">
             <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 theme-bg-accent border-2 brutal-border text-zinc-900 text-[10px] font-black rounded-full uppercase tracking-wider shadow-xs">
                 PALING POPULER
             </div>
             <div>
                 <div class="flex items-center justify-between mb-4 mt-2">
-                    <span class="text-xs font-black text-amber-900 uppercase tracking-widest">Premium Plan</span>
-                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-amber-300 text-amber-950">REKOMENDASI</span>
+                    <span id="lbl-plan-prem-title" class="text-xs font-black text-amber-900 uppercase tracking-widest">Premium Plan</span>
+                    <span id="lbl-badge-prem" class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-amber-300 text-amber-950">REKOMENDASI</span>
                 </div>
                 <div class="mb-5">
                     <span class="text-3xl font-black text-zinc-900" id="premium-display-price">Rp 1.000</span>
-                    <span class="text-amber-900 text-xs font-bold block mt-0.5">Rp 100 / Hari (Min. 10 Hari)</span>
+                    <span id="lbl-prem-sub" class="text-amber-900 text-xs font-bold block mt-0.5">Rp 100 / Hari (Min. 10 Hari)</span>
                 </div>
-                <p class="text-zinc-800 text-xs font-semibold mb-6 leading-relaxed">
+                <p id="lbl-prem-desc" class="text-zinc-800 text-xs font-semibold mb-6 leading-relaxed">
                     Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.
                 </p>
                 <div class="border-t-2 border-amber-300/80 pt-4 space-y-3">
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
-                        <i class="fa-solid fa-check text-amber-800 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-amber-800 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Limit <strong class="text-amber-950 font-black">1.000 Request</strong> / hari</span>
                     </div>
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
-                        <i class="fa-solid fa-check text-amber-800 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-amber-800 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Akses Penuh ke Semua Endpoint Premium</span>
+                    </div>
+                    <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
+                        <svg class="w-4 h-4 text-amber-800 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>Apikey Otomatis Format Premium</span>
                     </div>
                 </div>
             </div>
             
             <div class="mt-8 space-y-3">
                 <div class="flex items-center justify-between bg-[#FFFDF8] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
+                    <span id="lbl-duration-prem" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
                     <div class="flex items-center gap-3">
-                        <button onclick="updateDays('premium', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center">-</button>
+                        <button onclick="updateDays('premium', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">-</button>
                         <span id="premium-days" class="text-xs font-black text-zinc-900 font-mono w-6 text-center">10</span>
-                        <button onclick="updateDays('premium', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center">+</button>
-                        <span class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
+                        <button onclick="updateDays('premium', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">+</button>
+                        <span id="lbl-unit-prem" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
-                <button onclick="openStaticQrisModal('premium')" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl uppercase tracking-wider shadow-xs active:scale-95">
-                    <i class="fa-solid fa-qrcode mr-1"></i> Beli Premium (QRIS Statis)
+                <button onclick="processPaywuzPayment('premium')" id="lbl-btn-prem" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
+                    <i class="fa-solid fa-bolt mr-1"></i> Beli Premium (Otomatis)
                 </button>
             </div>
         </div>
 
-        <!-- VIP PLAN -->
+        <!-- VIP PLAN (MINIMAL 3 HARI) -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-black text-purple-900 uppercase tracking-widest">VIP Plan</span>
-                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-purple-200 text-purple-950">ULTIMATE</span>
+                    <span id="lbl-plan-vip-title" class="text-xs font-black text-purple-900 uppercase tracking-widest">VIP Plan</span>
+                    <span id="lbl-badge-vip" class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-purple-200 text-purple-950">ULTIMATE</span>
                 </div>
                 <div class="mb-5">
                     <span class="text-3xl font-black text-zinc-900" id="vip-display-price">Rp 1.500</span>
-                    <span class="text-zinc-600 text-xs font-bold block mt-0.5">Rp 500 / Hari (Min. 3 Hari)</span>
+                    <span id="lbl-vip-sub" class="text-zinc-600 text-xs font-bold block mt-0.5">Rp 500 / Hari (Min. 3 Hari)</span>
                 </div>
-                <p class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
+                <p id="lbl-vip-desc" class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
                     Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.
                 </p>
                 <div class="border-t-2 border-zinc-200 pt-4 space-y-3">
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
-                        <i class="fa-solid fa-check text-purple-700 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-purple-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Limit <strong class="text-purple-900 font-black">Unlimited Request</strong></span>
                     </div>
                     <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
-                        <i class="fa-solid fa-check text-purple-700 mt-0.5"></i>
+                        <svg class="w-4 h-4 text-purple-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>Akses Prioritas Fitur VIP</span>
+                    </div>
+                    <div class="flex items-start gap-2.5 text-xs font-bold text-zinc-900">
+                        <svg class="w-4 h-4 text-purple-700 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>Apikey Custom Suka-Suka</span>
                     </div>
                 </div>
@@ -231,102 +637,335 @@
 
             <div class="mt-8 space-y-3">
                 <div class="flex items-center justify-between bg-[#FAF7EF] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
+                    <span id="lbl-duration-vip" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
                     <div class="flex items-center gap-3">
-                        <button onclick="updateDays('vip', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center">-</button>
+                        <button onclick="updateDays('vip', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">-</button>
                         <span id="vip-days" class="text-xs font-black text-zinc-900 font-mono w-6 text-center">3</span>
-                        <button onclick="updateDays('vip', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center">+</button>
-                        <span class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
+                        <button onclick="updateDays('vip', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">+</button>
+                        <span id="lbl-unit-vip" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
-                <button onclick="openStaticQrisModal('vip')" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl uppercase tracking-wider shadow-xs active:scale-95">
-                    <i class="fa-solid fa-qrcode mr-1"></i> Beli VIP (QRIS Statis)
+                <button onclick="processPaywuzPayment('vip')" id="lbl-btn-vip" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
+                    <i class="fa-solid fa-bolt mr-1"></i> Beli VIP (Otomatis)
                 </button>
             </div>
         </div>
 
     </div>
 
-    <!-- Modal Upload Bukti & QRIS Statis -->
+    <!-- Modal Pembayaran QRIS PayWuz -->
     <div id="paymentModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="modal-card w-full max-w-md overflow-hidden my-auto max-h-[95vh] flex flex-col p-5 sm:p-6 relative">
 
+            <!-- Header Modal -->
             <div class="flex justify-between items-center pb-3 border-b-2 brutal-border mb-4">
-                <h3 class="font-black text-sm font-mono flex items-center gap-2 text-zinc-900 uppercase">
-                    <i class="fa-solid fa-qrcode text-amber-600"></i> Pembayaran QRIS Statis
+                <h3 id="lbl-modal-title" class="font-black text-sm font-mono flex items-center gap-2 text-zinc-900 uppercase">
+                    <i class="fa-solid fa-bolt theme-text-accent"></i> Pembayaran QRIS PayWuz
                 </h3>
-                <button onclick="closePaymentModal()" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900">
+                <button onclick="closePaymentModal()" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
 
-            <form id="uploadProofForm" onsubmit="submitPaymentProof(event)" class="overflow-y-auto flex-1 space-y-4">
+            <div class="overflow-y-auto flex-1 space-y-4">
                 
-                <div class="w-full bg-[#FAF7EF] p-3.5 rounded-xl border-2 brutal-border text-center shadow-xs">
-                    <p class="text-[10px] text-zinc-600 font-black uppercase tracking-wider">Total Nominal Pembayaran</p>
-                    <h3 id="modalQrisAmount" class="text-2xl font-black text-amber-700 font-mono mt-0.5">Rp 0</h3>
-                    <p class="text-[10px] text-amber-900 font-extrabold mt-0.5">Role Target: <strong id="modalQrisTargetRole" class="uppercase font-black">PREMIUM USER</strong> (<span id="modalQrisTargetDays">10</span> Hari)</p>
-                </div>
-
-                <!-- Tampilan QRIS Statis -->
-                <div class="bg-white p-3 rounded-2xl border-2 brutal-border shadow-xs flex flex-col items-center justify-center w-full">
-                    <span class="text-[10px] font-black uppercase text-zinc-500 mb-2">Scan QRIS Di Bawah Ini:</span>
-                    <img src="https://arulz-uploader.vercel.app/files/CVmlrD.jpg" alt="QRIS Statis Arulzxd" class="w-56 h-auto rounded-xl border-2 brutal-border object-contain mb-2">
-                    <p class="text-[10px] text-zinc-600 font-bold text-center">Dukungan All e-Wallet & Bank (GoPay, OVO, DANA, ShopeePay, BCA, dll)</p>
-                </div>
-
-                <!-- Upload Bukti Pembayaran -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-black uppercase text-zinc-800">
-                        Upload Bukti Pembayaran <span class="text-red-600">*</span>
-                    </label>
-                    <input type="file" id="proofImageInput" accept="image/*" required onchange="previewProofImage(this)"
-                        class="w-full text-xs font-bold bg-[#FAF7EF] border-2 brutal-border rounded-xl p-2 focus:outline-none">
-                    
-                    <div id="proofPreviewBox" class="hidden mt-2 p-2 bg-[#FAF7EF] border-2 brutal-border rounded-xl text-center">
-                        <p class="text-[10px] font-black text-zinc-600 uppercase mb-1">Preview Bukti:</p>
-                        <img id="proofPreviewImg" src="" class="max-h-40 mx-auto rounded-lg border brutal-border object-contain">
+                <div id="qrisContainerBox" class="flex flex-col items-center justify-center space-y-4">
+                    <div class="w-full bg-[#FAF7EF] p-3.5 rounded-xl border-2 brutal-border text-center shadow-xs">
+                        <p id="lbl-modal-total" class="text-[10px] text-zinc-600 font-black uppercase tracking-wider">Total Pembayaran Paket</p>
+                        <h3 id="modalQrisAmount" class="text-2xl font-black theme-text-accent font-mono mt-0.5">Rp 0</h3>
+                        <p class="text-[10px] text-zinc-700 font-bold mt-1">Order ID: <span id="modalQrisOrderId" class="font-mono font-black text-zinc-900">TRX-000000</span></p>
+                        <p class="text-[10px] text-amber-900 font-extrabold mt-0.5">Role Target: <strong id="modalQrisTargetRole" class="uppercase font-black">PREMIUM USER</strong></p>
                     </div>
+
+                    <div class="flex items-center justify-center gap-2 bg-red-100 border-2 brutal-border text-red-900 px-4 py-2 rounded-xl text-xs font-mono font-bold w-full shadow-xs">
+                        <i class="fa-solid fa-clock animate-pulse text-red-600"></i>
+                        <span><span id="lbl-modal-expire">Selesaikan Sebelum:</span> <strong id="modalQrisCountdown" class="text-zinc-900 text-sm font-black">15:00</strong></span>
+                    </div>
+
+                    <div class="text-center">
+                        <p id="lbl-modal-subtext1" class="text-xs text-zinc-900 font-black">Scan QRIS untuk Upgrade Role Otomatis</p>
+                        <p id="lbl-modal-subtext2" class="text-[10px] text-zinc-600 font-bold">Dukungan GoPay, OVO, DANA, ShopeePay & All Bank</p>
+                    </div>
+
+                    <div class="bg-white p-3 rounded-2xl border-2 brutal-border shadow-xs flex flex-col items-center justify-center w-full max-w-[260px]">
+                        <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
+                    </div>
+
+                    <div id="lbl-modal-waiting" class="flex items-center gap-2 text-xs font-mono font-black text-amber-900 bg-amber-200 border-2 brutal-border px-3.5 py-2 rounded-xl shadow-xs animate-pulse w-full justify-center">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Verifikasi Pembayaran...
+                    </div>
+
+                    <button type="button" onclick="cancelTransaction()" id="lbl-btn-cancel-trx" class="w-full bg-red-500 hover:bg-red-600 border-2 brutal-border text-white font-black py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider active:scale-95 shadow-xs">
+                        <i class="fa-solid fa-xmark text-sm"></i> BATALKAN TRANSAKSI
+                    </button>
                 </div>
 
-                <button type="submit" id="btnSubmitProof" class="w-full theme-bg-accent border-2 brutal-border text-zinc-900 font-black py-3 rounded-xl text-xs transition-transform active:scale-95 uppercase tracking-wider block text-center shadow-xs">
-                    <i class="fa-solid fa-paper-plane mr-1"></i> Kirim Bukti Pembayaran
-                </button>
-            </form>
+                <div id="qrisSuccessBox" class="hidden flex flex-col items-center justify-center space-y-4 text-center py-2">
+                    <div class="w-16 h-16 theme-bg-accent border-2 brutal-border rounded-full flex items-center justify-center text-2xl shadow-xs">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 id="lbl-success-title" class="text-lg font-black text-zinc-900 uppercase tracking-wide">Upgrade Berhasil!</h4>
+                        <p id="lbl-success-desc" class="text-xs text-zinc-700 font-semibold mt-1">Pembayaran telah dikonfirmasi. Role & API Key Anda telah diubah secara otomatis oleh sistem.</p>
+                    </div>
+
+                    <div class="w-full bg-[#FAF7EF] border-2 brutal-border p-4 rounded-xl text-left space-y-2 text-xs shadow-xs">
+                        <div class="flex justify-between border-b-2 border-zinc-300 pb-1.5">
+                            <span id="lbl-success-role-label" class="text-zinc-600 font-bold">Status Role:</span>
+                            <span id="successUserRole" class="theme-text-accent font-black">Premium User</span>
+                        </div>
+                        <div class="flex flex-col pt-1">
+                            <span id="lbl-success-key-label" class="text-zinc-600 font-bold mb-1">API Key Baru Anda:</span>
+                            <span id="successUserApiKey" class="theme-text-accent font-mono font-black break-all bg-[#FFFDF8] p-2 rounded-lg border-2 brutal-border">key-12345</span>
+                        </div>
+                    </div>
+
+                    <a href="/docs" id="lbl-btn-back-docs" class="w-full theme-bg-accent border-2 brutal-border text-zinc-900 font-black py-3 rounded-xl text-xs transition-transform active:scale-95 uppercase tracking-wider block text-center shadow-xs">
+                        Kembali Ke Dashboard
+                    </a>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- Modal Riwayat Transaksi -->
-    <div id="historyModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="modal-card w-full max-w-lg overflow-hidden my-auto max-h-[90vh] flex flex-col p-5 relative">
-            <div class="flex justify-between items-center pb-3 border-b-2 brutal-border mb-4">
-                <h3 class="font-black text-sm font-mono flex items-center gap-2 text-zinc-900 uppercase">
-                    <i class="fa-solid fa-receipt text-amber-600"></i> Riwayat Upgrade Akun
-                </h3>
-                <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-
-            <div id="historyListContainer" class="overflow-y-auto space-y-3 max-h-96 pr-1">
-                <p class="text-xs text-center font-bold text-zinc-500 py-4">Memuat riwayat...</p>
-            </div>
+    <!-- Footer Support -->
+    <footer class="mt-12 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
+        <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
+        <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
+            Hubungi tim support teknis melalui email resmi kami di: 
+            <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>
+        </p>
+        <div class="pt-3 text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+            &copy; 2026 ARULZ-XD API REST CORE
         </div>
-    </div>
-
+    </footer>
 </main>
 
 <script>
-    const config = {
-        premium: { rate: 100, days: 10, min: 10, displayId: 'premium-display-price', daysId: 'premium-days', roleName: 'Premium User' },
-        vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', roleName: 'VIP User' }
+    // Memblokir Pinch Zoom & Gesture Zoom
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
+    });
+    document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+    // Presets Tema Warna & Border
+    const THEME_PRESETS = {
+        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
     };
 
-    let currentUser = { loggedIn: false, username: "Belum Login", email: "-" };
-    let activePlanType = 'premium';
+    let rgbInterval = null;
+
+    function setAppTheme(themeName) {
+        const root = document.documentElement;
+        const dropdown = document.getElementById('themeMenuDropdown');
+
+        if (rgbInterval) {
+            clearInterval(rgbInterval);
+            rgbInterval = null;
+        }
+
+        localStorage.setItem('selectedThemeStyle', themeName);
+
+        if (themeName === 'rgb') {
+            document.body.classList.add('rgb-mode-active');
+            let angle = 0;
+            rgbInterval = setInterval(() => {
+                angle = (angle + 3) % 360;
+                root.style.setProperty('--rgb-angle', angle + 'deg');
+            }, 20);
+        } else {
+            document.body.classList.remove('rgb-mode-active');
+            const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+            root.style.setProperty('--theme-border', t.border);
+            root.style.setProperty('--theme-accent', t.accent);
+            root.style.setProperty('--theme-text', t.text);
+            root.style.setProperty('--theme-light', t.light);
+        }
+
+        if (dropdown) dropdown.classList.add('hidden');
+    }
+
+    // Terjemahan Bahasa Multi-Language
+    const docTranslations = {
+        id: {
+            badgePricing: "PRICING PLANS 2026",
+            mainTitle: "Pilih Paket API Terbaik Anda",
+            mainDesc: "Tingkatkan limit request, dapatkan performa maksimal, dan nikmati fitur eksklusif untuk kebutuhan aplikasi Anda.",
+            userConnected: "Akun Terhubung:",
+            planFreeTitle: "Free Plan",
+            badgeFree: "DASAR",
+            freeSub: "Selamanya Gratis",
+            freeDesc: "Cocok untuk uji coba awal, eksperimen lokal, dan mempelajari integrasi endpoint Arulzxd API.",
+            btnFree: "Coba Fitur",
+            planPremTitle: "Premium Plan",
+            badgePrem: "REKOMENDASI",
+            premSub: "Rp 100 / Hari (Min. 10 Hari)",
+            premDesc: "Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.",
+            durationPrem: "Durasi Paket",
+            unitPrem: "Hari",
+            btnPrem: "<i class='fa-solid fa-bolt mr-1'></i> Beli Premium (Otomatis)",
+            planVipTitle: "VIP Plan",
+            badgeVip: "ULTIMATE",
+            vipSub: "Rp 500 / Hari (Min. 3 Hari)",
+            vipDesc: "Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.",
+            durationVip: "Durasi Paket",
+            unitVip: "Hari",
+            btnVip: "<i class='fa-solid fa-bolt mr-1'></i> Beli VIP (Otomatis)",
+            modalTitle: "Pembayaran QRIS PayWuz",
+            modalTotal: "Total Pembayaran Paket",
+            modalExpire: "Selesaikan Sebelum:",
+            modalSubtext1: "Scan QRIS untuk Upgrade Role Otomatis",
+            modalSubtext2: "Dukungan GoPay, OVO, DANA, ShopeePay & All Bank",
+            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Menunggu Verifikasi Pembayaran...",
+            btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> BATALKAN TRANSAKSI",
+            successTitle: "Upgrade Berhasil!",
+            successDesc: "Pembayaran telah dikonfirmasi. Role & API Key Anda telah diubah secara otomatis oleh sistem.",
+            successRoleLabel: "Status Role:",
+            successKeyLabel: "API Key Baru Anda:",
+            btnBackDocs: "Kembali Ke Dashboard",
+            footerTitle: "Punya pertanyaan atau kendala?",
+            footerDesc: "Hubungi tim support teknis melalui email resmi kami di:"
+        },
+        en: {
+            badgePricing: "PRICING PLANS 2026",
+            mainTitle: "Choose Your Best API Plan",
+            mainDesc: "Increase request limits, get maximum performance, and enjoy exclusive features for your applications.",
+            userConnected: "Connected Account:",
+            planFreeTitle: "Free Plan",
+            badgeFree: "BASIC",
+            freeSub: "Forever Free",
+            freeDesc: "Suitable for initial trials, local experiments, and testing Arulzxd API endpoint integrations.",
+            btnFree: "Try Features",
+            planPremTitle: "Premium Plan",
+            badgePrem: "RECOMMENDED",
+            premSub: "Rp 100 / Day (Min. 10 Days)",
+            premDesc: "The right choice for independent developers needing stable performance and high request quotas.",
+            durationPrem: "Plan Duration",
+            unitPrem: "Days",
+            btnPrem: "<i class='fa-solid fa-bolt mr-1'></i> Buy Premium (Auto)",
+            planVipTitle: "VIP Plan",
+            badgeVip: "ULTIMATE",
+            vipSub: "Rp 500 / Day (Min. 3 Days)",
+            vipDesc: "Perfect for large production apps, public bots, or unlimited commercial systems.",
+            durationVip: "Plan Duration",
+            unitVip: "Days",
+            btnVip: "<i class='fa-solid fa-bolt mr-1'></i> Buy VIP (Auto)",
+            modalTitle: "PayWuz QRIS Payment",
+            modalTotal: "Total Package Payment",
+            modalExpire: "Complete Before:",
+            modalSubtext1: "Scan QRIS for Automatic Role Upgrade",
+            modalSubtext2: "Supports GoPay, OVO, DANA, ShopeePay & All Banks",
+            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Waiting for Payment Verification...",
+            btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> CANCEL TRANSACTION",
+            successTitle: "Upgrade Successful!",
+            successDesc: "Payment confirmed. Your Role & API Key have been updated automatically.",
+            successRoleLabel: "Role Status:",
+            successKeyLabel: "Your New API Key:",
+            btnBackDocs: "Back to Dashboard",
+            footerTitle: "Have any questions or concerns?",
+            footerDesc: "Contact our technical support team via our official email at:"
+        }
+    };
+
+    let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('arulzxd_lang', lang);
+        
+        const btnId = document.getElementById('lang-btn-id');
+        const btnEn = document.getElementById('lang-btn-en');
+        if (btnId && btnEn) {
+            if (lang === 'id') {
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            } else {
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            }
+        }
+        
+        renderUpgradeContent();
+    }
+
+    function renderUpgradeContent() {
+        const data = docTranslations[currentLang] || docTranslations['id'];
+        
+        document.getElementById('lbl-badge-pricing').innerText = data.badgePricing;
+        document.getElementById('lbl-main-title').innerText = data.mainTitle;
+        document.getElementById('lbl-main-desc').innerText = data.mainDesc;
+        document.getElementById('lbl-user-connected').innerText = data.userConnected;
+
+        document.getElementById('lbl-plan-free-title').innerText = data.planFreeTitle;
+        document.getElementById('lbl-badge-free').innerText = data.badgeFree;
+        document.getElementById('lbl-free-sub').innerText = data.freeSub;
+        document.getElementById('lbl-free-desc').innerText = data.freeDesc;
+        document.getElementById('lbl-btn-free').innerText = data.btnFree;
+
+        document.getElementById('lbl-plan-prem-title').innerText = data.planPremTitle;
+        document.getElementById('lbl-badge-prem').innerText = data.badgePrem;
+        document.getElementById('lbl-prem-sub').innerText = data.premSub;
+        document.getElementById('lbl-prem-desc').innerText = data.premDesc;
+        document.getElementById('lbl-duration-prem').innerText = data.durationPrem;
+        document.getElementById('lbl-unit-prem').innerText = data.unitPrem;
+        document.getElementById('lbl-btn-prem').innerHTML = data.btnPrem;
+
+        document.getElementById('lbl-plan-vip-title').innerText = data.planVipTitle;
+        document.getElementById('lbl-badge-vip').innerText = data.badgeVip;
+        document.getElementById('lbl-vip-sub').innerText = data.vipSub;
+        document.getElementById('lbl-vip-desc').innerText = data.vipDesc;
+        document.getElementById('lbl-duration-vip').innerText = data.durationVip;
+        document.getElementById('lbl-unit-vip').innerText = data.unitVip;
+        document.getElementById('lbl-btn-vip').innerHTML = data.btnVip;
+
+        document.getElementById('lbl-modal-title').innerHTML = `<i class="fa-solid fa-bolt theme-text-accent"></i> ${data.modalTitle}`;
+        document.getElementById('lbl-modal-total').innerText = data.modalTotal;
+        document.getElementById('lbl-modal-expire').innerText = data.modalExpire;
+        document.getElementById('lbl-modal-subtext1').innerText = data.modalSubtext1;
+        document.getElementById('lbl-modal-subtext2').innerText = data.modalSubtext2;
+        document.getElementById('lbl-modal-waiting').innerHTML = data.modalWaiting;
+        document.getElementById('lbl-btn-cancel-trx').innerHTML = data.btnCancelTrx;
+
+        document.getElementById('lbl-success-title').innerText = data.successTitle;
+        document.getElementById('lbl-success-desc').innerText = data.successDesc;
+        document.getElementById('lbl-success-role-label').innerText = data.successRoleLabel;
+        document.getElementById('lbl-success-key-label').innerText = data.successKeyLabel;
+        document.getElementById('lbl-btn-back-docs').innerText = data.btnBackDocs;
+
+        document.getElementById('lbl-footer-title').innerText = data.footerTitle;
+        document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>`;
+    }
+
+    // Logika Konfigurasi Paket & Pembayaran QRIS
+    const config = {
+        premium: { rate: 100, days: 10, min: 10, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
+        vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
+    };
+
+    let currentUser = {
+        loggedIn: false,
+        username: "Belum Login",
+        email: "-"
+    };
+
+    let currentOrderId = "";
+    let pollingInterval = null;
+    let countdownInterval = null;
 
     function formatRupiah(amount) {
         return "Rp " + amount.toLocaleString('id-ID');
+    }
+
+    function generateUniqueOrderId() {
+        return `UPG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
     }
 
     function updateDays(type, change) {
@@ -336,7 +975,9 @@
         if (newDays >= plan.min) {
             plan.days = newDays;
             document.getElementById(plan.daysId).innerText = plan.days;
-            document.getElementById(plan.displayId).innerText = formatRupiah(plan.days * plan.rate);
+            
+            let totalCost = plan.days * plan.rate;
+            document.getElementById(plan.displayId).innerText = formatRupiah(totalCost);
         }
     }
 
@@ -352,162 +993,314 @@
                 document.getElementById('userBannerUsername').innerText = currentUser.username;
                 document.getElementById('userBannerEmail').innerText = currentUser.email;
             } else {
-                document.getElementById('userBannerUsername').innerText = "Belum Login";
-                document.getElementById('userBannerEmail').innerText = "Silakan login dulu";
+                document.getElementById('userBannerUsername').innerText = currentLang === 'en' ? "Not Logged In" : "Belum Login";
+                document.getElementById('userBannerEmail').innerText = currentLang === 'en' ? "Please login first" : "Silakan login dulu";
             }
         } catch (err) {
-            console.error("Gagal mengambil status user:", err);
+            console.error("Gagal mengambil data user-status:", err);
         }
     }
 
-    function openStaticQrisModal(type) {
+    function renderQrisCode(qrisString) {
+        const qrContainer = document.getElementById('qrcodeContainer');
+        qrContainer.innerHTML = '';
+
+        new QRCode(qrContainer, {
+            text: qrisString,
+            width: 220,
+            height: 220,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    const swalConfig = {
+        customClass: {
+            popup: 'swal2-popup-custom',
+            title: 'swal2-title-custom',
+            htmlContainer: 'swal2-html-custom',
+            confirmButton: 'swal2-confirm-custom'
+        },
+        buttonsStyling: false
+    };
+
+    async function processPaywuzPayment(type) {
         if (!currentUser.loggedIn) {
             Swal.fire({
+                ...swalConfig,
                 icon: 'warning',
-                title: 'HARUS LOGIN',
-                text: 'Anda harus login terlebih dahulu sebelum dapat mengupgrade paket API Key!',
-                confirmButtonText: 'Ke Halaman Login'
-            }).then(() => { window.location.href = '/login'; });
+                title: currentLang === 'en' ? 'LOGIN REQUIRED' : 'HARUS LOGIN',
+                text: currentLang === 'en' ? 'You must log in before purchasing an API plan!' : 'Anda harus login terlebih dahulu sebelum dapat mengupgrade paket API Key!',
+                confirmButtonText: currentLang === 'en' ? 'Go to Login' : 'Ke Halaman Login'
+            }).then(() => {
+                window.location.href = '/login';
+            });
             return;
         }
 
-        activePlanType = type;
         const plan = config[type];
         const totalAmount = plan.days * plan.rate;
+        currentOrderId = generateUniqueOrderId();
 
-        document.getElementById('modalQrisAmount').innerText = formatRupiah(totalAmount);
-        document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
-        document.getElementById('modalQrisTargetDays').innerText = plan.days;
-
-        document.getElementById('proofImageInput').value = '';
-        document.getElementById('proofPreviewBox').classList.add('hidden');
-        document.getElementById('paymentModal').classList.remove('hidden');
-    }
-
-    function closePaymentModal() {
-        document.getElementById('paymentModal').classList.add('hidden');
-    }
-
-    function previewProofImage(input) {
-        const previewBox = document.getElementById('proofPreviewBox');
-        const previewImg = document.getElementById('proofPreviewImg');
-
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewBox.classList.remove('hidden');
-            }
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            previewBox.classList.add('hidden');
-        }
-    }
-
-    async function submitPaymentProof(e) {
-        e.preventDefault();
-
-        const fileInput = document.getElementById('proofImageInput');
-        if (!fileInput.files || !fileInput.files[0]) {
-            Swal.fire({ icon: 'error', title: 'File Bukti Kosong', text: 'Pilih gambar bukti transfer terlebih dahulu!' });
-            return;
-        }
-
-        const plan = config[activePlanType];
-        const formData = new FormData();
-        formData.append('planType', activePlanType);
-        formData.append('days', plan.days);
-        formData.append('proofImage', fileInput.files[0]);
-
-        const btnSubmit = document.getElementById('btnSubmitProof');
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengirim Bukti...`;
+        Swal.fire({
+            ...swalConfig,
+            title: currentLang === 'en' ? 'PROCESSING QRIS' : 'MEMPROSES QRIS',
+            text: currentLang === 'en' ? 'Connecting to payment gateway...' : 'Menghubungkan ke gateway...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
 
         try {
-            const res = await fetch('/api/upgrade/submit-proof', {
+            const res = await fetch('/transactions', {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: currentOrderId,
+                    amount: totalAmount,
+                    qty: plan.days,
+                    itemDetails: {
+                        nama: `Upgrade Role - ${plan.roleName}`,
+                        harga: totalAmount,
+                        kategori: 'Upgrade API Key'
+                    }
+                })
             });
 
             const result = await res.json();
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Kirim Bukti Pembayaran`;
+            if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS");
 
-            if (result.status) {
-                closePaymentModal();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'BUKTI TERKIRIM!',
-                    text: 'Bukti pembayaran Anda telah tersimpan di MongoDB. Admin akan segera menyeleksi dan memverifikasi pembayaran Anda.',
-                    confirmButtonText: 'Lihat Status'
-                }).then(() => {
-                    openHistoryModal();
-                });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Gagal Mengirim', text: result.message || 'Terjadi kesalahan server.' });
-            }
+            Swal.close();
+
+            document.getElementById('modalQrisAmount').innerText = formatRupiah(result.data.amount || totalAmount);
+            document.getElementById('modalQrisOrderId').innerText = currentOrderId;
+            document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
+
+            renderQrisCode(result.data.paymentNumber);
+
+            document.getElementById('qrisContainerBox').classList.remove('hidden');
+            document.getElementById('qrisSuccessBox').classList.add('hidden');
+            document.getElementById('paymentModal').classList.remove('hidden');
+
+            const expireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : Date.now() + (15 * 60 * 1000);
+            startCountdown(expireTime);
+            startStatusPolling(plan.roleName);
+
         } catch (err) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Kirim Bukti Pembayaran`;
-            Swal.fire({ icon: 'error', title: 'Error Koneksi', text: 'Gagal terhubung ke server.' });
+            Swal.fire({
+                ...swalConfig,
+                icon: 'error',
+                title: currentLang === 'en' ? 'QRIS FAILED' : 'GAGAL MEMBUAT QRIS',
+                text: err.message || 'Terjadi kesalahan sistem saat membuat QRIS.'
+            });
         }
     }
 
-    async function openHistoryModal() {
-        document.getElementById('historyModal').classList.remove('hidden');
-        const container = document.getElementById('historyListContainer');
-        container.innerHTML = `<p class="text-xs text-center font-bold text-zinc-500 py-4"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat transaksi...</p>`;
+    function startCountdown(expireTimestamp) {
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        countdownInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = expireTimestamp - now;
+
+            if (distance <= 0) {
+                clearInterval(countdownInterval);
+                if (pollingInterval) clearInterval(pollingInterval);
+                document.getElementById('modalQrisCountdown').innerText = "00:00";
+
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'error',
+                    title: currentLang === 'en' ? 'TIME EXPIRED' : 'WAKTU HABIS',
+                    text: currentLang === 'en' ? '15 minute payment window has expired.' : 'Batas waktu pembayaran 15 menit telah berakhir.'
+                });
+                closePaymentModal();
+                return;
+            }
+
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('modalQrisCountdown').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function startStatusPolling(targetRoleName) {
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        pollingInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/transactions/${currentOrderId}`);
+                const result = await res.json();
+
+                if (result && result.data) {
+                    const status = (result.data.status || "").toLowerCase();
+
+                    if (["settlement", "success", "paid", "settled"].includes(status)) {
+                        clearInterval(pollingInterval);
+                        if (countdownInterval) clearInterval(countdownInterval);
+
+                        const userRes = await fetch('/api/user-status');
+                        const userData = await userRes.json();
+
+                        document.getElementById('qrisContainerBox').classList.add('hidden');
+                        document.getElementById('qrisSuccessBox').classList.remove('hidden');
+
+                        if (userData.loggedIn && userData.user) {
+                            document.getElementById('successUserRole').innerText = userData.user.role;
+                            document.getElementById('successUserApiKey').innerText = userData.user.apikey;
+                        }
+                    } else if (["cancelled", "failed"].includes(status)) {
+                        clearInterval(pollingInterval);
+                        if (countdownInterval) clearInterval(countdownInterval);
+                        Swal.fire({
+                            ...swalConfig,
+                            icon: 'info',
+                            title: currentLang === 'en' ? 'TRANSACTION CANCELLED' : 'TRANSAKSI BATAL',
+                            text: currentLang === 'en' ? 'Transaction was cancelled or failed.' : 'Transaksi telah dibatalkan atau gagal.'
+                        });
+                        closePaymentModal();
+                    }
+                }
+            } catch (e) {
+                console.error("Error polling status transaksi:", e);
+            }
+        }, 3000);
+    }
+
+    async function cancelTransaction() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
 
         try {
-            const res = await fetch('/api/upgrade/my-proofs');
-            const result = await res.json();
+            await fetch(`/transactions/${currentOrderId}/cancel`, { method: 'POST' });
+        } catch (e) {}
 
-            if (result.status && result.proofs && result.proofs.length > 0) {
-                container.innerHTML = result.proofs.map(item => {
-                    let badgeColor = "bg-amber-200 text-amber-900 border-amber-600";
-                    let statusLabel = "PENDING / MENUNGGU ADMIN";
-
-                    if (item.status === 'success') {
-                        badgeColor = "bg-emerald-200 text-emerald-900 border-emerald-600";
-                        statusLabel = "BERHASIL / DISETUJUI";
-                    } else if (item.status === 'rejected') {
-                        badgeColor = "bg-red-200 text-red-900 border-red-600";
-                        statusLabel = "DITOLAK";
-                    }
-
-                    return `
-                        <div class="p-3 bg-[#FAF7EF] border-2 brutal-border rounded-xl space-y-1.5 text-xs font-mono">
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-zinc-900">${item.orderId}</span>
-                                <span class="px-2 py-0.5 rounded-md text-[9px] font-black border ${badgeColor}">${statusLabel}</span>
-                            </div>
-                            <div class="text-[11px] text-zinc-700 font-bold">
-                                Paket: <strong class="uppercase text-zinc-900">${item.roleName} (${item.days} Hari)</strong>
-                            </div>
-                            <div class="text-[11px] text-zinc-700 font-bold">
-                                Total: <strong class="text-amber-800">${formatRupiah(item.amount)}</strong>
-                            </div>
-                            <div class="text-[9px] text-zinc-500 pt-1">
-                                Tanggal: ${new Date(item.createdAt).toLocaleString('id-ID')}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                container.innerHTML = `<p class="text-xs text-center font-bold text-zinc-500 py-4">Belum ada riwayat transaksi upgrade.</p>`;
-            }
-        } catch (e) {
-            container.innerHTML = `<p class="text-xs text-center font-bold text-red-600 py-4">Gagal memuat data riwayat.</p>`;
-        }
+        closePaymentModal();
     }
 
-    function closeHistoryModal() {
-        document.getElementById('historyModal').classList.add('hidden');
+    function closePaymentModal() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+        document.getElementById('paymentModal').classList.add('hidden');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const bioMenuBtn = document.getElementById('bioMenuBtn');
+        const bioDropdown = document.getElementById('bioDropdown');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+        const themeBtn = document.getElementById('themePickerBtn');
+        const themeDropdown = document.getElementById('themeMenuDropdown');
+
+        if (themeBtn && themeDropdown) {
+            themeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
+                    themeDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+        setAppTheme(savedTheme);
+
+        function playBannerVideo() {
+            if (sidebarBannerVideo) {
+                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
+            }
+        }
+
+        function closeSidebarMenu() {
+            if (bioDropdown && menuOverlay) {
+                bioDropdown.style.transform = 'translateX(100%)';
+                menuOverlay.classList.add('hidden');
+            }
+        }
+
+        if (bioMenuBtn && bioDropdown && menuOverlay) {
+            bioMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bioDropdown.style.transform = 'translateX(0)';
+                menuOverlay.classList.remove('hidden');
+                playBannerVideo();
+            });
+            if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
+            menuOverlay.addEventListener('click', closeSidebarMenu);
+            bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
+        }
+
+        playBannerVideo();
+        switchLanguage(currentLang);
         fetchUserStatus();
+
+        // Dynamic User Status Sync for Sidebar
+        fetch('/api/user-status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.loggedIn && data.user) {
+                    const container = document.getElementById('sidebarAuthBtnContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
+                                    <div class="truncate text-left leading-tight">
+                                        <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                        <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+                            </a>
+                        `;
+                    }
+                }
+            })
+            .catch(err => console.error("Gagal mengecek status user:", err));
     });
+
+    // Loader Progress Logic
+    let currentProgress = 0;
+    let hasFinishedLoading = false;
+    const progressFill = document.getElementById('loader-progress-fill');
+    const percentageText = document.getElementById('loader-percentage');
+    const loaderOverlay = document.getElementById('cyber-loader-overlay');
+
+    function updateProgress(targetVal) {
+        currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+        if (progressFill) progressFill.style.width = currentProgress + '%';
+        if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+    }
+
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) {
+                loaderOverlay.classList.add('fade-out');
+            }
+        }, 300);
+    }
+
+    const progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            const increment = Math.random() * 12 + 5;
+            updateProgress(currentProgress + increment);
+        }
+    }, 100);
+
+    window.addEventListener('load', finishLoader);
+    setTimeout(finishLoader, 1200);
 </script>
 
 </body>
