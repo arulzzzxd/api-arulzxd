@@ -14,6 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Cloudflare Turnstile API -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    
     <style>
         :root {
             --bg-cream: #FAF7EF;
@@ -530,6 +533,10 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Widget Cloudflare Turnstile -->
+                <div class="cf-turnstile flex justify-center my-2" data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" data-theme="light"></div>
+
                 <button type="submit" id="lbl-btn-signin" class="w-full theme-bg-accent border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Masuk
                 </button>
@@ -582,6 +589,10 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Widget Cloudflare Turnstile -->
+                <div class="cf-turnstile flex justify-center my-2" data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" data-theme="light"></div>
+
                 <button type="submit" id="lbl-btn-signup" class="w-full bg-zinc-900 text-white border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Buat Akun Baru
                 </button>
@@ -598,6 +609,10 @@
                     <label id="lbl-forgot-email" class="block text-xs font-black uppercase tracking-wider text-zinc-800 mb-1">Alamat Email Terdaftar</label>
                     <input type="email" name="email" required placeholder="nama@email.com" class="brutal-input w-full bg-[#FFFDF8] border-2 brutal-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 </div>
+
+                <!-- Widget Cloudflare Turnstile -->
+                <div class="cf-turnstile flex justify-center my-2" data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" data-theme="light"></div>
+
                 <button type="submit" id="lbl-btn-forgot-submit" class="w-full theme-bg-accent border-2 brutal-border font-black py-2.5 rounded-xl text-xs sm:text-sm tracking-wide uppercase shadow-xs active:scale-95 transition-all">
                     Kirim Instruksi Reset
                 </button>
@@ -911,6 +926,19 @@
 
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Pengecekan Verifikasi Cloudflare Turnstile
+        const turnstileToken = new FormData(this).get('cf-turnstile-response');
+        if (!turnstileToken) {
+            Swal.fire({
+                ...swalConfig,
+                icon: 'warning',
+                title: currentLang === 'en' ? 'Verification Required' : 'Verifikasi Diperlukan',
+                text: currentLang === 'en' ? 'Please complete the Cloudflare verification first!' : 'Harap selesaikan verifikasi Cloudflare terlebih dahulu!'
+            });
+            return;
+        }
+
         Swal.fire({
             ...swalConfig,
             icon: 'success',
@@ -925,6 +953,19 @@
 
     document.getElementById('registerForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Pengecekan Verifikasi Cloudflare Turnstile
+        const turnstileToken = new FormData(this).get('cf-turnstile-response');
+        if (!turnstileToken) {
+            Swal.fire({
+                ...swalConfig,
+                icon: 'warning',
+                title: currentLang === 'en' ? 'Verification Required' : 'Verifikasi Diperlukan',
+                text: currentLang === 'en' ? 'Please complete the Cloudflare verification first!' : 'Harap selesaikan verifikasi Cloudflare terlebih dahulu!'
+            });
+            return;
+        }
+
         Swal.fire({
             ...swalConfig,
             icon: 'success',
@@ -940,6 +981,19 @@
 
     document.getElementById('forgotForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Pengecekan Verifikasi Cloudflare Turnstile
+        const turnstileToken = new FormData(this).get('cf-turnstile-response');
+        if (!turnstileToken) {
+            Swal.fire({
+                ...swalConfig,
+                icon: 'warning',
+                title: currentLang === 'en' ? 'Verification Required' : 'Verifikasi Diperlukan',
+                text: currentLang === 'en' ? 'Please complete the Cloudflare verification first!' : 'Harap selesaikan verifikasi Cloudflare terlebih dahulu!'
+            });
+            return;
+        }
+
         Swal.fire({
             ...swalConfig,
             icon: 'info',
