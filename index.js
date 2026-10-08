@@ -2473,7 +2473,7 @@ app.get('/files/*', async (req, res) => {
 
 app.post('/uploadfile', localFileUploader, async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send('Tidak ada file yang diunggah.');
+    return res.status(400).json({ status: false, message: 'Tidak ada file yang diunggah.' });
   }
 
   let uploadedFile = req.files.file;
@@ -2502,93 +2502,18 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
 
     const rawUrl = `https://cdn.arulzzxd.my.id/files/${fileName}`;
 
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="id">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Unggahan Berhasil</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-          <script>
-              tailwind.config = {
-                  theme: { 
-                      extend: {
-                          fontFamily: {
-                              sans: ['Plus Jakarta Sans', 'sans-serif'],
-                          }
-                      } 
-                  }
-              }
-          </script>
-          <style>
-              body { 
-                  background-color: #FAF7EF; 
-                  color: #121212;
-              }
-              .solid-card {
-                  background: #FFFDF8;
-                  border: 2px solid #121212;
-              }
-              .url-box {
-                  background: #FAF7EF;
-                  border: 2px solid #121212;
-              }
-              .checkmark-circle {
-                  background: rgba(16, 185, 129, 0.1);
-                  border: 2px solid #10b981;
-              }
-          </style>
-      </head>
-      <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased">
-          <div class="solid-card p-7 rounded-2xl shadow-xl w-full max-w-md text-center">
-              <div class="mb-5 flex justify-center">
-                  <div class="checkmark-circle w-16 h-16 rounded-full flex items-center justify-center text-emerald-600">
-                      <svg class="w-8 h-8 flex items-center justify-center" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" style="display: block;">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                  </div>
-              </div>
-              <h1 class="text-xl font-extrabold mb-1.5 tracking-tight text-zinc-900">Unggahan Berhasil!</h1>
-              <p class="mb-5 text-xs text-zinc-600 font-semibold">Berkas Anda telah aktif di cloud server:</p>
-              <div class="url-box p-3.5 rounded-xl break-all mb-6">
-                  <a id="rawUrl" href="${rawUrl}" target="_blank" class="text-blue-600 hover:text-blue-700 font-mono text-xs font-semibold transition-colors">${rawUrl}</a>
-              </div>
-              <div class="flex space-x-3">
-                  <button onclick="copyToClipboard()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl transition duration-200 border-2 border-zinc-900">
-                      Salin URL
-                  </button>
-                  <a href="/uploader" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-zinc-900 text-xs font-bold py-3 px-4 rounded-xl border-2 border-zinc-900 shadow-md transition duration-200 block text-center">
-                      Kembali
-                  </a>
-              </div>
-          </div>
-          <div id="toast" class="fixed bottom-5 bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 tracking-wide border-2 border-zinc-900">
-              URL Berhasil disalin ke papan klip!
-          </div>
-          <script>
-              function copyToClipboard() {
-                  const urlText = document.getElementById('rawUrl').href;
-                  navigator.clipboard.writeText(urlText).then(() => {
-                      const toast = document.getElementById('toast');
-                      toast.classList.remove('opacity-0', 'invisible');
-                      toast.classList.add('opacity-100', 'visible');
-                      setTimeout(() => {
-                          toast.classList.remove('opacity-100', 'visible');
-                          toast.classList.add('opacity-0', 'invisible');
-                      }, 2500);
-                  });
-              }
-          </script>
-      </body>
-      </html>
-    `);
+    // Kembalikan JSON agar diproses oleh frontend uploader.html
+    return res.json({
+      status: true,
+      message: 'Unggahan Berhasil!',
+      url: rawUrl,
+      fileName: fileName,
+      size: uploadedFile.size
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error uploading file.');
+    return res.status(500).json({ status: false, message: 'Gagal mengunggah file ke server.' });
   }
 });
 
