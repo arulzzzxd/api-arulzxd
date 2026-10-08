@@ -100,6 +100,7 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
 // Service Worker Route dengan Dukungan Push Event Background
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.send(`
         self.addEventListener('install', (event) => {
             self.skipWaiting();
@@ -109,7 +110,7 @@ app.get('/sw.js', (req, res) => {
             event.waitUntil(clients.claim());
         });
 
-        // MENANGKAP PUSH NOTIFIKASI SAAT BROWSER/WEBSITE DITUTUP
+        // MENANGKAP WEB PUSH KETIKA BROWSER DITUTUP ATAU HP DALAM KONDISI SLEEP
         self.addEventListener('push', function(event) {
             let data = {};
             if (event.data) {
@@ -123,13 +124,19 @@ app.get('/sw.js', (req, res) => {
             const title = data.title || '⚡ BUKTI TRANSAKSI BARU!';
             const options = {
                 body: data.body || 'Ada transaksi baru masuk.',
-                icon: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
-                badge: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
-                vibrate: [400, 100, 400, 100, 400],
+                // Icon Website / Avatar Pengguna
+                icon: data.icon || 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+                badge: data.badge || 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+                // Banner Gambar Bukti Transfer / Profile Pembeli
+                image: data.image || null,
+                vibrate: [500, 150, 500, 150, 500, 150, 500],
                 tag: 'trx-' + (data.orderId || Date.now()),
                 renotify: true,
-                requireInteraction: true,
-                data: { orderId: data.orderId }
+                requireInteraction: true, // Menjaga notifikasi tetap tampil di lockscreen/layar
+                data: { orderId: data.orderId },
+                actions: [
+                    { action: 'approve', title: '⚡ KONFIRMASI LUNAS' }
+                ]
             };
 
             event.waitUntil(self.registration.showNotification(title, options));
@@ -146,6 +153,7 @@ app.get('/sw.js', (req, res) => {
                         .then(() => {
                             return self.registration.showNotification('✅ TRANSAKSI LUNAS!', {
                                 body: 'Order ' + data.orderId + ' berhasil dikonfirmasi LUNAS!',
+                                icon: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
                                 tag: 'approved-' + data.orderId
                             });
                         })
@@ -1137,7 +1145,6 @@ async function sendBackgroundPushNotification(payload) {
         try {
             await webpush.sendNotification(pushConfig, pushPayload);
         } catch (err) {
-            // Jika token sudah invalid / expired (410 atau 404), hapus dari MongoDB
             if (err.statusCode === 410 || err.statusCode === 404) {
                 await PushSub.deleteOne({ endpoint: sub.endpoint });
                 console.log(`🗑️ Hapus subscription expired: ${sub.endpoint}`);
@@ -1145,6 +1152,22 @@ async function sendBackgroundPushNotification(payload) {
         }
     });
 }
+
+app.post('/api/admin/test-push', checkAdminAccess, async (req, res) => {
+    try {
+        await sendBackgroundPushNotification({
+            title: '🔔 TES NOTIFIKASI WEB PUSH',
+            body: 'Notifikasi latar belakang berhasil dikonfigurasi! Tetap muncul walaupun Chrome ditutup.',
+            icon: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+            badge: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+            image: 'https://cdn.arulzzxd.my.id/files/K4Sf61.png',
+            orderId: 'TRX-TEST-' + Math.floor(1000 + Math.random() * 9000)
+        });
+        return res.json({ status: true, message: 'Push notification tes berhasil dikirim!' });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: err.message });
+    }
+});
 
 app.post('/transactions', async (req, res) => {
     try {
@@ -1237,22 +1260,29 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
         trx.updatedAt = new Date();
         await trx.save();
 
-        // Trigger Notifikasi Real-time ke Admin Dashboard
-        notifyAdminSse({
-    type: "NEW_PAYMENT_PROOF",
-    orderId: trx.orderId,
-    username: trx.username,
-    amount: trx.amount,
-    item: trx.itemDetails?.nama || "Upgrade API Key",
-    qty: trx.itemDetails?.qty || trx.qty || 1
-});
+        // Ambil Profil Avatar Pembeli dari Database
+        const buyer = await User.findOne({ $or: [{ email: trx.email }, { username: trx.username }] });
+        const buyerAvatar = buyer?.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
 
-// TAMBAHKAN PEMANGGILAN PUSH BACKGROUND DISINI:
-sendBackgroundPushNotification({
-    title: '⚡ BUKTI TRANSAKSI BARU!',
-    body: `Order: ${trx.orderId}\nUser: ${trx.username}\nTotal: Rp ${trx.amount.toLocaleString('id-ID')}`,
-    orderId: trx.orderId
-});
+        // Trigger SSE untuk UI aktif
+        notifyAdminSse({
+            type: "NEW_PAYMENT_PROOF",
+            orderId: trx.orderId,
+            username: trx.username,
+            amount: trx.amount,
+            item: trx.itemDetails?.nama || "Upgrade API Key",
+            qty: trx.itemDetails?.qty || trx.qty || 1
+        });
+
+        // TRIGGER WEB PUSH BACKGROUND (Mendukung Chrome tertutup & Layar HP Mati)
+        sendBackgroundPushNotification({
+            title: '⚡ BUKTI TRANSAKSI BARU!',
+            body: `Order: ${trx.orderId}\nUser: ${trx.username}\nTotal: Rp ${trx.amount.toLocaleString('id-ID')}\nPaket: ${trx.itemDetails?.nama || '-'}`,
+            icon: buyerAvatar,          // Icon foto profil pembeli
+            badge: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+            image: proofImage,          // Banner gambar bukti transfer
+            orderId: trx.orderId
+        });
 
         return res.json({
             status: true,
