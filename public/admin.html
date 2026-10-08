@@ -21,7 +21,7 @@
             <p class="text-xs font-bold text-zinc-600">Verifikasi bukti pembayaran & upgrade role otomatis pengguna.</p>
         </div>
         <button id="btnEnableNotif" onclick="enableChromeNotification()" class="bg-blue-500 text-white font-black px-4 py-2.5 rounded-xl border-2 brutal-border text-xs uppercase tracking-wider shadow-sm active:scale-95">
-            <i class="fa-solid fa-bell mr-1.5"></i> Aktifkan Notifikasi Chrome
+            <i class="fa-solid fa-bell mr-1.5"></i> AK TIFKAN NOTIFIKASI CHROME
         </button>
     </header>
 
@@ -39,11 +39,30 @@
     </main>
 
     <script>
-        // Register Service Worker untuk Notifikasi Android
+        // 1. Register Service Worker untuk Notifikasi Android System
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log('✅ Service Worker Aktif'))
+                .then(reg => console.log('✅ Service Worker Aktif Scope:', reg.scope))
                 .catch(err => console.error('❌ Gagal register SW:', err));
+        }
+
+        // 2. Fungsi Suara Alarm (Synthesizer Audio Beep saat Trx Masuk)
+        function playAlarmSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // High pitch note (A5)
+                gain.gain.setValueAtTime(1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch (e) {
+                console.warn("Audio Context blocked:", e);
+            }
         }
 
         function enableChromeNotification() {
@@ -53,8 +72,11 @@
             }
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") {
-                    Swal.fire("Sip!", "Notifikasi Chrome telah aktif!", "success");
+                    playAlarmSound();
+                    Swal.fire("Sip!", "Notifikasi Chrome & Suara Alarm telah aktif!", "success");
                     updateNotifButtonState();
+                } else {
+                    Swal.fire("Izin Ditolak", "Silakan izinkan notifikasi di setelan browser Chrome HP Anda.", "warning");
                 }
             });
         }
@@ -68,35 +90,63 @@
             }
         }
 
-        // Trigger Notifikasi Chrome Menempel / Selalu Aktif
+        // 3. Trigger Notifikasi Chrome Status Bar & Quick Modal
         async function triggerChromeNotification(data) {
-            if (Notification.permission === "granted") {
-                const title = "🔔 TRANSAKSI BUKTI BARU!";
-                const options = {
-                    body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}`,
-                    icon: "https://cdn.arulzzxd.my.id/files/Q2C70y.png",
-                    badge: "https://cdn.arulzzxd.my.id/files/Q2C70y.png",
-                    vibrate: [300, 100, 300, 100, 300],
-                    tag: "trx-" + data.orderId,
-                    renotify: true,
-                    requireInteraction: true, // NOTIFIKASI MENEMPEL KETAT (TIDAK HILANG OTOMATIS)
-                    ongoing: true
-                };
+            playAlarmSound();
 
-                if ('serviceWorker' in navigator) {
-                    try {
-                        const reg = await navigator.serviceWorker.ready;
-                        await reg.showNotification(title, options);
-                        return;
-                    } catch (e) {
-                        console.warn("SW notification fallback", e);
-                    }
+            const title = "🔔 BUKTI TRANSAKSI BARU!";
+            const options = {
+                body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}`,
+                icon: "https://cdn.arulzzxd.my.id/files/Q2C70y.png",
+                badge: "https://cdn.arulzzxd.my.id/files/Q2C70y.png",
+                vibrate: [500, 150, 500, 150, 500],
+                tag: "trx-" + data.orderId,
+                renotify: true,
+                requireInteraction: true,
+                ongoing: true,
+                data: { orderId: data.orderId },
+                actions: [
+                    { action: 'approve', title: '⚡ KONFIRMASI LUNAS' }
+                ]
+            };
+
+            // Kirim Notifikasi via Service Worker (Muncul di Bar HP)
+            if (Notification.permission === "granted" && 'serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.ready;
+                    await reg.showNotification(title, options);
+                } catch (e) {
+                    console.warn("SW notification error:", e);
+                    new Notification(title, options);
                 }
-                new Notification(title, options);
             }
+
+            // Tampilkan Modal Popup Langsung di Layar Dashboard untuk Fast-Action
+            Swal.fire({
+                title: '⚡ BUKTI TRANSAKSI BARU!',
+                html: `
+                    <div class="text-left font-bold text-xs space-y-1.5 bg-amber-50 p-3 rounded-xl border-2 brutal-border mt-2">
+                        <p><span class="text-zinc-500">Order ID:</span> <span class="font-mono text-black">${data.orderId}</span></p>
+                        <p><span class="text-zinc-500">Pengguna:</span> ${data.username}</p>
+                        <p><span class="text-zinc-500">Total Rp:</span> <strong class="text-emerald-700 font-mono">Rp ${(data.amount || 0).toLocaleString('id-ID')}</strong></p>
+                        <p><span class="text-zinc-500">Paket:</span> ${data.item || '-'}</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '⚡ LUNASKAN SEKARANG',
+                cancelButtonText: 'Tutup',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                customClass: { popup: 'brutal-border rounded-2xl' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    approveTransaction(data.orderId);
+                }
+            });
         }
 
-        // Preview Bukti Transfer tanpa about:blank
+        // Preview Bukti Transfer Tanpa about:blank
         function viewProofImage(imageUrl) {
             Swal.fire({
                 title: 'Bukti Transfer',
@@ -105,9 +155,7 @@
                 showCloseButton: true,
                 showConfirmButton: false,
                 background: '#FFFDF8',
-                customClass: {
-                    popup: 'brutal-border rounded-2xl'
-                }
+                customClass: { popup: 'brutal-border rounded-2xl' }
             });
         }
 
@@ -174,7 +222,7 @@
             loadTransactions();
         }
 
-        // Auto-Reconnect EventSource SSE untuk Notifikasi Realtime
+        // Auto-Reconnect EventSource SSE
         let evtSource;
         function connectAdminSSE() {
             evtSource = new EventSource("/api/admin/events");
