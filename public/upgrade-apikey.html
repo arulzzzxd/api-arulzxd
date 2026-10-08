@@ -972,9 +972,20 @@
     }
 
     function renderQrisCode(qrisString) {
-        const qrContainer = document.getElementById('qrcodeContainer');
-        qrContainer.innerHTML = '';
+    const qrContainer = document.getElementById('qrcodeContainer');
+    if (!qrContainer) return;
+    qrContainer.innerHTML = '';
 
+    if (!qrisString) return;
+
+    // Jika string berupa Data URL Base64 atau Link Gambar
+    if (qrisString.startsWith('data:image') || qrisString.startsWith('http://') || qrisString.startsWith('https://')) {
+        const img = document.createElement('img');
+        img.src = qrisString;
+        img.className = 'max-w-full h-auto rounded-xl mx-auto block';
+        qrContainer.appendChild(img);
+    } else {
+        // Jika berupa teks payload QRIS EMVCo murni
         new QRCode(qrContainer, {
             text: qrisString,
             width: 220,
@@ -984,6 +995,7 @@
             correctLevel: QRCode.CorrectLevel.L
         });
     }
+}
 
     const swalConfig = {
         customClass: {
