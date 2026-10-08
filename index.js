@@ -28,10 +28,12 @@ app.set('etag', false);
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json({
+    limit: '10mb',
     verify: (req, res, buf) => {
         req.rawBody = buf.toString('utf8');
     }
 }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
 
@@ -1070,21 +1072,6 @@ app.post('/transactions', async (req, res) => {
     }
 });
 
-// Schema untuk collection 'paymentproofs'
-const paymentProofSchema = new mongoose.Schema({
-    orderId: { type: String, required: true, index: true },
-    username: { type: String, required: true },
-    proofImage: { type: String, required: true }, // Base64 foto
-    amount: { type: Number, default: 0 },
-    status: { type: String, default: 'pending' }, // pending, approved, rejected
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-const PaymentProof = mongoose.models.PaymentProof || mongoose.model('PaymentProof', paymentProofSchema);
-
-
-// Endpoint Upload Bukti Pembayaran ke Collection paymentproofs
 app.post('/api/transactions/upload-proof', async (req, res) => {
     try {
         const { orderId, proofImage } = req.body;
@@ -1098,40 +1085,24 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
             return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan!" });
         }
 
-        // 1. Simpan/Update data ke collection 'paymentproofs'
-        const proofDoc = await PaymentProof.findOneAndUpdate(
-            { orderId },
-            {
-                orderId,
-                username: trx.username,
-                proofImage: proofImage,
-                amount: trx.amount,
-                status: 'pending',
-                updatedAt: new Date()
-            },
-            { upsert: true, new: true }
-        );
-
-        // 2. Update status & sertakan ref proofImage pada transaksi
         trx.proofImage = proofImage;
         trx.status = "waiting_confirmation";
         trx.updatedAt = new Date();
         await trx.save();
 
-        // 3. Kirim Sinyal Real-time SSE ke Admin
+        // Trigger Notifikasi Real-time ke Admin Dashboard
         notifyAdminSse({
             type: "NEW_PAYMENT_PROOF",
             orderId: trx.orderId,
             username: trx.username,
             amount: trx.amount,
             item: trx.itemDetails?.nama || "Upgrade API Key",
-            qty: trx.itemDetails?.qty || trx.qty || 1,
-            proofId: proofDoc._id
+            qty: trx.itemDetails?.qty || trx.qty || 1
         });
 
         return res.json({
             status: true,
-            message: "Bukti pembayaran berhasil tersimpan di collection paymentproofs!"
+            message: "Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin."
         });
 
     } catch (error) {
@@ -1139,7 +1110,6 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server saat menyimpan bukti pembayaran." });
     }
 });
-
 
 app.get('/transactions/:orderId', async (req, res) => {
     try {
@@ -1355,7 +1325,6 @@ app.get('/api/admin/transactions', checkAdminAccess, async (req, res) => {
     }
 });
 
-// Approve Transaksi
 app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (req, res) => {
     try {
         const { orderId } = req.params;
@@ -1368,9 +1337,6 @@ app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (re
         trx.status = "success";
         trx.updatedAt = new Date();
         await trx.save();
-
-        // Update status di collection paymentproofs
-        await PaymentProof.findOneAndUpdate({ orderId }, { status: 'approved', updatedAt: new Date() });
 
         const targetUser = await User.findById(trx.userId) || await User.findOne({ username: trx.username });
         if (targetUser) {
@@ -1398,7 +1364,7 @@ app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (re
             await targetUser.save();
         }
 
-        return res.json({ status: true, message: "Transaksi & bukti pembayaran berhasil disetujui!" });
+        return res.json({ status: true, message: "Transaksi berhasil dikonfirmasi LUNAS! Role pengguna telah diperbarui." });
 
     } catch (err) {
         console.error("Approve Error:", err);
@@ -1406,7 +1372,7 @@ app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (re
     }
 });
 
-// Reject Transaksi
+// Admin Tolak Transaksi
 app.post('/api/admin/transactions/:orderId/reject', checkAdminAccess, async (req, res) => {
     try {
         const { orderId } = req.params;
@@ -1416,11 +1382,7 @@ app.post('/api/admin/transactions/:orderId/reject', checkAdminAccess, async (req
             trx.updatedAt = new Date();
             await trx.save();
         }
-
-        // Update status di collection paymentproofs
-        await PaymentProof.findOneAndUpdate({ orderId }, { status: 'rejected', updatedAt: new Date() });
-
-        return res.json({ status: true, message: "Transaksi & bukti pembayaran ditolak." });
+        return res.json({ status: true, message: "Transaksi ditolak." });
     } catch (err) {
         return res.status(500).json({ status: false, message: "Gagal menolak transaksi." });
     }
