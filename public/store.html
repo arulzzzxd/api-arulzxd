@@ -1832,16 +1832,17 @@
             }
         }
 
+        /* PERBAIKAN FUNGSI GENERATE QR CODE (LEVEL M UNTUK CEGAH OVERFLOW) */
         function renderQrisCode(qrisString) {
             const qrContainer = document.getElementById('qrcodeContainer');
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
                 text: qrisString,
-                width: 500,
-                height: 500,
+                width: 300,
+                height: 300,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M
             });
         }
 
@@ -2394,7 +2395,7 @@
                 document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
                 document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
-                // Render QRCode dari string QRIS Dinamis
+                // Render QRCode dari string QRIS Dinamis (Level M untuk cegah overflow)
                 renderQrisCode(qrisString);
 
                 Swal.close();
