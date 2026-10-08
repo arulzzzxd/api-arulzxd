@@ -160,6 +160,51 @@ setInterval(() => {
     });
 }, 15000);
 
+const ADMIN_EMAILS = [
+    'haqqi.official13@gmail.com',
+    'servicearulzxd@gmail.com'
+];
+
+// Middleware Proteksi Halaman & API Admin
+const checkAdminAccess = (req, res, next) => {
+    if (!req.user) {
+        if (req.path === '/admin') {
+            return res.redirect('/login');
+        }
+        return res.status(401).json({ status: false, message: "Anda harus login terlebih dahulu!" });
+    }
+
+    const userEmail = (req.user.email || '').toLowerCase().trim();
+    if (!ADMIN_EMAILS.includes(userEmail)) {
+        if (req.path === '/admin') {
+            return res.status(403).send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <style>body { background-color: #FAF7EF; font-family: sans-serif; }</style>
+                </head>
+                <body>
+                    <script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'AKSES DITOLAK',
+                            text: 'Email Anda (${userEmail}) tidak memiliki izin mengakses Halaman Admin!',
+                            confirmButtonText: 'Kembali ke Docs'
+                        }).then(() => {
+                            window.location.href = '/docs';
+                        });
+                    </script>
+                </body>
+                </html>
+            `);
+        }
+        return res.status(403).json({ status: false, message: "Akses ditolak! Email Anda bukan Admin." });
+    }
+
+    next();
+};
+
 // ====================================================
 // HELPER GENERATOR API KEY SESUAI ATURAN
 // ====================================================
@@ -961,25 +1006,6 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-app.get('/api/admin/events', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    if (res.flushHeaders) res.flushHeaders();
-
-    const clientId = Date.now();
-    const newClient = { id: clientId, res };
-    adminSseClients.push(newClient);
-
-    // Kirim konfirmasi koneksi terhubung
-    res.write(`data: ${JSON.stringify({ type: "CONNECTED" })}\n\n`);
-
-    req.on('close', () => {
-        adminSseClients = adminSseClients.filter(c => c.id !== clientId);
-    });
-});
-
 function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     if (!receivedSignature) return false;
 
@@ -1288,7 +1314,7 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.get('/api/admin/transactions', async (req, res) => {
+app.get('/api/admin/transactions', checkAdminAccess, async (req, res) => {
     try {
         const transactions = await Transaction.find({}).sort({ createdAt: -1 }).limit(100);
         return res.json({ status: true, data: transactions });
@@ -1297,8 +1323,7 @@ app.get('/api/admin/transactions', async (req, res) => {
     }
 });
 
-// Admin Konfirmasi Pembayaran (Set Success -> Upgrade Auto)
-app.post('/api/admin/transactions/:orderId/approve', async (req, res) => {
+app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (req, res) => {
     try {
         const { orderId } = req.params;
         const trx = await Transaction.findOne({ orderId });
@@ -1311,7 +1336,6 @@ app.post('/api/admin/transactions/:orderId/approve', async (req, res) => {
         trx.updatedAt = new Date();
         await trx.save();
 
-        // Otomatis Upgrade Role User di MongoDB
         const targetUser = await User.findById(trx.userId) || await User.findOne({ username: trx.username });
         if (targetUser) {
             const daysToAdd = Number(trx.itemDetails?.qty) || 3;
@@ -1347,7 +1371,7 @@ app.post('/api/admin/transactions/:orderId/approve', async (req, res) => {
 });
 
 // Admin Tolak Transaksi
-app.post('/api/admin/transactions/:orderId/reject', async (req, res) => {
+app.post('/api/admin/transactions/:orderId/reject', checkAdminAccess, async (req, res) => {
     try {
         const { orderId } = req.params;
         const trx = await Transaction.findOne({ orderId });
@@ -1360,6 +1384,24 @@ app.post('/api/admin/transactions/:orderId/reject', async (req, res) => {
     } catch (err) {
         return res.status(500).json({ status: false, message: "Gagal menolak transaksi." });
     }
+});
+
+app.get('/api/admin/events', checkAdminAccess, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (res.flushHeaders) res.flushHeaders();
+
+    const clientId = Date.now();
+    const newClient = { id: clientId, res };
+    adminSseClients.push(newClient);
+
+    res.write(`data: ${JSON.stringify({ type: "CONNECTED" })}\n\n`);
+
+    req.on('close', () => {
+        adminSseClients = adminSseClients.filter(c => c.id !== clientId);
+    });
 });
 
 app.use(express.urlencoded({ extended: true }));
