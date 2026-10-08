@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,16 +9,16 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="ArulzXD Store - Marketplace Source Code & Layanan Digital">
     <meta property="og:description" content="Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat & Otomatis.">
-    <meta property="og:image" content="https://arulz-xd.my.id/files/Q2C70y.png">
+    <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/Q2C70y.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:url" content="https://arulz-xd.my.id/">
+    <meta property="og:url" content="https://api.arulzzxd.my.id/">
 
-    <link rel="icon" href="https://arulz-xd.my.id/files/Q2C70y.png" type="image/png">
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Plus Jakarta Sans & Orbitron -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Plus Jakarta Sans & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- QRCode JS Generator -->
@@ -28,23 +28,23 @@
 
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        cyber: ['Orbitron', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        cyberCyan: '#00f3ff',
-                        cyberCyanDark: '#008b94',
-                        cyberDark: '#050b14',
-                        cyberCard: '#0a1628',
-                        cyberBorder: '#162a45'
+                        themeCream: '#FAF7EF',
+                        themeCard: '#FFFDF8',
+                        themeDark: '#121212',
+                        themeAccent: '#fde047',
+                        themeSky: '#0284c7'
                     },
                     boxShadow: {
-                        glowCyan: '0 0 15px rgba(0, 243, 255, 0.35)',
-                        glowCyanSm: '0 0 8px rgba(0, 243, 255, 0.25)',
+                        solidSm: '2px 2px 0px #121212',
+                        solidMd: '4px 4px 0px #121212',
+                        solidLg: '6px 6px 0px #121212',
                     }
                 }
             }
@@ -54,28 +54,24 @@
         html, body {
             touch-action: manipulation;
             -webkit-text-size-adjust: 100%;
-            background-color: #050b14;
-            color: #e2e8f0;
+            background-color: #FAF7EF;
+            color: #121212;
             overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px);
+            background-size: 16px 16px;
         }
-        .bg-cyber-grid {
-            background-image: linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #050b14;
+            background: #FAF7EF;
         }
         ::-webkit-scrollbar-thumb {
-            background: #162a45;
+            background: #121212;
             border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00f3ff;
         }
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
@@ -90,38 +86,41 @@
             margin: 0;
         }
 
+        /* SWEETALERT LIGHT NEUBRUTALISM STYLE */
         .swal2-popup.cyber-swal {
-            background: #0a1628 !important;
-            border: 1px solid #162a45 !important;
-            border-radius: 16px !important;
-            color: #e2e8f0 !important;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.25) !important;
+            background: #FFFDF8 !important;
+            border: 2.5px solid #121212 !important;
+            border-radius: 20px !important;
+            color: #121212 !important;
+            box-shadow: 5px 5px 0px #121212 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
         }
         .swal2-title.cyber-swal-title {
-            color: #00f3ff !important;
-            font-family: 'Orbitron', sans-serif !important;
+            color: #121212 !important;
+            font-weight: 800 !important;
             font-size: 1.1rem !important;
         }
         .swal2-html-container.cyber-swal-text {
-            color: #94a3b8 !important;
+            color: #374151 !important;
+            font-weight: 600 !important;
             font-size: 0.85rem !important;
         }
         .swal2-confirm.cyber-swal-confirm {
-            background: #00f3ff !important;
-            color: #050b14 !important;
+            background: #fde047 !important;
+            color: #121212 !important;
             font-weight: 800 !important;
-            font-family: 'Orbitron', sans-serif !important;
-            border-radius: 8px !important;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4) !important;
+            border: 2px solid #121212 !important;
+            border-radius: 12px !important;
+            box-shadow: 2px 2px 0px #121212 !important;
         }
         .swal2-cancel.cyber-swal-cancel {
-            background: #1e293b !important;
-            color: #f87171 !important;
-            font-weight: 700 !important;
-            border: 1px solid #7f1d1d !important;
-            border-radius: 8px !important;
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+            font-weight: 800 !important;
+            border: 2px solid #121212 !important;
+            border-radius: 12px !important;
         }
+
         #qrcodeContainer canvas, #qrcodeContainer img {
             margin: 0 auto;
             max-width: 100%;
@@ -129,146 +128,91 @@
             display: block;
         }
 
+        /* METODE PEMBAYARAN OPTION CARD LIGHT */
         .cyber-option-card {
-            background: rgba(10, 22, 40, 0.8);
-            border: 1px solid #162a45;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #FFFDF8;
+            border: 2px solid #e4e4e7;
+            transition: all 0.2s ease;
         }
-
         .cyber-option-card:hover {
-            border-color: rgba(0, 243, 255, 0.6);
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+            border-color: #121212;
         }
-
         .cyber-option-card.active {
-            background: rgba(0, 243, 255, 0.08);
-            border-color: #00f3ff;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+            background: #fef08a;
+            border-color: #121212;
+            box-shadow: 2px 2px 0px #121212;
         }
 
         .cyber-radio-dot {
             width: 18px;
             height: 18px;
-            border: 2px solid #162a45;
+            border: 2px solid #121212;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
         }
-
-        .cyber-option-card.active .cyber-radio-dot {
-            border-color: #00f3ff;
-            box-shadow: 0 0 8px #00f3ff;
-        }
-
         .cyber-radio-inner {
             width: 8px;
             height: 8px;
-            background: #00f3ff;
+            background: #121212;
             border-radius: 50%;
             opacity: 0;
             transform: scale(0);
             transition: all 0.2s ease;
         }
-
         .cyber-option-card.active .cyber-radio-inner {
             opacity: 1;
             transform: scale(1);
-            box-shadow: 0 0 6px #00f3ff;
-        }
-        :root {
-            --neon-cyan: #00f3ff;
-            --neon-glow: rgba(0, 243, 255, 0.4);
-            --bg-dark: #030712;
-            --bg-card: rgba(15, 23, 42, 0.75);
-            --border-color: rgba(0, 243, 255, 0.2);
         }
 
+        /* LOADER OVERLAY LIGHT */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background-color: var(--bg-dark);
+            background-color: #FAF7EF;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px);
+            background-size: 16px 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-
         #cyber-loader-overlay.fade-out {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
 
-        .scanner-beam {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 300%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05), transparent);
-            animation: scanAnimation 4s infinite linear;
-        }
-        @keyframes scanAnimation {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-
-        .hud-ring {
-            position: relative;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
+        .cyber-loader-box {
+            background: #FFFDF8;
+            border: 2.5px solid #121212;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
+            border-radius: 24px;
+            padding: 32px 28px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            position: relative;
+            width: 320px;
         }
 
-        .ring-outer {
+        .cyber-ring {
             position: absolute;
-            inset: 0;
+            inset: -6px;
+            border: 3.5px solid #e4e4e7;
+            border-top-color: #121212;
+            border-right-color: #0284c7;
             border-radius: 50%;
-            border: 2px dashed var(--neon-cyan);
-            opacity: 0.6;
-            animation: spinClockwise 10s linear infinite;
-            box-shadow: 0 0 15px var(--neon-glow);
+            animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
         }
-
-        .ring-middle {
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            animation: spinCounterClockwise 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        .ring-inner {
-            position: absolute;
-            inset: 20px;
-            border-radius: 50%;
-            border: 1px dotted var(--neon-cyan);
-            opacity: 0.8;
-            animation: spinClockwise 6s linear infinite;
-        }
-
-        .hud-avatar {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan);
-            z-index: 10;
-        }
-
-        @keyframes spinClockwise { 100% { transform: rotate(360deg); } }
-        @keyframes spinCounterClockwise { 100% { transform: rotate(-360deg); } }
 
         .animated-dots::after {
             content: '';
@@ -283,68 +227,57 @@
             50% { content: '..'; }
             75% { content: '...'; }
         }
-
-        .neon-progress-bar {
-            background: linear-gradient(90deg, #06b6d4, var(--neon-cyan));
-            box-shadow: 0 0 12px var(--neon-cyan);
-            transition: width 0.15s ease-out;
-        }
     </style>
 </head>
-<body class="font-sans antialiased bg-cyberDark bg-cyber-grid text-slate-100 min-h-screen">
+<body class="font-sans antialiased text-zinc-900 min-h-screen pb-12">
 
+    <!-- LOADER OVERLAY LIGHT -->
     <div id="cyber-loader-overlay">
-        <div class="scanner-beam"></div>
-
-        <div class="hud-ring mb-6">
-            <div class="ring-outer"></div>
-            <div class="ring-middle"></div>
-            <div class="ring-inner"></div>
-            <img src="https://arulz-xd.my.id/files/Q2C70y.png" alt="Logo" class="hud-avatar">
-        </div>
-
-        <div class="text-center px-4">
-            <div id="loader-title-text" class="text-sm font-extrabold tracking-widest uppercase text-cyan-400 code-font mb-1">
-                Memuat Halaman<span class="animated-dots"></span>
+        <div class="cyber-loader-box">
+            <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
+                <div class="cyber-ring"></div>
+                <img src="https://cdn.arulzzxd.my.id/files/Q2C70y.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
             </div>
-            <div class="text-[10px] text-slate-400 font-mono tracking-wider opacity-80 uppercase">
-                SYSTEM INITIALIZING // CORE GATEWAY
-            </div>
-        </div>
 
-        <div class="w-64 sm:w-80 mt-6">
-            <div class="flex items-center justify-between text-xs font-bold code-font mb-2">
-                <span class="text-slate-400 text-[10px]">SYSTEM STATUS</span>
-                <span id="loader-percentage" class="text-cyan-400 text-sm">0%</span>
+            <div class="text-center">
+                <div id="loader-title-text" class="text-xs font-black uppercase text-zinc-900 tracking-wider mb-0.5">
+                    Memuat Halaman<span class="animated-dots"></span>
+                </div>
+                <div class="text-[9px] font-mono text-zinc-500 font-bold uppercase tracking-widest">
+                    ARULZ-XD STORE CORE
+                </div>
             </div>
-            <div class="w-full h-2 bg-slate-900/90 rounded-full border border-cyan-500/30 overflow-hidden p-0.5">
-                <div id="loader-progress-fill" class="h-full rounded-full neon-progress-bar w-0"></div>
-            </div>
-        </div>
 
-        <div class="absolute bottom-6 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-            Arulz-XD API v2.0
+            <div class="w-full mt-5">
+                <div class="flex items-center justify-between text-[10px] font-mono mb-1.5 text-zinc-800 font-bold">
+                    <span>SYSTEM LOADING</span>
+                    <span id="loader-percentage" class="font-black">0%</span>
+                </div>
+                <div class="w-full h-2.5 bg-zinc-200 border-2 border-zinc-900 rounded-full overflow-hidden">
+                    <div id="loader-progress-fill" class="h-full bg-amber-400 w-0 transition-all duration-150"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- TOP NAVBAR -->
-    <nav class="sticky top-0 z-40 bg-cyberDark/90 backdrop-blur-md border-b border-cyberBorder shadow-glowCyanSm">
+    <!-- TOP NAVBAR LIGHT -->
+    <nav class="sticky top-0 z-40 bg-[#FAF7EF]/90 backdrop-blur-md border-b-2 border-zinc-900 shadow-xs">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-            <a href="/" class="flex-shrink-0 text-2xl font-black font-cyber tracking-wider text-cyberCyan drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
-                Arulz<span class="text-white">Store</span>
+            <a href="/" class="flex-shrink-0 text-xl font-black tracking-tight text-zinc-900">
+                Arulz<span class="text-sky-600">Store</span>
             </a>
 
             <div class="flex-1 max-w-xl relative">
                 <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan..." 
-                       class="w-full pl-4 pr-10 py-2 text-sm bg-cyberCard border border-cyberBorder rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyan transition">
-                <button class="absolute right-3 top-2.5 text-slate-400 hover:text-cyberCyan transition">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                       class="w-full pl-4 pr-10 py-2 text-xs font-bold bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
+                <button class="absolute right-3 top-2.5 text-zinc-600 hover:text-zinc-900 transition">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
                 </button>
             </div>
 
-            <div class="flex items-center gap-4 text-slate-300">
-                <a href="/docs" class="text-sm font-semibold hover:text-cyberCyan transition hidden sm:block">Docs API</a>
-                <button onclick="window.history.back()" title="Kembali" class="text-lg hover:text-cyberCyan transition relative flex items-center justify-center w-8 h-8 rounded-lg bg-cyberCard border border-cyberBorder">
+            <div class="flex items-center gap-2 text-zinc-900">
+                <a href="/docs" class="text-xs font-extrabold hover:text-sky-600 transition hidden sm:block uppercase tracking-wider">Docs API</a>
+                <button onclick="window.history.back()" title="Kembali" class="text-sm font-bold hover:bg-zinc-200 transition relative flex items-center justify-center w-9 h-9 rounded-xl bg-[#FFFDF8] border-2 border-zinc-900 shadow-xs active:scale-95">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
             </div>
@@ -354,32 +287,31 @@
     <!-- MAIN CONTAINER -->
     <div class="max-w-6xl mx-auto px-4 py-6">
 
-        <!-- HEADER UTAMA -->
-        <div class="mb-6 p-6 sm:p-8 bg-cyberCard rounded-2xl border border-cyberBorder shadow-xl relative overflow-hidden">
-            <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyberCyan/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- HEADER UTAMA LIGHT -->
+        <div class="mb-6 p-6 sm:p-8 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 shadow-md relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
-                <span class="inline-flex items-center gap-1.5 bg-cyberCyan/10 border border-cyberCyan/30 text-cyberCyan text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3 font-cyber shadow-glowCyanSm">
-                    <i class="fa-solid fa-terminal"></i> Marketplace
+                <span class="inline-flex items-center gap-1.5 bg-amber-300 border-2 border-zinc-900 text-zinc-900 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider mb-3 shadow-xs">
+                    <i class="fa-solid fa-store"></i> Marketplace
                 </span>
-                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight font-cyber">
-                    Arulz<span class="text-cyberCyan drop-shadow-[0_0_10px_rgba(0,243,255,0.7)]">XD</span> Store
+                <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight leading-tight">
+                    Arulz<span class="text-sky-600">XD</span> Store
                 </h1>
-                <p class="text-sm text-slate-400 mt-2 leading-relaxed">
+                <p class="text-xs text-zinc-600 font-medium mt-2 leading-relaxed">
                     Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat & Otomatis.
                 </p>
             </div>
-            <i class="fa-solid fa-microchip absolute -right-6 -bottom-8 text-9xl text-cyberCyan/5 rotate-12 pointer-events-none"></i>
+            <i class="fa-solid fa-microchip absolute -right-6 -bottom-8 text-9xl text-zinc-900/5 rotate-12 pointer-events-none"></i>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
 
             <!-- SIDEBAR KATEGORI -->
-            <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder shadow-md sticky top-20 z-30">
-                <h3 class="font-bold text-xs font-cyber text-slate-200 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-cyberCyan"></i> Kategori Produk
+            <div class="bg-[#FFFDF8] p-4 rounded-2xl border-2 border-zinc-900 shadow-xs sticky top-20 z-30">
+                <h3 class="font-black text-xs text-zinc-900 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-sky-600"></i> Kategori Produk
                 </h3>
-                <div class="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide" id="categoryContainer">
-                    <button onclick="selectCategory('all')" data-category="all" class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-cyberCyan text-cyberDark shadow-glowCyanSm font-cyber whitespace-nowrap">
+                <div class="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide" id="categoryContainer">
+                    <button onclick="selectCategory('all')" data-category="all" class="cat-btn w-full text-left px-3.5 py-2 rounded-xl text-xs font-black bg-amber-300 text-zinc-900 border-2 border-zinc-900 shadow-xs whitespace-nowrap">
                         Semua Produk
                     </button>
                 </div>
@@ -387,65 +319,65 @@
 
             <!-- LIST GRID PRODUK -->
             <div class="md:col-span-3">
-                <div class="flex items-center justify-between mb-4 bg-cyberCard p-3 rounded-xl border border-cyberBorder shadow-md">
-                    <p class="text-xs text-slate-400 font-medium tracking-wide">
-                        Menampilkan <span id="productCount" class="font-bold text-cyberCyan">0</span> produk
+                <div class="flex items-center justify-between mb-4 bg-[#FFFDF8] p-3 rounded-2xl border-2 border-zinc-900 shadow-xs">
+                    <p class="text-xs text-zinc-600 font-bold tracking-wide">
+                        Menampilkan <span id="productCount" class="font-black text-sky-600">0</span> produk
                     </p>
-                    <div class="text-xs text-slate-400 font-mono">System: <span id="serverStatus" class="text-cyberCyan font-bold animate-pulse">● CONNECTING...</span></div>
+                    <div class="text-[11px] text-zinc-500 font-mono font-bold">Status: <span id="serverStatus" class="text-emerald-600 font-black animate-pulse">● CONNECTING...</span></div>
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
-                    <div class="bg-cyberCard rounded-xl border border-cyberBorder p-3 animate-pulse space-y-3">
-                        <div class="bg-slate-800 h-36 rounded-lg w-full"></div>
-                        <div class="h-4 bg-slate-800 rounded w-3/4"></div>
-                        <div class="h-4 bg-slate-800 rounded w-1/2"></div>
+                    <div class="bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 p-3 animate-pulse space-y-3">
+                        <div class="bg-zinc-200 h-36 rounded-xl w-full"></div>
+                        <div class="h-4 bg-zinc-200 rounded w-3/4"></div>
+                        <div class="h-4 bg-zinc-200 rounded w-1/2"></div>
                     </div>
                 </div>
 
-                <div id="emptyState" class="hidden text-center py-16 bg-cyberCard rounded-xl border border-cyberBorder mt-2">
-                    <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3"></i>
-                    <h3 class="text-sm font-bold text-slate-300">Produk Tidak Ditemukan</h3>
-                    <p class="text-xs text-slate-500 mt-1">Coba gunakan kata kunci pencarian atau kategori lain.</p>
+                <div id="emptyState" class="hidden text-center py-16 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 mt-2">
+                    <i class="fa-solid fa-box-open text-5xl text-zinc-400 mb-3"></i>
+                    <h3 class="text-sm font-black text-zinc-800">Produk Tidak Ditemukan</h3>
+                    <p class="text-xs text-zinc-500 font-medium mt-1">Coba gunakan kata kunci pencarian atau kategori lain.</p>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- MODAL DETAIL PRODUK & PENILAIAN SHOPEE STYLE -->
-    <div id="productDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div id="productDetailModalContent" class="bg-cyberCard w-full max-w-2xl rounded-2xl shadow-glowCyan border border-cyberCyan/40 overflow-hidden my-auto max-h-[90vh] flex flex-col relative">
+    <!-- MODAL DETAIL PRODUK & PENILAIAN -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div id="productDetailModalContent" class="bg-[#FFFDF8] w-full max-w-2xl rounded-2xl border-2.5 border-zinc-900 shadow-lg overflow-hidden my-auto max-h-[90vh] flex flex-col relative">
             
             <!-- Header Modal -->
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder flex-shrink-0">
-                <h3 class="font-bold text-sm font-cyber text-cyberCyan flex items-center gap-2">
-                    <i class="fa-solid fa-star text-amber-400"></i> Detail & Penilaian Produk
+            <div class="bg-amber-300 p-4 text-zinc-900 flex justify-between items-center border-b-2 border-zinc-900 flex-shrink-0">
+                <h3 class="font-black text-sm flex items-center gap-2 uppercase tracking-wide">
+                    <i class="fa-solid fa-star text-amber-600"></i> Detail & Penilaian Produk
                 </h3>
-                <button onclick="closeProductDetailModal()" class="text-slate-400 hover:text-white text-lg transition">
+                <button onclick="closeProductDetailModal()" class="text-zinc-900 hover:text-black text-lg transition font-black">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div id="modalDetailScrollable" class="overflow-y-auto p-4 sm:p-5 space-y-5 flex-1 scroll-smooth">
-                <!-- Ringkasan Produk dengan Carousel Slide Gambar ala Shopee -->
-                <div class="flex flex-col sm:flex-row gap-4 items-start bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder">
+                <!-- Ringkasan Produk dengan Carousel Slide Gambar -->
+                <div class="flex flex-col sm:flex-row gap-4 items-start bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900">
                     
-                    <!-- CAROUSEL GAMBAR PRODUK MODAL (BISA DIKLIK UNTUK ZOOME) -->
-                    <div class="relative w-full sm:w-36 h-36 rounded-lg overflow-hidden bg-slate-900 border border-cyberBorder flex-shrink-0 group cursor-pointer" id="modalProductCarousel" onclick="zoomCurrentProductImage()">
+                    <!-- CAROUSEL GAMBAR PRODUK MODAL -->
+                    <div class="relative w-full sm:w-36 h-36 rounded-xl overflow-hidden bg-zinc-200 border-2 border-zinc-900 flex-shrink-0 group cursor-pointer" id="modalProductCarousel" onclick="zoomCurrentProductImage()">
                         <div class="flex w-full h-full transition-transform duration-300 ease-out" id="modalCarouselTrack">
                             <img id="detailImg" src="" class="w-full h-full object-cover flex-shrink-0">
                         </div>
                         
                         <!-- Icon Zoom Hint -->
-                        <span class="absolute top-1.5 right-1.5 bg-black/60 text-cyberCyan text-[10px] p-1 rounded backdrop-blur-sm opacity-80 group-hover:opacity-100 transition">
+                        <span class="absolute top-1.5 right-1.5 bg-black/60 text-white text-[10px] p-1 rounded backdrop-blur-xs opacity-80 group-hover:opacity-100 transition">
                             <i class="fa-solid fa-magnifying-glass-plus"></i>
                         </span>
 
                         <!-- Navigasi Panah Slide Modal -->
-                        <button onclick="event.stopPropagation(); slideModalCarousel(-1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
+                        <button onclick="event.stopPropagation(); slideModalCarousel(-1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#FFFDF8] border border-zinc-900 text-zinc-900 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-amber-300">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
-                        <button onclick="event.stopPropagation(); slideModalCarousel(1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black">
+                        <button onclick="event.stopPropagation(); slideModalCarousel(1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#FFFDF8] border border-zinc-900 text-zinc-900 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-amber-300">
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
 
@@ -454,17 +386,17 @@
                     </div>
 
                     <div class="space-y-1 overflow-hidden flex-1">
-                        <h2 id="detailTitle" class="text-sm font-bold text-white font-cyber truncate"></h2>
-                        <p id="detailPrice" class="text-xs font-bold text-cyberCyan"></p>
-                        <div id="detailRatingSummary" class="flex items-center gap-2 text-xs text-slate-300 pt-1"></div>
-                        <p id="detailDesc" class="text-[11px] text-slate-400 line-clamp-3 pt-1"></p>
+                        <h2 id="detailTitle" class="text-sm font-black text-zinc-900 truncate"></h2>
+                        <p id="detailPrice" class="text-xs font-black text-sky-700"></p>
+                        <div id="detailRatingSummary" class="flex items-center gap-2 text-xs text-zinc-700 pt-1"></div>
+                        <p id="detailDesc" class="text-[11px] text-zinc-600 line-clamp-3 pt-1 font-medium"></p>
                     </div>
                 </div>
 
                 <!-- LIST REVIU / PENILAIAN DARI USER -->
                 <div id="ratingSectionHeader" class="space-y-3 pb-24">
-                    <h4 class="text-xs font-bold font-cyber text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-cyberCyan"></i> Penilaian Pembeli
+                    <h4 class="text-xs font-black text-zinc-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-sky-600"></i> Penilaian Pembeli
                     </h4>
                     <div id="reviewsListContainer" class="space-y-3">
                         <!-- Render Ulasan via JS -->
@@ -473,17 +405,17 @@
             </div>
 
             <!-- FORM BERI / EDIT PENILAIAN -->
-            <div id="reviewHotbarContainer" class="sticky bottom-0 z-20 p-3 bg-cyberDark/95 backdrop-blur-md border-t border-cyberCyan/30 shadow-[0_-8px_20px_rgba(0,0,0,0.6)] space-y-2">
+            <div id="reviewHotbarContainer" class="sticky bottom-0 z-20 p-3 bg-[#FAF7EF]/95 backdrop-blur-md border-t-2 border-zinc-900 space-y-2">
                 <form id="reviewForm" onsubmit="submitReview(event)" class="space-y-2">
                     <input type="hidden" id="reviewProductId">
                     <input type="hidden" id="selectedRatingValue" required>
                     <input type="hidden" id="isEditReviewMode" value="false">
 
-                    <div class="bg-cyberCard/90 border border-cyberBorder focus-within:border-cyberCyan focus-within:shadow-glowCyanSm rounded-2xl p-2.5 transition-all duration-200 space-y-2">
+                    <div class="bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl p-2.5 space-y-2">
                         <div class="flex items-center justify-between px-1">
                             <div class="flex items-center gap-1.5">
-                                <span id="reviewModeBadge" class="text-[10px] text-slate-400 font-cyber font-semibold">Rating:</span>
-                                <div class="flex items-center gap-1 text-sm text-slate-600" id="starInputGroup">
+                                <span id="reviewModeBadge" class="text-[10px] text-zinc-600 font-black">Rating:</span>
+                                <div class="flex items-center gap-1 text-sm text-zinc-300" id="starInputGroup">
                                     <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(1)"></i>
                                     <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(2)"></i>
                                     <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 transition" onclick="setRating(3)"></i>
@@ -492,25 +424,25 @@
                                 </div>
                             </div>
 
-                            <button type="button" id="btnCancelEditMode" onclick="resetReviewForm()" class="hidden text-[10px] text-red-400 hover:underline">
+                            <button type="button" id="btnCancelEditMode" onclick="resetReviewForm()" class="hidden text-[10px] text-red-600 font-bold hover:underline">
                                 Batal Edit
                             </button>
                         </div>
 
-                        <div id="mediaPreviewContainer" class="hidden flex gap-2 overflow-x-auto py-1 border-t border-cyberBorder/40"></div>
+                        <div id="mediaPreviewContainer" class="hidden flex gap-2 overflow-x-auto py-1 border-t border-zinc-200"></div>
 
                         <div class="flex items-end gap-2">
                             <textarea id="reviewComment" rows="1" required placeholder="Tuliskan ulasan produk..."
                                 oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 90) + 'px'"
-                                class="flex-1 bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none resize-none max-h-24 py-1.5 px-1 scrollbar-hide leading-relaxed"></textarea>
+                                class="flex-1 bg-transparent text-xs text-zinc-900 font-bold placeholder-zinc-400 focus:outline-none resize-none max-h-24 py-1.5 px-1 scrollbar-hide leading-relaxed"></textarea>
                             
                             <div class="flex items-center gap-1.5 flex-shrink-0 pb-0.5">
-                                <label for="reviewMediaFiles" title="Lampirkan Gambar/Video" class="w-8 h-8 rounded-xl bg-cyberDark border border-cyberBorder hover:border-cyberCyan hover:text-cyberCyan text-slate-400 flex items-center justify-center cursor-pointer transition active:scale-95">
+                                <label for="reviewMediaFiles" title="Lampirkan Gambar/Video" class="w-8 h-8 rounded-xl bg-[#FAF7EF] border-2 border-zinc-900 text-zinc-900 hover:bg-zinc-200 flex items-center justify-center cursor-pointer transition active:scale-95">
                                     <i class="fa-solid fa-paperclip text-xs"></i>
                                 </label>
                                 <input type="file" id="reviewMediaFiles" multiple accept="image/*,video/*" class="hidden" onchange="handleFileSelection(this)">
 
-                                <button type="submit" id="btnSubmitReview" title="Kirim Ulasan" class="w-8 h-8 rounded-xl bg-cyberCyan text-cyberDark hover:bg-cyan-300 font-bold flex items-center justify-center transition shadow-glowCyanSm active:scale-95">
+                                <button type="submit" id="btnSubmitReview" title="Kirim Ulasan" class="w-8 h-8 rounded-xl bg-amber-400 text-zinc-900 border-2 border-zinc-900 font-black flex items-center justify-center transition shadow-xs active:scale-95">
                                     <i class="fa-solid fa-paper-plane text-xs"></i>
                                 </button>
                             </div>
@@ -522,113 +454,94 @@
         </div>
     </div>
 
-    <!-- MODAL LIGHTBOX FULLSCREEN UNTUK ZOOM GAMBAR PRODUK & SLIDER -->
-    <div id="productZoomLightbox" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeProductZoomLightbox()">
-        
-        <!-- Header Lightbox Zoom -->
+    <!-- MODAL LIGHTBOX FULLSCREEN ZOOM GAMBAR PRODUK -->
+    <div id="productZoomLightbox" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeProductZoomLightbox()">
         <div class="flex items-center justify-between text-white z-20" onclick="event.stopPropagation()">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-box text-cyberCyan"></i>
-                <h5 id="zoomProductTitle" class="text-xs sm:text-sm font-bold text-slate-100 font-cyber truncate max-w-xs sm:max-w-md"></h5>
+                <i class="fa-solid fa-box text-amber-400"></i>
+                <h5 id="zoomProductTitle" class="text-xs sm:text-sm font-black text-white truncate max-w-xs sm:max-w-md"></h5>
             </div>
-            <button onclick="closeProductZoomLightbox()" class="text-slate-400 hover:text-cyberCyan text-2xl transition p-2">
+            <button onclick="closeProductZoomLightbox()" class="text-zinc-400 hover:text-white text-2xl transition p-2">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <!-- Area Gambar & Swipe/Drag Gesture -->
         <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2" id="zoomSwipeArea" onclick="event.stopPropagation()">
-            <!-- Tombol Navigasi Slide Gambar Produk -->
-            <button onclick="navigateProductZoom(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110 shadow-glowCyanSm">
+            <button onclick="navigateProductZoom(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:text-amber-400 flex items-center justify-center transition hover:scale-110">
                 <i class="fa-solid fa-chevron-left text-base"></i>
             </button>
-            <button onclick="navigateProductZoom(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110 shadow-glowCyanSm">
+            <button onclick="navigateProductZoom(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:text-amber-400 flex items-center justify-center transition hover:scale-110">
                 <i class="fa-solid fa-chevron-right text-base"></i>
             </button>
 
-            <!-- Element Gambar Produk Fullscreen Zoom -->
             <div class="max-w-4xl max-h-[78vh] w-full flex items-center justify-center p-2">
-                <img id="zoomImageElement" src="" class="max-w-full max-h-[78vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan transition-transform duration-200">
+                <img id="zoomImageElement" src="" class="max-w-full max-h-[78vh] rounded-2xl object-contain border-2 border-white/20 shadow-2xl transition-transform duration-200">
             </div>
         </div>
 
-        <!-- Footer Lightbox Zoom Indikator -->
-        <div class="bg-cyberDark/90 border border-cyberBorder/60 p-3 rounded-xl max-w-xl mx-auto w-full z-20 flex flex-col items-center justify-center space-y-2" onclick="event.stopPropagation()">
-            <div id="zoomCounterText" class="text-xs font-mono text-cyberCyan font-bold">Gambar 1 dari 1</div>
+        <div class="bg-zinc-900/90 border border-zinc-700 p-3 rounded-2xl max-w-xl mx-auto w-full z-20 flex flex-col items-center justify-center space-y-2 text-white" onclick="event.stopPropagation()">
+            <div id="zoomCounterText" class="text-xs font-mono text-amber-400 font-bold">Gambar 1 dari 1</div>
             <div id="zoomDotsContainer" class="flex items-center gap-1.5"></div>
-            <p class="text-[9px] text-slate-500 uppercase tracking-wider text-center">
-                <i class="fa-solid fa-hand-pointer text-cyberCyan"></i> Geser layar (swipe) atau klik tombol panah untuk berpindah gambar
+            <p class="text-[9px] text-zinc-400 uppercase tracking-wider text-center font-semibold">
+                <i class="fa-solid fa-hand-pointer text-amber-400"></i> Geser layar (swipe) atau klik tombol panah untuk berpindah
             </p>
         </div>
     </div>
 
-    <!-- MODAL LIGHTBOX SLIDER MEDIA RATING (2-WAY SLIDE) -->
-    <div id="mediaLightboxModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeMediaLightbox()">
-        
-        <!-- Header Lightbox Info User -->
+    <!-- MODAL LIGHTBOX SLIDER MEDIA RATING -->
+    <div id="mediaLightboxModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-3 sm:p-6 select-none" onclick="closeMediaLightbox()">
         <div class="flex items-center justify-between text-white z-20" onclick="event.stopPropagation()">
             <div class="flex items-center gap-3">
-                <img id="lightboxUserAvatar" src="" class="w-9 h-9 rounded-full object-cover border border-cyberCyan">
+                <img id="lightboxUserAvatar" src="" class="w-9 h-9 rounded-full object-cover border-2 border-amber-400">
                 <div>
-                    <h5 id="lightboxUserName" class="text-xs font-bold text-slate-100 font-cyber"></h5>
+                    <h5 id="lightboxUserName" class="text-xs font-black text-white"></h5>
                     <div id="lightboxUserRating" class="flex items-center gap-1"></div>
                 </div>
             </div>
-            <button onclick="closeMediaLightbox()" class="text-slate-400 hover:text-cyberCyan text-2xl transition p-2">
+            <button onclick="closeMediaLightbox()" class="text-zinc-400 hover:text-white text-2xl transition p-2">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <!-- Container Tengah Viewer Media Fullscreen -->
         <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2" id="lightboxSwipeArea" onclick="event.stopPropagation()">
-            
-            <!-- Tombol Navigasi Slide Media (Kiri/Kanan) -->
-            <button onclick="navigateMediaHorizontal(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110">
+            <button onclick="navigateMediaHorizontal(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:text-amber-400 flex items-center justify-center transition hover:scale-110">
                 <i class="fa-solid fa-chevron-left text-base"></i>
             </button>
-            <button onclick="navigateMediaHorizontal(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-cyberBorder text-white hover:text-cyberCyan flex items-center justify-center transition hover:scale-110">
+            <button onclick="navigateMediaHorizontal(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/60 border border-white/20 text-white hover:text-amber-400 flex items-center justify-center transition hover:scale-110">
                 <i class="fa-solid fa-chevron-right text-base"></i>
             </button>
 
-            <!-- Media Element (Image / Video) -->
             <div class="max-w-4xl max-h-[75vh] w-full flex items-center justify-center p-2">
-                <img id="lightboxImage" src="" class="hidden max-w-full max-h-[75vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan transition-all duration-200">
-                <video id="lightboxVideo" controls autoplay loop class="hidden max-w-full max-h-[75vh] rounded-xl object-contain border border-cyberCyan/40 shadow-glowCyan transition-all duration-200"></video>
+                <img id="lightboxImage" src="" class="hidden max-w-full max-h-[75vh] rounded-2xl object-contain border-2 border-white/20 shadow-2xl transition-all duration-200">
+                <video id="lightboxVideo" controls autoplay loop class="hidden max-w-full max-h-[75vh] rounded-2xl object-contain border-2 border-white/20 shadow-2xl transition-all duration-200"></video>
             </div>
 
-            <!-- Tombol Navigasi Slide User (Atas/Bawah) -->
-            <button onclick="navigateUserVertical(-1)" class="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-cyberBorder text-xs text-slate-300 hover:text-cyberCyan flex items-center gap-1 transition">
+            <button onclick="navigateUserVertical(-1)" class="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-xs text-zinc-300 hover:text-amber-400 flex items-center gap-1 transition">
                 <i class="fa-solid fa-chevron-up"></i> Ulasan SBLM
             </button>
-            <button onclick="navigateUserVertical(1)" class="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-cyberBorder text-xs text-slate-300 hover:text-cyberCyan flex items-center gap-1 transition">
+            <button onclick="navigateUserVertical(1)" class="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-xs text-zinc-300 hover:text-amber-400 flex items-center gap-1 transition">
                 Ulasan SELANJUTNYA <i class="fa-solid fa-chevron-down"></i>
             </button>
-
         </div>
 
-        <!-- Footer Lightbox Komentar & Indikator Slide -->
-        <div class="bg-cyberDark/90 border border-cyberBorder/60 p-3 rounded-xl max-w-2xl mx-auto w-full z-20 space-y-1.5" onclick="event.stopPropagation()">
-            <div class="flex items-center justify-between text-[11px] font-mono text-cyberCyan">
+        <div class="bg-zinc-900/90 border border-zinc-700 p-3 rounded-2xl max-w-2xl mx-auto w-full z-20 space-y-1.5 text-white" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between text-[11px] font-mono text-amber-400">
                 <span id="lightboxMediaCounter">Media 1 dari 1</span>
-                <span id="lightboxUserCounter" class="text-slate-400">Ulasan 1 dari 1</span>
+                <span id="lightboxUserCounter" class="text-zinc-400">Ulasan 1 dari 1</span>
             </div>
-            <p id="lightboxUserComment" class="text-xs text-slate-200 leading-relaxed max-h-16 overflow-y-auto"></p>
-            <p class="text-[9px] text-slate-500 text-center uppercase tracking-wider pt-1 border-t border-cyberBorder/40">
-                <i class="fa-solid fa-arrows-up-down-left-right text-cyberCyan"></i> Geser Kiri/Kanan: ganti media | Geser Atas/Bawah: ganti ulasan
-            </p>
+            <p id="lightboxUserComment" class="text-xs text-zinc-200 leading-relaxed max-h-16 overflow-y-auto font-medium"></p>
         </div>
-
     </div>
 
     <!-- MODAL POPUP CHECKOUT -->
-    <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 overflow-y-auto">
-        <div class="bg-cyberCard w-full max-w-lg rounded-2xl shadow-glowCyan border border-cyberCyan/40 transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
+    <div id="checkoutModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 overflow-y-auto">
+        <div class="bg-[#FFFDF8] w-full max-w-lg rounded-2xl border-2.5 border-zinc-900 shadow-lg transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
 
-            <div class="bg-gradient-to-r from-cyberCyanDark to-cyberCard p-4 text-white flex justify-between items-center border-b border-cyberBorder flex-shrink-0">
-                <h3 class="font-bold text-sm font-cyber flex items-center gap-2 text-cyberCyan">
+            <div class="bg-amber-300 p-4 text-zinc-900 flex justify-between items-center border-b-2 border-zinc-900 flex-shrink-0">
+                <h3 class="font-black text-sm flex items-center gap-2 uppercase tracking-wide">
                     <i class="fa-solid fa-cart-flatbed"></i> Form Pemesanan
                 </h3>
-                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white text-lg transition">
+                <button onclick="closeCheckoutModal()" class="text-zinc-900 hover:text-black text-lg font-black transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -636,89 +549,89 @@
             <div class="overflow-y-auto p-4 sm:p-5 flex-1">
                 <!-- STEP 1: FORM UTAMA -->
                 <form id="orderForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <div class="flex items-center justify-between bg-cyberDark border border-cyberBorder px-3 py-2 rounded-lg">
-                        <span class="text-[11px] font-semibold text-slate-400">ID TRX:</span>
-                        <span id="modalOrderId" class="text-xs font-mono font-bold text-cyberCyan">TRX-000000</span>
+                    <div class="flex items-center justify-between bg-[#FAF7EF] border-2 border-zinc-900 px-3 py-2 rounded-xl">
+                        <span class="text-[11px] font-black text-zinc-600">ID TRX:</span>
+                        <span id="modalOrderId" class="text-xs font-mono font-black text-sky-700">TRX-000000</span>
                     </div>
 
-                    <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder flex items-center gap-3">
-                        <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-slate-900 border border-cyberBorder">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center gap-3">
+                        <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-xl object-cover bg-zinc-200 border-2 border-zinc-900">
                         <div class="overflow-hidden flex-1">
-                            <p id="modalProductName" class="text-xs font-bold text-slate-200 truncate"></p>
+                            <p id="modalProductName" class="text-xs font-black text-zinc-900 truncate"></p>
                             <div class="flex items-center justify-between mt-1">
-                                <p id="modalProductPrice" class="text-xs font-bold text-cyberCyan"></p>
-                                <span id="modalProductSold" class="text-[10px] text-slate-400"></span>
+                                <p id="modalProductPrice" class="text-xs font-black text-sky-700"></p>
+                                <span id="modalProductSold" class="text-[10px] text-zinc-500 font-bold"></span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder flex items-center justify-between">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center justify-between">
                         <div>
-                            <label class="block text-xs font-bold text-slate-300">Jumlah Beli</label>
-                            <span id="modalStockInfo" class="text-[10px] text-slate-400">Tersisa: 0</span>
+                            <label class="block text-xs font-black text-zinc-900">Jumlah Beli</label>
+                            <span id="modalStockInfo" class="text-[10px] text-zinc-500 font-bold">Tersisa: 0</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="updateQuantity(-1)" 
-                                    class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                    class="w-7 h-7 bg-[#FFFDF8] border-2 border-zinc-900 hover:bg-zinc-200 text-zinc-900 rounded-lg flex items-center justify-center font-black text-sm transition">
                                 -
                             </button>
                             <input type="number" id="qtyInput" value="1" min="1" oninput="onQtyInputChange()" 
-                                   class="w-12 text-center bg-cyberDark border border-cyberBorder rounded-lg text-xs font-bold font-cyber text-slate-100 py-1 focus:outline-none focus:border-cyberCyan">
+                                   class="w-12 text-center bg-[#FFFDF8] border-2 border-zinc-900 rounded-lg text-xs font-black font-mono text-zinc-900 py-1 focus:outline-none">
                             <button type="button" onclick="updateQuantity(1)" 
-                                    class="w-7 h-7 bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-cyberCyan rounded-lg flex items-center justify-center font-bold text-sm transition">
+                                    class="w-7 h-7 bg-[#FFFDF8] border-2 border-zinc-900 hover:bg-zinc-200 text-zinc-900 rounded-lg flex items-center justify-center font-black text-sm transition">
                                 +
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-cyberDark/40 p-3 rounded-xl border border-cyberBorder space-y-2">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2">
                         <div class="flex items-center justify-between">
-                            <label class="block text-xs font-bold text-slate-300 flex items-center gap-1.5" for="voucherInput">
-                                <i class="fa-solid fa-ticket text-cyberCyan"></i> Kode Voucher <span class="text-[10px] font-normal text-slate-400">(Opsional)</span>
+                            <label class="block text-xs font-black text-zinc-900 flex items-center gap-1.5" for="voucherInput">
+                                <i class="fa-solid fa-ticket text-sky-600"></i> Kode Voucher <span class="text-[10px] font-normal text-zinc-500">(Opsional)</span>
                             </label>
-                            <span id="voucherStatusLabel" class="text-[10px] font-mono text-slate-500">Bisa diisi / dikosongkan</span>
+                            <span id="voucherStatusLabel" class="text-[10px] font-mono text-zinc-500 font-bold">Bisa diisi / dikosongkan</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="text" id="voucherInput" placeholder="Masukkan kode jika ada..." 
-                                   class="flex-1 bg-cyberDark border border-cyberBorder rounded-lg px-3 py-2 text-xs font-mono font-bold text-slate-100 uppercase placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition">
+                                   class="flex-1 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs font-mono font-bold text-zinc-900 uppercase placeholder-zinc-400 focus:outline-none transition">
                             <button type="button" id="btnClaimVoucher" onclick="claimVoucher()" 
-                                    class="bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-cyber font-bold px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5 shadow-glowCyanSm">
+                                    class="bg-amber-300 hover:bg-amber-400 border-2 border-zinc-900 text-zinc-900 font-black px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
                                 <i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberBorder space-y-1.5">
-                        <div class="flex items-center justify-between text-xs text-slate-400">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-1.5">
+                        <div class="flex items-center justify-between text-xs text-zinc-600 font-bold">
                             <span>Subtotal Harga:</span>
-                            <span id="modalSubtotalPrice" class="font-mono text-slate-200">Rp 0</span>
+                            <span id="modalSubtotalPrice" class="font-mono text-zinc-900">Rp 0</span>
                         </div>
-                        <div id="voucherDiscountRow" class="hidden flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                        <div id="voucherDiscountRow" class="hidden flex items-center justify-between text-xs text-emerald-700 font-extrabold">
                             <span>Diskon Voucher:</span>
                             <span id="modalDiscountAmount" class="font-mono">- Rp 0</span>
                         </div>
-                        <div class="flex items-center justify-between pt-1.5 border-t border-cyberBorder/60">
-                            <span class="text-xs font-bold text-slate-300">Total Tagihan:</span>
-                            <span id="modalTotalPrice" class="text-sm font-bold font-cyber text-cyberCyan drop-shadow-[0_0_5px_rgba(0,243,255,0.5)]">Rp 0</span>
+                        <div class="flex items-center justify-between pt-1.5 border-t border-zinc-300">
+                            <span class="text-xs font-black text-zinc-900">Total Tagihan:</span>
+                            <span id="modalTotalPrice" class="text-sm font-black font-mono text-sky-700">Rp 0</span>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold font-cyber text-slate-300 mb-2 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-credit-card text-cyberCyan"></i> Pilih Metode Pembayaran <span class="text-cyberCyan">*</span>
+                        <label class="block text-xs font-black text-zinc-900 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-credit-card text-sky-600"></i> Pilih Metode Pembayaran <span class="text-red-500">*</span>
                         </label>
 
                         <input type="hidden" id="paymentMethodSelect" value="auto">
 
                         <div class="space-y-2.5" id="customPaymentOptions">
-                            <div onclick="selectCyberPayment('auto')" id="opt-auto" class="cyber-option-card active p-3 rounded-xl cursor-pointer flex items-center justify-between">
+                            <div onclick="selectCyberPayment('auto')" id="opt-auto" class="cyber-option-card active p-3 rounded-2xl cursor-pointer flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-cyberCyan/10 border border-cyberCyan/30 flex items-center justify-center text-cyberCyan">
-                                        <i class="fa-solid fa-bolt text-sm animate-pulse"></i>
+                                    <div class="w-8 h-8 rounded-xl bg-amber-300 border-2 border-zinc-900 flex items-center justify-center text-zinc-900">
+                                        <i class="fa-solid fa-bolt text-sm"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-100 font-cyber">Pembayaran Otomatis (QRIS Fast)</p>
-                                        <p class="text-[10px] text-slate-400">Proses instan 24 jam via GoPay, OVO, Dana, QRIS</p>
+                                        <p class="text-xs font-black text-zinc-900">Pembayaran Otomatis (QRIS Fast)</p>
+                                        <p class="text-[10px] text-zinc-600 font-semibold">Proses instan 24 jam via GoPay, OVO, Dana, QRIS</p>
                                     </div>
                                 </div>
                                 <div class="cyber-radio-dot">
@@ -726,14 +639,14 @@
                                 </div>
                             </div>
 
-                            <div onclick="selectCyberPayment('manual')" id="opt-manual" class="cyber-option-card p-3 rounded-xl cursor-pointer flex items-center justify-between">
+                            <div onclick="selectCyberPayment('manual')" id="opt-manual" class="cyber-option-card p-3 rounded-2xl cursor-pointer flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                                    <div class="w-8 h-8 rounded-xl bg-emerald-400 border-2 border-zinc-900 flex items-center justify-center text-zinc-900">
                                         <i class="fa-brands fa-whatsapp text-sm"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-100 font-cyber">Order Manual via WhatsApp</p>
-                                        <p class="text-[10px] text-slate-400">Hubungi Admin langsung untuk pembayaran manual</p>
+                                        <p class="text-xs font-black text-zinc-900">Order Manual via WhatsApp</p>
+                                        <p class="text-[10px] text-zinc-600 font-semibold">Hubungi Admin langsung untuk pembayaran manual</p>
                                     </div>
                                 </div>
                                 <div class="cyber-radio-dot">
@@ -745,33 +658,33 @@
 
                     <div id="manualFieldsGroup" class="hidden space-y-3 pt-2">
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 mb-1" for="usernameInput">
-                                Username / Nama Pembeli <span class="text-cyberCyan">*</span>
+                            <label class="block text-xs font-black text-zinc-900 mb-1" for="usernameInput">
+                                Username / Nama Pembeli <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500 text-xs">
                                     <i class="fa-regular fa-user"></i>
                                 </span>
                                 <input type="text" id="usernameInput" placeholder="Masukkan username Anda"
-                                       class="w-full pl-9 pr-3 py-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition">
+                                       class="w-full pl-9 pr-3 py-2.5 text-xs bg-[#FAF7EF] border-2 border-zinc-900 rounded-xl text-zinc-900 font-bold placeholder-zinc-400 focus:outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 mb-1" for="noteInput">
+                            <label class="block text-xs font-black text-zinc-900 mb-1" for="noteInput">
                                 Catatan Tambahan (Opsional)
                             </label>
                             <textarea id="noteInput" rows="2" placeholder="Catatan khusus..."
-                                      class="w-full p-2.5 text-xs bg-cyberDark border border-cyberBorder rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyberCyan focus:shadow-glowCyanSm transition resize-none"></textarea>
+                                      class="w-full p-2.5 text-xs bg-[#FAF7EF] border-2 border-zinc-900 rounded-xl text-zinc-900 font-bold placeholder-zinc-400 focus:outline-none resize-none"></textarea>
                         </div>
                     </div>
 
-                    <div class="pt-3 border-t border-cyberBorder">
-                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-cyberCyan hover:bg-cyan-300 text-cyberDark font-cyber font-extrabold py-3 rounded-xl text-xs shadow-glowCyan transition-all flex items-center justify-center gap-2 tracking-wider uppercase">
+                    <div class="pt-3 border-t-2 border-zinc-200">
+                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full bg-amber-400 hover:bg-amber-500 text-zinc-900 border-2 border-zinc-900 font-black py-3 rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95">
                             <i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang
                         </button>
 
-                        <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-500 hover:bg-emerald-400 text-cyberDark font-cyber font-extrabold py-3 rounded-xl text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2 tracking-wider uppercase">
+                        <button type="submit" id="btnPayManual" class="w-full hidden bg-emerald-400 hover:bg-emerald-500 text-zinc-900 border-2 border-zinc-900 font-black py-3 rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95">
                             <i class="fa-brands fa-whatsapp text-sm"></i> Order Manual via WhatsApp
                         </button>
                     </div>
@@ -779,57 +692,57 @@
 
                 <!-- STEP 2: QRIS OTOMATIS -->
                 <div id="paymentStep2" class="hidden flex flex-col items-center justify-center space-y-4">
-                    <div class="w-full bg-cyberDark p-3 rounded-xl border border-cyberCyan/40 text-center shadow-glowCyanSm">
-                        <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total yang Harus Dibayar</p>
-                        <h3 id="qrisTotalAmount" class="text-xl font-extrabold text-cyberCyan font-cyber mt-0.5 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">Rp 0</h3>
-                        <p class="text-[10px] text-slate-500 mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-slate-300">TRX-000000</span></p>
+                    <div class="w-full bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 text-center">
+                        <p class="text-[11px] text-zinc-600 font-bold uppercase tracking-wider">Total yang Harus Dibayar</p>
+                        <h3 id="qrisTotalAmount" class="text-xl font-black text-sky-700 font-mono mt-0.5">Rp 0</h3>
+                        <p class="text-[10px] text-zinc-500 font-bold mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-zinc-900">TRX-000000</span></p>
                     </div>
 
-                    <div class="flex items-center justify-center gap-2 bg-red-950/50 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg text-xs font-mono font-bold w-full">
+                    <div class="flex items-center justify-center gap-2 bg-red-100 border-2 border-zinc-900 text-red-700 px-4 py-2 rounded-xl text-xs font-mono font-bold w-full">
                         <i class="fa-solid fa-clock animate-pulse"></i>
-                        <span>Selesaikan Sebelum: <strong id="qrisCountdown" class="text-white text-sm">15:00</strong></span>
+                        <span>Selesaikan Sebelum: <strong id="qrisCountdown" class="text-zinc-900 text-sm font-black">15:00</strong></span>
                     </div>
 
                     <div class="text-center">
-                        <p class="text-xs text-slate-300 font-semibold">Scan QRIS Otomatis untuk Membayar</p>
-                        <p class="text-[10px] text-slate-500">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
+                        <p class="text-xs text-zinc-900 font-black">Scan QRIS Otomatis untuk Membayar</p>
+                        <p class="text-[10px] text-zinc-500 font-bold">Mendukung GoPay, OVO, Dana, ShopeePay, & Semua Bank</p>
                     </div>
 
-                    <div onclick="downloadQrisImage()" class="bg-white p-3 sm:p-4 rounded-xl border-2 border-cyberCyan shadow-glowCyan flex flex-col items-center justify-center relative cursor-pointer group hover:scale-[1.02] transition-all w-full max-w-[340px] sm:max-w-[420px]">
+                    <div onclick="downloadQrisImage()" class="bg-white p-3 sm:p-4 rounded-2xl border-2.5 border-zinc-900 shadow-md flex flex-col items-center justify-center relative cursor-pointer group hover:scale-[1.02] transition-all w-full max-w-[340px] sm:max-w-[420px]">
                         <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
                     </div>
 
-                    <button type="button" onclick="downloadQrisImage()" class="w-full bg-cyberCyan/10 hover:bg-cyberCyan border border-cyberCyan/40 text-cyberCyan hover:text-cyberDark font-cyber font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-glowCyanSm">
+                    <button type="button" onclick="downloadQrisImage()" class="w-full bg-amber-300 hover:bg-amber-400 border-2 border-zinc-900 text-zinc-900 font-black py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-xs">
                         <i class="fa-solid fa-download"></i> Unduh Gambar QRIS
                     </button>
 
-                    <div class="flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/40 animate-pulse w-full justify-center">
+                    <div class="flex items-center gap-2 text-xs font-mono text-amber-900 bg-amber-100 px-3 py-1.5 rounded-xl border-2 border-zinc-900 animate-pulse w-full justify-center font-bold">
                         <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
                     </div>
 
-                    <button type="button" onclick="cancelPayment()" class="w-full bg-red-950/40 hover:bg-red-900/60 border border-red-500/50 text-red-400 hover:text-red-300 font-cyber font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                    <button type="button" onclick="cancelPayment()" class="w-full bg-red-500 hover:bg-red-600 border-2 border-zinc-900 text-white font-black py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider shadow-xs">
                         <i class="fa-solid fa-xmark text-sm"></i> BATALKAN TRANSAKSI
                     </button>
                 </div>
 
                 <!-- STEP 3: SUKSES -->
                 <div id="paymentStep3" class="hidden flex flex-col items-center justify-center space-y-4 text-center">
-                    <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                    <div class="w-14 h-14 bg-emerald-100 text-emerald-700 border-2 border-zinc-900 rounded-full flex items-center justify-center text-2xl shadow-xs">
                         <i class="fa-solid fa-check"></i>
                     </div>
                     <div>
-                        <h4 class="text-base font-bold text-white font-cyber">Pembayaran Berhasil!</h4>
-                        <p class="text-xs text-slate-400 mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
+                        <h4 class="text-base font-black text-zinc-900">Pembayaran Berhasil!</h4>
+                        <p class="text-xs text-zinc-600 font-medium mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
                     </div>
 
-                    <div class="w-full bg-cyberDark border border-cyberCyan/50 p-4 rounded-xl shadow-glowCyanSm space-y-2">
-                        <p class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">LINK AKSES PRODUK / SCRIPT:</p>
-                        <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-cyberCyan font-bold break-all hover:underline flex items-center justify-center gap-2 bg-cyberCyan/10 py-2.5 px-3 rounded-lg border border-cyberCyan/30">
+                    <div class="w-full bg-[#FAF7EF] border-2 border-zinc-900 p-4 rounded-2xl shadow-xs space-y-2">
+                        <p class="text-[10px] text-zinc-600 font-mono uppercase font-extrabold tracking-wider">LINK AKSES PRODUK / SCRIPT:</p>
+                        <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-sky-700 font-black break-all hover:underline flex items-center justify-center gap-2 bg-[#FFFDF8] py-2.5 px-3 rounded-xl border-2 border-zinc-900">
                             <i class="fa-solid fa-cloud-arrow-down text-sm"></i> <span id="productLinkText">Akses Link Produk</span>
                         </a>
                     </div>
 
-                    <button onclick="closeCheckoutModal()" class="w-full bg-cyberCard border border-cyberBorder hover:border-cyberCyan text-slate-300 text-xs font-bold py-2.5 rounded-xl transition">
+                    <button onclick="closeCheckoutModal()" class="w-full bg-[#FFFDF8] border-2 border-zinc-900 hover:bg-zinc-200 text-zinc-900 text-xs font-black py-2.5 rounded-xl transition shadow-xs">
                         Tutup
                     </button>
                 </div>
@@ -839,11 +752,11 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="bg-cyberCard border-t border-cyberBorder mt-16 py-6 text-center text-xs text-slate-500 font-medium">
+    <footer class="bg-[#FFFDF8] border-t-2 border-zinc-300 mt-16 py-6 text-center text-xs text-zinc-500 font-bold">
         <p>© 2026 Arulz-XD Store. All rights reserved.</p>
     </footer>
 
-        <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
@@ -866,10 +779,8 @@
         let REMOVED_MEDIA_URLS = []; 
         let KEEP_EXISTING_MEDIA = true;
 
-        // Cache ulasan internal untuk loading cepat tanpa delay
         const REVIEWS_CACHE = {};
 
-        // CAROUSEL & LIGHTBOX ZOOM STATE
         let cardCarouselIndices = {};
         let currentModalImages = [];
         let currentModalImageIndex = 0;
@@ -910,14 +821,14 @@
 
             for (let i = 1; i <= 5; i++) {
                 if (i <= fullStars) {
-                    starsHtml += `<i class="fa-solid fa-star text-amber-400"></i>`;
+                    starsHtml += `<i class="fa-solid fa-star text-amber-500"></i>`;
                 } else if (i === fullStars + 1 && hasHalfStar) {
-                    starsHtml += `<i class="fa-solid fa-star-half-stroke text-amber-400"></i>`;
+                    starsHtml += `<i class="fa-solid fa-star-half-stroke text-amber-500"></i>`;
                 } else {
-                    starsHtml += `<i class="fa-regular fa-star text-slate-600"></i>`;
+                    starsHtml += `<i class="fa-regular fa-star text-zinc-300"></i>`;
                 }
             }
-            return `<div class="flex items-center gap-0.5 text-xs">${starsHtml} <span class="text-amber-400 font-bold ml-1">${rating > 0 ? rating : '0.0'}</span></div>`;
+            return `<div class="flex items-center gap-0.5 text-xs">${starsHtml} <span class="text-amber-600 font-extrabold ml-1">${rating > 0 ? rating : '0.0'}</span></div>`;
         }
 
         function setRating(val) {
@@ -927,11 +838,11 @@
             const stars = document.querySelectorAll('#starInputGroup i');
             stars.forEach((star, idx) => {
                 if (idx < val) {
-                    star.classList.remove('text-slate-600');
-                    star.classList.add('text-amber-400');
+                    star.classList.remove('text-zinc-300');
+                    star.classList.add('text-amber-500');
                 } else {
-                    star.classList.remove('text-amber-400');
-                    star.classList.add('text-slate-600');
+                    star.classList.remove('text-amber-500');
+                    star.classList.add('text-zinc-300');
                 }
             });
         }
@@ -974,10 +885,10 @@
             let html = EXISTING_MEDIA_LIST.map((media, idx) => {
                 const isVideo = media.type === 'video';
                 return `
-                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-cyberCyan flex-shrink-0 group">
+                    <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-200 border-2 border-zinc-900 flex-shrink-0 group">
                         ${isVideo ? `<video src="${media.url}" class="w-full h-full object-cover"></video>` : `<img src="${media.url}" class="w-full h-full object-cover">`}
-                        <span class="absolute bottom-0 inset-x-0 bg-cyberCyan/80 text-[8px] text-black text-center font-bold font-cyber">LAMA</span>
-                        <button type="button" onclick="removeExistingMedia(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition" title="Hapus berkas ini">
+                        <span class="absolute bottom-0 inset-x-0 bg-amber-300 text-[8px] text-zinc-900 text-center font-black">LAMA</span>
+                        <button type="button" onclick="removeExistingMedia(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -988,10 +899,10 @@
                 const isVideo = file.type.startsWith('video/');
                 const objectUrl = URL.createObjectURL(file);
                 return `
-                    <div class="relative w-14 h-14 rounded-lg overflow-hidden bg-black border border-emerald-500 flex-shrink-0 group">
+                    <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-200 border-2 border-emerald-600 flex-shrink-0 group">
                         ${isVideo ? `<video src="${objectUrl}" class="w-full h-full object-cover"></video>` : `<img src="${objectUrl}" class="w-full h-full object-cover">`}
-                        <span class="absolute bottom-0 inset-x-0 bg-emerald-500/80 text-[8px] text-black text-center font-bold font-cyber">BARU</span>
-                        <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition" title="Batal unggah">
+                        <span class="absolute bottom-0 inset-x-0 bg-emerald-400 text-[8px] text-zinc-900 text-center font-black">BARU</span>
+                        <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] shadow hover:bg-red-500 transition">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -1005,7 +916,7 @@
             document.getElementById('reviewForm').reset();
             document.getElementById('isEditReviewMode').value = 'false';
             document.getElementById('reviewModeBadge').innerText = 'Rating:';
-            document.getElementById('reviewModeBadge').className = 'text-[10px] text-slate-400 font-cyber font-semibold';
+            document.getElementById('reviewModeBadge').className = 'text-[10px] text-zinc-600 font-black';
             document.getElementById('btnCancelEditMode').classList.add('hidden');
 
             const commentInput = document.getElementById('reviewComment');
@@ -1019,7 +930,6 @@
             setRating(0);
         }
 
-        // ==================== BUKA MODAL DETAIL & CAROUSEL PRODUK ====================
         function openProductDetailModal(productId) {
             const product = DATA_PRODUK.find(p => (p.Id || p._id) === productId);
             if (!product) return;
@@ -1036,7 +946,7 @@
             } else if (typeof product.gambar === 'string') {
                 imgList = [product.gambar];
             } else {
-                imgList = ['https://arulz-xd.my.id/files/X1F0Cn.png'];
+                imgList = ['https://cdn.arulzzxd.my.id/files/X1F0Cn.png'];
             }
             currentModalImages = imgList;
             currentModalImageIndex = 0;
@@ -1064,7 +974,7 @@
             track.style.transform = `translateX(-${currentModalImageIndex * 100}%)`;
 
             dots.innerHTML = currentModalImages.map((_, i) => `
-                <span class="w-1.5 h-1.5 rounded-full ${i === currentModalImageIndex ? 'bg-cyberCyan shadow-glowCyanSm' : 'bg-slate-600'} transition-all"></span>
+                <span class="w-1.5 h-1.5 rounded-full ${i === currentModalImageIndex ? 'bg-amber-400 border border-zinc-900' : 'bg-zinc-400'} transition-all"></span>
             `).join('');
         }
 
@@ -1088,7 +998,7 @@
             if (track) track.style.transform = `translateX(-${cardCarouselIndices[prodIndex] * 100}%)`;
             if (dots) {
                 dots.innerHTML = produk.gambar.map((_, i) => `
-                    <span class="w-1.5 h-1.5 rounded-full ${i === cardCarouselIndices[prodIndex] ? 'bg-cyberCyan' : 'bg-slate-600'}"></span>
+                    <span class="w-1.5 h-1.5 rounded-full ${i === cardCarouselIndices[prodIndex] ? 'bg-amber-400 border border-zinc-900' : 'bg-zinc-400'}"></span>
                 `).join('');
             }
         }
@@ -1097,12 +1007,11 @@
             document.getElementById('productDetailModal').classList.add('hidden');
         }
 
-        // ==================== LIGHTBOX ZOOM GAMBAR PRODUK ====================
         function openProductZoomLightbox(prodIndex, initialImgIndex = 0) {
             const produk = DATA_PRODUK[prodIndex];
             if (!produk) return;
 
-            let imgList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'];
+            let imgList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'];
 
             zoomProductImageList = imgList;
             zoomProductActiveIndex = initialImgIndex;
@@ -1134,7 +1043,7 @@
 
             const dotsContainer = document.getElementById('zoomDotsContainer');
             dotsContainer.innerHTML = zoomProductImageList.map((_, i) => `
-                <span class="w-2 h-2 rounded-full ${i === zoomProductActiveIndex ? 'bg-cyberCyan shadow-glowCyanSm scale-125' : 'bg-slate-600'} transition-all"></span>
+                <span class="w-2 h-2 rounded-full ${i === zoomProductActiveIndex ? 'bg-amber-400 border border-white' : 'bg-zinc-600'} transition-all"></span>
             `).join('');
         }
 
@@ -1163,7 +1072,6 @@
             }, { passive: true });
         }
 
-        // ==================== LIGHTBOX SLIDER RATING MEDIA ====================
         function openMediaLightboxSlider(reviewIndex, mediaIndex) {
             activeUserReviewIndex = reviewIndex;
             activeMediaItemIndex = mediaIndex;
@@ -1180,7 +1088,7 @@
 
             const currentMedia = userReview.media[activeMediaItemIndex];
 
-            document.getElementById('lightboxUserAvatar').src = userReview.userAvatar || 'https://arulz-xd.my.id/files/X1F0Cn.png';
+            document.getElementById('lightboxUserAvatar').src = userReview.userAvatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
             document.getElementById('lightboxUserName').innerText = userReview.username || 'Pembeli';
             document.getElementById('lightboxUserRating').innerHTML = renderStarRating(userReview.rating || 5);
             document.getElementById('lightboxUserComment').innerText = userReview.comment || '';
@@ -1262,7 +1170,7 @@
         function editMyReview(rating, comment, mediaJsonStr) {
             document.getElementById('isEditReviewMode').value = 'true';
             document.getElementById('reviewModeBadge').innerText = 'Edit Rating:';
-            document.getElementById('reviewModeBadge').className = 'text-[10px] text-cyberCyan font-cyber font-bold animate-pulse';
+            document.getElementById('reviewModeBadge').className = 'text-[10px] text-sky-700 font-black';
             document.getElementById('btnCancelEditMode').classList.remove('hidden');
 
             setRating(rating);
@@ -1292,7 +1200,6 @@
             }
         }
 
-        // FIX HAPUS RATING: PENANGANAN ERROR UNEXPECTED TOKEN '<' BILA BACKEND RESPONSE BUKAN JSON
         async function deleteMyReview(reviewId) {
             const confirm = await Swal.fire({
                 title: 'HAPUS ULASAN?',
@@ -1337,7 +1244,6 @@
             }
         }
 
-        // LOADING ULASAN TANPA DELAY DENGAN OPTIMASI CACHING
         async function loadProductReviews(productId, forceRefresh = false) {
             const container = document.getElementById('reviewsListContainer');
 
@@ -1346,7 +1252,7 @@
                 return;
             }
 
-            container.innerHTML = `<p class="text-xs text-slate-500 animate-pulse">Memuat ulasan...</p>`;
+            container.innerHTML = `<p class="text-xs text-zinc-500 font-bold animate-pulse">Memuat ulasan...</p>`;
 
             try {
                 const res = await fetch(`/api/reviews/${productId}`);
@@ -1357,7 +1263,7 @@
                 REVIEWS_CACHE[productId] = data;
                 renderReviewsToDOM(data);
             } catch (err) {
-                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
+                container.innerHTML = `<p class="text-xs text-zinc-500 italic font-medium">Belum ada ulasan untuk produk ini.</p>`;
             }
         }
 
@@ -1366,12 +1272,12 @@
             
             document.getElementById('detailRatingSummary').innerHTML = `
                 ${renderStarRating(data.averageRating || 0)}
-                <span class="text-[11px] text-slate-400">(${data.totalReviews || 0} Penilaian)</span>
+                <span class="text-[11px] text-zinc-600 font-bold">(${data.totalReviews || 0} Penilaian)</span>
             `;
 
             if (!data.reviews || data.reviews.length === 0) {
                 currentReviewsListWithMedia = [];
-                container.innerHTML = `<p class="text-xs text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>`;
+                container.innerHTML = `<p class="text-xs text-zinc-500 italic font-medium">Belum ada ulasan untuk produk ini.</p>`;
                 return;
             }
 
@@ -1385,16 +1291,16 @@
                     mediaHtml = `<div class="flex gap-2 mt-2 overflow-x-auto scrollbar-hide py-1">` + rev.media.map((m, mIdx) => {
                         if (m.type === 'video') {
                             return `
-                                <div class="relative w-20 h-20 rounded-lg overflow-hidden bg-black border border-cyberBorder cursor-pointer flex-shrink-0 group" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})">
+                                <div class="relative w-20 h-20 rounded-xl overflow-hidden bg-zinc-200 border-2 border-zinc-900 cursor-pointer flex-shrink-0 group" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})">
                                     <video src="${m.url}" class="w-full h-full object-cover pointer-events-none"></video>
-                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/10 transition">
+                                    <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/10 transition">
                                         <i class="fa-solid fa-play text-white text-xs"></i>
                                     </div>
                                 </div>
                             `;
                         }
                         return `
-                            <img src="${m.url}" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})" class="w-20 h-20 rounded-lg object-cover bg-black border border-cyberBorder cursor-pointer hover:opacity-80 transition flex-shrink-0">
+                            <img src="${m.url}" onclick="openMediaLightboxSlider(${revMediaIdx}, ${mIdx})" class="w-20 h-20 rounded-xl object-cover bg-zinc-200 border-2 border-zinc-900 cursor-pointer hover:opacity-80 transition flex-shrink-0">
                         `;
                     }).join('') + `</div>`;
                 }
@@ -1409,30 +1315,30 @@
                 const actionBtnsHtml = isMyReview ? `
                     <div class="flex items-center gap-1.5 ml-2">
                         <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}', '${encodedMedia}')" 
-                                class="text-[10px] font-bold text-cyberCyan hover:underline flex items-center gap-1 bg-cyberCyan/10 px-2 py-0.5 rounded border border-cyberCyan/30 transition">
+                                class="text-[10px] font-black text-sky-700 hover:underline flex items-center gap-1 bg-sky-100 px-2 py-0.5 rounded-lg border border-sky-300 transition">
                             <i class="fa-solid fa-pen-to-square"></i> Edit Rating
                         </button>
                         <button onclick="deleteMyReview('${rev._id}')" 
-                                class="text-[10px] font-bold text-red-400 hover:underline flex items-center gap-1 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/30 transition" title="Hapus Ulasan">
+                                class="text-[10px] font-black text-red-600 hover:underline flex items-center gap-1 bg-red-100 px-1.5 py-0.5 rounded-lg border border-red-300 transition" title="Hapus Ulasan">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 ` : '';
 
                 return `
-                    <div class="bg-cyberDark/80 p-3 rounded-xl border border-cyberBorder space-y-2">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2">
                         <div class="flex items-center gap-2.5">
-                            <img src="${rev.userAvatar || 'https://arulz-xd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-full object-cover border border-cyberCyan">
+                            <img src="${rev.userAvatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-full object-cover border-2 border-zinc-900">
                             <div class="flex-1">
                                 <div class="flex items-center">
-                                    <p class="text-xs font-bold text-slate-200">${rev.username}</p>
+                                    <p class="text-xs font-black text-zinc-900">${rev.username}</p>
                                     ${actionBtnsHtml}
                                 </div>
                                 <div class="flex items-center gap-1 mt-0.5">${renderStarRating(rev.rating)}</div>
                             </div>
-                            <span class="ml-auto text-[9px] text-slate-500">${rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('id-ID') : ''}</span>
+                            <span class="ml-auto text-[9px] text-zinc-500 font-bold">${rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('id-ID') : ''}</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">${rev.comment}</p>
+                        <p class="text-xs text-zinc-800 leading-relaxed font-medium">${rev.comment}</p>
                         ${mediaHtml}
                     </div>
                 `;
@@ -1560,7 +1466,7 @@
 
                 if (statusElem) {
                     statusElem.innerText = '● ONLINE';
-                    statusElem.className = 'text-cyberCyan font-bold animate-pulse';
+                    statusElem.className = 'text-emerald-600 font-black animate-pulse';
                 }
 
                 generateKategoriButtons();
@@ -1569,11 +1475,11 @@
                 console.error('Fetch Error:', error);
                 if (statusElem) {
                     statusElem.innerText = '● OFFLINE';
-                    statusElem.className = 'text-red-500 font-bold';
+                    statusElem.className = 'text-red-600 font-black';
                 }
 
                 document.getElementById('productGrid').innerHTML = `
-                    <div class="col-span-full text-center py-10 bg-red-950/30 text-red-400 text-xs font-semibold rounded-xl border border-red-800/40">
+                    <div class="col-span-full text-center py-10 bg-red-100 text-red-700 text-xs font-bold rounded-2xl border-2 border-zinc-900">
                         <i class="fa-solid fa-triangle-exclamation text-lg mb-2 block"></i> Gagal mengambil data produk.
                     </div>
                 `;
@@ -1661,7 +1567,7 @@
                 const label = isAll ? 'Semua Produk' : cat;
                 return `
                     <button onclick="selectCategory('${cat}')" data-category="${cat}" 
-                            class="cat-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition whitespace-nowrap font-cyber ${isAll ? 'bg-cyberCyan text-cyberDark shadow-glowCyanSm' : 'text-slate-400 hover:bg-cyberDark hover:text-cyberCyan'}">
+                            class="cat-btn w-full text-left px-3.5 py-2 rounded-xl text-xs font-black transition whitespace-nowrap ${isAll ? 'bg-amber-300 text-zinc-900 border-2 border-zinc-900 shadow-xs' : 'bg-[#FFFDF8] text-zinc-700 border-2 border-zinc-200 hover:border-zinc-900'}">
                         ${label}
                     </button>
                 `;
@@ -1671,18 +1577,15 @@
         function selectCategory(category) {
             KATEGORI_AKTIF = category;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.classList.remove('bg-cyberCyan', 'text-cyberDark', 'shadow-glowCyanSm');
-                btn.classList.add('text-slate-400', 'hover:bg-cyberDark', 'hover:text-cyberCyan');
+                btn.className = 'cat-btn w-full text-left px-3.5 py-2 rounded-xl text-xs font-black transition whitespace-nowrap bg-[#FFFDF8] text-zinc-700 border-2 border-zinc-200 hover:border-zinc-900';
             });
             const activeBtn = document.querySelector(`.cat-btn[data-category="${category}"]`);
             if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400', 'hover:bg-cyberDark', 'hover:text-cyberCyan');
-                activeBtn.classList.add('bg-cyberCyan', 'text-cyberDark', 'shadow-glowCyanSm');
+                activeBtn.className = 'cat-btn w-full text-left px-3.5 py-2 rounded-xl text-xs font-black transition whitespace-nowrap bg-amber-300 text-zinc-900 border-2 border-zinc-900 shadow-xs';
             }
             renderProduk();
         }
 
-        // LOADING PRODUK TANPA DELAY (PARALLEL PROMISE FETCHING)
         async function renderProduk() {
             const grid = document.getElementById('productGrid');
             const emptyState = document.getElementById('emptyState');
@@ -1734,40 +1637,40 @@
             grid.innerHTML = productsWithRatings.map((produk) => {
                 const originalIndex = DATA_PRODUK.findIndex(p => (p.Id || p._id) === (produk.Id || produk._id));
                 const badgeHtml = (produk.badge && produk.badge.trim() !== "") 
-                    ? `<span class="absolute top-2 left-2 bg-cyberCyan text-cyberDark font-cyber text-[9px] font-black px-1.5 py-0.5 rounded shadow-glowCyanSm z-10 uppercase tracking-wider">${produk.badge}</span>` 
+                    ? `<span class="absolute top-2 left-2 bg-amber-300 text-zinc-900 font-black text-[9px] px-2 py-0.5 rounded-lg border border-zinc-900 z-10 uppercase tracking-wider">${produk.badge}</span>` 
                     : '';
 
                 const isOutOfStock = produk.stok !== undefined && produk.stok <= 0;
 
                 const stokBadge = isOutOfStock 
-                    ? `<span class="text-[10px] text-red-400 font-semibold bg-red-950/60 border border-red-800/50 px-1.5 py-0.5 rounded">Stok Habis</span>`
-                    : `<span class="text-[10px] text-emerald-400 font-semibold">Stok: ${produk.stok}</span>`;
+                    ? `<span class="text-[10px] text-red-600 font-bold bg-red-100 border border-red-300 px-1.5 py-0.5 rounded-md">Stok Habis</span>`
+                    : `<span class="text-[10px] text-emerald-700 font-bold">Stok: ${produk.stok}</span>`;
 
                 let hargaHtml = produk.harga_diskon ? `
                     <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-500 line-through">${formatRupiah(produk.harga)}</span>
-                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
+                        <span class="text-[10px] text-zinc-400 line-through font-bold">${formatRupiah(produk.harga)}</span>
+                        <span class="text-sky-700 text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
                     </div>
                 ` : `
                     <div class="flex flex-col">
-                        <span class="text-cyberCyan text-sm sm:text-base font-bold font-cyber tracking-tight">${formatRupiah(produk.harga)}</span>
+                        <span class="text-sky-700 text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga)}</span>
                     </div>
                 `;
 
-                let imageList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png'];
+                let imageList = Array.isArray(produk.gambar) ? produk.gambar : [produk.gambar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'];
                 let imagesHtml = imageList.map((imgUrl, imgIdx) => 
-                    `<img src="${imgUrl}" onclick="event.stopPropagation(); openProductZoomLightbox(${originalIndex}, ${imgIdx})" class="w-full h-full object-cover flex-shrink-0 cursor-pointer ${isOutOfStock ? 'grayscale brightness-50' : ''}">`
+                    `<img src="${imgUrl}" onclick="event.stopPropagation(); openProductZoomLightbox(${originalIndex}, ${imgIdx})" class="w-full h-full object-cover flex-shrink-0 cursor-pointer ${isOutOfStock ? 'grayscale opacity-60' : ''}">`
                 ).join('');
                 
                 let cardNavBtns = imageList.length > 1 ? `
-                    <button onclick="event.stopPropagation(); slideCardCarousel(${originalIndex}, -1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black z-10">
+                    <button onclick="event.stopPropagation(); slideCardCarousel(${originalIndex}, -1)" class="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#FFFDF8] border border-zinc-900 text-zinc-900 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition hover:bg-amber-300 z-10">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <button onclick="event.stopPropagation(); slideCardCarousel(${originalIndex}, 1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition hover:bg-cyberCyan hover:text-black z-10">
+                    <button onclick="event.stopPropagation(); slideCardCarousel(${originalIndex}, 1)" class="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#FFFDF8] border border-zinc-900 text-zinc-900 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition hover:bg-amber-300 z-10">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
                     <div class="absolute bottom-1.5 inset-x-0 flex justify-center gap-1 z-10" id="card-dots-${originalIndex}">
-                        ${imageList.map((_, i) => `<span class="w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-cyberCyan' : 'bg-slate-600'}"></span>`).join('')}
+                        ${imageList.map((_, i) => `<span class="w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-amber-400 border border-zinc-900' : 'bg-zinc-400'}"></span>`).join('')}
                     </div>
                 ` : '';
 
@@ -1776,8 +1679,8 @@
                 const isLong = deskripsiTeks.length > maxChar;
 
                 return `
-                    <div class="bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden shadow-md hover:border-cyberCyan/60 hover:shadow-glowCyanSm transition duration-300 flex flex-col group cursor-pointer" onclick="openProductDetailModal('${produk.Id || produk._id}')">
-                        <div class="relative bg-cyberDark pt-[100%] overflow-hidden flex-shrink-0">
+                    <div class="bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col group cursor-pointer" onclick="openProductDetailModal('${produk.Id || produk._id}')">
+                        <div class="relative bg-[#FAF7EF] pt-[100%] overflow-hidden flex-shrink-0 border-b-2 border-zinc-900">
                             <div class="absolute inset-0 flex transition-transform duration-300 ease-out" id="card-track-${originalIndex}">
                                 ${imagesHtml}
                             </div>
@@ -1787,22 +1690,22 @@
                         
                         <div class="p-3 flex flex-col flex-1 justify-between">
                             <div class="space-y-1.5">
-                                <h4 class="text-xs sm:text-sm font-bold text-slate-100 line-clamp-2 min-h-[2rem] leading-tight" title="${produk.nama}">
+                                <h4 class="text-xs sm:text-sm font-black text-zinc-900 line-clamp-2 min-h-[2rem] leading-tight" title="${produk.nama}">
                                     ${produk.nama}
                                 </h4>
                                 
-                                <div class="text-[11px] text-slate-400 min-h-[2.5rem]">
+                                <div class="text-[11px] text-zinc-600 min-h-[2.5rem] font-medium">
                                     <div class="flex items-start gap-1.5">
                                         <span class="relative flex h-2 w-2 mt-1 flex-shrink-0">
-                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberCyan opacity-75"></span>
-                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-cyberCyan"></span>
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
                                         </span>
                                         <div class="leading-relaxed flex-1">
                                             <p id="desc-text-${originalIndex}" class="line-clamp-2 transition-all duration-300">
                                                 ${deskripsiTeks}
                                             </p>
                                             ${isLong ? `
-                                                <button onclick="event.stopPropagation(); toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-cyberCyan font-bold hover:underline mt-0.5 inline-block text-[10px]">
+                                                <button onclick="event.stopPropagation(); toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-sky-700 font-bold hover:underline mt-0.5 inline-block text-[10px]">
                                                     ... baca selengkapnya
                                                 </button>
                                             ` : ''}
@@ -1810,30 +1713,30 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                                <div class="flex items-center justify-between text-[10px] text-zinc-500 font-bold pt-1">
                                     <span>${stokBadge}</span>
                                     <span>${formatTerjual(produk.terjual)}</span>
                                 </div>
 
-                                <div class="flex items-center justify-between pt-1 border-t border-cyberBorder/30">
+                                <div class="flex items-center justify-between pt-1 border-t border-zinc-200">
                                     ${renderStarRating(produk.averageRating)}
-                                    <span class="text-[10px] text-slate-400">(${produk.totalReviews} ulasan)</span>
+                                    <span class="text-[10px] text-zinc-500 font-bold">(${produk.totalReviews} ulasan)</span>
                                 </div>
                                 
-                                <div class="pt-1 border-t border-cyberBorder/50">
+                                <div class="pt-1 border-t border-zinc-200">
                                     ${hargaHtml}
                                 </div>
                             </div>
                             
                             <button onclick="event.stopPropagation(); openCheckoutModal(${originalIndex})" 
                                     ${isOutOfStock ? 'disabled' : ''}
-                                    class="w-full text-center ${isOutOfStock ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed' : 'bg-cyberCyan/10 hover:bg-cyberCyan border-cyberCyan/40 text-cyberCyan hover:text-cyberDark shadow-glowCyanSm'} border font-bold py-2 rounded-lg text-xs font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-3">
+                                    class="w-full text-center ${isOutOfStock ? 'bg-zinc-200 text-zinc-400 border-zinc-300 cursor-not-allowed' : 'bg-amber-300 hover:bg-amber-400 border-zinc-900 text-zinc-900 shadow-xs'} border-2 font-black py-2 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-1.5 mt-3 active:scale-95">
                                 <i class="fa-solid fa-cart-shopping"></i> ${isOutOfStock ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
 
                             <button onclick="event.stopPropagation(); shareProduk(${originalIndex})" 
-                                    class="w-full text-center bg-slate-800/80 hover:bg-slate-700/80 border border-cyberBorder text-slate-300 hover:text-cyberCyan font-bold py-1.5 rounded-lg text-[11px] font-cyber transition duration-200 flex items-center justify-center gap-1.5 mt-1.5">
-                                <i class="fa-solid fa-share-nodes text-cyberCyan"></i> Bagikan
+                                    class="w-full text-center bg-[#FAF7EF] hover:bg-zinc-200 border-2 border-zinc-900 text-zinc-900 font-extrabold py-1.5 rounded-xl text-[11px] transition duration-150 flex items-center justify-center gap-1.5 mt-1.5 active:scale-95">
+                                <i class="fa-solid fa-share-nodes text-sky-600"></i> Bagikan
                             </button>
                         </div>
                     </div>
@@ -1883,7 +1786,7 @@
             document.getElementById('modalProductPrice').innerText = formatRupiah(hargaFinal);
             document.getElementById('modalProductSold').innerText = formatTerjual(SELECTED_PRODUCT.terjual);
             
-            let modalImgSrc = Array.isArray(SELECTED_PRODUCT.gambar) ? SELECTED_PRODUCT.gambar[0] : (SELECTED_PRODUCT.gambar || 'https://arulz-xd.my.id/files/X1F0Cn.png');
+            let modalImgSrc = Array.isArray(SELECTED_PRODUCT.gambar) ? SELECTED_PRODUCT.gambar[0] : (SELECTED_PRODUCT.gambar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png');
             document.getElementById('modalProductImage').src = modalImgSrc;
             document.getElementById('modalStockInfo').innerText = `Tersisa: ${SELECTED_PRODUCT.stok !== undefined ? SELECTED_PRODUCT.stok : 'Tersedia'}`;
 
@@ -1893,7 +1796,7 @@
                 vInput.disabled = false;
             }
             document.getElementById('voucherStatusLabel').innerText = 'Bisa diisi / dikosongkan';
-            document.getElementById('voucherStatusLabel').className = 'text-[10px] font-mono text-slate-500';
+            document.getElementById('voucherStatusLabel').className = 'text-[10px] font-mono text-zinc-500 font-bold';
             
             const btnClaimText = document.getElementById('btnClaimText');
             if (btnClaimText) btnClaimText.innerText = 'Claim';
@@ -1948,7 +1851,7 @@
                 vInput.disabled = false;
                 if (btnText) btnText.innerText = 'Claim';
                 statusLabel.innerText = 'Bisa diisi / dikosongkan';
-                statusLabel.className = 'text-[10px] font-mono text-slate-500';
+                statusLabel.className = 'text-[10px] font-mono text-zinc-500 font-bold';
                 updateTotalPrice();
                 return;
             }
@@ -1993,7 +1896,7 @@
                 btnClaim.disabled = false;
                 btnClaim.innerHTML = `<i class="fa-solid fa-xmark"></i> <span>Lepas</span>`;
                 statusLabel.innerText = `● Voucher Valid (${ACTIVE_VOUCHER.code})`;
-                statusLabel.className = 'text-[10px] font-mono text-emerald-400 font-bold';
+                statusLabel.className = 'text-[10px] font-mono text-emerald-700 font-black';
 
                 let discountDetailText = ACTIVE_VOUCHER.type === 'percentage'
                     ? `Diskon ${ACTIVE_VOUCHER.discount}% berhasil dipasang!`
