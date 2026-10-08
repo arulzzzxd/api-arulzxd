@@ -93,24 +93,42 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
     return qris + crc;
 }
 
-// Service Worker Route untuk Notifikasi Chrome Android/Desktop
+// Service Worker Route dengan Action Buttons untuk Android Status Bar
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.send(`
         self.addEventListener('notificationclick', function(event) {
             event.notification.close();
-            event.waitUntil(
-                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-                    for (let client of clientList) {
-                        if (client.url.includes('/admin') && 'focus' in client) {
-                            return client.focus();
+            const data = event.notification.data || {};
+
+            // Jika tombol 'LUNASKAN' di notifikasi Android diklik
+            if (event.action === 'approve' && data.orderId) {
+                event.waitUntil(
+                    fetch('/api/admin/transactions/' + data.orderId + '/approve', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(response => {
+                            return self.registration.showNotification('✅ TRANSAKSI LUNAS!', {
+                                body: 'Order ' + data.orderId + ' telah dikonfirmasi LUNAS dari Notifikasi!',
+                                icon: 'https://files.catbox.moe/kdowze.png'
+                            });
+                        })
+                        .catch(err => console.error('Gagal approve via SW:', err))
+                );
+            } else {
+                // Klik biasa pada notifikasi -> Buka/Focus Tab Admin
+                event.waitUntil(
+                    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+                        for (let client of clientList) {
+                            if (client.url.includes('/admin') && 'focus' in client) {
+                                return client.focus();
+                            }
                         }
-                    }
-                    if (clients.openWindow) {
-                        return clients.openWindow('/admin');
-                    }
-                })
-            );
+                        if (clients.openWindow) {
+                            return clients.openWindow('/admin');
+                        }
+                    })
+                );
+            }
         });
     `);
 });
