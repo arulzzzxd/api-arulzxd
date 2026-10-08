@@ -127,39 +127,39 @@
         }
 
         async function syncPushSubscription() {
-            if (!("Notification" in window) || !('serviceWorker' in navigator)) return;
-            if (Notification.permission !== "granted") return;
+    if (!("Notification" in window) || !('serviceWorker' in navigator)) return;
+    if (Notification.permission !== "granted") return;
 
-            try {
-                const reg = await registerSW();
-                if (!reg) return;
+    try {
+        const reg = await registerSW();
+        if (!reg) return;
 
-                const keyRes = await fetch('/api/admin/vapid-public-key');
-                if (!keyRes.ok) return;
-                const { publicKey } = await keyRes.json();
-                if (!publicKey) return;
+        const keyRes = await fetch('/api/admin/vapid-public-key');
+        if (!keyRes.ok) return;
+        const { publicKey } = await keyRes.json();
+        if (!publicKey) return;
 
-                const applicationServerKey = urlBase64ToUint8Array(publicKey);
-                let subscription = await reg.pushManager.getSubscription();
+        const applicationServerKey = urlBase64ToUint8Array(publicKey);
+        let subscription = await reg.pushManager.getSubscription();
 
-                if (!subscription) {
-                    subscription = await reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: applicationServerKey
-                    });
-                }
-
-                await fetch('/api/admin/subscribe-push', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(subscription)
-                });
-
-                updateNotifButtonState();
-            } catch (err) {
-                console.error("Gagal sync push subscription:", err);
-            }
+        if (!subscription) {
+            subscription = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: applicationServerKey
+            });
         }
+
+        await fetch('/api/admin/subscribe-push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+        });
+
+        updateNotifButtonState();
+    } catch (err) {
+        console.error("Gagal sync push subscription:", err);
+    }
+}
 
         async function enableChromeNotification() {
             unlockAudio();
@@ -187,16 +187,20 @@
             }
         }
 
-        function testNotification() {
-            unlockAudio();
-            triggerChromeNotification({
-                orderId: 'TRX-TEST-' + Math.floor(100 + Math.random() * 900),
-                username: 'Penguji Notifikasi',
-                amount: 10000,
-                item: 'Upgrade Role - VIP User',
-                qty: 10
-            });
+        async function testNotification() {
+    unlockAudio();
+    try {
+        const res = await fetch('/api/admin/test-push', { method: 'POST' });
+        const data = await res.json();
+        if (data.status) {
+            Swal.fire("Sip!", "Notifikasi Web Push tes telah dikirim oleh server!", "success");
+        } else {
+            Swal.fire("Gagal", data.message || "Gagal mengirim notifikasi push.", "error");
         }
+    } catch (err) {
+        Swal.fire("Error", "Gagal menghubungi server untuk tes push notification.", "error");
+    }
+}
 
         function setFilter(filterType) {
             currentFilter = filterType;
