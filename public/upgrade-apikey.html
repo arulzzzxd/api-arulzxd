@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
-    <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Upgrade Apikey - Arulz-XD API</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
@@ -19,8 +18,6 @@
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
-            
-            /* Variabel Warna Tema & Outline Dinamis */
             --theme-border: #a16207;
             --theme-accent: #fde047;
             --theme-text: #121212;
@@ -50,7 +47,6 @@
             font-family: 'JetBrains Mono', monospace !important;
         }
 
-        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
         .brutal-border,
         .light-card,
         .dropdown-nav-card,
@@ -69,7 +65,6 @@
             transition: border-color 0.15s ease;
         }
 
-        /* Class Aksen Tema */
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
@@ -88,9 +83,6 @@
             transition: all 0.15s ease;
         }
 
-        /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
-        /* ======================================================= */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active .btn-brutalism-light,
@@ -125,7 +117,6 @@
             background-clip: padding-box, border-box !important;
         }
 
-        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
@@ -198,7 +189,6 @@
             border-radius: 9999px;
         }
 
-        /* Menu Navigasi Kartu Dropdown */
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
             border: 2px solid var(--theme-border) !important;
@@ -219,7 +209,6 @@
             background-color: #FAF7EF !important;
         }
 
-        /* Style Kartu Paket Neo-Brutalism */
         .plan-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -233,7 +222,6 @@
             box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.15) !important;
         }
 
-        /* Modal Card */
         .modal-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -241,7 +229,6 @@
             box-shadow: 8px 8px 0px rgba(18, 18, 18, 0.2) !important;
         }
 
-        /* Custom SweetAlert2 Neo-Brutalism Style */
         .swal2-popup-custom {
             background: #FFFDF8 !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -286,7 +273,6 @@
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
-<!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
@@ -315,7 +301,6 @@
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Header Top Bar (Fixed Solid Krem z-30) -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -328,24 +313,19 @@
             </div>
         </div>
 
-        <!-- Tombol Aksi Kanan -->
         <div class="flex items-center gap-2 relative">
-            
-            <!-- Tombol Switcher Style Warna -->
             <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
             </button>
 
-            <!-- Tombol Menu Sidebar -->
             <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </button>
 
-            <!-- Dropdown Pilihan Tema Warna -->
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                 
@@ -382,18 +362,13 @@
                     <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
-
         </div>
     </div>
 </header>
 
-<!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (z-50) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
-    
-    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
         <div class="flex items-center gap-2">
             <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
@@ -402,7 +377,6 @@
             </span>
         </div>
 
-        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
         <div class="flex items-center gap-2">
             <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
                 <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
@@ -415,14 +389,12 @@
         </div>
     </div>
 
-    <!-- Banner Video -->
     <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
         <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
         </video>
     </div>
 
-    <!-- Auth / Profile Status Container -->
     <div id="sidebarAuthBtnContainer" class="mb-3">
         <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
             <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
@@ -441,7 +413,6 @@
         </div>
     </div>
 
-    <!-- Tombol Navigasi Dropdown -->
     <nav class="space-y-2 flex-1 pb-4">
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -494,10 +465,8 @@
     </nav>
 </div>
 
-<!-- Main Container (pt-20 agar presisi) -->
 <main class="max-w-5xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
     
-    <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -510,17 +479,14 @@
             Tingkatkan limit request, dapatkan performa maksimal, dan nikmati fitur eksklusif untuk kebutuhan aplikasi Anda.
         </p>
 
-        <!-- User Logged Status Banner -->
         <div id="userLoggedInfoBanner" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 brutal-border bg-[#FFFDF8] text-xs font-bold text-zinc-800 shadow-xs">
             <i class="fa-solid fa-user-check theme-text-accent"></i>
             <span><span id="lbl-user-connected">Akun Terhubung:</span> <strong id="userBannerUsername" class="text-zinc-900 font-black">Loading...</strong> (<span id="userBannerEmail" class="theme-text-accent font-black code-font">Loading...</span>)</span>
         </div>
     </header>
 
-    <!-- Grid Kartu Paket -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-2">
         
-        <!-- FREE PLAN -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -556,7 +522,6 @@
             </div>
         </div>
 
-        <!-- PREMIUM PLAN (MINIMAL 10 HARI) -->
         <div class="plan-card theme-light-bg flex flex-col justify-between relative">
             <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 theme-bg-accent border-2 brutal-border text-zinc-900 text-[10px] font-black rounded-full uppercase tracking-wider shadow-xs">
                 PALING POPULER
@@ -599,13 +564,12 @@
                         <span id="lbl-unit-prem" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
-                <button onclick="processPaywuzPayment('premium')" id="lbl-btn-prem" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
-                    <i class="fa-solid fa-bolt mr-1"></i> Beli Premium (Otomatis)
+                <button onclick="processQrisPayment('premium')" id="lbl-btn-prem" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
+                    <i class="fa-solid fa-qrcode mr-1"></i> Beli Premium (QRIS Dynamic)
                 </button>
             </div>
         </div>
 
-        <!-- VIP PLAN (MINIMAL 3 HARI) -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -645,22 +609,21 @@
                         <span id="lbl-unit-vip" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
-                <button onclick="processPaywuzPayment('vip')" id="lbl-btn-vip" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
-                    <i class="fa-solid fa-bolt mr-1"></i> Beli VIP (Otomatis)
+                <button onclick="processQrisPayment('vip')" id="lbl-btn-vip" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
+                    <i class="fa-solid fa-qrcode mr-1"></i> Beli VIP (QRIS Dynamic)
                 </button>
             </div>
         </div>
 
     </div>
 
-    <!-- Modal Pembayaran QRIS PayWuz -->
+    <!-- Modal Pembayaran QRIS Dinamis & Upload Bukti Transfer -->
     <div id="paymentModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="modal-card w-full max-w-md overflow-hidden my-auto max-h-[95vh] flex flex-col p-5 sm:p-6 relative">
 
-            <!-- Header Modal -->
             <div class="flex justify-between items-center pb-3 border-b-2 brutal-border mb-4">
                 <h3 id="lbl-modal-title" class="font-black text-sm font-mono flex items-center gap-2 text-zinc-900 uppercase">
-                    <i class="fa-solid fa-bolt theme-text-accent"></i> Pembayaran QRIS PayWuz
+                    <i class="fa-solid fa-qrcode theme-text-accent"></i> Pembayaran QRIS Dinamis
                 </h3>
                 <button onclick="closePaymentModal()" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
                     <i class="fa-solid fa-xmark text-sm"></i>
@@ -683,16 +646,32 @@
                     </div>
 
                     <div class="text-center">
-                        <p id="lbl-modal-subtext1" class="text-xs text-zinc-900 font-black">Scan QRIS untuk Upgrade Role Otomatis</p>
-                        <p id="lbl-modal-subtext2" class="text-[10px] text-zinc-600 font-bold">Dukungan GoPay, OVO, DANA, ShopeePay & All Bank</p>
+                        <p id="lbl-modal-subtext1" class="text-xs text-zinc-900 font-black">Scan QRIS Dinamis Di Bawah Ini</p>
+                        <p id="lbl-modal-subtext2" class="text-[10px] text-zinc-600 font-bold">Nominal otomatis terisi saat di-scan via GoPay, OVO, DANA, BCA, Dll</p>
                     </div>
 
                     <div class="bg-white p-3 rounded-2xl border-2 brutal-border shadow-xs flex flex-col items-center justify-center w-full max-w-[260px]">
                         <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
                     </div>
 
+                    <!-- Input Upload Bukti Pembayaran -->
+                    <div class="w-full bg-[#FAF7EF] p-3.5 rounded-xl border-2 brutal-border text-left space-y-2">
+                        <label class="block text-xs font-black text-zinc-900 uppercase">
+                            <i class="fa-solid fa-file-invoice text-amber-600 mr-1"></i> Unggah Bukti Pembayaran:
+                        </label>
+                        <input type="file" id="proofFileInput" accept="image/*" onchange="previewProofImage(this)" class="w-full text-xs text-zinc-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:brutal-border file:text-xs file:font-black file:bg-yellow-300 file:text-zinc-900 cursor-pointer">
+                        
+                        <div id="proofPreviewBox" class="hidden text-center pt-2">
+                            <img id="proofPreviewImg" src="" class="max-h-36 mx-auto rounded-lg border-2 brutal-border object-contain">
+                        </div>
+
+                        <button id="btnSubmitProof" disabled onclick="submitPaymentProof()" class="w-full mt-2 bg-emerald-400 disabled:opacity-50 text-zinc-900 font-black py-2.5 rounded-xl border-2 brutal-border text-xs uppercase tracking-wider active:scale-95 shadow-xs">
+                            KIRIM BUKTI PEMBAYARAN
+                        </button>
+                    </div>
+
                     <div id="lbl-modal-waiting" class="flex items-center gap-2 text-xs font-mono font-black text-amber-900 bg-amber-200 border-2 brutal-border px-3.5 py-2 rounded-xl shadow-xs animate-pulse w-full justify-center">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Verifikasi Pembayaran...
+                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Unggah Bukti / Verifikasi Admin...
                     </div>
 
                     <button type="button" onclick="cancelTransaction()" id="lbl-btn-cancel-trx" class="w-full bg-red-500 hover:bg-red-600 border-2 brutal-border text-white font-black py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider active:scale-95 shadow-xs">
@@ -706,7 +685,7 @@
                     </div>
                     <div>
                         <h4 id="lbl-success-title" class="text-lg font-black text-zinc-900 uppercase tracking-wide">Upgrade Berhasil!</h4>
-                        <p id="lbl-success-desc" class="text-xs text-zinc-700 font-semibold mt-1">Pembayaran telah dikonfirmasi. Role & API Key Anda telah diubah secara otomatis oleh sistem.</p>
+                        <p id="lbl-success-desc" class="text-xs text-zinc-700 font-semibold mt-1">Pembayaran telah dikonfirmasi oleh Admin. Role & API Key Anda telah diubah secara otomatis.</p>
                     </div>
 
                     <div class="w-full bg-[#FAF7EF] border-2 brutal-border p-4 rounded-xl text-left space-y-2 text-xs shadow-xs">
@@ -729,7 +708,6 @@
         </div>
     </div>
 
-    <!-- Footer Support -->
     <footer class="mt-12 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
         <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
         <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
@@ -743,14 +721,12 @@
 </main>
 
 <script>
-    // Memblokir Pinch Zoom & Gesture Zoom
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
     });
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-    // Presets Tema Warna & Border
     const THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -793,7 +769,6 @@
         if (dropdown) dropdown.classList.add('hidden');
     }
 
-    // Terjemahan Bahasa Multi-Language
     const docTranslations = {
         id: {
             badgePricing: "PRICING PLANS 2026",
@@ -811,23 +786,23 @@
             premDesc: "Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.",
             durationPrem: "Durasi Paket",
             unitPrem: "Hari",
-            btnPrem: "<i class='fa-solid fa-bolt mr-1'></i> Beli Premium (Otomatis)",
+            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Beli Premium (QRIS Dynamic)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
             vipSub: "Rp 500 / Hari (Min. 3 Hari)",
             vipDesc: "Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.",
             durationVip: "Durasi Paket",
             unitVip: "Hari",
-            btnVip: "<i class='fa-solid fa-bolt mr-1'></i> Beli VIP (Otomatis)",
-            modalTitle: "Pembayaran QRIS PayWuz",
+            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Beli VIP (QRIS Dynamic)",
+            modalTitle: "Pembayaran QRIS Dinamis",
             modalTotal: "Total Pembayaran Paket",
             modalExpire: "Selesaikan Sebelum:",
-            modalSubtext1: "Scan QRIS untuk Upgrade Role Otomatis",
-            modalSubtext2: "Dukungan GoPay, OVO, DANA, ShopeePay & All Bank",
-            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Menunggu Verifikasi Pembayaran...",
+            modalSubtext1: "Scan QRIS Dinamis Di Bawah Ini",
+            modalSubtext2: "Nominal otomatis terisi saat di-scan via GoPay, OVO, DANA, BCA, Dll",
+            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Menunggu Unggah Bukti / Verifikasi Admin...",
             btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> BATALKAN TRANSAKSI",
             successTitle: "Upgrade Berhasil!",
-            successDesc: "Pembayaran telah dikonfirmasi. Role & API Key Anda telah diubah secara otomatis oleh sistem.",
+            successDesc: "Pembayaran telah dikonfirmasi oleh Admin. Role & API Key Anda telah diubah secara otomatis.",
             successRoleLabel: "Status Role:",
             successKeyLabel: "API Key Baru Anda:",
             btnBackDocs: "Kembali Ke Dashboard",
@@ -850,23 +825,23 @@
             premDesc: "The right choice for independent developers needing stable performance and high request quotas.",
             durationPrem: "Plan Duration",
             unitPrem: "Days",
-            btnPrem: "<i class='fa-solid fa-bolt mr-1'></i> Buy Premium (Auto)",
+            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Buy Premium (Dynamic QRIS)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
             vipSub: "Rp 500 / Day (Min. 3 Days)",
             vipDesc: "Perfect for large production apps, public bots, or unlimited commercial systems.",
             durationVip: "Plan Duration",
             unitVip: "Days",
-            btnVip: "<i class='fa-solid fa-bolt mr-1'></i> Buy VIP (Auto)",
-            modalTitle: "PayWuz QRIS Payment",
+            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Buy VIP (Dynamic QRIS)",
+            modalTitle: "Dynamic QRIS Payment",
             modalTotal: "Total Package Payment",
             modalExpire: "Complete Before:",
-            modalSubtext1: "Scan QRIS for Automatic Role Upgrade",
-            modalSubtext2: "Supports GoPay, OVO, DANA, ShopeePay & All Banks",
-            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Waiting for Payment Verification...",
+            modalSubtext1: "Scan Dynamic QRIS Code Below",
+            modalSubtext2: "Amount automatically filled on GoPay, OVO, DANA, All Banks",
+            modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Waiting Proof / Admin Verification...",
             btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> CANCEL TRANSACTION",
             successTitle: "Upgrade Successful!",
-            successDesc: "Payment confirmed. Your Role & API Key have been updated automatically.",
+            successDesc: "Payment confirmed by Admin. Your Role & API Key updated.",
             successRoleLabel: "Role Status:",
             successKeyLabel: "Your New API Key:",
             btnBackDocs: "Back to Dashboard",
@@ -926,7 +901,7 @@
         document.getElementById('lbl-unit-vip').innerText = data.unitVip;
         document.getElementById('lbl-btn-vip').innerHTML = data.btnVip;
 
-        document.getElementById('lbl-modal-title').innerHTML = `<i class="fa-solid fa-bolt theme-text-accent"></i> ${data.modalTitle}`;
+        document.getElementById('lbl-modal-title').innerHTML = `<i class="fa-solid fa-qrcode theme-text-accent"></i> ${data.modalTitle}`;
         document.getElementById('lbl-modal-total').innerText = data.modalTotal;
         document.getElementById('lbl-modal-expire').innerText = data.modalExpire;
         document.getElementById('lbl-modal-subtext1').innerText = data.modalSubtext1;
@@ -944,21 +919,16 @@
         document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>`;
     }
 
-    // Logika Konfigurasi Paket & Pembayaran QRIS
     const config = {
         premium: { rate: 100, days: 10, min: 10, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
         vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
     };
 
-    let currentUser = {
-        loggedIn: false,
-        username: "Belum Login",
-        email: "-"
-    };
-
+    let currentUser = { loggedIn: false, username: "Belum Login", email: "-" };
     let currentOrderId = "";
     let pollingInterval = null;
     let countdownInterval = null;
+    let selectedProofBase64 = null;
 
     function formatRupiah(amount) {
         return "Rp " + amount.toLocaleString('id-ID');
@@ -1025,7 +995,63 @@
         buttonsStyling: false
     };
 
-    async function processPaywuzPayment(type) {
+    function previewProofImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedProofBase64 = e.target.result;
+                document.getElementById('proofPreviewImg').src = selectedProofBase64;
+                document.getElementById('proofPreviewBox').classList.remove('hidden');
+                document.getElementById('btnSubmitProof').disabled = false;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function submitPaymentProof() {
+        if (!selectedProofBase64 || !currentOrderId) {
+            Swal.fire({ ...swalConfig, icon: 'warning', title: 'PERINGATAN', text: 'Pilih foto bukti transfer terlebih dahulu!' });
+            return;
+        }
+
+        Swal.fire({
+            ...swalConfig,
+            title: 'MENGIRIM BUKTI',
+            text: 'Mengunggah bukti pembayaran...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const res = await fetch('/api/transactions/upload-proof', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: currentOrderId,
+                    proofImage: selectedProofBase64
+                })
+            });
+
+            const data = await res.json();
+            Swal.close();
+
+            if (data.status) {
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'success',
+                    title: 'BUKTI TERKIRIM',
+                    text: 'Bukti pembayaran berhasil dikirim! Menunggu konfirmasi dari Admin.'
+                });
+                document.getElementById('lbl-modal-waiting').innerHTML = "<i class='fa-solid fa-clock fa-spin'></i> Menunggu Verifikasi Admin...";
+            } else {
+                Swal.fire({ ...swalConfig, icon: 'error', title: 'GAGAL', text: data.message });
+            }
+        } catch (err) {
+            Swal.fire({ ...swalConfig, icon: 'error', title: 'ERROR', text: 'Gagal terhubung ke server.' });
+        }
+    }
+
+    async function processQrisPayment(type) {
         if (!currentUser.loggedIn) {
             Swal.fire({
                 ...swalConfig,
@@ -1033,20 +1059,23 @@
                 title: currentLang === 'en' ? 'LOGIN REQUIRED' : 'HARUS LOGIN',
                 text: currentLang === 'en' ? 'You must log in before purchasing an API plan!' : 'Anda harus login terlebih dahulu sebelum dapat mengupgrade paket API Key!',
                 confirmButtonText: currentLang === 'en' ? 'Go to Login' : 'Ke Halaman Login'
-            }).then(() => {
-                window.location.href = '/login';
-            });
+            }).then(() => { window.location.href = '/login'; });
             return;
         }
 
         const plan = config[type];
         const totalAmount = plan.days * plan.rate;
         currentOrderId = generateUniqueOrderId();
+        selectedProofBase64 = null;
+
+        document.getElementById('proofFileInput').value = '';
+        document.getElementById('proofPreviewBox').classList.add('hidden');
+        document.getElementById('btnSubmitProof').disabled = true;
 
         Swal.fire({
             ...swalConfig,
-            title: currentLang === 'en' ? 'PROCESSING QRIS' : 'MEMPROSES QRIS',
-            text: currentLang === 'en' ? 'Connecting to payment gateway...' : 'Menghubungkan ke gateway...',
+            title: currentLang === 'en' ? 'GENERATING QRIS' : 'MEMBUAT QRIS',
+            text: currentLang === 'en' ? 'Generating dynamic QRIS...' : 'Menyiapkan QRIS Dinamis...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
@@ -1072,7 +1101,7 @@
 
             Swal.close();
 
-            document.getElementById('modalQrisAmount').innerText = formatRupiah(result.data.amount || totalAmount);
+            document.getElementById('modalQrisAmount').innerText = formatRupiah(totalAmount);
             document.getElementById('modalQrisOrderId').innerText = currentOrderId;
             document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
 
@@ -1084,7 +1113,7 @@
 
             const expireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : Date.now() + (15 * 60 * 1000);
             startCountdown(expireTime);
-            startStatusPolling(plan.roleName);
+            startStatusPolling();
 
         } catch (err) {
             Swal.fire({
@@ -1126,7 +1155,7 @@
         }, 1000);
     }
 
-    function startStatusPolling(targetRoleName) {
+    function startStatusPolling() {
         if (pollingInterval) clearInterval(pollingInterval);
 
         pollingInterval = setInterval(async () => {
@@ -1137,7 +1166,7 @@
                 if (result && result.data) {
                     const status = (result.data.status || "").toLowerCase();
 
-                    if (["settlement", "success", "paid", "settled"].includes(status)) {
+                    if (status === "success") {
                         clearInterval(pollingInterval);
                         if (countdownInterval) clearInterval(countdownInterval);
 
@@ -1151,14 +1180,14 @@
                             document.getElementById('successUserRole').innerText = userData.user.role;
                             document.getElementById('successUserApiKey').innerText = userData.user.apikey;
                         }
-                    } else if (["cancelled", "failed"].includes(status)) {
+                    } else if (["cancelled", "rejected"].includes(status)) {
                         clearInterval(pollingInterval);
                         if (countdownInterval) clearInterval(countdownInterval);
                         Swal.fire({
                             ...swalConfig,
                             icon: 'info',
-                            title: currentLang === 'en' ? 'TRANSACTION CANCELLED' : 'TRANSAKSI BATAL',
-                            text: currentLang === 'en' ? 'Transaction was cancelled or failed.' : 'Transaksi telah dibatalkan atau gagal.'
+                            title: 'TRANSAKSI BATAL/DITOLAK',
+                            text: 'Transaksi telah dibatalkan atau ditolak oleh admin.'
                         });
                         closePaymentModal();
                     }
@@ -1241,7 +1270,6 @@
         switchLanguage(currentLang);
         fetchUserStatus();
 
-        // Dynamic User Status Sync for Sidebar
         fetch('/api/user-status')
             .then(res => res.json())
             .then(data => {
@@ -1266,7 +1294,6 @@
             .catch(err => console.error("Gagal mengecek status user:", err));
     });
 
-    // Loader Progress Logic
     let currentProgress = 0;
     let hasFinishedLoading = false;
     const progressFill = document.getElementById('loader-progress-fill');
