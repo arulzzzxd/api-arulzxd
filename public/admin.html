@@ -152,9 +152,10 @@
         async function triggerChromeNotification(data) {
             playAlarmSound();
 
+            const qtyText = data.qty ? `${data.qty} Hari` : '1 Hari';
             const title = "🔔 BUKTI TRANSAKSI BARU!";
             const options = {
-                body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}`,
+                body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}\nDurasi: ${qtyText}`,
                 vibrate: [400, 100, 400, 100, 400],
                 tag: "trx-" + data.orderId,
                 renotify: true,
@@ -186,6 +187,7 @@
                         <p class="flex items-center gap-2"><i class="fa-solid fa-user text-zinc-500 w-4"></i><span>User:</span> ${data.username}</p>
                         <p class="flex items-center gap-2"><i class="fa-solid fa-wallet text-emerald-600 w-4"></i><span>Total Rp:</span> <strong class="text-emerald-700 font-mono">Rp ${(data.amount || 0).toLocaleString('id-ID')}</strong></p>
                         <p class="flex items-center gap-2"><i class="fa-solid fa-box text-zinc-500 w-4"></i><span>Paket:</span> ${data.item || '-'}</p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-clock text-zinc-500 w-4"></i><span>Qty / Hari:</span> <span>${qtyText}</span></p>
                     </div>
                 `,
                 icon: 'warning',
@@ -213,7 +215,7 @@
             }
         }
 
-        // 6. Render Card dengan Ikon SVG/FontAwesome
+        // 6. Render Card
         function renderTransactions() {
             const grid = document.getElementById('transactionGrid');
 
@@ -235,7 +237,9 @@
                                   (trx.status === 'waiting_confirmation' || trx.status === 'pending') ? 'bg-amber-300 animate-pulse' : 
                                   'bg-red-300';
 
-                const durationText = trx.durasi || trx.itemDetails?.durasi || trx.qty || '1 Hari';
+                // FIX QTY / HARI: Ambil dari itemDetails.qty
+                const rawQty = trx.itemDetails?.qty || trx.qty || trx.durasi || 1;
+                const durationText = typeof rawQty === 'number' ? `${rawQty} Hari` : rawQty;
 
                 return `
                     <div class="bg-white border-2 brutal-border p-4 rounded-2xl shadow-xs flex flex-col justify-between space-y-3">
@@ -266,7 +270,7 @@
                                 <p class="flex items-center gap-2">
                                     <i class="fa-solid fa-clock text-zinc-500 w-4 text-center"></i>
                                     <span class="text-zinc-500 shrink-0">Qty / Hari:</span>
-                                    <span>${durationText}</span>
+                                    <span class="text-amber-900 font-extrabold font-mono">${durationText}</span>
                                 </p>
                                 <p class="flex items-center gap-2">
                                     <i class="fa-solid fa-file-invoice text-zinc-500 w-4 text-center"></i>
@@ -317,14 +321,17 @@
         // Auto-Reconnect SSE
         let evtSource;
         function connectAdminSSE() {
+            if (evtSource) evtSource.close();
             evtSource = new EventSource("/api/admin/events");
 
             evtSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if (data.type === "NEW_PAYMENT_PROOF") {
-                    triggerChromeNotification(data);
-                    loadTransactions();
-                }
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "NEW_PAYMENT_PROOF") {
+                        triggerChromeNotification(data);
+                        loadTransactions();
+                    }
+                } catch (e) {}
             };
 
             evtSource.onerror = function() {

@@ -1094,19 +1094,20 @@
 
         try {
             const res = await fetch('/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: currentOrderId,
-                    amount: totalAmount,
-                    qty: plan.days,
-                    itemDetails: {
-                        nama: `Upgrade Role - ${plan.roleName}`,
-                        harga: totalAmount,
-                        kategori: 'Upgrade API Key'
-                    }
-                })
-            });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        orderId: currentOrderId,
+        amount: totalAmount,
+        qty: plan.days,
+        itemDetails: {
+            nama: `Upgrade Role - ${plan.roleName}`,
+            harga: totalAmount,
+            kategori: 'Upgrade API Key',
+            qty: plan.days
+        }
+    })
+});
 
             const result = await res.json();
             if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS");
