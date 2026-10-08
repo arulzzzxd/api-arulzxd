@@ -93,29 +93,37 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
     return qris + crc;
 }
 
-// Service Worker Route dengan Action Buttons untuk Android Status Bar
+// Service Worker Route (Tanpa Gambar & Langsung Aktif)
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.send(`
+        self.addEventListener('install', (event) => {
+            self.skipWaiting();
+        });
+
+        self.addEventListener('activate', (event) => {
+            event.waitUntil(clients.claim());
+        });
+
         self.addEventListener('notificationclick', function(event) {
             event.notification.close();
             const data = event.notification.data || {};
 
-            // Jika tombol 'LUNASKAN' di notifikasi Android diklik
+            // Klik Tombol 'KONFIRMASI LUNAS' di Status Bar Android
             if (event.action === 'approve' && data.orderId) {
                 event.waitUntil(
                     fetch('/api/admin/transactions/' + data.orderId + '/approve', { method: 'POST' })
                         .then(res => res.json())
-                        .then(response => {
+                        .then(() => {
                             return self.registration.showNotification('✅ TRANSAKSI LUNAS!', {
-                                body: 'Order ' + data.orderId + ' telah dikonfirmasi LUNAS dari Notifikasi!',
-                                icon: 'https://files.catbox.moe/kdowze.png'
+                                body: 'Order ' + data.orderId + ' berhasil dikonfirmasi LUNAS!',
+                                tag: 'approved-' + data.orderId
                             });
                         })
                         .catch(err => console.error('Gagal approve via SW:', err))
                 );
             } else {
-                // Klik biasa pada notifikasi -> Buka/Focus Tab Admin
+                // Klik Area Notifikasi -> Buka/Fokus Tab Admin
                 event.waitUntil(
                     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
                         for (let client of clientList) {
