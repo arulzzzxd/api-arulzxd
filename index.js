@@ -96,6 +96,7 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
 }
 
 // Service Worker Route (Tanpa Gambar & Langsung Aktif)
+// Service Worker Route dengan Dukungan Push Event Background
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.send(`
@@ -107,11 +108,36 @@ app.get('/sw.js', (req, res) => {
             event.waitUntil(clients.claim());
         });
 
+        // MENANGKAP PUSH NOTIFIKASI SAAT BROWSER/WEBSITE DITUTUP
+        self.addEventListener('push', function(event) {
+            let data = {};
+            if (event.data) {
+                try {
+                    data = event.data.json();
+                } catch (e) {
+                    data = { title: 'Notifikasi Baru', body: event.data.text() };
+                }
+            }
+
+            const title = data.title || '⚡ BUKTI TRANSAKSI BARU!';
+            const options = {
+                body: data.body || 'Ada transaksi baru masuk.',
+                icon: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+                badge: 'https://cdn.arulzzxd.my.id/files/Q2C70y.png',
+                vibrate: [400, 100, 400, 100, 400],
+                tag: 'trx-' + (data.orderId || Date.now()),
+                renotify: true,
+                requireInteraction: true,
+                data: { orderId: data.orderId }
+            };
+
+            event.waitUntil(self.registration.showNotification(title, options));
+        });
+
         self.addEventListener('notificationclick', function(event) {
             event.notification.close();
             const data = event.notification.data || {};
 
-            // Klik Tombol 'KONFIRMASI LUNAS' di Status Bar Android
             if (event.action === 'approve' && data.orderId) {
                 event.waitUntil(
                     fetch('/api/admin/transactions/' + data.orderId + '/approve', { method: 'POST' })
@@ -125,7 +151,6 @@ app.get('/sw.js', (req, res) => {
                         .catch(err => console.error('Gagal approve via SW:', err))
                 );
             } else {
-                // Klik Area Notifikasi -> Buka/Fokus Tab Admin
                 event.waitUntil(
                     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
                         for (let client of clientList) {
@@ -163,8 +188,7 @@ setInterval(() => {
 }, 15000);
 
 const ADMIN_EMAILS = [
-    'haqqi.official13@gmail.com',
-    'servicearulzxd@gmail.com'
+    'haqqi.official13@gmail.com'
 ];
 
 // Middleware Proteksi Halaman & API Admin
@@ -1008,6 +1032,18 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
+const pushSubscriptionSchema = new mongoose.Schema({
+    endpoint: { type: String, required: true, unique: true },
+    keys: {
+        p256dh: { type: String, required: true },
+        auth: { type: String, required: true }
+    },
+    email: { type: String, default: 'haqqi.official13@gmail.com' },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const PushSub = mongoose.models.PushSub || mongoose.model('PushSub', pushSubscriptionSchema);
+
 function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     if (!receivedSignature) return false;
 
@@ -1024,6 +1060,67 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     } catch (err) {
         return false;
     }
+}
+
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BNEbW2Ly53AdqzWM1RwGCF9zKnCYwtyRmIvQE961Ciza5A7H3jZtDivHmJH7IlMPNYd7gp01dHVAbhNzPxz3mvg";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "BNEbW2Ly53AdqzWM1RwGCF9zKnCYwtyRmIvQE961Ciza5A7H3jZtDivHmJH7IlMPNYd7gp01dHVAbhNzPxz3mvg";
+
+webpush.setVapidDetails(
+    'mailto:haqqi.official13@gmail.com',
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+);
+
+app.get('/api/admin/vapid-public-key', checkAdminAccess, (req, res) => {
+    res.json({ publicKey: VAPID_PUBLIC_KEY });
+});
+
+app.post('/api/admin/subscribe-push', checkAdminAccess, async (req, res) => {
+    try {
+        const subscription = req.body;
+        if (!subscription || !subscription.endpoint || !subscription.keys) {
+            return res.status(400).json({ status: false, message: 'Data subscription tidak valid!' });
+        }
+
+        await PushSub.findOneAndUpdate(
+            { endpoint: subscription.endpoint },
+            { 
+                endpoint: subscription.endpoint, 
+                keys: subscription.keys, 
+                email: req.user ? req.user.email : 'haqqi.official13@gmail.com',
+                updatedAt: new Date()
+            },
+            { upsert: true, new: true }
+        );
+
+        return res.status(201).json({ status: true, message: 'Push subscription berhasil tersimpan di MongoDB.' });
+    } catch (err) {
+        console.error("Gagal simpan push sub:", err);
+        return res.status(500).json({ status: false, message: 'Gagal menyimpan subscription.' });
+    }
+});
+
+// 3. Fungsi Pengiriman Push Notifikasi dengan Auto-Clean Subscriptions yang Expired
+async function sendBackgroundPushNotification(payload) {
+    const pushPayload = JSON.stringify(payload);
+    const subscriptions = await PushSub.find({});
+
+    subscriptions.forEach(async (sub) => {
+        const pushConfig = {
+            endpoint: sub.endpoint,
+            keys: sub.keys
+        };
+
+        try {
+            await webpush.sendNotification(pushConfig, pushPayload);
+        } catch (err) {
+            // Jika token sudah invalid / expired (410 atau 404), hapus dari MongoDB
+            if (err.statusCode === 410 || err.statusCode === 404) {
+                await PushSub.deleteOne({ endpoint: sub.endpoint });
+                console.log(`🗑️ Hapus subscription expired: ${sub.endpoint}`);
+            }
+        }
+    });
 }
 
 app.post('/transactions', async (req, res) => {
@@ -1092,13 +1189,20 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
 
         // Trigger Notifikasi Real-time ke Admin Dashboard
         notifyAdminSse({
-            type: "NEW_PAYMENT_PROOF",
-            orderId: trx.orderId,
-            username: trx.username,
-            amount: trx.amount,
-            item: trx.itemDetails?.nama || "Upgrade API Key",
-            qty: trx.itemDetails?.qty || trx.qty || 1
-        });
+    type: "NEW_PAYMENT_PROOF",
+    orderId: trx.orderId,
+    username: trx.username,
+    amount: trx.amount,
+    item: trx.itemDetails?.nama || "Upgrade API Key",
+    qty: trx.itemDetails?.qty || trx.qty || 1
+});
+
+// TAMBAHKAN PEMANGGILAN PUSH BACKGROUND DISINI:
+sendBackgroundPushNotification({
+    title: '⚡ BUKTI TRANSAKSI BARU!',
+    body: `Order: ${trx.orderId}\nUser: ${trx.username}\nTotal: Rp ${trx.amount.toLocaleString('id-ID')}`,
+    orderId: trx.orderId
+});
 
         return res.json({
             status: true,
