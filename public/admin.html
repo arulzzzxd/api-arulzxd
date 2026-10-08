@@ -65,7 +65,6 @@
         let audioUnlocked = false;
         let audioCtx = null;
 
-        // Unlock Audio Context pada Klik Pertama Pengguna
         function unlockAudio() {
             if (!audioUnlocked) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -79,7 +78,6 @@
         document.addEventListener('click', unlockAudio, { once: true });
         document.addEventListener('touchstart', unlockAudio, { once: true });
 
-        // Register Service Worker
         async function registerSW() {
             if ('serviceWorker' in navigator) {
                 try {
@@ -93,7 +91,6 @@
             return null;
         }
 
-        // Sound Alarm
         function playAlarmSound() {
             try {
                 const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
@@ -185,7 +182,6 @@
             });
         }
 
-        // Trigger Notifikasi Chrome + Modal Pop-up
         async function triggerChromeNotification(data) {
             playAlarmSound();
 
@@ -241,14 +237,12 @@
             });
         }
 
-        // Fetch Data Transaksi & Auto-Detect Bukti Baru
         async function loadTransactions(isInitial = false) {
             try {
                 const res = await fetch('/api/admin/transactions');
                 const result = await res.json();
                 allTransactions = result.data || [];
 
-                // Deteksi jika ada bukti transfer baru yang baru saja diunggah
                 allTransactions.forEach(trx => {
                     if (trx.proofImage && (trx.status === 'waiting_confirmation' || trx.status === 'pending')) {
                         if (!knownProofOrders.has(trx.orderId)) {
@@ -293,7 +287,6 @@
                                   (trx.status === 'waiting_confirmation' || trx.status === 'pending') ? 'bg-amber-300 animate-pulse' : 
                                   'bg-red-300';
 
-                // PRESISI QTY / HARI
                 const rawQty = trx.itemDetails?.qty || trx.qty || 1;
                 const durationText = `${rawQty} Hari`;
 
@@ -374,7 +367,6 @@
             loadTransactions();
         }
 
-        // Auto-Reconnect SSE
         let evtSource;
         function connectAdminSSE() {
             if (evtSource) evtSource.close();
@@ -405,7 +397,6 @@
             await loadTransactions(true);
             connectAdminSSE();
 
-            // Smart Polling setiap 4 detik untuk menjamin notifikasi tetap muncul jika SSE terputus
             setInterval(() => {
                 loadTransactions(false);
             }, 4000);
