@@ -7,6 +7,7 @@
     <title>Upgrade Apikey - Arulz-XD API</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
+    <!-- Tailwind CSS, SweetAlert2, QRCode, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -24,7 +25,9 @@
             --rgb-angle: 0deg;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         html, body {
             margin: 0;
@@ -40,11 +43,24 @@
             overflow-x: hidden;
         }
 
-        .code-font { font-family: 'JetBrains Mono', monospace !important; }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace !important;
+        }
 
-        .brutal-border, .light-card, .dropdown-nav-card, .btn-brutalism-light,
-        .stat-box, .light-popup-bg, .light-card-box, header, #bioDropdown,
-        #themeMenuDropdown, .cyber-loader-box, .cyber-bar, .plan-card, .modal-card {
+        .brutal-border,
+        .light-card,
+        .dropdown-nav-card,
+        .btn-brutalism-light,
+        .stat-box,
+        .light-popup-bg,
+        .light-card-box,
+        header,
+        #bioDropdown,
+        #themeMenuDropdown,
+        .cyber-loader-box,
+        .cyber-bar,
+        .plan-card,
+        .modal-card {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
@@ -312,29 +328,38 @@
 
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                
                 <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>YELLOW</span><span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                    <span>YELLOW</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
                 </button>
                 <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
-                    <span>RED</span><span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                    <span>RED</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
                 </button>
                 <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
-                    <span>BLUE</span><span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                    <span>BLUE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
                 </button>
                 <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>CYAN</span><span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                    <span>CYAN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
                 </button>
                 <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
-                    <span>PURPLE</span><span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                    <span>PURPLE</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
                 </button>
                 <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
-                    <span>GREEN</span><span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                    <span>GREEN</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
                 </button>
                 <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
-                    <span>BLACK</span><span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                    <span>BLACK</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
                 </button>
                 <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
-                    <span>RGB DYNAMIC</span><span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                    <span>RGB DYNAMIC</span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
         </div>
@@ -462,7 +487,6 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-2">
         
-        <!-- FREE PLAN -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -498,7 +522,6 @@
             </div>
         </div>
 
-        <!-- PREMIUM PLAN -->
         <div class="plan-card theme-light-bg flex flex-col justify-between relative">
             <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 theme-bg-accent border-2 brutal-border text-zinc-900 text-[10px] font-black rounded-full uppercase tracking-wider shadow-xs">
                 PALING POPULER
@@ -547,7 +570,6 @@
             </div>
         </div>
 
-        <!-- VIP PLAN -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -595,7 +617,7 @@
 
     </div>
 
-    <!-- MODAL PEMBAYARAN QRIS DINAMIS & UPLOAD BUKTI TRANSFER -->
+    <!-- Modal Pembayaran QRIS Dinamis & Upload Bukti Transfer -->
     <div id="paymentModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="modal-card w-full max-w-md overflow-hidden my-auto max-h-[95vh] flex flex-col p-5 sm:p-6 relative">
 
@@ -950,28 +972,30 @@
     }
 
     function renderQrisCode(qrisString) {
-        const qrContainer = document.getElementById('qrcodeContainer');
-        if (!qrContainer) return;
-        qrContainer.innerHTML = '';
+    const qrContainer = document.getElementById('qrcodeContainer');
+    if (!qrContainer) return;
+    qrContainer.innerHTML = '';
 
-        if (!qrisString) return;
+    if (!qrisString) return;
 
-        if (qrisString.startsWith('data:image') || qrisString.startsWith('http://') || qrisString.startsWith('https://')) {
-            const img = document.createElement('img');
-            img.src = qrisString;
-            img.className = 'max-w-full h-auto rounded-xl mx-auto block';
-            qrContainer.appendChild(img);
-        } else {
-            new QRCode(qrContainer, {
-                text: qrisString,
-                width: 220,
-                height: 220,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L
-            });
-        }
+    // Jika string berupa Data URL Base64 atau Link Gambar
+    if (qrisString.startsWith('data:image') || qrisString.startsWith('http://') || qrisString.startsWith('https://')) {
+        const img = document.createElement('img');
+        img.src = qrisString;
+        img.className = 'max-w-full h-auto rounded-xl mx-auto block';
+        qrContainer.appendChild(img);
+    } else {
+        // Jika berupa teks payload QRIS EMVCo murni
+        new QRCode(qrContainer, {
+            text: qrisString,
+            width: 220,
+            height: 220,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+        });
     }
+}
 
     const swalConfig = {
         customClass: {
@@ -983,48 +1007,16 @@
         buttonsStyling: false
     };
 
-    // KOMPRESI GAMBAR OTOMATIS SEBELUM SEND TO SERVER (MENCEGAH ERROR 413)
     function previewProofImage(input) {
         if (input.files && input.files[0]) {
-            const file = input.files[0];
             const reader = new FileReader();
-
             reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxDimension = 1200; // Resolusi maks 1200px
-
-                    if (width > height) {
-                        if (width > maxDimension) {
-                            height = Math.round(height * (maxDimension / width));
-                            width = maxDimension;
-                        }
-                    } else {
-                        if (height > maxDimension) {
-                            width = Math.round(width * (maxDimension / height));
-                            height = maxDimension;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Output JPEG Base64 Kualitas 70% (~100 - 300 KB)
-                    selectedProofBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-                    document.getElementById('proofPreviewImg').src = selectedProofBase64;
-                    document.getElementById('proofPreviewBox').classList.remove('hidden');
-                    document.getElementById('btnSubmitProof').disabled = false;
-                };
-                img.src = e.target.result;
+                selectedProofBase64 = e.target.result;
+                document.getElementById('proofPreviewImg').src = selectedProofBase64;
+                document.getElementById('proofPreviewBox').classList.remove('hidden');
+                document.getElementById('btnSubmitProof').disabled = false;
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
@@ -1060,7 +1052,7 @@
                     ...swalConfig,
                     icon: 'success',
                     title: 'BUKTI TERKIRIM',
-                    text: 'Bukti pembayaran berhasil dikirim & tersimpan di sistem! Menunggu konfirmasi dari Admin.'
+                    text: 'Bukti pembayaran berhasil dikirim! Menunggu konfirmasi dari Admin.'
                 });
                 document.getElementById('lbl-modal-waiting').innerHTML = "<i class='fa-solid fa-clock fa-spin'></i> Menunggu Verifikasi Admin...";
             } else {
@@ -1102,20 +1094,20 @@
 
         try {
             const res = await fetch('/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: currentOrderId,
-                    amount: totalAmount,
-                    qty: plan.days,
-                    itemDetails: {
-                        nama: `Upgrade Role - ${plan.roleName}`,
-                        harga: totalAmount,
-                        kategori: 'Upgrade API Key',
-                        qty: plan.days
-                    }
-                })
-            });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        orderId: currentOrderId,
+        amount: totalAmount,
+        qty: plan.days,
+        itemDetails: {
+            nama: `Upgrade Role - ${plan.roleName}`,
+            harga: totalAmount,
+            kategori: 'Upgrade API Key',
+            qty: plan.days
+        }
+    })
+});
 
             const result = await res.json();
             if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS");
