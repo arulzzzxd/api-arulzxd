@@ -43,6 +43,47 @@ mongoose.connect(MONGODB_URI)
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
+const BASE_STATIC_QRIS = process.env.STATIC_QRIS || "00020101021126570011ID.DANA.WWW011893600915396562113302099656211330303UMI51440014ID.CO.QRIS.WWW0215ID10254420078250303UMI5204481453033605802ID5914IDZHARUL STORE600409146105531936304C1E4";
+
+function calcCRC16(str) {
+    let crc = 0xFFFF;
+    for (let c = 0; c < str.length; c++) {
+        crc ^= str.charCodeAt(c) << 8;
+        for (let i = 0; i < 8; i++) {
+            if ((crc & 0x8000) !== 0) {
+                crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+            } else {
+                crc = (crc << 1) & 0xFFFF;
+            }
+        }
+    }
+    let hex = (crc & 0xFFFF).toString(16).toUpperCase();
+    return hex.padStart(4, '0');
+}
+
+function convertStaticToDynamicQRIS(staticQris, amount) {
+    let qris = staticQris.trim();
+    const crcIndex = qris.indexOf('6304');
+    if (crcIndex !== -1) {
+        qris = qris.substring(0, crcIndex);
+    }
+    qris = qris.replace('000201010211', '000201010212');
+
+    const amtStr = String(Math.round(amount));
+    const tag54 = '54' + String(amtStr.length).padStart(2, '0') + amtStr;
+
+    if (qris.includes('5802ID')) {
+        const parts = qris.split('5802ID');
+        qris = parts[0] + tag54 + '5802ID' + parts[1];
+    } else {
+        qris += tag54;
+    }
+
+    qris += '6304';
+    const crc = calcCRC16(qris);
+    return qris + crc;
+}
+
 // ====================================================
 // HELPER GENERATOR API KEY SESUAI ATURAN
 // ====================================================
@@ -67,8 +108,8 @@ const userSchema = new mongoose.Schema({
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     apikey: { type: String, required: true, unique: true },
-    role: { type: String, default: 'Free User' }, // 'Free User', 'Premium User', 'VIP User'
-    roleExpiresAt: { type: Date, default: null }, // MASA BERLAKU ROLE
+    role: { type: String, default: 'Free User' },
+    roleExpiresAt: { type: Date, default: null },
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
     avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png' }, 
@@ -818,25 +859,49 @@ mongoose.connection.once('open', async () => {
 
 const transactionSchema = new mongoose.Schema({
     orderId: { type: String, required: true, unique: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    username: { type: String, required: true },
+    email: { type: String, required: true },
     amount: { type: Number, required: true },
     paymentNumber: { type: String, default: null }, 
     paymentMethod: { type: String, default: "QRIS" },
-    status: { type: String, default: "pending" }, 
+    status: { type: String, default: "pending" }, // pending, waiting_confirmation, success, rejected, cancelled
+    proofImage: { type: String, default: null },
     itemDetails: {
         nama: String,
         harga: Number,
-        harga_diskon: Number,
         kategori: String,
-        gambar: String,
-        link: String
+        qty: Number
     },
-    productLink: { type: String, default: null },
     createdAt: { type: Date, default: Date.now },
     expiredAt: { type: Date, required: true },
     updatedAt: { type: Date, default: Date.now }
 });
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+
+let adminSseClients = [];
+
+function notifyAdminSse(data) {
+    adminSseClients.forEach(client => {
+        client.res.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+}
+
+// Endpoint EventSource SSE Admin Notification
+app.get('/api/admin/events', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const clientId = Date.now();
+    const newClient = { id: clientId, res };
+    adminSseClients.push(newClient);
+
+    req.on('close', () => {
+        adminSseClients = adminSseClients.filter(c => c.id !== clientId);
+    });
+});
 
 function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     if (!receivedSignature) return false;
@@ -858,79 +923,35 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
 
 app.post('/transactions', async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ status: false, message: "Anda harus login terlebih dahulu!" });
+        }
+
         const { orderId, amount, itemDetails, qty } = req.body;
         const buyQty = Number(qty) || 1;
-
-        if (!orderId || !amount) {
-            return res.status(400).json({ 
-                status: false,
-                error: "INVALID_PAYLOAD", 
-                message: "orderId dan amount wajib diisi!" 
-            });
-        }
-
-        const existingTrx = await Transaction.findOne({ orderId });
-        if (existingTrx) {
-            return res.json({ status: true, data: existingTrx });
-        }
-
         const inputAmount = Number(amount);
 
-        const paywuzRes = await axiosPaywuzWithRetry({
-            method: 'post',
-            url: `${PAYWUZ_BASE_URL}/transactions`,
-            data: {
-                orderId,
-                amount: inputAmount,
-                paymentMethod: "QRIS",
-                feeByMerchant: false
-            },
-            headers: PAYWUZ_HEADERS
-        });
-
-        const transactionData = paywuzRes.data?.data || paywuzRes.data;
-        const qrisNumber = transactionData.paymentNumber || transactionData.qrString || transactionData.qrUrl;
-
-        const safeNum = (val) => {
-            const num = Number(val);
-            return (!isNaN(num) && num > 0) ? num : null;
-        };
-
-        const feeFlatIdr = Number(transactionData.feeFlatIdr) || 290;
-        const feePercentBps = Number(transactionData.feePercentBps) || 70;
-        const calculatedFee = feeFlatIdr + Math.ceil((inputAmount * feePercentBps) / 10000);
-
-        let finalAmount = safeNum(transactionData.grossAmount) || 
-                          safeNum(transactionData.totalAmount) || 
-                          safeNum(transactionData.total);
-
-        if (!finalAmount) {
-            const feeVal = safeNum(transactionData.fee) || safeNum(transactionData.feeAdmin) || calculatedFee;
-            finalAmount = inputAmount + feeVal;
+        if (!orderId || !inputAmount) {
+            return res.status(400).json({ status: false, message: "orderId dan amount wajib diisi!" });
         }
 
-        let pLink = itemDetails?.link || null;
-        if (!pLink && itemDetails?.nama) {
-            const dbProduct = await Product.findOne({ 
-                nama: { $regex: new RegExp(`^${itemDetails.nama.trim()}$`, 'i') }
-            }).lean();
-            if (dbProduct) pLink = dbProduct.link;
-        }
-
+        const dynamicQris = convertStaticToDynamicQRIS(BASE_STATIC_QRIS, inputAmount);
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
         const newTransaction = new Transaction({
             orderId,
-            amount: finalAmount,
-            paymentNumber: qrisNumber,
-            paymentMethod: "QRIS",
-            status: (transactionData.status || "pending").toLowerCase(),
+            userId: req.user.id || req.user._id,
+            username: req.user.username,
+            email: req.user.email,
+            amount: inputAmount,
+            paymentNumber: dynamicQris,
+            paymentMethod: "QRIS Dinamis",
+            status: "pending",
             itemDetails: {
                 ...itemDetails,
                 qty: buyQty
             },
-            productLink: pLink,
-            expiredAt: expiredAt
+            expiredAt
         });
 
         await newTransaction.save();
@@ -941,148 +962,80 @@ app.post('/transactions', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error Create TRX:", error.response?.data || error.message);
-        return res.status(500).json({
-            status: false,
-            error: "CREATE_TRANSACTION_FAILED",
-            message: error.response?.data?.message || error.message || "Gagal membuat transaksi QRIS"
+        console.error("Error Create TRX:", error.message);
+        return res.status(500).json({ status: false, message: "Gagal membuat transaksi QRIS" });
+    }
+});
+
+app.post('/api/transactions/upload-proof', async (req, res) => {
+    try {
+        const { orderId, proofImage } = req.body;
+
+        if (!orderId || !proofImage) {
+            return res.status(400).json({ status: false, message: "OrderId dan foto bukti pembayaran wajib diisi!" });
+        }
+
+        const trx = await Transaction.findOne({ orderId });
+        if (!trx) {
+            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan!" });
+        }
+
+        trx.proofImage = proofImage;
+        trx.status = "waiting_confirmation";
+        trx.updatedAt = new Date();
+        await trx.save();
+
+        // Trigger Notifikasi Chrome Desktop ke Web Admin
+        notifyAdminSse({
+            type: "NEW_PAYMENT_PROOF",
+            orderId: trx.orderId,
+            username: trx.username,
+            amount: trx.amount,
+            item: trx.itemDetails?.nama || "Upgrade API Key"
         });
+
+        return res.json({
+            status: true,
+            message: "Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin."
+        });
+
+    } catch (error) {
+        console.error("Upload Proof Error:", error);
+        return res.status(500).json({ status: false, message: "Terjadi kesalahan server saat menyimpan bukti pembayaran." });
     }
 });
 
 app.get('/transactions/:orderId', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
     try {
         const { orderId } = req.params;
+        const trx = await Transaction.findOne({ orderId });
 
-        const cachedData = await getCache(`trx_${orderId}`);
-        if (cachedData) {
-            return res.json({ data: cachedData });
+        if (!trx) {
+            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
         }
 
-        let localTrx = await Transaction.findOne({ orderId });
-
-        if (!localTrx) {
-            return res.status(404).json({ 
-                error: "TRANSACTION_NOT_FOUND", 
-                message: "Transaksi tidak ditemukan" 
-            });
+        if (trx.status === "pending" && new Date() > new Date(trx.expiredAt)) {
+            trx.status = "cancelled";
+            await trx.save();
         }
 
-        if (localTrx.status.toLowerCase() === "pending" && new Date() > new Date(localTrx.expiredAt)) {
-            localTrx.status = "cancelled";
-            localTrx.updatedAt = new Date();
-            await localTrx.save();
-            scheduleTransactionDeletion(orderId);
-
-            const resultData = {
-                orderId: localTrx.orderId,
-                status: "cancelled",
-                amount: localTrx.amount,
-                paymentNumber: localTrx.paymentNumber,
-                expiredAt: localTrx.expiredAt,
-                productLink: null
-            };
-
-            await setCache(`trx_${orderId}`, resultData);
-            return res.json({ data: resultData });
-        }
-
-        const currentStatus = localTrx.status.toLowerCase();
-        const isSuccess = ["settlement", "success", "paid", "settled"].includes(currentStatus);
-
-        if (isSuccess && !localTrx.productLink && localTrx.itemDetails?.nama) {
-            const pathProduk = path.join(__dirname, 'database', 'produk.json');
-            if (fs.existsSync(pathProduk)) {
-                try {
-                    const products = JSON.parse(fs.readFileSync(pathProduk, 'utf8'));
-                    const targetNama = localTrx.itemDetails.nama.trim().toLowerCase();
-                    const matchedProduct = products.find(p => p.nama && p.nama.trim().toLowerCase() === targetNama);
-                    if (matchedProduct && matchedProduct.link) {
-                        localTrx.productLink = matchedProduct.link;
-                        await localTrx.save();
-                    }
-                } catch (parseErr) {}
-            }
-        }
-
-        const responseData = {
-            orderId: localTrx.orderId,
-            status: currentStatus,
-            amount: localTrx.amount,
-            paymentNumber: localTrx.paymentNumber,
-            expiredAt: localTrx.expiredAt,
-            productLink: isSuccess ? localTrx.productLink : null
-        };
-
-        await setCache(`trx_${orderId}`, responseData);
-
-        res.json({
-            data: responseData
-        });
-
+        return res.json({ data: trx });
     } catch (error) {
-        console.error("Error Status TRX:", error.message);
-        const localTrx = await Transaction.findOne({ orderId: req.params.orderId });
-        if (localTrx) {
-            return res.json({ data: localTrx });
-        }
-        res.status(500).json({ 
-            error: "TRANSACTION_FETCH_FAILED", 
-            message: "Gagal mengambil status transaksi" 
-        });
+        return res.status(500).json({ status: false, message: "Gagal memuat transaksi" });
     }
 });
 
 app.post('/transactions/:orderId/cancel', async (req, res) => {
     try {
         const { orderId } = req.params;
-        const localTrx = await Transaction.findOne({ orderId });
-
-        if (!localTrx) {
-            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
+        const trx = await Transaction.findOne({ orderId });
+        if (trx) {
+            trx.status = "cancelled";
+            await trx.save();
         }
-
-        const prevStatus = localTrx.status.toLowerCase();
-
-        try {
-            await axiosPaywuzWithRetry({
-                method: 'post',
-                url: `${PAYWUZ_BASE_URL}/transactions/${orderId}/cancel`,
-                headers: PAYWUZ_HEADERS
-            });
-        } catch (err) {
-            console.warn(`Paywuz cancel notice for ${orderId}:`, err.message);
-        }
-
-        if (["paid", "settlement", "success"].includes(prevStatus)) {
-            if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                const qtyPurchased = localTrx.itemDetails.qty || 1;
-                await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
-            }
-        }
-
-        localTrx.status = "cancelled";
-        localTrx.updatedAt = new Date();
-        await localTrx.save();
-
-        await deleteCache(`trx_${orderId}`);
-        scheduleTransactionDeletion(orderId);
-
-        return res.json({
-            status: true,
-            data: { orderId, status: "cancelled" }
-        });
-
-    } catch (error) {
-        console.error("Error Cancel TRX:", error.message);
-        res.status(500).json({
-            error: "CANCEL_TRANSACTION_FAILED",
-            message: error.message || "Gagal membatalkan transaksi"
-        });
+        return res.json({ status: true, message: "Transaksi dibatalkan" });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal membatalkan" });
     }
 });
 
@@ -1250,6 +1203,84 @@ app.post('/api/store/manual-order', async (req, res) => {
     } catch (err) {
         console.error("Manual Order Error:", err);
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
+    }
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/api/admin/transactions', async (req, res) => {
+    try {
+        const transactions = await Transaction.find({}).sort({ createdAt: -1 }).limit(100);
+        return res.json({ status: true, data: transactions });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "Gagal memuat transaksi admin." });
+    }
+});
+
+// Admin Konfirmasi Pembayaran (Set Success -> Upgrade Auto)
+app.post('/api/admin/transactions/:orderId/approve', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const trx = await Transaction.findOne({ orderId });
+
+        if (!trx) {
+            return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan" });
+        }
+
+        trx.status = "success";
+        trx.updatedAt = new Date();
+        await trx.save();
+
+        // Otomatis Upgrade Role User di MongoDB
+        const targetUser = await User.findById(trx.userId) || await User.findOne({ username: trx.username });
+        if (targetUser) {
+            const daysToAdd = Number(trx.itemDetails?.qty) || 3;
+            const isVip = (trx.itemDetails?.nama || '').toLowerCase().includes("vip");
+            const targetRole = isVip ? "VIP User" : "Premium User";
+
+            let currentExpiry = (targetUser.roleExpiresAt && new Date(targetUser.roleExpiresAt) > new Date())
+                ? new Date(targetUser.roleExpiresAt)
+                : new Date();
+
+            currentExpiry.setDate(currentExpiry.getDate() + daysToAdd);
+
+            targetUser.role = targetRole;
+            targetUser.roleExpiresAt = currentExpiry;
+
+            if (targetRole === "Premium User") {
+                targetUser.apikey = generatePremiumApiKey(targetUser.username);
+            } else if (targetRole === "VIP User") {
+                if (!targetUser.apikey || targetUser.apikey.startsWith('arulzxdfree-')) {
+                    targetUser.apikey = `${targetUser.username.toLowerCase()}-custom-vip`;
+                }
+            }
+
+            await targetUser.save();
+        }
+
+        return res.json({ status: true, message: "Transaksi berhasil dikonfirmasi LUNAS! Role pengguna telah diperbarui." });
+
+    } catch (err) {
+        console.error("Approve Error:", err);
+        return res.status(500).json({ status: false, message: "Gagal memproses konfirmasi." });
+    }
+});
+
+// Admin Tolak Transaksi
+app.post('/api/admin/transactions/:orderId/reject', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const trx = await Transaction.findOne({ orderId });
+        if (trx) {
+            trx.status = "rejected";
+            trx.updatedAt = new Date();
+            await trx.save();
+        }
+        return res.json({ status: true, message: "Transaksi ditolak." });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "Gagal menolak transaksi." });
     }
 });
 
