@@ -1148,29 +1148,31 @@ async function sendBackgroundPushNotification(payload) {
 
 app.post('/transactions', async (req, res) => {
     try {
-        if (!req.user) {
-            return res.status(401).json({ status: false, message: "Anda harus login terlebih dahulu!" });
-        }
-
         const { orderId, amount, itemDetails, qty } = req.body;
         const buyQty = Number(qty) || 1;
         const inputAmount = Number(amount);
 
-        if (!orderId || !inputAmount) {
-            return res.status(400).json({ status: false, message: "orderId dan amount wajib diisi!" });
+        if (!orderId || !inputAmount || isNaN(inputAmount)) {
+            return res.status(400).json({ status: false, message: "orderId dan nominal pembayaran tidak valid!" });
         }
 
+        // Tentukan identitas pembeli (dari akun login atau fallback guest)
+        const userId = req.user ? (req.user.id || req.user._id) : null;
+        const username = req.user ? req.user.username : "Guest_Customer";
+        const email = req.user ? req.user.email : "guest@arulzzxd.my.id";
+
+        // Generate QRIS Dinamis dengan gabungan nominal & CRC16
         const dynamicQris = convertStaticToDynamicQRIS(STATIC_QRIS, inputAmount);
-        const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
+        const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // 15 Menit
 
         const newTransaction = new Transaction({
             orderId,
-            userId: req.user.id || req.user._id,
-            username: req.user.username,
-            email: req.user.email,
+            userId,
+            username,
+            email,
             amount: inputAmount,
             paymentNumber: dynamicQris,
-            paymentMethod: "QRIS Dinamis",
+            paymentMethod: "QRIS Dinamis Mandiri",
             status: "pending",
             itemDetails: {
                 ...itemDetails,
@@ -1183,12 +1185,13 @@ app.post('/transactions', async (req, res) => {
 
         return res.json({
             status: true,
+            message: "QRIS Dinamis berhasil dibuat",
             data: newTransaction
         });
 
     } catch (error) {
         console.error("Error Create TRX:", error.message);
-        return res.status(500).json({ status: false, message: "Gagal membuat transaksi QRIS" });
+        return res.status(500).json({ status: false, message: "Terjadi kesalahan server saat membuat QRIS: " + error.message });
     }
 });
 
@@ -1274,141 +1277,76 @@ app.post('/transactions/:orderId/cancel', async (req, res) => {
 
 app.post('/webhook', async (req, res) => {
     try {
-        const signature = req.headers['x-paywuz-signature'];
-        const payloadToVerify = req.rawBody || req.body;
-
-        const isValid = verifyPaywuzSignature(payloadToVerify, signature, PAYWUZ_API_KEY);
-
-        if (!isValid && process.env.NODE_ENV === 'production') {
-            return res.status(401).json({ 
-                error: "INVALID_SIGNATURE", 
-                message: "Signature webhook tidak valid!" 
-            });
-        }
-
         const payload = req.body;
         const eventName = payload?.event || payload?.type; 
         const payloadData = payload?.data || payload;
-        const orderId = payloadData?.orderId;
-        const status = payloadData?.status ? payloadData.status.toLowerCase() : null;
+        const orderId = payloadData?.orderId || payload?.order_id || payload?.trx_id;
+        const status = payloadData?.status ? payloadData.status.toLowerCase() : (payload?.status || "").toLowerCase();
 
         if (!orderId) {
-            return res.status(400).json({ error: "MISSING_ORDER_ID", message: "orderId tidak ada!" });
+            return res.status(400).json({ status: false, message: "Missing orderId pada payload webhook" });
         }
 
-        if (orderId && status) {
-            let localTrx = await Transaction.findOne({ orderId });
+        let localTrx = await Transaction.findOne({ orderId });
 
-            if (localTrx) {
-                const prevStatus = localTrx.status.toLowerCase();
-                localTrx.status = status;
+        if (localTrx) {
+            const prevStatus = localTrx.status.toLowerCase();
+            const isPaidEvent = ["paid", "settlement", "success", "paid_successful"].includes(status);
+            const isCancelEvent = ["cancelled", "failed", "expire", "rejected"].includes(status);
+
+            if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
+                localTrx.status = "success";
                 localTrx.updatedAt = new Date();
 
-                const isPaidEvent = eventName === "transaction.paid" || ["paid", "settlement", "success"].includes(status);
-                const isCancelEvent = ["cancelled", "failed", "expire"].includes(status);
-
-                if (isPaidEvent && !["paid", "settlement", "success"].includes(prevStatus)) {
-                    console.log(`⚡ [TRANSACTION.PAID] Order ID ${orderId} Lunas!`);
-
-                    // 1. LOGIKA UNTUK PEMBELIAN PRODUK STORE
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-
-                        // Jika transaksi BUKAN upgrade role API Key, update stok toko biasa
-                        if (!localTrx.itemDetails.nama.includes("Upgrade Role")) {
-                            await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
-
-                            const buyerIdentifier = getUserIdentifier(req) || localTrx.paymentNumber;
-                            await recordProductBuyer(localTrx.itemDetails.nama, buyerIdentifier);
-                        }
-                    }
-
-                    // 2. LOGIKA OTOMATISASI UPGRADE ROLE & API KEY USER
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama && localTrx.itemDetails.nama.includes("Upgrade Role")) {
-                        try {
-                            // Identifikasi user dari email/username/IP
-                            const buyerIdentifier = getUserIdentifier(req);
-                            const daysToAdd = Number(localTrx.itemDetails.qty) || 3;
-                            const isVip = localTrx.itemDetails.nama.toLowerCase().includes("vip");
-                            const targetRole = isVip ? "VIP User" : "Premium User";
-
-                            let targetUser = null;
-
-                            // Cari user berdasarkan email, username, atau ID
-                            if (buyerIdentifier) {
-                                targetUser = await User.findOne({
-                                    $or: [
-                                        { email: buyerIdentifier.toLowerCase() },
-                                        { username: buyerIdentifier.toLowerCase() }
-                                    ]
-                                });
-                            }
-
-                            // Fallback: Jika tidak ditemukan via req, cari via session/IP jika ada
-                            if (!targetUser && req.user) {
-                                targetUser = await User.findById(req.user.id || req.user._id);
-                            }
-
-                            if (targetUser) {
-                                // Hitung tanggal ekspirasi baru (akumulasi jika masa aktif masih berjalan)
-                                let currentExpiry = (targetUser.roleExpiresAt && new Date(targetUser.roleExpiresAt) > new Date())
-                                    ? new Date(targetUser.roleExpiresAt)
-                                    : new Date();
-
-                                currentExpiry.setDate(currentExpiry.getDate() + daysToAdd);
-
-                                targetUser.role = targetRole;
-                                targetUser.roleExpiresAt = currentExpiry;
-
-                                // Generate Apikey otomatis jika belum berkesesuaian
-                                if (targetRole === "Premium User") {
-                                    targetUser.apikey = generatePremiumApiKey(targetUser.username);
-                                } else if (targetRole === "VIP User") {
-                                    if (!targetUser.apikey || targetUser.apikey.startsWith('arulzxdfree-')) {
-                                        targetUser.apikey = `${targetUser.username.toLowerCase()}-custom-vip`;
-                                    }
-                                }
-
-                                await targetUser.save();
-                                console.log(`🎉 [UPGRADE SUCCESS] User ${targetUser.username} berhasil di-upgrade ke ${targetRole} hingga ${currentExpiry.toISOString()}`);
-                            } else {
-                                console.warn(`⚠️ [UPGRADE WARNING] Tidak dapat menemukan akun user untuk transaksi ${orderId}`);
-                            }
-                        } catch (upgradeErr) {
-                            console.error("❌ Gagal memproses upgrade role user di webhook:", upgradeErr.message);
-                        }
-                    }
-
-                    // Auto-fill link produk jika belum terisi
-                    if (!localTrx.productLink && localTrx.itemDetails?.nama) {
-                        const dbProduct = await Product.findOne({ 
-                            nama: { $regex: new RegExp(`^${localTrx.itemDetails.nama.trim()}$`, 'i') } 
-                        }).lean();
-                        if (dbProduct) localTrx.productLink = dbProduct.link;
-                    }
-                } 
-                else if (isCancelEvent && ["paid", "settlement", "success"].includes(prevStatus)) {
-                    // Rollback stok jika transaksi toko biasa dibatalkan setelah lunas
-                    if (localTrx.itemDetails && localTrx.itemDetails.nama && !localTrx.itemDetails.nama.includes("Upgrade Role")) {
-                        const qtyPurchased = localTrx.itemDetails.qty || 1;
-                        await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, true);
-                    }
+                // Update stok produk store jika transaksi produk biasa
+                if (localTrx.itemDetails && localTrx.itemDetails.nama && !localTrx.itemDetails.nama.includes("Upgrade Role")) {
+                    const qtyPurchased = localTrx.itemDetails.qty || 1;
+                    await updateProductStockAndSold(localTrx.itemDetails.nama, qtyPurchased, false);
+                    await recordProductBuyer(localTrx.itemDetails.nama, localTrx.email || localTrx.username);
                 }
 
-                await localTrx.save();
-                await deleteCache(`trx_${orderId}`);
+                // Otomatisasi Upgrade Role jika produk berupa Upgrade API Key
+                if (localTrx.itemDetails && localTrx.itemDetails.nama && localTrx.itemDetails.nama.includes("Upgrade Role")) {
+                    const daysToAdd = Number(localTrx.itemDetails.qty) || 3;
+                    const isVip = localTrx.itemDetails.nama.toLowerCase().includes("vip");
+                    const targetRole = isVip ? "VIP User" : "Premium User";
 
-                if (["settlement", "success", "paid", "settled", "failed", "cancelled"].includes(status)) {
-                    scheduleTransactionDeletion(orderId);
+                    let targetUser = await User.findOne({
+                        $or: [{ email: localTrx.email }, { username: localTrx.username }]
+                    });
+
+                    if (targetUser) {
+                        let currentExpiry = (targetUser.roleExpiresAt && new Date(targetUser.roleExpiresAt) > new Date())
+                            ? new Date(targetUser.roleExpiresAt)
+                            : new Date();
+
+                        currentExpiry.setDate(currentExpiry.getDate() + daysToAdd);
+                        targetUser.role = targetRole;
+                        targetUser.roleExpiresAt = currentExpiry;
+
+                        if (targetRole === "Premium User") {
+                            targetUser.apikey = generatePremiumApiKey(targetUser.username);
+                        } else if (targetRole === "VIP User" && (!targetUser.apikey || targetUser.apikey.startsWith('arulzxdfree-'))) {
+                            targetUser.apikey = `${targetUser.username.toLowerCase()}-custom-vip`;
+                        }
+
+                        await targetUser.save();
+                    }
                 }
+            } else if (isCancelEvent) {
+                localTrx.status = status;
+                localTrx.updatedAt = new Date();
             }
+
+            await localTrx.save();
+            await deleteCache(`trx_${orderId}`);
         }
 
-        return res.status(200).json({ data: { message: "Webhook diproses dengan sukses", orderId } });
+        return res.status(200).json({ status: true, message: "Webhook QRIS Dinamis berhasil diproses", orderId });
 
     } catch (err) {
         console.error("Webhook Error:", err);
-        return res.status(500).json({ error: "WEBHOOK_PROCESSING_ERROR", message: "Error internal webhook" });
+        return res.status(500).json({ status: false, message: "Error internal webhook QRIS" });
     }
 });
 
@@ -3652,15 +3590,15 @@ app.get('/docs', async (req, res) => {
 </head>
 <body class="min-h-screen pb-12 antialiased light-mode text-slate-900">
 
-<div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-[#f8f9fa] text-zinc-900 flex flex-col justify-center px-6 sm:px-16 md:px-24 font-['Plus_Jakarta_Sans'] transition-all duration-300">
-    <div class="max-w-xl w-full mx-auto space-y-4 text-left">
+<div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-[#f8f9fa] text-zinc-900 flex flex-col justify-start items-start p-4 sm:p-6 font-['Plus_Jakarta_Sans'] transition-all duration-300 overflow-y-auto">
+    <div class="max-w-xl w-full text-left space-y-3">
         <!-- Nama Domain -->
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
             api.arulzzxd.my.id
         </h1>
 
         <!-- Judul Verifikasi -->
-        <h2 class="text-xl sm:text-2xl font-bold text-zinc-800">
+        <h2 class="text-lg sm:text-xl font-bold text-zinc-800">
             Melakukan verifikasi keamanan
         </h2>
 
@@ -3670,7 +3608,7 @@ app.get('/docs', async (req, res) => {
         </p>
 
         <!-- Widget Turnstile (Light Theme) -->
-        <div class="pt-3">
+        <div class="pt-1">
             <div class="cf-turnstile" 
                  data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
                  data-theme="light" 
@@ -3679,7 +3617,7 @@ app.get('/docs', async (req, res) => {
         </div>
 
         <!-- Status Teks -->
-        <p id="cfStatusText" class="text-xs font-mono text-zinc-500 pt-1 font-semibold"></p>
+        <p id="cfStatusText" class="text-xs font-mono text-zinc-500 font-semibold"></p>
     </div>
 </div>
 
