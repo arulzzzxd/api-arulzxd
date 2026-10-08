@@ -105,9 +105,6 @@ function generatePremiumApiKey(username) {
     return `${cleanUsername}prem-` + crypto.randomBytes(3).toString('hex').slice(0, 6);
 }
 
-// ====================================================
-// MONGOOSE SCHEMA & USER MODEL
-// ====================================================
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
@@ -125,13 +122,14 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Middleware Otomatis Update API Key saat Role Berubah jika tidak ditentukan khusus
+// Perbaikan: Pastikan API Key selalu disesuaikan saat Role berubah
 userSchema.pre('save', function() {
     if (this.isModified('role')) {
         const roleLower = (this.role || '').toLowerCase();
 
         if (roleLower.includes('vip')) {
-            if (!this.apikey) {
+            // Jika upgrade ke VIP dan key masih format free/premium, perbarui ke key VIP
+            if (!this.apikey || this.apikey.startsWith('arulzxdfree-') || this.apikey.includes('prem-')) {
                 this.apikey = `${this.username.toLowerCase()}-custom-vip`;
             }
         } else if (roleLower.includes('premium')) {
@@ -160,7 +158,7 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
-const checkAuthSession = (req, res, next) => {
+const checkAuthSession = async (req, res, next) => {
     const token = req.cookies.auth_session;
     if (!token) {
         req.user = null;
@@ -168,10 +166,17 @@ const checkAuthSession = (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = {
-            ...decoded,
-            apikey: decoded.apikey
-        }; 
+        
+        // Ambil data terbaru dari MongoDB agar role & apikey selalu sinkron secara realtime
+        const freshUser = await User.findById(decoded.id || decoded._id).lean();
+        if (freshUser) {
+            req.user = {
+                ...freshUser,
+                id: freshUser._id
+            };
+        } else {
+            req.user = null;
+        }
         next();
     } catch (err) {
         res.clearCookie('auth_session');
@@ -2936,7 +2941,58 @@ app.get('/database/changelog', (req, res) => {
     });
 });
 
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "0x4AAAAAAFPfGFru3KCfqol2rvDjwEsnQC4";
+
+app.post('/api/verify-turnstile', async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ status: false, message: 'Token Cloudflare tidak ditemukan!' });
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('secret', TURNSTILE_SECRET_KEY);
+        formData.append('response', token);
+        formData.append('remoteip', req.ip);
+
+        const cfResponse = await axios.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            formData.toString(),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        if (cfResponse.data && cfResponse.data.success) {
+            // Set cookie kadaluwarsa dalam 1 jam (60 menit * 60 detik * 1000 ms)
+            res.cookie('cf_docs_verified', 'true', {
+                maxAge: 1 * 60 * 60 * 1000, 
+                httpOnly: false,
+                secure: true,
+                sameSite: 'lax'
+            });
+            return res.json({ status: true, message: 'Verifikasi berhasil!' });
+        } else {
+            return res.status(400).json({ status: false, message: 'Gagal memverifikasi Cloudflare Turnstile.' });
+        }
+    } catch (err) {
+        console.error("Error Turnstile Verification:", err.message);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat verifikasi.' });
+    }
+});
+
+
 app.get('/docs', (req, res) => {
+    let activeUser = req.user;
+
+    // Ambil data user paling baru dari MongoDB
+    if (req.user) {
+        try {
+            const freshUser = await User.findById(req.user.id || req.user._id).lean();
+            if (freshUser) activeUser = freshUser;
+        } catch (e) {}
+    }
+
+    const currentApiKey = activeUser ? activeUser.apikey : 'Silakan Login';
+
     res.send(`<!DOCTYPE html>
 <html lang="id" class="notranslate" translate="no">
 <head>
@@ -2949,6 +3005,8 @@ app.get('/docs', (req, res) => {
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css" />
@@ -3792,6 +3850,26 @@ app.get('/docs', (req, res) => {
 <!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
     
+    <!-- Modal Gate Cloudflare Turnstile -->
+<div id="cfTurnstileModal" class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="bg-[#FFFDF8] border-2 border-zinc-900 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center space-y-4 font-['Plus_Jakarta_Sans']">
+        <div class="w-12 h-12 bg-amber-100 border-2 border-zinc-900 rounded-xl flex items-center justify-center mx-auto text-amber-700 font-bold text-xl">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+            <h3 class="text-base font-black text-zinc-900 uppercase">Verifikasi Keamanan</h3>
+            <p class="text-xs font-semibold text-zinc-600 mt-1">Selesaikan verifikasi Cloudflare untuk mengakses dokumentasi API.</p>
+        </div>
+        
+        <!-- Widget Turnstile (Ganti data-sitekey dengan Site Key milik Anda) -->
+        <div class="flex justify-center py-2">
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAA..." data-callback="onTurnstileSuccess"></div>
+        </div>
+        
+        <p id="cfStatusText" class="text-[10px] font-mono text-zinc-500 font-bold uppercase">Menunggu Verifikasi...</p>
+    </div>
+</div>
+    
     <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
@@ -3872,7 +3950,7 @@ app.get('/docs', (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
 
 <script class="notranslate" translate="no">
-    const displayApiKey = "${req.user ? (req.user.apikey) : 'Silakan Login'}";
+    const displayApiKey = "${currentApiKey}";
 </script>
 <script src="script.js"></script>
 
@@ -4125,6 +4203,9 @@ app.get('/docs', (req, res) => {
 
         const themeBtn = document.getElementById('themePickerBtn');
         const themeDropdown = document.getElementById('themeMenuDropdown');
+        
+        checkTurnstileVerification();
+        setInterval(checkTurnstileVerification, 30 * 1000);
 
         if (themeBtn && themeDropdown) {
             themeBtn.addEventListener('click', (e) => {
@@ -4215,6 +4296,52 @@ app.get('/docs', (req, res) => {
 
     window.addEventListener('load', finishLoader);
     setTimeout(finishLoader, 1500);
+    
+    async function onTurnstileSuccess(token) {
+    const statusText = document.getElementById('cfStatusText');
+    if (statusText) statusText.innerText = 'Memverifikasi Token...';
+
+    try {
+        const response = await fetch('/api/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const result = await response.json();
+
+        if (result.status) {
+            if (statusText) statusText.innerText = 'Verifikasi Berhasil!';
+            
+            // Sembunyikan Modal Gate
+            const modal = document.getElementById('cfTurnstileModal');
+            if (modal) modal.classList.add('hidden');
+        } else {
+            alert(result.message || 'Verifikasi gagal, silakan coba lagi.');
+            if (typeof turnstile !== 'undefined') turnstile.reset();
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan koneksi saat memverifikasi Cloudflare.');
+        if (typeof turnstile !== 'undefined') turnstile.reset();
+    }
+}
+
+// Fungsi Pengecekan Status Cookie Turnstile
+function checkTurnstileVerification() {
+    const isVerified = document.cookie.includes('cf_docs_verified=true');
+    const modal = document.getElementById('cfTurnstileModal');
+
+    if (isVerified) {
+        if (modal) modal.classList.add('hidden');
+    } else {
+        // Jika cookie sudah habis/hilang setelah 1 jam, tampilkan kembali modal verifikasi
+        if (modal && modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            const statusText = document.getElementById('cfStatusText');
+            if (statusText) statusText.innerText = 'Sesi 1 jam berakhir. Silakan verifikasi ulang.';
+            if (typeof turnstile !== 'undefined') turnstile.reset();
+        }
+    }
+}
 </script>
 
 </body>
