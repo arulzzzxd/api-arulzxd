@@ -3850,26 +3850,38 @@ app.get('/docs', async (req, res) => {
 <!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
     
-    <!-- Modal Gate Cloudflare Turnstile -->
-<div id="cfTurnstileModal" class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-    <div class="bg-[#FFFDF8] border-2 border-zinc-900 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center space-y-4 font-['Plus_Jakarta_Sans']">
-        <div class="w-12 h-12 bg-amber-100 border-2 border-zinc-900 rounded-xl flex items-center justify-center mx-auto text-amber-700 font-bold text-xl">
-            <i class="fa-solid fa-shield-halved"></i>
+<!-- Fullscreen Cloudflare Security Gate Page (Light Mode) -->
+<div id="cfGateOverlay" class="fixed inset-0 z-[999999] bg-[#f8f9fa] text-zinc-900 flex flex-col justify-center px-6 sm:px-16 md:px-24 font-['Plus_Jakarta_Sans'] transition-all duration-300">
+    <div class="max-w-xl w-full mx-auto space-y-4 text-left">
+        <!-- Nama Domain -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+            api.arulzzxd.my.id
+        </h1>
+
+        <!-- Judul Verifikasi -->
+        <h2 class="text-xl sm:text-2xl font-bold text-zinc-800">
+            Melakukan verifikasi keamanan
+        </h2>
+
+        <!-- Deskripsi -->
+        <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
+            Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
+        </p>
+
+        <!-- Widget Turnstile (Tema Light) -->
+        <div class="pt-3">
+            <div class="cf-turnstile" 
+                 data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
+                 data-theme="light" 
+                 data-callback="onTurnstileSuccess">
+            </div>
         </div>
-        <div>
-            <h3 class="text-base font-black text-zinc-900 uppercase">Verifikasi Keamanan</h3>
-            <p class="text-xs font-semibold text-zinc-600 mt-1">Selesaikan verifikasi Cloudflare untuk mengakses dokumentasi API.</p>
-        </div>
-        
-        <!-- Widget Turnstile (Ganti data-sitekey dengan Site Key milik Anda) -->
-        <div class="flex justify-center py-2">
-            <div class="cf-turnstile" data-sitekey="0x4AAAAAA..." data-callback="onTurnstileSuccess"></div>
-        </div>
-        
-        <p id="cfStatusText" class="text-[10px] font-mono text-zinc-500 font-bold uppercase">Menunggu Verifikasi...</p>
+
+        <!-- Status Teks -->
+        <p id="cfStatusText" class="text-xs font-mono text-zinc-500 pt-1 font-semibold"></p>
     </div>
 </div>
-    
+
     <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
