@@ -1148,22 +1148,34 @@ async function sendBackgroundPushNotification(payload) {
 
 app.post('/transactions', async (req, res) => {
     try {
-        const { orderId, amount, itemDetails, qty } = req.body;
+        let { orderId, amount, itemDetails, qty } = req.body;
         const buyQty = Number(qty) || 1;
         const inputAmount = Number(amount);
 
-        if (!orderId || !inputAmount || isNaN(inputAmount)) {
-            return res.status(400).json({ status: false, message: "orderId dan nominal pembayaran tidak valid!" });
+        if (!inputAmount || isNaN(inputAmount)) {
+            return res.status(400).json({ status: false, message: "Nominal pembayaran tidak valid!" });
         }
 
-        // Tentukan identitas pembeli (dari akun login atau fallback guest)
+        // Tentukan identitas pembeli
         const userId = req.user ? (req.user.id || req.user._id) : null;
         const username = req.user ? req.user.username : "Guest_Customer";
         const email = req.user ? req.user.email : "guest@arulzzxd.my.id";
 
-        // Generate QRIS Dinamis dengan gabungan nominal & CRC16
+        // Buat Order ID jika tidak dikirim atau jika duplikat
+        if (!orderId) {
+            orderId = `TRX-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`;
+        }
+
+        // Cek apakah Order ID sudah ada di DB (Cegah Duplicate Key Error E11000)
+        const existingTrx = await Transaction.findOne({ orderId });
+        if (existingTrx) {
+            // Jika order ID bentrok, generate ID baru secara otomatis
+            orderId = `TRX-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`;
+        }
+
+        // Generate QRIS Dinamis
         const dynamicQris = convertStaticToDynamicQRIS(STATIC_QRIS, inputAmount);
-        const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // 15 Menit
+        const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // Expire 15 menit
 
         const newTransaction = new Transaction({
             orderId,
@@ -1191,7 +1203,19 @@ app.post('/transactions', async (req, res) => {
 
     } catch (error) {
         console.error("Error Create TRX:", error.message);
-        return res.status(500).json({ status: false, message: "Terjadi kesalahan server saat membuat QRIS: " + error.message });
+
+        // Jika masih terjadi E11000 duplicate key, kirim pesan ramah ke client
+        if (error.code === 11000) {
+            return res.status(400).json({
+                status: false,
+                message: "ID Transaksi bentrok. Silakan klik tombol bayar sekali lagi."
+            });
+        }
+
+        return res.status(500).json({
+            status: false,
+            message: "Terjadi kesalahan server saat membuat QRIS: " + error.message
+        });
     }
 });
 
