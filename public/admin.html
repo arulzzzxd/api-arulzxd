@@ -117,17 +117,15 @@
             }
         }
 
-        // 3. Sistem Filter Transaksi
+        // 3. Filter Transaksi
         function setFilter(filterType) {
             currentFilter = filterType;
 
-            // Reset Gaya Tombol Filter
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('bg-zinc-900', 'text-white');
                 btn.classList.add('bg-white', 'text-zinc-900');
             });
 
-            // Set Tombol Aktif
             const activeBtn = document.getElementById(`filter-${filterType}`);
             if (activeBtn) {
                 activeBtn.classList.remove('bg-white', 'text-zinc-900');
@@ -137,7 +135,20 @@
             renderTransactions();
         }
 
-        // 4. Trigger Notifikasi Chrome (Teks Murni)
+        // 4. Preview Gambar Bukti Transfer Modal
+        function viewProofImage(imageUrl) {
+            Swal.fire({
+                title: 'Bukti Transfer',
+                imageUrl: imageUrl,
+                imageAlt: 'Bukti Pembayaran',
+                showCloseButton: true,
+                showConfirmButton: false,
+                background: '#FFFDF8',
+                customClass: { popup: 'brutal-border rounded-2xl' }
+            });
+        }
+
+        // 5. Trigger Notifikasi Chrome
         async function triggerChromeNotification(data) {
             playAlarmSound();
 
@@ -171,10 +182,10 @@
                 title: '⚡ BUKTI TRANSAKSI BARU!',
                 html: `
                     <div class="text-left font-bold text-xs space-y-1.5 bg-amber-50 p-3 rounded-xl border-2 brutal-border mt-2">
-                        <p><span class="text-zinc-500">Order ID:</span> <span class="font-mono text-black">${data.orderId}</span></p>
-                        <p><span class="text-zinc-500">Pengguna:</span> ${data.username}</p>
-                        <p><span class="text-zinc-500">Total Rp:</span> <strong class="text-emerald-700 font-mono">Rp ${(data.amount || 0).toLocaleString('id-ID')}</strong></p>
-                        <p><span class="text-zinc-500">Paket:</span> ${data.item || '-'}</p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-zinc-500 w-4"></i><span>Order ID:</span> <span class="font-mono text-black">${data.orderId}</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-user text-zinc-500 w-4"></i><span>User:</span> ${data.username}</p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-wallet text-emerald-600 w-4"></i><span>Total Rp:</span> <strong class="text-emerald-700 font-mono">Rp ${(data.amount || 0).toLocaleString('id-ID')}</strong></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-box text-zinc-500 w-4"></i><span>Paket:</span> ${data.item || '-'}</p>
                     </div>
                 `,
                 icon: 'warning',
@@ -202,7 +213,7 @@
             }
         }
 
-        // 5. Render Data Sesuai Filter Terpilih
+        // 6. Render Card dengan Ikon SVG/FontAwesome
         function renderTransactions() {
             const grid = document.getElementById('transactionGrid');
 
@@ -224,25 +235,64 @@
                                   (trx.status === 'waiting_confirmation' || trx.status === 'pending') ? 'bg-amber-300 animate-pulse' : 
                                   'bg-red-300';
 
+                const durationText = trx.durasi || trx.itemDetails?.durasi || trx.qty || '1 Hari';
+
                 return `
                     <div class="bg-white border-2 brutal-border p-4 rounded-2xl shadow-xs flex flex-col justify-between space-y-3">
                         <div>
-                            <div class="flex items-center justify-between border-b-2 border-zinc-200 pb-2 mb-2">
-                                <span class="font-mono font-black text-xs">${trx.orderId}</span>
+                            <div class="flex items-center justify-between border-b-2 border-zinc-200 pb-2 mb-3">
+                                <span class="font-mono font-black text-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-receipt text-zinc-500"></i> ${trx.orderId}
+                                </span>
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase border-2 brutal-border ${statusColor}">${trx.status}</span>
                             </div>
-                            <div class="text-xs space-y-1 font-bold">
-                                <p><span class="text-zinc-500">User:</span> ${trx.username} (${trx.email || '-'})</p>
-                                <p><span class="text-zinc-500">Total:</span> <strong class="text-emerald-700 font-mono">Rp ${(trx.amount || 0).toLocaleString('id-ID')}</strong></p>
-                                <p><span class="text-zinc-500">Paket:</span> ${trx.itemDetails?.nama || '-'}</p>
-                                <p><span class="text-zinc-500">Status Bukti:</span> ${trx.proofImage ? '<span class="text-emerald-600 font-black">TERUNGGAH</span>' : '<span class="text-red-500 font-black">BELUM ADA</span>'}</p>
+
+                            <div class="text-xs space-y-2 font-bold">
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-zinc-500 w-4 text-center"></i>
+                                    <span class="text-zinc-500 shrink-0">User:</span>
+                                    <span class="truncate">${trx.username} (${trx.email || '-'})</span>
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-solid fa-wallet text-emerald-600 w-4 text-center"></i>
+                                    <span class="text-zinc-500 shrink-0">Total Harga:</span>
+                                    <strong class="text-emerald-700 font-mono">Rp ${(trx.amount || 0).toLocaleString('id-ID')}</strong>
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-solid fa-box text-zinc-500 w-4 text-center"></i>
+                                    <span class="text-zinc-500 shrink-0">Paket:</span>
+                                    <span>${trx.itemDetails?.nama || trx.item || '-'}</span>
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-solid fa-clock text-zinc-500 w-4 text-center"></i>
+                                    <span class="text-zinc-500 shrink-0">Qty / Hari:</span>
+                                    <span>${durationText}</span>
+                                </p>
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-solid fa-file-invoice text-zinc-500 w-4 text-center"></i>
+                                    <span class="text-zinc-500 shrink-0">Bukti:</span>
+                                    ${trx.proofImage ? '<span class="text-emerald-600 font-black">TERUNGGAH</span>' : '<span class="text-red-500 font-black">BELUM ADA</span>'}
+                                </p>
                             </div>
+
+                            ${trx.proofImage ? `
+                                <div class="mt-3 pt-2 border-t border-dashed border-zinc-200">
+                                    <button onclick="viewProofImage('${trx.proofImage}')" class="w-full bg-amber-100 hover:bg-amber-200 text-zinc-900 font-black text-[11px] py-1.5 px-3 rounded-lg border-2 brutal-border flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                                        <i class="fa-solid fa-image"></i>
+                                        <span>LIHAT BUKTI TRANSFER</span>
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
 
                         ${trx.status === 'waiting_confirmation' || trx.status === 'pending' ? `
                             <div class="flex gap-2 pt-2 border-t-2 border-zinc-200">
-                                <button onclick="approveTransaction('${trx.orderId}')" class="flex-1 bg-emerald-400 font-black text-xs py-2 rounded-xl border-2 brutal-border uppercase active:scale-95">LUNAS</button>
-                                <button onclick="rejectTransaction('${trx.orderId}')" class="flex-1 bg-red-400 font-black text-xs py-2 rounded-xl border-2 brutal-border uppercase active:scale-95">TOLAK</button>
+                                <button onclick="approveTransaction('${trx.orderId}')" class="flex-1 bg-emerald-400 font-black text-xs py-2 rounded-xl border-2 brutal-border uppercase active:scale-95 flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-check"></i> LUNAS
+                                </button>
+                                <button onclick="rejectTransaction('${trx.orderId}')" class="flex-1 bg-red-400 font-black text-xs py-2 rounded-xl border-2 brutal-border uppercase active:scale-95 flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-xmark"></i> TOLAK
+                                </button>
                             </div>
                         ` : ''}
                     </div>
