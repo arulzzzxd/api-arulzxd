@@ -43,7 +43,7 @@ mongoose.connect(MONGODB_URI)
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 
-const BASE_STATIC_QRIS = process.env.STATIC_QRIS || "00020101021126570011ID.DANA.WWW011893600915396562113302099656211330303UMI51440014ID.CO.QRIS.WWW0215ID10254420078250303UMI5204481453033605802ID5914IDZHARUL STORE600409146105531936304C1E4";
+STATIC_QRIS ="00020101021126570011ID.DANA.WWW011893600915396562113302099656211330303UMI51440014ID.CO.QRIS.WWW0215ID10254420078250303UMI5204481453033605802ID5914IDZHARUL STORE600409146105531936304C1E4"
 
 function calcCRC16(str) {
     let crc = 0xFFFF;
@@ -62,7 +62,13 @@ function calcCRC16(str) {
 }
 
 function convertStaticToDynamicQRIS(staticQris, amount) {
-    let qris = staticQris.trim();
+    let qris = (staticQris || '').trim();
+
+    // Jika STATIC_QRIS berupa Base64 atau URL Gambar, kembalikan langsung tanpa konversi EMVCo
+    if (qris.startsWith('data:image') || qris.startsWith('http://') || qris.startsWith('https://')) {
+        return qris;
+    }
+
     const crcIndex = qris.indexOf('6304');
     if (crcIndex !== -1) {
         qris = qris.substring(0, crcIndex);
@@ -938,7 +944,7 @@ app.post('/transactions', async (req, res) => {
             return res.status(400).json({ status: false, message: "orderId dan amount wajib diisi!" });
         }
 
-        const dynamicQris = convertStaticToDynamicQRIS(BASE_STATIC_QRIS, inputAmount);
+        const dynamicQris = convertStaticToDynamicQRIS(STATIC_QRIS, inputAmount);
         const expiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
         const newTransaction = new Transaction({
