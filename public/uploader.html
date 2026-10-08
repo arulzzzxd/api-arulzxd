@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="google" content="notranslate" />
-    <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Uploader File - Arulz-XD API</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
-    <!-- Tailwind CSS, SweetAlert2, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -18,8 +16,6 @@
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
-            
-            /* Variabel Warna Tema & Outline Dinamis */
             --theme-border: #a16207;
             --theme-accent: #fde047;
             --theme-text: #121212;
@@ -27,9 +23,7 @@
             --rgb-angle: 0deg;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         html, body {
             margin: 0;
@@ -45,31 +39,16 @@
             overflow-x: hidden;
         }
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace !important;
-        }
+        .code-font { font-family: 'JetBrains Mono', monospace !important; }
 
-        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
-        .brutal-border,
-        .light-card,
-        .dropdown-nav-card,
-        .btn-brutalism-light,
-        .stat-box,
-        .light-popup-bg,
-        .light-card-box,
-        header,
-        #bioDropdown,
-        #themeMenuDropdown,
-        .cyber-loader-box,
-        .cyber-bar,
-        .uploader-card,
-        .file-badge,
-        .brutal-dropzone {
+        .brutal-border, .light-card, .dropdown-nav-card, .btn-brutalism-light,
+        .stat-box, .light-popup-bg, .light-card-box, header, #bioDropdown,
+        #themeMenuDropdown, .cyber-loader-box, .cyber-bar, .uploader-card,
+        .file-badge, .brutal-dropzone, .result-card {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
 
-        /* Class Aksen Tema */
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
@@ -88,18 +67,11 @@
             transition: all 0.15s ease;
         }
 
-        /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (CONIC GRADIENT 360°) */
-        /* ======================================================= */
-        .rgb-mode-active .light-card,
-        .rgb-mode-active .dropdown-nav-card,
-        .rgb-mode-active .btn-brutalism-light,
-        .rgb-mode-active #themeMenuDropdown,
-        .rgb-mode-active .cyber-loader-box,
-        .rgb-mode-active .cyber-bar,
-        .rgb-mode-active .uploader-card,
-        .rgb-mode-active .brutal-dropzone,
-        .rgb-mode-active .light-card-box {
+        .rgb-mode-active .light-card, .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light, .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box, .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .uploader-card, .rgb-mode-active .brutal-dropzone,
+        .rgb-mode-active .light-card-box, .rgb-mode-active .result-card {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
@@ -107,25 +79,6 @@
             background-clip: padding-box, border-box !important;
         }
 
-        .rgb-mode-active .theme-bg-accent {
-            border-color: transparent !important;
-            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
-                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            background-origin: border-box !important;
-            background-clip: padding-box, border-box !important;
-            color: var(--theme-text) !important;
-        }
-
-        .rgb-mode-active header,
-        .rgb-mode-active #bioDropdown {
-            border-color: transparent !important;
-            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
-                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-            background-origin: border-box !important;
-            background-clip: padding-box, border-box !important;
-        }
-
-        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
@@ -198,7 +151,6 @@
             border-radius: 9999px;
         }
 
-        /* Menu Navigasi Kartu Dropdown */
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
             border: 2px solid var(--theme-border) !important;
@@ -214,17 +166,12 @@
             transition: all 0.15s ease !important;
             box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
         }
-        .dropdown-nav-card:active {
-            transform: translateY(1px) !important;
-            background-color: #FAF7EF !important;
-        }
 
-        /* Style Kartu Uploader Neo-Brutalism */
         .uploader-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
             border-radius: 24px !important;
-            padding: 24px sm:padding-32px !important;
+            padding: 24px !important;
             box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
@@ -239,7 +186,6 @@
             transform: translateY(-2px);
         }
 
-        /* Custom SweetAlert2 Neo-Brutalism Style */
         .swal2-popup-custom {
             background: #FFFDF8 !important;
             border: 2.5px solid var(--theme-border) !important;
@@ -254,11 +200,6 @@
             font-weight: 900 !important;
             text-transform: uppercase !important;
         }
-        .swal2-html-custom {
-            color: #3f3f46 !important;
-            font-size: 0.875rem !important;
-            font-weight: 600 !important;
-        }
         .swal2-confirm-custom {
             background-color: var(--theme-accent) !important;
             color: #121212 !important;
@@ -268,7 +209,6 @@
             padding: 0.75rem 2rem !important;
             border: 2px solid var(--theme-border) !important;
             border-radius: 12px !important;
-            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -277,7 +217,6 @@
 </head>
 <body class="min-h-screen pb-12 antialiased">
 
-<!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
@@ -304,9 +243,6 @@
     </div>
 </div>
 
-<div id="themeBg" class="fixed inset-0 -z-10"></div>
-
-<!-- Header Top Bar (Fixed Solid Krem z-30) -->
 <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -319,24 +255,19 @@
             </div>
         </div>
 
-        <!-- Tombol Aksi Kanan -->
         <div class="flex items-center gap-2 relative">
-            
-            <!-- Tombol Switcher Style Warna -->
             <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
             </button>
 
-            <!-- Tombol Menu Sidebar -->
             <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                 </svg>
             </button>
 
-            <!-- Dropdown Pilihan Tema Warna -->
             <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                 <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
                 
@@ -373,18 +304,13 @@
                     <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
                 </button>
             </div>
-
         </div>
     </div>
 </header>
 
-<!-- Overlay Latar Belakang (z-40) -->
 <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-<!-- Sidebar Dropdown Nav (z-50) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
-    
-    <!-- Header Dropdown -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
         <div class="flex items-center gap-2">
             <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
@@ -393,7 +319,6 @@
             </span>
         </div>
 
-        <!-- Switcher Bahasa Singkat (ID / EN) & Close Button -->
         <div class="flex items-center gap-2">
             <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
                 <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
@@ -406,14 +331,12 @@
         </div>
     </div>
 
-    <!-- Banner Video -->
     <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
         <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
         </video>
     </div>
 
-    <!-- Auth / Profile Status Container -->
     <div id="sidebarAuthBtnContainer" class="mb-3">
         <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
             <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
@@ -432,7 +355,6 @@
         </div>
     </div>
 
-    <!-- Tombol Navigasi Dropdown -->
     <nav class="space-y-2 flex-1 pb-4">
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
@@ -485,10 +407,8 @@
     </nav>
 </div>
 
-<!-- Main Container (pt-20 agar presisi) -->
 <main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
     
-    <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border-2 brutal-border theme-light-bg text-[10px] font-black uppercase tracking-wider text-zinc-900 mb-2 shadow-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -502,10 +422,8 @@
         </p>
     </header>
 
-    <!-- Kartu Utama Uploader Neo-Brutalism -->
     <div class="uploader-card relative space-y-6">
         
-        <!-- Badges Spesifikasi -->
         <div class="flex flex-wrap items-center gap-2">
             <span class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-emerald-100 text-emerald-900 text-[10px] font-black flex items-center gap-1.5 shadow-xs">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ONLINE
@@ -518,9 +436,8 @@
             </span>
         </div>
 
-        <form id="uploadForm" action="/uploadfile" method="post" enctype="multipart/form-data" class="space-y-6">
+        <form id="uploadForm" class="space-y-6">
             
-            <!-- Area Dropzone Brutalism -->
             <div id="file-drop-area" class="brutal-dropzone p-6 sm:p-8 text-center cursor-pointer relative group shadow-xs">
                 <input type="file" name="file" id="fileInput" class="hidden" required />
                 
@@ -535,7 +452,6 @@
                     atau <span class="theme-text-accent font-extrabold underline">klik untuk memilih file</span> · Maksimal <strong class="text-zinc-900 font-black">4.5MB</strong> per file
                 </p>
 
-                <!-- Format Badges -->
                 <div class="flex flex-wrap justify-center gap-1.5 max-w-xl mx-auto pt-2">
                     <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-image"></i> GAMBAR</span>
                     <span class="px-2 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[9px] font-black text-zinc-800 flex items-center gap-1"><i class="fa-regular fa-file-pdf"></i> PDF</span>
@@ -547,7 +463,6 @@
                 </div>
             </div>
 
-            <!-- Preview Box File Terpilih -->
             <div id="preview-area" class="hidden p-4 bg-[#FAF7EF] border-2 brutal-border rounded-xl space-y-2 shadow-xs">
                 <span id="lbl-preview-title" class="text-xs font-black text-zinc-800 uppercase tracking-wider block">File Terpilih:</span>
                 <div id="file-list" class="space-y-1 text-xs font-bold text-zinc-900 code-font"></div>
@@ -561,6 +476,28 @@
             </button>
         </form>
 
+        <!-- KOTAK HASIL UNGGAHAN (LANGSUNG TAMPIL DI SINI) -->
+        <div id="result-area" class="hidden p-5 bg-[#FAF7EF] border-2 brutal-border rounded-2xl space-y-3 shadow-sm transition-all">
+            <div class="flex items-center gap-2 text-emerald-700 font-black text-xs uppercase tracking-wider">
+                <i class="fa-solid fa-circle-check text-base text-emerald-600"></i>
+                <span>Unggahan Berhasil!</span>
+            </div>
+
+            <div class="bg-[#FFFDF8] border-2 brutal-border p-3 rounded-xl">
+                <span class="text-[10px] font-black text-zinc-500 uppercase block mb-1">URL Publik Berkas:</span>
+                <a id="result-url" href="#" target="_blank" class="code-font text-xs text-blue-600 hover:underline font-bold break-all block"></a>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <button type="button" id="btn-copy-url" onclick="copyResultUrl()" class="flex-1 bg-zinc-900 text-white font-black py-2.5 px-4 rounded-xl text-xs border-2 brutal-border uppercase tracking-wide active:scale-95 transition">
+                    <i class="fa-regular fa-copy mr-1"></i> Salin URL
+                </button>
+                <a id="btn-open-url" href="#" target="_blank" class="flex-1 theme-bg-accent font-black py-2.5 px-4 rounded-xl text-xs border-2 brutal-border text-center uppercase tracking-wide active:scale-95 transition">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Buka File
+                </a>
+            </div>
+        </div>
+
         <div class="p-3.5 bg-[#FAF7EF] border-2 brutal-border rounded-xl flex items-start gap-3 shadow-xs">
             <i class="fa-solid fa-circle-info theme-text-accent text-sm mt-0.5"></i>
             <p id="lbl-footer-note" class="text-xs text-zinc-700 font-semibold leading-snug">
@@ -570,7 +507,6 @@
 
     </div>
 
-    <!-- Footer Support -->
     <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
         <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
         <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
@@ -584,14 +520,12 @@
 </main>
 
 <script>
-    // Memblokir Pinch Zoom & Gesture Zoom
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
     });
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-    // Presets Tema Warna & Border
     const THEME_PRESETS = {
         yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -634,7 +568,6 @@
         if (dropdown) dropdown.classList.add('hidden');
     }
 
-    // Terjemahan Bahasa Multi-Language
     const docTranslations = {
         id: {
             badgeStatus: "ONLINE FILE STORAGE",
@@ -702,12 +635,14 @@
         document.getElementById('lbl-footer-desc').innerHTML = `${data.footerDesc} <a href="mailto:supportarulzxd@gmail.com" class="theme-text-accent font-black underline code-font">supportarulzxd@gmail.com</a>`;
     }
 
-    // Drag & Drop Handling
     const fileDropArea = document.getElementById('file-drop-area');
     const fileInput = document.getElementById('fileInput');
     const previewArea = document.getElementById('preview-area');
     const fileList = document.getElementById('file-list');
     const removeFile = document.getElementById('remove-file');
+    const resultArea = document.getElementById('result-area');
+    const resultUrl = document.getElementById('result-url');
+    const btnOpenUrl = document.getElementById('btn-open-url');
 
     fileDropArea.addEventListener('click', () => fileInput.click());
 
@@ -816,7 +751,6 @@
         playBannerVideo();
         switchLanguage(currentLang);
 
-        // Dynamic User Status Sync for Sidebar
         fetch('/api/user-status')
             .then(res => res.json())
             .then(data => {
@@ -841,20 +775,20 @@
             .catch(err => console.error("Gagal mengecek status user:", err));
     });
 
-    // SweetAlert Interception Logika Submit Upload
     const swalConfig = {
         customClass: {
             popup: 'swal2-popup-custom',
             title: 'swal2-title-custom',
-            htmlContainer: 'swal2-html-custom',
             confirmButton: 'swal2-confirm-custom'
         },
         buttonsStyling: false
     };
 
-    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    // PROSES SUBMIT UPLOAD DENGAN FETCH (ASINKRON / TANPA REFRESH)
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
         if (!fileInput.files.length) {
-            e.preventDefault();
             Swal.fire({
                 ...swalConfig,
                 icon: 'warning',
@@ -865,7 +799,6 @@
             return;
         }
 
-        e.preventDefault();
         Swal.fire({
             ...swalConfig,
             icon: 'info',
@@ -875,10 +808,71 @@
             allowOutsideClick: false
         });
 
-        e.target.submit();
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/uploadfile', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.status) {
+                // Tampilkan hasil di halaman uploader.html
+                resultUrl.href = data.url;
+                resultUrl.innerText = data.url;
+                btnOpenUrl.href = data.url;
+                resultArea.classList.remove('hidden');
+
+                // Reset form input
+                fileInput.value = '';
+                fileList.innerHTML = '';
+                previewArea.classList.add('hidden');
+
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'success',
+                    title: currentLang === 'en' ? 'Upload Successful!' : 'Unggahan Berhasil!',
+                    text: currentLang === 'en' ? 'Your file is live. You can copy the URL below.' : 'File Anda sudah aktif dan siap digunakan!',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    ...swalConfig,
+                    icon: 'error',
+                    title: 'Upload Gagal',
+                    text: data.message || 'Terjadi kesalahan saat mengunggah file.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({
+                ...swalConfig,
+                icon: 'error',
+                title: 'Error Koneksi',
+                text: 'Gagal terhubung ke server uploader.',
+                confirmButtonText: 'OK'
+            });
+        }
     });
 
-    // Loader Progress Logic
+    function copyResultUrl() {
+        const urlText = resultUrl.href;
+        navigator.clipboard.writeText(urlText).then(() => {
+            Swal.fire({
+                ...swalConfig,
+                icon: 'success',
+                title: 'Tersalin!',
+                text: 'URL berhasil disalin ke papan klip!',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+    }
+
     let currentProgress = 0;
     let hasFinishedLoading = false;
     const progressFill = document.getElementById('loader-progress-fill');
