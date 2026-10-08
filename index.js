@@ -3492,6 +3492,37 @@ app.get('/docs', async (req, res) => {
 </head>
 <body class="min-h-screen pb-12 antialiased light-mode text-slate-900">
 
+<div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-[#f8f9fa] text-zinc-900 flex flex-col justify-center px-6 sm:px-16 md:px-24 font-['Plus_Jakarta_Sans'] transition-all duration-300">
+    <div class="max-w-xl w-full mx-auto space-y-4 text-left">
+        <!-- Nama Domain -->
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+            api.arulzzxd.my.id
+        </h1>
+
+        <!-- Judul Verifikasi -->
+        <h2 class="text-xl sm:text-2xl font-bold text-zinc-800">
+            Melakukan verifikasi keamanan
+        </h2>
+
+        <!-- Deskripsi -->
+        <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
+            Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
+        </p>
+
+        <!-- Widget Turnstile (Light Theme) -->
+        <div class="pt-3">
+            <div class="cf-turnstile" 
+                 data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
+                 data-theme="light" 
+                 data-callback="onTurnstileSuccess">
+            </div>
+        </div>
+
+        <!-- Status Teks -->
+        <p id="cfStatusText" class="text-xs font-mono text-zinc-500 pt-1 font-semibold"></p>
+    </div>
+</div>
+
 <!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
     <div class="cyber-loader-box">
@@ -3850,38 +3881,6 @@ app.get('/docs', async (req, res) => {
 <!-- Main Mobile & Desktop Container -->
 <main class="max-w-4xl mx-auto px-4 pt-20 pb-5 relative z-10 space-y-5">
     
-<!-- Fullscreen Cloudflare Security Gate Page (Light Mode) -->
-<div id="cfGateOverlay" class="fixed inset-0 z-[999999] bg-[#f8f9fa] text-zinc-900 flex flex-col justify-center px-6 sm:px-16 md:px-24 font-['Plus_Jakarta_Sans'] transition-all duration-300">
-    <div class="max-w-xl w-full mx-auto space-y-4 text-left">
-        <!-- Nama Domain -->
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
-            api.arulzzxd.my.id
-        </h1>
-
-        <!-- Judul Verifikasi -->
-        <h2 class="text-xl sm:text-2xl font-bold text-zinc-800">
-            Melakukan verifikasi keamanan
-        </h2>
-
-        <!-- Deskripsi -->
-        <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
-            Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
-        </p>
-
-        <!-- Widget Turnstile (Tema Light) -->
-        <div class="pt-3">
-            <div class="cf-turnstile" 
-                 data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
-                 data-theme="light" 
-                 data-callback="onTurnstileSuccess">
-            </div>
-        </div>
-
-        <!-- Status Teks -->
-        <p id="cfStatusText" class="text-xs font-mono text-zinc-500 pt-1 font-semibold"></p>
-    </div>
-</div>
-
     <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
         <video autoplay loop muted playsinline class="banner-video-el">
@@ -4205,6 +4204,54 @@ app.get('/docs', async (req, res) => {
                 '</div>';
         });
     }
+    
+    async function onTurnstileSuccess(token) {
+    const statusText = document.getElementById('cfStatusText');
+    if (statusText) statusText.innerText = 'Memverifikasi Token...';
+
+    try {
+        const response = await fetch('/api/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const result = await response.json();
+
+        if (result.status) {
+            if (statusText) statusText.innerText = 'Verifikasi Berhasil!';
+            
+            // Sembunyikan Fullscreen Security Gate
+            const gate = document.getElementById('cfGateOverlay');
+            if (gate) {
+                gate.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => gate.classList.add('hidden'), 300);
+            }
+        } else {
+            if (statusText) statusText.innerText = result.message || 'Verifikasi gagal, silakan coba lagi.';
+            if (typeof turnstile !== 'undefined') turnstile.reset();
+        }
+    } catch (err) {
+        if (statusText) statusText.innerText = 'Terjadi kesalahan koneksi saat memverifikasi Cloudflare.';
+        if (typeof turnstile !== 'undefined') turnstile.reset();
+    }
+}
+
+// Pengecekan Status Cookie Turnstile
+function checkTurnstileVerification() {
+    const isVerified = document.cookie.includes('cf_docs_verified=true');
+    const gate = document.getElementById('cfGateOverlay');
+
+    if (isVerified) {
+        if (gate) gate.classList.add('hidden');
+    } else {
+        if (gate && gate.classList.contains('hidden')) {
+            gate.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            const statusText = document.getElementById('cfStatusText');
+            if (statusText) statusText.innerText = 'Sesi 1 jam berakhir. Silakan verifikasi ulang.';
+            if (typeof turnstile !== 'undefined') turnstile.reset();
+        }
+    }
+}
 
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
@@ -4308,52 +4355,6 @@ app.get('/docs', async (req, res) => {
 
     window.addEventListener('load', finishLoader);
     setTimeout(finishLoader, 1500);
-    
-    async function onTurnstileSuccess(token) {
-    const statusText = document.getElementById('cfStatusText');
-    if (statusText) statusText.innerText = 'Memverifikasi Token...';
-
-    try {
-        const response = await fetch('/api/verify-turnstile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
-        });
-        const result = await response.json();
-
-        if (result.status) {
-            if (statusText) statusText.innerText = 'Verifikasi Berhasil!';
-            
-            // Sembunyikan Modal Gate
-            const modal = document.getElementById('cfTurnstileModal');
-            if (modal) modal.classList.add('hidden');
-        } else {
-            alert(result.message || 'Verifikasi gagal, silakan coba lagi.');
-            if (typeof turnstile !== 'undefined') turnstile.reset();
-        }
-    } catch (err) {
-        alert('Terjadi kesalahan koneksi saat memverifikasi Cloudflare.');
-        if (typeof turnstile !== 'undefined') turnstile.reset();
-    }
-}
-
-// Fungsi Pengecekan Status Cookie Turnstile
-function checkTurnstileVerification() {
-    const isVerified = document.cookie.includes('cf_docs_verified=true');
-    const modal = document.getElementById('cfTurnstileModal');
-
-    if (isVerified) {
-        if (modal) modal.classList.add('hidden');
-    } else {
-        // Jika cookie sudah habis/hilang setelah 1 jam, tampilkan kembali modal verifikasi
-        if (modal && modal.classList.contains('hidden')) {
-            modal.classList.remove('hidden');
-            const statusText = document.getElementById('cfStatusText');
-            if (statusText) statusText.innerText = 'Sesi 1 jam berakhir. Silakan verifikasi ulang.';
-            if (typeof turnstile !== 'undefined') turnstile.reset();
-        }
-    }
-}
 </script>
 
 </body>
