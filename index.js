@@ -69,7 +69,7 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
     }
     qris = qris.replace('000201010211', '000201010212');
 
-    // Hapus Tag 54 lama jika sebelumnya sudah ada nominal
+    // Bersihkan Tag 54 lama
     qris = qris.replace(/54\d{2}\d+5802ID/, '5802ID');
 
     const amtStr = String(Math.round(amount));
