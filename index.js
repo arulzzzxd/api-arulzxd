@@ -93,6 +93,28 @@ function convertStaticToDynamicQRIS(staticQris, amount) {
     return qris + crc;
 }
 
+// Service Worker Route untuk Notifikasi Chrome Android/Desktop
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.send(`
+        self.addEventListener('notificationclick', function(event) {
+            event.notification.close();
+            event.waitUntil(
+                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+                    for (let client of clientList) {
+                        if (client.url.includes('/admin') && 'focus' in client) {
+                            return client.focus();
+                        }
+                    }
+                    if (clients.openWindow) {
+                        return clients.openWindow('/admin');
+                    }
+                })
+            );
+        });
+    `);
+});
+
 // ====================================================
 // HELPER GENERATOR API KEY SESUAI ATURAN
 // ====================================================
