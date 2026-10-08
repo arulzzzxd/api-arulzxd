@@ -18,7 +18,7 @@
     <header class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b-2 brutal-border mb-6">
         <div>
             <h1 class="text-2xl font-black uppercase">ADMIN DASHBOARD TRANSAKSI</h1>
-            <p class="text-xs font-bold text-zinc-600">Verifikasi bukti pembayaran & upgrade role otomatis pengguna.</p>
+            <p class="text-xs font-bold text-zinc-600">Verifikasi bukti pembayaran & upgrade role otomatis pengguna (Khusus: haqqi.official13@gmail.com).</p>
         </div>
         <div class="flex flex-wrap gap-2">
             <button id="btnEnableNotif" onclick="enableChromeNotification()" class="bg-blue-500 text-white font-black px-4 py-2.5 rounded-xl border-2 brutal-border text-xs uppercase tracking-wider shadow-sm active:scale-95">
@@ -72,7 +72,7 @@
                     audioCtx.resume();
                 }
                 audioUnlocked = true;
-                console.log("🔊 Audio Unlocked!");
+                console.log("🔊 Audio Context Unlocked!");
             }
         }
         document.addEventListener('click', unlockAudio, { once: true });
@@ -89,6 +89,17 @@
                 }
             }
             return null;
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
         }
 
         function playAlarmSound() {
@@ -115,19 +126,53 @@
             }
         }
 
+        async function syncPushSubscription() {
+            if (!("Notification" in window) || !('serviceWorker' in navigator)) return;
+            if (Notification.permission !== "granted") return;
+
+            try {
+                const reg = await registerSW();
+                if (!reg) return;
+
+                const keyRes = await fetch('/api/admin/vapid-public-key');
+                if (!keyRes.ok) return;
+                const { publicKey } = await keyRes.json();
+                if (!publicKey) return;
+
+                const applicationServerKey = urlBase64ToUint8Array(publicKey);
+                let subscription = await reg.pushManager.getSubscription();
+
+                if (!subscription) {
+                    subscription = await reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: applicationServerKey
+                    });
+                }
+
+                await fetch('/api/admin/subscribe-push', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription)
+                });
+
+                updateNotifButtonState();
+            } catch (err) {
+                console.error("Gagal sync push subscription:", err);
+            }
+        }
+
         async function enableChromeNotification() {
             unlockAudio();
-            if (!("Notification" in window)) {
-                Swal.fire("Error", "Browser ini tidak mendukung notifikasi Chrome.", "error");
+            if (!("Notification" in window) || !('serviceWorker' in navigator)) {
+                Swal.fire("Error", "Browser ini tidak mendukung Web Push Notification.", "error");
                 return;
             }
 
             const permission = await Notification.requestPermission();
             if (permission === "granted") {
                 playAlarmSound();
-                await registerSW();
-                Swal.fire("Sip!", "Notifikasi Chrome telah aktif!", "success");
-                updateNotifButtonState();
+                await syncPushSubscription();
+                Swal.fire("Sip!", "Notifikasi latar belakang (Web Push) telah aktif!", "success");
             } else {
                 Swal.fire("Izin Ditolak", "Izinkan notifikasi di setelan browser Chrome HP Anda.", "warning");
             }
@@ -273,7 +318,7 @@
                 if (currentFilter === 'all') return true;
                 if (currentFilter === 'success') return trx.status === 'success';
                 if (currentFilter === 'waiting') return trx.status === 'waiting_confirmation' || trx.status === 'pending';
-                if (currentFilter === 'reject') return trx.status === 'reject' || trx.status === 'cancelled' || trx.status === 'cancel';
+                if (currentFilter === 'reject') return trx.status === 'reject' || trx.status === 'cancelled' || trx.status === 'cancel' || trx.status === 'rejected';
                 return true;
             });
 
@@ -396,6 +441,7 @@
             updateNotifButtonState();
             await loadTransactions(true);
             connectAdminSSE();
+            await syncPushSubscription();
 
             setInterval(() => {
                 loadTransactions(false);
