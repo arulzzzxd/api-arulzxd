@@ -2980,7 +2980,7 @@ app.post('/api/verify-turnstile', async (req, res) => {
 });
 
 
-app.get('/docs', (req, res) => {
+app.get('/docs', async (req, res) => {
     let activeUser = req.user;
 
     // Ambil data user paling baru dari MongoDB
