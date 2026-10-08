@@ -1063,14 +1063,36 @@ function verifyPaywuzSignature(rawBody, receivedSignature, apikey) {
     }
 }
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BNEbW2Ly53AdqzWM1RwGCF9zKnCYwtyRmIvQE961Ciza5A7H3jZtDivHmJH7IlMPNYd7gp01dHVAbhNzPxz3mvg";
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "BNEbW2Ly53AdqzWM1RwGCF9zKnCYwtyRmIvQE961Ciza5A7H3jZtDivHmJH7IlMPNYd7gp01dHVAbhNzPxz3mvg";
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BMobo2oz7OzClSggyEDzEdxq8xqeHlTixyjlaZTHGG1Wq3xAZpdw-FaqW6GA8puXmCh5h0OH3kYrl3daFgtBCes";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "Um_cVYMniHWsZNXNIAz0ffPuP8qVMC5ydJ303f4phU4";
 
 webpush.setVapidDetails(
     'mailto:haqqi.official13@gmail.com',
     VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY
 );
+
+let vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "BMobo2oz7OzClSggyEDzEdxq8xqeHlTixyjlaZTHGG1Wq3xAZpdw-FaqW6GA8puXmCh5h0OH3kYrl3daFgtBCes";
+let vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "Um_cVYMniHWsZNXNIAz0ffPuP8qVMC5ydJ303f4phU4";
+
+if (!vapidPublicKey || !vapidPrivateKey || vapidPrivateKey.includes("PASTE_")) {
+    const generated = webpush.generateVAPIDKeys();
+    vapidPublicKey = generated.publicKey;
+    vapidPrivateKey = generated.privateKey;
+    console.log("⚠️ VAPID Keys belum diatur di Environment Variables. Menggunakan Kunci Sementara:");
+    console.log("Public Key:", vapidPublicKey);
+    console.log("Private Key:", vapidPrivateKey);
+}
+
+try {
+    webpush.setVapidDetails(
+        'mailto:haqqi.official13@gmail.com',
+        vapidPublicKey,
+        vapidPrivateKey
+    );
+} catch (err) {
+    console.error("❌ Gagal setVapidDetails:", err.message);
+}
 
 app.get('/api/admin/vapid-public-key', checkAdminAccess, (req, res) => {
     res.json({ publicKey: VAPID_PUBLIC_KEY });
