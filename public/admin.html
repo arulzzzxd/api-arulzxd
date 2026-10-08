@@ -20,9 +20,14 @@
             <h1 class="text-2xl font-black uppercase">ADMIN DASHBOARD TRANSAKSI</h1>
             <p class="text-xs font-bold text-zinc-600">Verifikasi bukti pembayaran & upgrade role otomatis pengguna.</p>
         </div>
-        <button id="btnEnableNotif" onclick="enableChromeNotification()" class="bg-blue-500 text-white font-black px-4 py-2.5 rounded-xl border-2 brutal-border text-xs uppercase tracking-wider shadow-sm active:scale-95">
-            <i class="fa-solid fa-bell mr-1.5"></i> AKTIFKAN NOTIFIKASI CHROME
-        </button>
+        <div class="flex flex-wrap gap-2">
+            <button id="btnEnableNotif" onclick="enableChromeNotification()" class="bg-blue-500 text-white font-black px-4 py-2.5 rounded-xl border-2 brutal-border text-xs uppercase tracking-wider shadow-sm active:scale-95">
+                <i class="fa-solid fa-bell mr-1.5"></i> AKTIFKAN NOTIFIKASI
+            </button>
+            <button onclick="testNotification()" class="bg-purple-500 text-white font-black px-3 py-2.5 rounded-xl border-2 brutal-border text-xs uppercase active:scale-95">
+                <i class="fa-solid fa-vial mr-1"></i> TES NOTIF & SUARA
+            </button>
+        </div>
     </header>
 
     <main>
@@ -56,14 +61,30 @@
     <script>
         let allTransactions = [];
         let currentFilter = 'all';
+        let knownProofOrders = new Set();
+        let audioUnlocked = false;
+        let audioCtx = null;
 
-        // 1. Register Service Worker
+        // Unlock Audio Context pada Klik Pertama Pengguna
+        function unlockAudio() {
+            if (!audioUnlocked) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                audioUnlocked = true;
+                console.log("🔊 Audio Unlocked!");
+            }
+        }
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('touchstart', unlockAudio, { once: true });
+
+        // Register Service Worker
         async function registerSW() {
             if ('serviceWorker' in navigator) {
                 try {
                     const reg = await navigator.serviceWorker.register('/sw.js');
                     await navigator.serviceWorker.ready;
-                    console.log('✅ Service Worker Siap Digunakan');
                     return reg;
                 } catch (err) {
                     console.error('❌ Gagal Register SW:', err);
@@ -72,26 +93,33 @@
             return null;
         }
 
-        // 2. Sound Alarm (Buzzer Beep Audio)
+        // Sound Alarm
         function playAlarmSound() {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.3);
+
                 gain.gain.setValueAtTime(1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start();
-                osc.stop(ctx.currentTime + 0.6);
+                osc.stop(ctx.currentTime + 0.8);
             } catch (e) {
                 console.warn("Audio diblokir browser:", e);
             }
         }
 
         async function enableChromeNotification() {
+            unlockAudio();
             if (!("Notification" in window)) {
                 Swal.fire("Error", "Browser ini tidak mendukung notifikasi Chrome.", "error");
                 return;
@@ -113,11 +141,21 @@
             if (btn && Notification.permission === "granted") {
                 btn.classList.remove('bg-blue-500');
                 btn.classList.add('bg-emerald-500');
-                btn.innerHTML = '<i class="fa-solid fa-bell mr-1.5"></i> NOTIFIKASI CHROME AKTIF';
+                btn.innerHTML = '<i class="fa-solid fa-bell mr-1.5"></i> NOTIFIKASI AKTIF';
             }
         }
 
-        // 3. Filter Transaksi
+        function testNotification() {
+            unlockAudio();
+            triggerChromeNotification({
+                orderId: 'TRX-TEST-' + Math.floor(100 + Math.random() * 900),
+                username: 'Penguji Notifikasi',
+                amount: 10000,
+                item: 'Upgrade Role - VIP User',
+                qty: 10
+            });
+        }
+
         function setFilter(filterType) {
             currentFilter = filterType;
 
@@ -135,7 +173,6 @@
             renderTransactions();
         }
 
-        // 4. Preview Gambar Bukti Transfer Modal
         function viewProofImage(imageUrl) {
             Swal.fire({
                 title: 'Bukti Transfer',
@@ -148,14 +185,14 @@
             });
         }
 
-        // 5. Trigger Notifikasi Chrome
+        // Trigger Notifikasi Chrome + Modal Pop-up
         async function triggerChromeNotification(data) {
             playAlarmSound();
 
-            const qtyText = data.qty ? `${data.qty} Hari` : '1 Hari';
+            const durationDays = data.qty || data.itemDetails?.qty || 1;
             const title = "🔔 BUKTI TRANSAKSI BARU!";
             const options = {
-                body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}\nDurasi: ${qtyText}`,
+                body: `Order: ${data.orderId}\nUser: ${data.username}\nTotal: Rp ${(data.amount || 0).toLocaleString('id-ID')}\nPaket: ${data.item || '-'}\nDurasi: ${durationDays} Hari`,
                 vibrate: [400, 100, 400, 100, 400],
                 tag: "trx-" + data.orderId,
                 renotify: true,
@@ -187,7 +224,7 @@
                         <p class="flex items-center gap-2"><i class="fa-solid fa-user text-zinc-500 w-4"></i><span>User:</span> ${data.username}</p>
                         <p class="flex items-center gap-2"><i class="fa-solid fa-wallet text-emerald-600 w-4"></i><span>Total Rp:</span> <strong class="text-emerald-700 font-mono">Rp ${(data.amount || 0).toLocaleString('id-ID')}</strong></p>
                         <p class="flex items-center gap-2"><i class="fa-solid fa-box text-zinc-500 w-4"></i><span>Paket:</span> ${data.item || '-'}</p>
-                        <p class="flex items-center gap-2"><i class="fa-solid fa-clock text-zinc-500 w-4"></i><span>Qty / Hari:</span> <span>${qtyText}</span></p>
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-clock text-zinc-500 w-4"></i><span>Qty / Hari:</span> <strong class="text-amber-900 font-mono">${durationDays} Hari</strong></p>
                     </div>
                 `,
                 icon: 'warning',
@@ -204,18 +241,37 @@
             });
         }
 
-        async function loadTransactions() {
+        // Fetch Data Transaksi & Auto-Detect Bukti Baru
+        async function loadTransactions(isInitial = false) {
             try {
                 const res = await fetch('/api/admin/transactions');
                 const result = await res.json();
                 allTransactions = result.data || [];
+
+                // Deteksi jika ada bukti transfer baru yang baru saja diunggah
+                allTransactions.forEach(trx => {
+                    if (trx.proofImage && (trx.status === 'waiting_confirmation' || trx.status === 'pending')) {
+                        if (!knownProofOrders.has(trx.orderId)) {
+                            knownProofOrders.add(trx.orderId);
+                            if (!isInitial) {
+                                triggerChromeNotification({
+                                    orderId: trx.orderId,
+                                    username: trx.username,
+                                    amount: trx.amount,
+                                    item: trx.itemDetails?.nama || trx.item || '-',
+                                    qty: trx.itemDetails?.qty || trx.qty || 1
+                                });
+                            }
+                        }
+                    }
+                });
+
                 renderTransactions();
             } catch (err) {
                 console.error("Gagal memuat transaksi:", err);
             }
         }
 
-        // 6. Render Card
         function renderTransactions() {
             const grid = document.getElementById('transactionGrid');
 
@@ -237,9 +293,9 @@
                                   (trx.status === 'waiting_confirmation' || trx.status === 'pending') ? 'bg-amber-300 animate-pulse' : 
                                   'bg-red-300';
 
-                // FIX QTY / HARI: Ambil dari itemDetails.qty
-                const rawQty = trx.itemDetails?.qty || trx.qty || trx.durasi || 1;
-                const durationText = typeof rawQty === 'number' ? `${rawQty} Hari` : rawQty;
+                // PRESISI QTY / HARI
+                const rawQty = trx.itemDetails?.qty || trx.qty || 1;
+                const durationText = `${rawQty} Hari`;
 
                 return `
                     <div class="bg-white border-2 brutal-border p-4 rounded-2xl shadow-xs flex flex-col justify-between space-y-3">
@@ -328,24 +384,31 @@
                 try {
                     const data = JSON.parse(event.data);
                     if (data.type === "NEW_PAYMENT_PROOF") {
-                        triggerChromeNotification(data);
+                        if (!knownProofOrders.has(data.orderId)) {
+                            knownProofOrders.add(data.orderId);
+                            triggerChromeNotification(data);
+                        }
                         loadTransactions();
                     }
                 } catch (e) {}
             };
 
             evtSource.onerror = function() {
-                console.warn("⚠️ SSE Terputus. Reconnect dalam 3 detik...");
                 evtSource.close();
-                setTimeout(connectAdminSSE, 3000);
+                setTimeout(connectAdminSSE, 4000);
             };
         }
 
         window.onload = async function() {
             await registerSW();
             updateNotifButtonState();
-            loadTransactions();
+            await loadTransactions(true);
             connectAdminSSE();
+
+            // Smart Polling setiap 4 detik untuk menjamin notifikasi tetap muncul jika SSE terputus
+            setInterval(() => {
+                loadTransactions(false);
+            }, 4000);
         };
     </script>
 </body>
