@@ -141,6 +141,25 @@ app.get('/sw.js', (req, res) => {
     `);
 });
 
+let adminSseClients = [];
+
+function notifyAdminSse(data) {
+    adminSseClients.forEach(client => {
+        try {
+            client.res.write(`data: ${JSON.stringify(data)}\n\n`);
+        } catch (e) {}
+    });
+}
+
+// Keep-Alive Ping untuk mencegah koneksi SSE terputus oleh proxy / server timeout
+setInterval(() => {
+    adminSseClients.forEach(client => {
+        try {
+            client.res.write(': ping\n\n');
+        } catch (e) {}
+    });
+}, 15000);
+
 // ====================================================
 // HELPER GENERATOR API KEY SESUAI ATURAN
 // ====================================================
@@ -942,23 +961,19 @@ const transactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 
-let adminSseClients = [];
-
-function notifyAdminSse(data) {
-    adminSseClients.forEach(client => {
-        client.res.write(`data: ${JSON.stringify(data)}\n\n`);
-    });
-}
-
-// Endpoint EventSource SSE Admin Notification
 app.get('/api/admin/events', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (res.flushHeaders) res.flushHeaders();
 
     const clientId = Date.now();
     const newClient = { id: clientId, res };
     adminSseClients.push(newClient);
+
+    // Kirim konfirmasi koneksi terhubung
+    res.write(`data: ${JSON.stringify({ type: "CONNECTED" })}\n\n`);
 
     req.on('close', () => {
         adminSseClients = adminSseClients.filter(c => c.id !== clientId);
@@ -1047,13 +1062,14 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
         trx.updatedAt = new Date();
         await trx.save();
 
-        // Trigger Notifikasi Chrome Desktop ke Web Admin
+        // Trigger Notifikasi Real-time ke Admin Dashboard
         notifyAdminSse({
             type: "NEW_PAYMENT_PROOF",
             orderId: trx.orderId,
             username: trx.username,
             amount: trx.amount,
-            item: trx.itemDetails?.nama || "Upgrade API Key"
+            item: trx.itemDetails?.nama || "Upgrade API Key",
+            qty: trx.itemDetails?.qty || trx.qty || 1
         });
 
         return res.json({
