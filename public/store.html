@@ -59,18 +59,44 @@
 
         /* OUTLINE TEMA DINAMIS */
         .brutal-border,
-        .cyber-loader-box,
-        .cyber-option-card,
-        .dropdown-nav-card,
-        #themeMenuDropdown,
-        #bioDropdown,
-        nav,
-        .cat-btn,
-        .product-card,
-        .modal-box {
-            border-color: var(--theme-border) !important;
-            transition: border-color 0.15s ease;
-        }
+.cyber-loader-box,
+.cyber-option-card,
+.dropdown-nav-card,
+#themeMenuDropdown,
+#bioDropdown,
+nav,
+.cat-btn,
+.product-card,
+.modal-box,
+input,
+textarea,
+select,
+button,
+.swal2-popup.cyber-swal {
+    border-color: var(--theme-border) !important;
+}
+
+.swal2-popup.cyber-swal {
+    background: #FFFDF8 !important;
+    border: 2.5px solid var(--theme-border) !important;
+    border-radius: 20px !important;
+    color: #121212 !important;
+    box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.2) !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+.swal2-title.cyber-swal-title {
+    color: #121212 !important;
+    font-weight: 900 !important;
+    font-size: 1.1rem !important;
+}
+.swal2-confirm.cyber-swal-confirm {
+    background: var(--theme-accent) !important;
+    color: var(--theme-text) !important;
+    font-weight: 800 !important;
+    border: 2px solid var(--theme-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
+}
 
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
@@ -2320,69 +2346,78 @@
         }
 
         async function processAutoPayment() {
-            const btnAuto = document.getElementById('btnPayAuto');
-            btnAuto.disabled = true;
-            btnAuto.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat QRIS...`;
+    const btnAuto = document.getElementById('btnPayAuto');
+    btnAuto.disabled = true;
+    btnAuto.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat QRIS...`;
 
-            Swal.fire({
-                title: 'GENERATING QRIS',
-                text: 'Sedang menghubungkan gateway...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); },
-                customClass: { popup: 'cyber-swal' }
-            });
+    Swal.fire({
+        title: 'GENERATING QRIS',
+        text: 'Sedang membuat QRIS Dinamis...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); },
+        customClass: { popup: 'cyber-swal' }
+    });
 
-            try {
-                const calc = calculateFinalTotal();
+    try {
+        const calc = calculateFinalTotal();
 
-                const res = await fetch('/transactions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: CURRENT_ORDER_ID,
-                        amount: calc.total,
-                        qty: CURRENT_QTY,
-                        itemDetails: SELECTED_PRODUCT,
-                        voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
-                    })
-                });
+        const res = await fetch('/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderId: CURRENT_ORDER_ID,
+                amount: calc.total,
+                qty: CURRENT_QTY,
+                itemDetails: SELECTED_PRODUCT,
+                voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
+            })
+        });
 
-                const result = await res.json();
-                if (!result.status) throw new Error(result.message || "Gagal menghasilkan QRIS");
-
-                localStorage.setItem('active_order_id', CURRENT_ORDER_ID);
-                localStorage.setItem('active_order_product', JSON.stringify(SELECTED_PRODUCT));
-
-                const qrisString = result.data.paymentNumber;
-                qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
-
-                const finalAmount = (result.data && result.data.amount) ? result.data.amount : calc.total;
-
-                document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
-                document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
-
-                renderQrisCode(qrisString);
-
-                Swal.close();
-
-                document.getElementById('orderForm').classList.add('hidden');
-                document.getElementById('paymentStep2').classList.remove('hidden');
-
-                startCountdown(qrisExpireTime);
-                startStatusPolling();
-
-            } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'TRANSAKSI GAGAL',
-                    text: err.message,
-                    customClass: { popup: 'cyber-swal' }
-                });
-            } finally {
-                btnAuto.disabled = false;
-                btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang`;
-            }
+        const result = await res.json();
+        
+        if (!res.ok || !result.status) {
+            throw new Error(result.message || "Gagal menghasilkan QRIS Dinamis");
         }
+
+        localStorage.setItem('active_order_id', CURRENT_ORDER_ID);
+        localStorage.setItem('active_order_product', JSON.stringify(SELECTED_PRODUCT));
+
+        const qrisString = result.data.paymentNumber;
+        qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
+
+        const finalAmount = result.data.amount || calc.total;
+
+        document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
+        document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
+
+        // Render QRCode dari string QRIS Dinamis
+        renderQrisCode(qrisString);
+
+        Swal.close();
+
+        document.getElementById('orderForm').classList.add('hidden');
+        document.getElementById('paymentStep2').classList.remove('hidden');
+
+        startCountdown(qrisExpireTime);
+        startStatusPolling();
+
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'TRANSAKSI GAGAL',
+            text: err.message || 'Gagal membuat transaksi QRIS.',
+            customClass: { 
+                popup: 'cyber-swal',
+                title: 'cyber-swal-title',
+                confirmButton: 'cyber-swal-confirm'
+            }
+        });
+    } font
+    finally {
+        btnAuto.disabled = false;
+        btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang`;
+    }
+}
 
         function startCountdown(expireTimestamp) {
             if (countdownInterval) clearInterval(countdownInterval);
