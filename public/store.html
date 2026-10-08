@@ -17,11 +17,10 @@
 
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/Q2C70y.png" type="image/png">
     
-    <!-- Tailwind CSS, SweetAlert2, QRCode, Cloudflare Turnstile & FontAwesome -->
+    <!-- Tailwind CSS, SweetAlert2, QRCode, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -41,33 +40,34 @@
         }
 
         html, body {
-            touch-action: manipulation;
-            -webkit-text-size-adjust: 100%;
-            background-color: var(--bg-cream) !important;
-            color: #121212 !important;
-            overflow-x: hidden;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
-            background-size: 16px 16px !important;
             margin: 0;
             padding: 0;
             width: 100%;
             min-height: 100vh;
+            touch-action: pan-x pan-y;
+            background-color: var(--bg-cream) !important;
+            color: #121212 !important;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
+            background-size: 16px 16px !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            overflow-x: hidden;
         }
 
         .code-font {
             font-family: 'JetBrains Mono', monospace !important;
         }
 
+        /* OUTLINE TEMA DINAMIS */
         .brutal-border,
-        .dropdown-nav-card,
         .cyber-loader-box,
-        .cyber-bar,
         .cyber-option-card,
+        .dropdown-nav-card,
         #themeMenuDropdown,
         #bioDropdown,
-        header,
-        nav {
+        nav,
+        .cat-btn,
+        .product-card,
+        .modal-box {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
@@ -92,12 +92,11 @@
 
         /* RGB DYNAMIC ROTATING BORDER MODE */
         .rgb-mode-active .cyber-loader-box,
-        .rgb-mode-active .cyber-bar,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active #themeMenuDropdown,
-        .rgb-mode-active #bioDropdown,
-        .rgb-mode-active header,
-        .rgb-mode-active .cyber-option-card {
+        .rgb-mode-active .product-card,
+        .rgb-mode-active .cyber-option-card,
+        .rgb-mode-active .modal-box {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
@@ -114,52 +113,39 @@
             color: var(--theme-text) !important;
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .rgb-mode-active nav,
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
         }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-cream);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--theme-border);
-            border-radius: 4px;
-        }
+
+        /* SCROLLBAR & POPUP CUSTOM */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-cream); }
+        ::-webkit-scrollbar-thumb { background: var(--theme-border); border-radius: 4px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        input[type='number']::-webkit-inner-spin-button,
-        input[type='number']::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        /* SWEETALERT NEUBRUTALISM STYLE */
         .swal2-popup.cyber-swal {
-            background: var(--card-bg) !important;
+            background: #FFFDF8 !important;
             border: 2.5px solid var(--theme-border) !important;
             border-radius: 20px !important;
             color: #121212 !important;
-            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.15) !important;
+            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.2) !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
         }
-        .swal2-title.cyber-swal-title {
-            color: #121212 !important;
-            font-weight: 800 !important;
-            font-size: 1.1rem !important;
-        }
-        .swal2-html-container.cyber-swal-text {
-            color: #374151 !important;
-            font-weight: 600 !important;
-            font-size: 0.85rem !important;
-        }
+        .swal2-title.cyber-swal-title { color: #121212 !important; font-weight: 800 !important; font-size: 1.1rem !important; }
+        .swal2-html-container.cyber-swal-text { color: #374151 !important; font-weight: 600 !important; font-size: 0.85rem !important; }
         .swal2-confirm.cyber-swal-confirm {
             background: var(--theme-accent) !important;
-            color: var(--theme-text) !important;
+            color: #121212 !important;
             font-weight: 800 !important;
             border: 2px solid var(--theme-border) !important;
             border-radius: 12px !important;
-            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.1) !important;
+            box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
         }
 
         #qrcodeContainer canvas, #qrcodeContainer img {
@@ -169,24 +155,22 @@
             display: block;
         }
 
+        /* METODE PEMBAYARAN OPTION CARD LIGHT */
         .cyber-option-card {
-            background: var(--card-bg);
-            border: 2px solid #e4e4e7;
+            background: #FFFDF8;
+            border: 2px solid var(--theme-border);
             transition: all 0.2s ease;
-        }
-        .cyber-option-card:hover {
-            border-color: var(--theme-border);
         }
         .cyber-option-card.active {
             background: var(--theme-light);
             border-color: var(--theme-border);
-            box-shadow: 2px 2px 0px var(--theme-border);
+            box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.2);
         }
 
         .cyber-radio-dot {
             width: 18px;
             height: 18px;
-            border: 2px solid #121212;
+            border: 2px solid var(--theme-border);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -195,7 +179,7 @@
         .cyber-radio-inner {
             width: 8px;
             height: 8px;
-            background: #121212;
+            background: var(--theme-border);
             border-radius: 50%;
             opacity: 0;
             transform: scale(0);
@@ -218,7 +202,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
         #cyber-loader-overlay.fade-out {
@@ -226,7 +209,6 @@
             visibility: hidden;
             pointer-events: none;
         }
-
         .cyber-loader-box {
             background: var(--card-bg);
             border: 2.5px solid var(--theme-border);
@@ -239,7 +221,6 @@
             position: relative;
             width: 320px;
         }
-
         .cyber-ring {
             position: absolute;
             inset: -6px;
@@ -249,10 +230,7 @@
             border-radius: 50%;
             animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
         }
-        @keyframes spinCyber {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spinCyber { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
@@ -269,48 +247,12 @@
             transition: all 0.15s ease !important;
             box-shadow: 0 2px 0px rgba(18, 18, 18, 0.05) !important;
         }
-
-        .animated-dots::after {
-            content: '';
-            display: inline-block;
-            width: 1.5em;
-            text-align: left;
-            animation: dotsAnimation 1.5s steps(4, end) infinite;
-        }
-        @keyframes dotsAnimation {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
-        }
+        .dropdown-nav-card:active { transform: translateY(1px) !important; background-color: #FAF7EF !important; }
     </style>
 </head>
 <body class="font-sans antialiased text-zinc-900 min-h-screen pb-12">
 
-    <!-- CLOUDFLARE TURNSTILE SECURITY GATE (PRESI POJOK KIRI ATAS) -->
-    <div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-[#FAF7EF] text-zinc-900 flex flex-col justify-start items-start p-6 sm:p-10 font-['Plus_Jakarta_Sans'] transition-all duration-300 overflow-y-auto">
-        <div class="max-w-xl w-full text-left space-y-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
-                api.arulzzxd.my.id
-            </h1>
-            <h2 class="text-lg sm:text-xl font-bold text-zinc-800">
-                Melakukan verifikasi keamanan
-            </h2>
-            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed font-normal">
-                Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
-            </p>
-            <div class="pt-2">
-                <div class="cf-turnstile" 
-                     data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
-                     data-theme="light" 
-                     data-callback="onTurnstileSuccess">
-                </div>
-            </div>
-            <p id="cfStatusText" class="text-xs font-mono text-zinc-500 pt-1 font-semibold"></p>
-        </div>
-    </div>
-
-    <!-- LOADER OVERLAY -->
+    <!-- LOADER OVERLAY LIGHT -->
     <div id="cyber-loader-overlay">
         <div class="cyber-loader-box">
             <div class="relative w-20 h-20 mb-4 flex items-center justify-center">
@@ -320,7 +262,7 @@
 
             <div class="text-center">
                 <div id="loader-title-text" class="text-xs font-black uppercase text-zinc-900 tracking-wider mb-0.5">
-                    Memuat Halaman<span class="animated-dots"></span>
+                    Memuat Store Marketplace<span class="animated-dots"></span>
                 </div>
                 <div class="text-[9px] font-mono text-zinc-500 font-bold uppercase tracking-widest">
                     ARULZ-XD STORE CORE
@@ -339,38 +281,37 @@
         </div>
     </div>
 
-    <!-- TOP NAVBAR WITH THEME CONTROL & SIDEBAR -->
+    <!-- TOP NAVBAR LIGHT DENGAN THEME PICKER & BIO MENU DROPDOWN -->
     <nav class="sticky top-0 z-40 bg-[#FAF7EF]/90 backdrop-blur-md border-b-2 border-zinc-900 shadow-xs">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3 sm:gap-4">
-            <a href="/" class="flex-shrink-0 text-lg sm:text-xl font-black tracking-tight text-zinc-900">
-                Arulz<span class="text-sky-600">Store</span>
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <a href="/" class="flex-shrink-0 text-xl font-black tracking-tight text-zinc-900">
+                Arulz<span class="theme-text-accent">Store</span>
             </a>
 
             <div class="flex-1 max-w-xl relative">
                 <input type="text" id="searchInput" oninput="filterProduk()" placeholder="Cari modul / layanan..." 
-                       class="w-full pl-4 pr-10 py-2 text-xs font-bold bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none transition shadow-xs">
+                       class="w-full pl-4 pr-10 py-2 text-xs font-bold bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition shadow-xs">
                 <button class="absolute right-3 top-2.5 text-zinc-600 hover:text-zinc-900 transition">
                     <i class="fa-solid fa-magnifying-glass text-xs"></i>
                 </button>
             </div>
 
-            <!-- THEME PICKER & MENU CONTROLS -->
-            <div class="flex items-center gap-2 relative">
-                <button id="themePickerBtn" title="Ubah Style Warna" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-zinc-900 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2 text-zinc-900 relative">
+                <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 border-zinc-900 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                     </svg>
                 </button>
 
-                <button id="bioMenuBtn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
 
-                <!-- THEME DROPDOWN -->
                 <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
                     <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                    
                     <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
                         <span>YELLOW</span>
                         <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
@@ -408,76 +349,123 @@
         </div>
     </nav>
 
+    <!-- MENU OVERLAY & SIDEBAR BIO DROPDOWN -->
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-    <!-- SIDEBAR NAV DRAWER -->
     <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
-            <span class="px-2.5 py-1 theme-bg-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-                ARULZXD STORE
-            </span>
-            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
-                <i class="fa-solid fa-xmark text-sm"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 theme-bg-accent border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    ARULZXD STORE
+                </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 border-2 border-zinc-900 rounded-xl p-1 bg-[#FFFDF8]">
+                    <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 border-zinc-900 theme-bg-accent">ID</button>
+                    <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+                </div>
+
+                <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
+            <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <div id="sidebarAuthBtnContainer" class="mb-3">
+            <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
+                <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                    <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>PERINGATAN!</span>
+                </div>
+                <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                    Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+                </p>
+                <a href="/login" class="w-full bg-zinc-900 text-white border-2 border-zinc-900 rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                    <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                    <span>LOGIN / REGISTER</span>
+                </a>
+            </div>
         </div>
 
         <nav class="space-y-2 flex-1 pb-4">
-            <a href="/" class="dropdown-nav-card">
-                <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-house text-zinc-900"></i>
-                    <span>HOME DASHBOARD</span>
-                </div>
-            </a>
             <a href="/docs" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-book text-zinc-900"></i>
-                    <span>DOCS API</span>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span>DOCS / ENDPOINTS</span>
                 </div>
             </a>
-            <a href="/upgrade-apikey" class="dropdown-nav-card theme-light-bg">
+            <a href="/store" class="dropdown-nav-card theme-light-bg">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-key text-zinc-900"></i>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                    <span>STORE / BUY PLAN</span>
+                </div>
+            </a>
+            <a href="/upgrade-apikey" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121 7.5z"/></svg>
                     <span>UPGRADE APIKEY</span>
                 </div>
             </a>
             <a href="/uploader" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-cloud-arrow-up text-zinc-900"></i>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                     <span>UPLOADER FILE</span>
                 </div>
             </a>
             <a href="/pastecode" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-code text-zinc-900"></i>
-                    <span>PASTECODE</span>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                    <span>PASTECODE SNIPPET</span>
                 </div>
             </a>
             <a href="/feedback" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-comments text-zinc-900"></i>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
                     <span>REQUEST FITUR</span>
                 </div>
             </a>
             <a href="/status" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-server text-zinc-900"></i>
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5 3h13.5M6 3h12a2.25 2.25 0 012.25 2.25v3.75A2.25 2.25 0 0118 11.25H6A2.25 2.25 0 013.75 9V5.25A2.25 2.25 0 016 3z"/></svg>
                     <span>SERVER STATUS</span>
+                </div>
+            </a>
+            <a href="/support" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                    <span>SUPPORT / DONASI</span>
+                </div>
+            </a>
+            <a href="/privacy" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                    <span>PRIVACY POLICY</span>
                 </div>
             </a>
         </nav>
     </div>
 
-    <!-- MAIN CONTAINER -->
+    <!-- MAIN CONTAINER MARKETPLACE -->
     <div class="max-w-6xl mx-auto px-4 py-6">
 
         <!-- HEADER UTAMA LIGHT -->
-        <div class="mb-6 p-6 sm:p-8 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 shadow-md relative overflow-hidden">
+        <div class="mb-6 p-6 sm:p-8 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 shadow-md relative overflow-hidden brutal-border">
             <div class="relative z-10 max-w-2xl">
                 <span class="inline-flex items-center gap-1.5 theme-bg-accent border-2 border-zinc-900 text-zinc-900 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider mb-3 shadow-xs">
                     <i class="fa-solid fa-store"></i> Marketplace
                 </span>
                 <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight leading-tight">
-                    Arulz<span class="text-sky-600">XD</span> Store
+                    Arulz<span class="theme-text-accent">XD</span> Store
                 </h1>
                 <p class="text-xs text-zinc-600 font-medium mt-2 leading-relaxed">
                     Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat & Otomatis.
@@ -489,9 +477,9 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
 
             <!-- SIDEBAR KATEGORI -->
-            <div class="bg-[#FFFDF8] p-4 rounded-2xl border-2 border-zinc-900 shadow-xs sticky top-20 z-30">
+            <div class="bg-[#FFFDF8] p-4 rounded-2xl border-2 border-zinc-900 shadow-xs sticky top-20 z-30 brutal-border">
                 <h3 class="font-black text-xs text-zinc-900 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-sky-600"></i> Kategori Produk
+                    <i class="fa-solid fa-layer-group theme-text-accent"></i> Kategori Produk
                 </h3>
                 <div class="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-hide" id="categoryContainer">
                     <button onclick="selectCategory('all')" data-category="all" class="cat-btn w-full text-left px-3.5 py-2 rounded-xl text-xs font-black theme-bg-accent border-2 border-zinc-900 shadow-xs whitespace-nowrap">
@@ -502,22 +490,22 @@
 
             <!-- LIST GRID PRODUK -->
             <div class="md:col-span-3">
-                <div class="flex items-center justify-between mb-4 bg-[#FFFDF8] p-3 rounded-2xl border-2 border-zinc-900 shadow-xs">
+                <div class="flex items-center justify-between mb-4 bg-[#FFFDF8] p-3 rounded-2xl border-2 border-zinc-900 shadow-xs brutal-border">
                     <p class="text-xs text-zinc-600 font-bold tracking-wide">
-                        Menampilkan <span id="productCount" class="font-black text-sky-600">0</span> produk
+                        Menampilkan <span id="productCount" class="font-black theme-text-accent">0</span> produk
                     </p>
                     <div class="text-[11px] text-zinc-500 font-mono font-bold">Status: <span id="serverStatus" class="text-emerald-600 font-black animate-pulse">● CONNECTING...</span></div>
                 </div>
 
                 <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
-                    <div class="bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 p-3 animate-pulse space-y-3">
+                    <div class="bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 p-3 animate-pulse space-y-3 product-card">
                         <div class="bg-zinc-200 h-36 rounded-xl w-full"></div>
                         <div class="h-4 bg-zinc-200 rounded w-3/4"></div>
                         <div class="h-4 bg-zinc-200 rounded w-1/2"></div>
                     </div>
                 </div>
 
-                <div id="emptyState" class="hidden text-center py-16 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 mt-2">
+                <div id="emptyState" class="hidden text-center py-16 bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 mt-2 brutal-border">
                     <i class="fa-solid fa-box-open text-5xl text-zinc-400 mb-3"></i>
                     <h3 class="text-sm font-black text-zinc-800">Produk Tidak Ditemukan</h3>
                     <p class="text-xs text-zinc-500 font-medium mt-1">Coba gunakan kata kunci pencarian atau kategori lain.</p>
@@ -529,12 +517,11 @@
 
     <!-- MODAL DETAIL PRODUK & PENILAIAN -->
     <div id="productDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div id="productDetailModalContent" class="bg-[#FFFDF8] w-full max-w-2xl rounded-2xl border-2.5 border-zinc-900 shadow-lg overflow-hidden my-auto max-h-[90vh] flex flex-col relative">
+        <div id="productDetailModalContent" class="modal-box bg-[#FFFDF8] w-full max-w-2xl rounded-2xl border-2.5 border-zinc-900 shadow-lg overflow-hidden my-auto max-h-[90vh] flex flex-col relative">
             
-            <!-- Header Modal -->
             <div class="theme-bg-accent p-4 text-zinc-900 flex justify-between items-center border-b-2 border-zinc-900 flex-shrink-0">
                 <h3 class="font-black text-sm flex items-center gap-2 uppercase tracking-wide">
-                    <i class="fa-solid fa-star"></i> Detail & Penilaian Produk
+                    <i class="fa-solid fa-star text-amber-600"></i> Detail & Penilaian Produk
                 </h3>
                 <button onclick="closeProductDetailModal()" class="text-zinc-900 hover:text-black text-lg transition font-black">
                     <i class="fa-solid fa-xmark"></i>
@@ -542,8 +529,7 @@
             </div>
 
             <div id="modalDetailScrollable" class="overflow-y-auto p-4 sm:p-5 space-y-5 flex-1 scroll-smooth">
-                <!-- Ringkasan Produk dengan Carousel Slide Gambar -->
-                <div class="flex flex-col sm:flex-row gap-4 items-start bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900">
+                <div class="flex flex-col sm:flex-row gap-4 items-start bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 brutal-border">
                     
                     <div class="relative w-full sm:w-36 h-36 rounded-xl overflow-hidden bg-zinc-200 border-2 border-zinc-900 flex-shrink-0 group cursor-pointer" id="modalProductCarousel" onclick="zoomCurrentProductImage()">
                         <div class="flex w-full h-full transition-transform duration-300 ease-out" id="modalCarouselTrack">
@@ -566,7 +552,7 @@
 
                     <div class="space-y-1 overflow-hidden flex-1">
                         <h2 id="detailTitle" class="text-sm font-black text-zinc-900 truncate"></h2>
-                        <p id="detailPrice" class="text-xs font-black text-sky-700"></p>
+                        <p id="detailPrice" class="text-xs font-black theme-text-accent"></p>
                         <div id="detailRatingSummary" class="flex items-center gap-2 text-xs text-zinc-700 pt-1"></div>
                         <p id="detailDesc" class="text-[11px] text-zinc-600 line-clamp-3 pt-1 font-medium"></p>
                     </div>
@@ -574,11 +560,9 @@
 
                 <div id="ratingSectionHeader" class="space-y-3 pb-24">
                     <h4 class="text-xs font-black text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-sky-600"></i> Penilaian Pembeli
+                        <i class="fa-solid fa-comments theme-text-accent"></i> Penilaian Pembeli
                     </h4>
-                    <div id="reviewsListContainer" class="space-y-3">
-                        <!-- Render Ulasan via JS -->
-                    </div>
+                    <div id="reviewsListContainer" class="space-y-3"></div>
                 </div>
             </div>
 
@@ -589,7 +573,7 @@
                     <input type="hidden" id="selectedRatingValue" required>
                     <input type="hidden" id="isEditReviewMode" value="false">
 
-                    <div class="bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl p-2.5 space-y-2">
+                    <div class="bg-[#FFFDF8] border-2 border-zinc-900 rounded-2xl p-2.5 space-y-2 brutal-border">
                         <div class="flex items-center justify-between px-1">
                             <div class="flex items-center gap-1.5">
                                 <span id="reviewModeBadge" class="text-[10px] text-zinc-600 font-black">Rating:</span>
@@ -713,7 +697,7 @@
 
     <!-- MODAL POPUP CHECKOUT -->
     <div id="checkoutModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 transition-opacity duration-300 overflow-y-auto">
-        <div class="bg-[#FFFDF8] w-full max-w-lg rounded-2xl border-2.5 border-zinc-900 shadow-lg transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
+        <div class="modal-box bg-[#FFFDF8] w-full max-w-lg rounded-2xl border-2.5 border-zinc-900 shadow-lg transform transition-all scale-95 duration-200 overflow-hidden my-auto max-h-[95vh] flex flex-col" id="modalContent">
 
             <div class="theme-bg-accent p-4 text-zinc-900 flex justify-between items-center border-b-2 border-zinc-900 flex-shrink-0">
                 <h3 class="font-black text-sm flex items-center gap-2 uppercase tracking-wide">
@@ -727,23 +711,23 @@
             <div class="overflow-y-auto p-4 sm:p-5 flex-1">
                 <!-- STEP 1: FORM UTAMA -->
                 <form id="orderForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <div class="flex items-center justify-between bg-[#FAF7EF] border-2 border-zinc-900 px-3 py-2 rounded-xl">
+                    <div class="flex items-center justify-between bg-[#FAF7EF] border-2 border-zinc-900 px-3 py-2 rounded-xl brutal-border">
                         <span class="text-[11px] font-black text-zinc-600">ID TRX:</span>
-                        <span id="modalOrderId" class="text-xs font-mono font-black text-sky-700">TRX-000000</span>
+                        <span id="modalOrderId" class="text-xs font-mono font-black theme-text-accent">TRX-000000</span>
                     </div>
 
-                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center gap-3">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center gap-3 brutal-border">
                         <img id="modalProductImage" src="" alt="" class="w-12 h-12 rounded-xl object-cover bg-zinc-200 border-2 border-zinc-900">
                         <div class="overflow-hidden flex-1">
                             <p id="modalProductName" class="text-xs font-black text-zinc-900 truncate"></p>
                             <div class="flex items-center justify-between mt-1">
-                                <p id="modalProductPrice" class="text-xs font-black text-sky-700"></p>
+                                <p id="modalProductPrice" class="text-xs font-black theme-text-accent"></p>
                                 <span id="modalProductSold" class="text-[10px] text-zinc-500 font-bold"></span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center justify-between">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 flex items-center justify-between brutal-border">
                         <div>
                             <label class="block text-xs font-black text-zinc-900">Jumlah Beli</label>
                             <span id="modalStockInfo" class="text-[10px] text-zinc-500 font-bold">Tersisa: 0</span>
@@ -762,10 +746,10 @@
                         </div>
                     </div>
 
-                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2 brutal-border">
                         <div class="flex items-center justify-between">
                             <label class="block text-xs font-black text-zinc-900 flex items-center gap-1.5" for="voucherInput">
-                                <i class="fa-solid fa-ticket text-sky-600"></i> Kode Voucher <span class="text-[10px] font-normal text-zinc-500">(Opsional)</span>
+                                <i class="fa-solid fa-ticket theme-text-accent"></i> Kode Voucher <span class="text-[10px] font-normal text-zinc-500">(Opsional)</span>
                             </label>
                             <span id="voucherStatusLabel" class="text-[10px] font-mono text-zinc-500 font-bold">Bisa diisi / dikosongkan</span>
                         </div>
@@ -773,13 +757,13 @@
                             <input type="text" id="voucherInput" placeholder="Masukkan kode jika ada..." 
                                    class="flex-1 bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs font-mono font-bold text-zinc-900 uppercase placeholder-zinc-400 focus:outline-none transition">
                             <button type="button" id="btnClaimVoucher" onclick="claimVoucher()" 
-                                    class="theme-bg-accent hover:opacity-90 border-2 border-zinc-900 text-zinc-900 font-black px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
+                                    class="theme-bg-accent border-2 border-zinc-900 text-zinc-900 font-black px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
                                 <i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-1.5">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-1.5 brutal-border">
                         <div class="flex items-center justify-between text-xs text-zinc-600 font-bold">
                             <span>Subtotal Harga:</span>
                             <span id="modalSubtotalPrice" class="font-mono text-zinc-900">Rp 0</span>
@@ -790,13 +774,13 @@
                         </div>
                         <div class="flex items-center justify-between pt-1.5 border-t border-zinc-300">
                             <span class="text-xs font-black text-zinc-900">Total Tagihan:</span>
-                            <span id="modalTotalPrice" class="text-sm font-black font-mono text-sky-700">Rp 0</span>
+                            <span id="modalTotalPrice" class="text-sm font-black font-mono theme-text-accent">Rp 0</span>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-black text-zinc-900 mb-2 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-credit-card text-sky-600"></i> Pilih Metode Pembayaran <span class="text-red-500">*</span>
+                            <i class="fa-solid fa-credit-card theme-text-accent"></i> Pilih Metode Pembayaran <span class="text-red-500">*</span>
                         </label>
 
                         <input type="hidden" id="paymentMethodSelect" value="auto">
@@ -858,7 +842,7 @@
                     </div>
 
                     <div class="pt-3 border-t-2 border-zinc-200">
-                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full theme-bg-accent hover:opacity-90 text-zinc-900 border-2 border-zinc-900 font-black py-3 rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95">
+                        <button type="button" id="btnPayAuto" onclick="processAutoPayment()" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black py-3 rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95">
                             <i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang
                         </button>
 
@@ -868,11 +852,11 @@
                     </div>
                 </form>
 
-                <!-- STEP 2: QRIS OTOMATIS -->
+                <!-- STEP 2: QRIS OTOMATIS & UPLOAD BUKTI PEMBAYARAN -->
                 <div id="paymentStep2" class="hidden flex flex-col items-center justify-center space-y-4">
-                    <div class="w-full bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 text-center">
+                    <div class="w-full bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 text-center brutal-border">
                         <p class="text-[11px] text-zinc-600 font-bold uppercase tracking-wider">Total yang Harus Dibayar</p>
-                        <h3 id="qrisTotalAmount" class="text-xl font-black text-sky-700 font-mono mt-0.5">Rp 0</h3>
+                        <h3 id="qrisTotalAmount" class="text-xl font-black theme-text-accent font-mono mt-0.5">Rp 0</h3>
                         <p class="text-[10px] text-zinc-500 font-bold mt-1">Order ID: <span id="qrisOrderIdText" class="font-mono text-zinc-900">TRX-000000</span></p>
                     </div>
 
@@ -890,12 +874,28 @@
                         <div id="qrcodeContainer" class="w-full flex justify-center items-center overflow-hidden"></div>
                     </div>
 
-                    <button type="button" onclick="downloadQrisImage()" class="w-full theme-bg-accent hover:opacity-90 border-2 border-zinc-900 text-zinc-900 font-black py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-xs">
+                    <button type="button" onclick="downloadQrisImage()" class="w-full theme-bg-accent border-2 border-zinc-900 text-zinc-900 font-black py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-xs">
                         <i class="fa-solid fa-download"></i> Unduh Gambar QRIS
                     </button>
 
-                    <div class="flex items-center gap-2 text-xs font-mono text-amber-900 bg-amber-100 px-3 py-1.5 rounded-xl border-2 border-zinc-900 animate-pulse w-full justify-center font-bold">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran...
+                    <!-- SEKSI UNGGAH BUKTI PEMBAYARAN -->
+                    <div class="w-full bg-[#FAF7EF] p-3.5 rounded-xl border-2 border-zinc-900 text-left space-y-2 brutal-border">
+                        <label class="block text-xs font-black text-zinc-900 uppercase">
+                            <i class="fa-solid fa-file-invoice text-amber-600 mr-1"></i> Unggah Bukti Pembayaran:
+                        </label>
+                        <input type="file" id="proofFileInput" accept="image/*" onchange="previewProofImage(this)" class="w-full text-xs text-zinc-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-2 file:border-zinc-900 file:text-xs file:font-black file:bg-yellow-300 file:text-zinc-900 cursor-pointer">
+                        
+                        <div id="proofPreviewBox" class="hidden text-center pt-2">
+                            <img id="proofPreviewImg" src="" class="max-h-36 mx-auto rounded-lg border-2 border-zinc-900 object-contain">
+                        </div>
+
+                        <button id="btnSubmitProof" disabled onclick="submitPaymentProof()" class="w-full mt-2 bg-emerald-400 disabled:opacity-50 text-zinc-900 font-black py-2.5 rounded-xl border-2 border-zinc-900 text-xs uppercase tracking-wider active:scale-95 shadow-xs">
+                            KIRIM BUKTI PEMBAYARAN
+                        </button>
+                    </div>
+
+                    <div id="qrisWaitingStatus" class="flex items-center gap-2 text-xs font-mono text-amber-900 bg-amber-100 px-3 py-1.5 rounded-xl border-2 border-zinc-900 animate-pulse w-full justify-center font-bold">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Menunggu Pembayaran / Verifikasi Admin...
                     </div>
 
                     <button type="button" onclick="cancelPayment()" class="w-full bg-red-500 hover:bg-red-600 border-2 border-zinc-900 text-white font-black py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 tracking-wider shadow-xs">
@@ -913,9 +913,9 @@
                         <p class="text-xs text-zinc-600 font-medium mt-1">Terima kasih, pembayaran Anda telah terverifikasi secara otomatis oleh sistem.</p>
                     </div>
 
-                    <div class="w-full bg-[#FAF7EF] border-2 border-zinc-900 p-4 rounded-2xl shadow-xs space-y-2">
+                    <div class="w-full bg-[#FAF7EF] border-2 border-zinc-900 p-4 rounded-2xl shadow-xs space-y-2 brutal-border">
                         <p class="text-[10px] text-zinc-600 font-mono uppercase font-extrabold tracking-wider">LINK AKSES PRODUK / SCRIPT:</p>
-                        <a id="productDownloadLink" href="#" target="_blank" class="text-xs text-sky-700 font-black break-all hover:underline flex items-center justify-center gap-2 bg-[#FFFDF8] py-2.5 px-3 rounded-xl border-2 border-zinc-900">
+                        <a id="productDownloadLink" href="#" target="_blank" class="text-xs theme-text-accent font-black break-all hover:underline flex items-center justify-center gap-2 bg-[#FFFDF8] py-2.5 px-3 rounded-xl border-2 border-zinc-900">
                             <i class="fa-solid fa-cloud-arrow-down text-sm"></i> <span id="productLinkText">Akses Link Produk</span>
                         </a>
                     </div>
@@ -934,12 +934,8 @@
         <p>© 2026 Arulz-XD Store. All rights reserved.</p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC & THEME ENGINE -->
     <script>
-        document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-        document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
-
-        // --- MANAJEMEN TEMA (SERUPA UPGRADE-APIKEY.HTML) ---
         const THEME_PRESETS = {
             yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
             red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -982,54 +978,33 @@
             if (dropdown) dropdown.classList.add('hidden');
         }
 
-        // --- VERIFIKASI CLOUDFLARE TURNSTILE ---
-        async function onTurnstileSuccess(token) {
-            const statusText = document.getElementById('cfStatusText');
-            if (statusText) statusText.innerText = 'Memverifikasi Token...';
+        const docTranslations = {
+            id: { langBtn: 'ID' },
+            en: { langBtn: 'EN' }
+        };
 
-            try {
-                const response = await fetch('/api/verify-turnstile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token })
-                });
-                const result = await response.json();
+        let currentLang = localStorage.getItem('arulzxd_lang') || 'id';
 
-                if (result.status) {
-                    if (statusText) statusText.innerText = 'Verifikasi Berhasil!';
-                    
-                    const gate = document.getElementById('cfGateOverlay');
-                    if (gate) {
-                        gate.classList.add('opacity-0', 'pointer-events-none');
-                        setTimeout(() => gate.classList.add('hidden'), 300);
-                    }
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('arulzxd_lang', lang);
+            
+            const btnId = document.getElementById('lang-btn-id');
+            const btnEn = document.getElementById('lang-btn-en');
+            if (btnId && btnEn) {
+                if (lang === 'id') {
+                    btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 border-zinc-900 theme-bg-accent';
+                    btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
                 } else {
-                    if (statusText) statusText.innerText = result.message || 'Verifikasi gagal, silakan coba lagi.';
-                    if (typeof turnstile !== 'undefined') turnstile.reset();
-                }
-            } catch (err) {
-                if (statusText) statusText.innerText = 'Terjadi kesalahan koneksi saat memverifikasi Cloudflare.';
-                if (typeof turnstile !== 'undefined') turnstile.reset();
-            }
-        }
-
-        function checkTurnstileVerification() {
-            const isVerified = document.cookie.includes('cf_docs_verified=true');
-            const gate = document.getElementById('cfGateOverlay');
-
-            if (isVerified) {
-                if (gate) gate.classList.add('hidden');
-            } else {
-                if (gate && gate.classList.contains('hidden')) {
-                    gate.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-                    const statusText = document.getElementById('cfStatusText');
-                    if (statusText) statusText.innerText = 'Sesi 1 jam berakhir. Silakan verifikasi ulang.';
-                    if (typeof turnstile !== 'undefined') turnstile.reset();
+                    btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 border-zinc-900 theme-bg-accent';
+                    btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
                 }
             }
         }
 
-        // --- STATE & VARIABEL STORE ---
+        document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+        document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+
         let DATA_PRODUK = [];
         let KATEGORI_AKTIF = 'all';
         let SELECTED_PRODUCT = null;
@@ -1039,6 +1014,7 @@
         let pollingInterval = null;
         let countdownInterval = null;
         let qrisExpireTime = null;
+        let selectedProofBase64 = null;
 
         let currentSelectedRating = 0;
         let CURRENT_LOGGED_USER = null;
@@ -1068,6 +1044,21 @@
                     const data = await res.json();
                     if (data.loggedIn && data.user) {
                         CURRENT_LOGGED_USER = data.user;
+                        const container = document.getElementById('sidebarAuthBtnContainer');
+                        if (container) {
+                            container.innerHTML = `
+                                <a href="/docs?showProfile=true" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+                                    <div class="flex items-center gap-2.5 truncate">
+                                        <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
+                                        <div class="truncate text-left leading-tight">
+                                            <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                            <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
+                                </a>
+                            `;
+                        }
                     }
                 }
             } catch (e) {
@@ -1197,6 +1188,88 @@
             KEEP_EXISTING_MEDIA = true;
             renderMediaPreviews();
             setRating(0);
+        }
+
+        /* --- FUNGSI UNGGAH & PRATINJAU BUKTI PEMBAYARAN --- */
+        function previewProofImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'UKURAN FILE TERLALU BESAR',
+                        text: 'Maksimal ukuran gambar bukti pembayaran adalah 5MB.',
+                        customClass: { popup: 'cyber-swal' }
+                    });
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedProofBase64 = e.target.result;
+                    document.getElementById('proofPreviewImg').src = selectedProofBase64;
+                    document.getElementById('proofPreviewBox').classList.remove('hidden');
+                    document.getElementById('btnSubmitProof').disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitPaymentProof() {
+            if (!selectedProofBase64 || !CURRENT_ORDER_ID) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'BUKTI KOSONG',
+                    text: 'Silakan pilih foto bukti pembayaran terlebih dahulu.',
+                    customClass: { popup: 'cyber-swal' }
+                });
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitProof');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i> MEMPROSES...`;
+
+            try {
+                const res = await fetch('/api/transactions/upload-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: CURRENT_ORDER_ID,
+                        proofImage: selectedProofBase64
+                    })
+                });
+
+                const result = await res.json();
+
+                if (result.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'BUKTI TERKIRIM!',
+                        text: result.message || 'Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin.',
+                        timer: 3000,
+                        showConfirmButton: false,
+                        customClass: { popup: 'cyber-swal' }
+                    });
+
+                    const statusElem = document.getElementById('qrisWaitingStatus');
+                    if (statusElem) {
+                        statusElem.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Bukti Terkirim! Menunggu Konfirmasi Admin...`;
+                    }
+                } else {
+                    throw new Error(result.message || 'Gagal mengunggah bukti pembayaran.');
+                }
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'GAGAL UNGGAH',
+                    text: err.message,
+                    customClass: { popup: 'cyber-swal' }
+                });
+                btn.disabled = false;
+                btn.innerHTML = `KIRIM BUKTI PEMBAYARAN`;
+            }
         }
 
         function openProductDetailModal(productId) {
@@ -1439,7 +1512,7 @@
         function editMyReview(rating, comment, mediaJsonStr) {
             document.getElementById('isEditReviewMode').value = 'true';
             document.getElementById('reviewModeBadge').innerText = 'Edit Rating:';
-            document.getElementById('reviewModeBadge').className = 'text-[10px] text-sky-700 font-black';
+            document.getElementById('reviewModeBadge').className = 'text-[10px] theme-text-accent font-black';
             document.getElementById('btnCancelEditMode').classList.remove('hidden');
 
             setRating(rating);
@@ -1583,7 +1656,7 @@
                 const actionBtnsHtml = isMyReview ? `
                     <div class="flex items-center gap-1.5 ml-2">
                         <button onclick="editMyReview(${rev.rating}, '${escapeHtml(rev.comment)}', '${encodedMedia}')" 
-                                class="text-[10px] font-black text-sky-700 hover:underline flex items-center gap-1 bg-sky-100 px-2 py-0.5 rounded-lg border border-sky-300 transition">
+                                class="text-[10px] font-black theme-text-accent hover:underline flex items-center gap-1 bg-sky-100 px-2 py-0.5 rounded-lg border border-sky-300 transition">
                             <i class="fa-solid fa-pen-to-square"></i> Edit Rating
                         </button>
                         <button onclick="deleteMyReview('${rev._id}')" 
@@ -1594,7 +1667,7 @@
                 ` : '';
 
                 return `
-                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2">
+                    <div class="bg-[#FAF7EF] p-3 rounded-2xl border-2 border-zinc-900 space-y-2 brutal-border">
                         <div class="flex items-center gap-2.5">
                             <img src="${rev.userAvatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-full object-cover border-2 border-zinc-900">
                             <div class="flex-1">
@@ -1647,11 +1720,7 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i>`;
 
             try {
-                const res = await fetch('/api/reviews', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const res = await fetch('/api/reviews', { method: 'POST', body: formData });
                 let result = {};
                 if (res.headers.get('content-type')?.includes('application/json')) {
                     result = await res.json();
@@ -1661,7 +1730,6 @@
 
                 if (res.ok && (result.status || result.success)) {
                     Swal.fire({ icon: 'success', title: 'BERHASIL!', text: result.message || 'Penilaian Anda telah diperbarui.', timer: 2000, showConfirmButton: false, customClass: { popup: 'cyber-swal' } });
-                    
                     delete REVIEWS_CACHE[productId];
                     resetReviewForm();
                     await loadProductReviews(productId, true);
@@ -1679,7 +1747,6 @@
 
         function selectCyberPayment(method) {
             document.getElementById('paymentMethodSelect').value = method;
-
             document.querySelectorAll('.cyber-option-card').forEach(card => card.classList.remove('active'));
             const activeCard = document.getElementById(`opt-${method}`);
             if (activeCard) activeCard.classList.add('active');
@@ -1717,11 +1784,7 @@
         }
 
         function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(angka);
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
         }
 
         async function fetchProduk() {
@@ -1757,7 +1820,6 @@
         function renderQrisCode(qrisString) {
             const qrContainer = document.getElementById('qrcodeContainer');
             qrContainer.innerHTML = '';
-
             new QRCode(qrContainer, {
                 text: qrisString,
                 width: 500,
@@ -1785,7 +1847,7 @@
                 if ((result.status || result.data) && result.data) {
                     const status = (result.data.status || "").toLowerCase();
 
-                    if (status === "pending") {
+                    if (status === "pending" || status === "waiting_confirmation") {
                         CURRENT_ORDER_ID = result.data.orderId;
                         qrisExpireTime = new Date(result.data.expiredAt).getTime();
 
@@ -1793,6 +1855,16 @@
                         document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
 
                         renderQrisCode(result.data.paymentNumber);
+
+                        if (result.data.proofImage) {
+                            selectedProofBase64 = result.data.proofImage;
+                            document.getElementById('proofPreviewImg').src = result.data.proofImage;
+                            document.getElementById('proofPreviewBox').classList.remove('hidden');
+                            const statusElem = document.getElementById('qrisWaitingStatus');
+                            if (statusElem) {
+                                statusElem.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Bukti Terkirim! Menunggu Konfirmasi Admin...`;
+                            }
+                        }
 
                         document.getElementById('orderForm').classList.add('hidden');
                         document.getElementById('paymentStep3').classList.add('hidden');
@@ -1803,11 +1875,9 @@
                         startStatusPolling();
                     } else if (["settlement", "success", "paid", "settled"].includes(status)) {
                         CURRENT_ORDER_ID = result.data.orderId;
-                        
                         if (SELECTED_PRODUCT) {
                             recordPurchasedProduct(SELECTED_PRODUCT.Id || SELECTED_PRODUCT._id);
                         }
-
                         localStorage.removeItem('active_order_id');
                         localStorage.removeItem('active_order_product');
                         
@@ -1917,11 +1987,11 @@
                 let hargaHtml = produk.harga_diskon ? `
                     <div class="flex flex-col">
                         <span class="text-[10px] text-zinc-400 line-through font-bold">${formatRupiah(produk.harga)}</span>
-                        <span class="text-sky-700 text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
+                        <span class="theme-text-accent text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga_diskon)}</span>
                     </div>
                 ` : `
                     <div class="flex flex-col">
-                        <span class="text-sky-700 text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga)}</span>
+                        <span class="theme-text-accent text-sm sm:text-base font-black tracking-tight">${formatRupiah(produk.harga)}</span>
                     </div>
                 `;
 
@@ -1947,7 +2017,7 @@
                 const isLong = deskripsiTeks.length > maxChar;
 
                 return `
-                    <div class="bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col group cursor-pointer" onclick="openProductDetailModal('${produk.Id || produk._id}')">
+                    <div class="product-card bg-[#FFFDF8] rounded-2xl border-2 border-zinc-900 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col group cursor-pointer" onclick="openProductDetailModal('${produk.Id || produk._id}')">
                         <div class="relative bg-[#FAF7EF] pt-[100%] overflow-hidden flex-shrink-0 border-b-2 border-zinc-900">
                             <div class="absolute inset-0 flex transition-transform duration-300 ease-out" id="card-track-${originalIndex}">
                                 ${imagesHtml}
@@ -1973,7 +2043,7 @@
                                                 ${deskripsiTeks}
                                             </p>
                                             ${isLong ? `
-                                                <button onclick="event.stopPropagation(); toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="text-sky-700 font-bold hover:underline mt-0.5 inline-block text-[10px]">
+                                                <button onclick="event.stopPropagation(); toggleWaDesc(${originalIndex})" id="desc-btn-${originalIndex}" class="theme-text-accent font-bold hover:underline mt-0.5 inline-block text-[10px]">
                                                     ... baca selengkapnya
                                                 </button>
                                             ` : ''}
@@ -2004,7 +2074,7 @@
 
                             <button onclick="event.stopPropagation(); shareProduk(${originalIndex})" 
                                     class="w-full text-center bg-[#FAF7EF] hover:bg-zinc-200 border-2 border-zinc-900 text-zinc-900 font-extrabold py-1.5 rounded-xl text-[11px] transition duration-150 flex items-center justify-center gap-1.5 mt-1.5 active:scale-95">
-                                <i class="fa-solid fa-share-nodes text-sky-600"></i> Bagikan
+                                <i class="fa-solid fa-share-nodes theme-text-accent"></i> Bagikan
                             </button>
                         </div>
                     </div>
@@ -2015,7 +2085,6 @@
         function toggleWaDesc(index) {
             const textElem = document.getElementById(`desc-text-${index}`);
             const btnElem = document.getElementById(`desc-btn-${index}`);
-
             if (!textElem || !btnElem) return;
 
             if (textElem.classList.contains('line-clamp-2')) {
@@ -2027,9 +2096,7 @@
             }
         }
 
-        function filterProduk() {
-            renderProduk();
-        }
+        function filterProduk() { renderProduk(); }
 
         function openCheckoutModal(index) {
             const activeOrderId = localStorage.getItem('active_order_id');
@@ -2046,6 +2113,7 @@
             CURRENT_ORDER_ID = generateUniqueOrderId();
             CURRENT_QTY = 1;
             ACTIVE_VOUCHER = null;
+            selectedProofBase64 = null;
 
             const hargaFinal = SELECTED_PRODUCT.harga_diskon || SELECTED_PRODUCT.harga;
 
@@ -2068,6 +2136,12 @@
             
             const btnClaimText = document.getElementById('btnClaimText');
             if (btnClaimText) btnClaimText.innerText = 'Claim';
+
+            // Reset bukti pembayaran
+            const proofInput = document.getElementById('proofFileInput');
+            if (proofInput) proofInput.value = '';
+            document.getElementById('proofPreviewBox').classList.add('hidden');
+            document.getElementById('btnSubmitProof').disabled = true;
 
             document.getElementById('qtyInput').value = CURRENT_QTY;
             updateTotalPrice();
@@ -2180,21 +2254,12 @@
                 btnClaim.disabled = false;
                 btnClaim.innerHTML = `<i class="fa-solid fa-check"></i> <span id="btnClaimText">Claim</span>`;
 
-                if (err.type === 'expired') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'VOUCHER TELAH HANGUS',
-                        text: err.message,
-                        customClass: { popup: 'cyber-swal' }
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'VOUCHER TIDAK TERSEDIA',
-                        text: err.message || 'Kode voucher diskon tidak ditemukan di sistem.',
-                        customClass: { popup: 'cyber-swal' }
-                    });
-                }
+                Swal.fire({
+                    icon: err.type === 'expired' ? 'error' : 'warning',
+                    title: err.type === 'expired' ? 'VOUCHER TELAH HANGUS' : 'VOUCHER TIDAK TERSEDIA',
+                    text: err.message || 'Kode voucher diskon tidak ditemukan di sistem.',
+                    customClass: { popup: 'cyber-swal' }
+                });
             }
         }
 
@@ -2244,6 +2309,12 @@
                 localStorage.removeItem('active_order_id');
                 localStorage.removeItem('active_order_product');
             }
+
+            selectedProofBase64 = null;
+            const proofInput = document.getElementById('proofFileInput');
+            if (proofInput) proofInput.value = '';
+            document.getElementById('proofPreviewBox').classList.add('hidden');
+            document.getElementById('btnSubmitProof').disabled = true;
 
             document.getElementById('checkoutModal').classList.add('hidden');
         }
@@ -2419,17 +2490,16 @@
 
                             const finalLink = result.data.productLink || (SELECTED_PRODUCT ? SELECTED_PRODUCT.link : null) || "#";
                             onPaymentSuccess(finalLink);
-                            
                             fetchProduk();
-                        } else if (status === "cancelled" || status === "failed") {
+                        } else if (status === "rejected" || status === "cancelled" || status === "failed") {
                             clearInterval(pollingInterval);
                             if (countdownInterval) clearInterval(countdownInterval);
                             localStorage.removeItem('active_order_id');
                             localStorage.removeItem('active_order_product');
                             Swal.fire({
                                 icon: 'info',
-                                title: 'TRANSAKSI BATAL / GAGAL',
-                                text: 'Transaksi telah dibatalkan atau gagal diproses.',
+                                title: 'TRANSAKSI BATAL / DITOLAK',
+                                text: 'Transaksi telah dibatalkan atau ditolak oleh admin.',
                                 customClass: { popup: 'cyber-swal' }
                             });
                             closeCheckoutModal();
@@ -2453,7 +2523,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'PEMBAYARAN DITERIMA!',
-                text: 'Dana telah terverifikasi oleh gateway. Silakan akses tautan produk Anda.',
+                text: 'Dana telah terverifikasi oleh gateway/admin. Silakan akses tautan produk Anda.',
                 timer: 3500,
                 showConfirmButton: false,
                 customClass: { popup: 'cyber-swal' }
@@ -2547,7 +2617,6 @@
                         qty: CURRENT_QTY
                     })
                 });
-                
                 fetchProduk();
             } catch (err) {
                 console.error("Gagal mengupdate stok manual order:", err);
@@ -2595,18 +2664,15 @@
             }
         }
 
-        // EVENT LISTENERS DOM LOADED & EVENT SETUP
         window.addEventListener('DOMContentLoaded', async () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
             const closeMenuBtn = document.getElementById('closeMenuBtn');
             const menuOverlay = document.getElementById('menuOverlay');
+            const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
             const themeBtn = document.getElementById('themePickerBtn');
             const themeDropdown = document.getElementById('themeMenuDropdown');
-
-            checkTurnstileVerification();
-            setInterval(checkTurnstileVerification, 30 * 1000);
 
             if (themeBtn && themeDropdown) {
                 themeBtn.addEventListener('click', (e) => {
@@ -2624,6 +2690,12 @@
             const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
             setAppTheme(savedTheme);
 
+            function playBannerVideo() {
+                if (sidebarBannerVideo) {
+                    sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
+                }
+            }
+
             function closeSidebarMenu() {
                 if (bioDropdown && menuOverlay) {
                     bioDropdown.style.transform = 'translateX(100%)';
@@ -2636,19 +2708,20 @@
                     e.stopPropagation();
                     bioDropdown.style.transform = 'translateX(0)';
                     menuOverlay.classList.remove('hidden');
+                    playBannerVideo();
                 });
                 if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
                 menuOverlay.addEventListener('click', closeSidebarMenu);
                 bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
             }
 
+            switchLanguage(currentLang);
             await fetchCurrentUserStatus();
             await fetchProduk();
             await checkActiveTransaction();
             await checkUrlProductShare();
         });
 
-        // LOADER PROGRESS BAR
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
