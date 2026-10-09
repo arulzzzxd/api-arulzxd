@@ -643,7 +643,7 @@ app.get('/auth/github/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/docs?showProfile=true');
+        res.redirect('/profile');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -705,7 +705,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/docs?showProfile=true');
+        res.redirect('/profile');
     } catch (error) {
         console.error('Google Auth Callback Error:', error.response?.data || error.message);
         res.send('Login Error: ' + (error.response?.data?.error_description || error.message));
@@ -1933,6 +1933,7 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 app.get('/uploader', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uploader.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'feedback.html')));
 app.get('/pastecode', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pastecode.html')));
+app.get('/profile', (req, res) => req.user ? res.sendFile(path.join(__dirname, 'public', 'profile.html')) : res.redirect('/login'));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
 app.get('/support', (req, res) => res.sendFile(path.join(__dirname, 'public', 'support.html')));
 app.get('/status', (req, res) => res.sendFile(path.join(__dirname, 'public', 'status.html')));
@@ -2740,7 +2741,7 @@ app.get('/docs', async (req, res) => {
 
     <div id="sidebarAuthBtnContainer" class="mb-3">
         ${req.user ? `
-        <button onclick="openProfilePopup()" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
+        <button <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs"> 
             <div class="flex items-center gap-2.5 truncate">
                 <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
                 <div class="truncate text-left leading-tight">
