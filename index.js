@@ -3072,27 +3072,6 @@ app.get('/store/:productId', async (req, res) => {
     }
 });
 
-app.get('/changelog', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'changelog.html'));
-});
-
-app.get('/database/changelog', (req, res) => {
-    const pathChangelog = path.join(__dirname, 'database', 'changelog.json'); 
-
-    fs.readFile(pathChangelog, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Gagal membaca database changelog:", err);
-            return res.status(500).json({ error: "Gagal memuat data changelog" });
-        }
-        try {
-            const changelogData = JSON.parse(data);
-            res.json(changelogData);
-        } catch (parseError) {
-            res.status(500).json({ error: "Format database changelog rusak" });
-        }
-    });
-});
-
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "0x4AAAAAAFPfGFru3KCfqol2rvDjwEsnQC4";
 
 app.post('/api/verify-turnstile', async (req, res) => {
@@ -3996,11 +3975,6 @@ app.get('/docs', async (req, res) => {
                 <span>PASTECODE SNIPPET</span>
             </div>
         </a>
-        <a href="/changelog" class="dropdown-nav-card">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-                <span>CHANGELOG</span>
-            </div>
             <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
         </a>
         <a href="/feedback" class="dropdown-nav-card">
