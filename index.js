@@ -52,8 +52,6 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://api.arulzzxd.my.id/auth/google/callback";
 
-const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
-
 // ====================================================
 // 2. MONGOOSE DATABASE CONNECTION & SCHEMAS
 // ====================================================
@@ -1559,7 +1557,7 @@ const routeModuleCache = new Map();
 const validateApiKey = async (req, res, next) => {
     const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-    if (req.path === '/apilist' || req.path === '/verify-turnstile' || fullEndpoint === '/api/verify-turnstile') {
+    if (req.path === '/apilist') {
         return next();
     }
 
@@ -1614,7 +1612,7 @@ const validateApiKey = async (req, res, next) => {
 const trackAndEnforceLimit = async (req, res, next) => {
     const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-    if (req.path === '/apilist' || req.path === '/verify-turnstile' || fullEndpoint === '/api/verify-turnstile') {
+    if (req.path === '/apilist') {
         return next();
     }
 
@@ -1660,7 +1658,7 @@ const logApiActivity = async (req, res, next) => {
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
-            !['/api/user-activity', '/api/user-limit', '/api/apilist', '/api/verify-turnstile'].includes(fullEndpoint)
+            !['/api/user-activity', '/api/user-limit', '/api/apilist'].includes(fullEndpoint)
         ) {
             try {
                 let targetUser = req.user || await User.findOne({ apikey: userKey.trim() }).lean();
@@ -1669,15 +1667,9 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: { 
-                            apikey: userKey.trim(), 
-                            username: targetUser.username || 'User', 
-                            email: targetUser.email || '' 
-                        },
-                        $push: { 
+                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username \vert{}\vert{} 'User',                              email: targetUser.email \vert{}\vert{} ''                          },$push: { 
                             log: { 
-                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }], 
-                                $position: 0 
+                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
                             } 
                         }
                     },
@@ -1907,37 +1899,6 @@ app.get('/api/server-status', (req, res) => {
     });
 });
 
-app.post('/api/verify-turnstile', async (req, res) => {
-    const { token } = req.body;
-    const secretKey = process.env.TURNSTILE_SECRET_KEY;
-
-    if (!token) {
-        return res.status(400).json({ status: false, message: 'Token Turnstile dibutuhkan' });
-    }
-
-    try {
-        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                secret: secretKey,
-                response: token
-            })
-        });
-
-        const outcome = await response.json();
-
-        if (outcome.success) {
-            return res.json({ status: true, message: 'Verifikasi berhasil' });
-        } else {
-            return res.status(400).json({ status: false, message: 'Verifikasi Turnstile gagal' });
-        }
-    } catch (error) {
-        console.error('Error Turnstile Siteverify:', error.message);
-        return res.status(500).json({ status: false, message: 'Kesalahan internal server' });
-    }
-});
-
 // ====================================================
 // 13. CRON JOBS & SERVER LISTEN
 // ====================================================
@@ -2032,8 +1993,7 @@ app.get('/docs', async (req, res) => {
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css" />
@@ -2518,48 +2478,6 @@ app.get('/docs', async (req, res) => {
     </style>
 </head>
 <body class="min-h-screen pb-12 antialiased light-mode text-slate-900">
-
-<div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-white text-[#1d1d1d] flex flex-col justify-between p-6 sm:p-12 font-sans transition-all duration-300 overflow-y-auto">
-    <!-- Container Konten Utama -->
-    <div class="max-w-2xl w-full mx-auto sm:mx-0 space-y-4 pt-6 sm:pt-12">
-        <!-- Nama Domain -->
-        <h1 class="text-3xl sm:text-4xl font-bold text-[#1d1d1d] tracking-tight">
-            api.arulzzxd.my.id
-        </h1>
-
-        <!-- Judul Verifikasi -->
-        <h2 class="text-xl sm:text-2xl font-bold text-[#1d1d1d]">
-            Melakukan verifikasi keamanan
-        </h2>
-
-        <!-- Deskripsi -->
-        <p class="text-sm sm:text-base text-[#313131] leading-relaxed font-normal">
-            Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
-        </p>
-
-        <!-- Widget Turnstile (Light Theme) -->
-        <div class="pt-3">
-            <div class="cf-turnstile" 
-                 data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
-                 data-theme="light" 
-                 data-callback="onTurnstileSuccess">
-            </div>
-        </div>
-
-        <!-- Status Teks -->
-        <p id="cfStatusText" class="text-xs font-mono text-gray-500 font-medium"></p>
-    </div>
-
-    <!-- Footer Resmi Cloudflare Style -->
-    <div class="w-full max-w-2xl mx-auto sm:mx-0 mt-12 pt-6 border-t border-gray-300 text-center text-xs text-gray-600 space-y-1 font-sans">
-        <div>
-            Ray ID: <span id="cfRayId" class="font-mono">a48006b7dd9db611</span>
-        </div>
-        <div>
-            Performa dan Keamanan dari <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-700">Cloudflare</a> &bull; <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-700">Privasi</a>
-        </div>
-    </div>
-</div>
 
 <!-- Loader Overlay Cyberpunk Light Style -->
 <div id="cyber-loader-overlay">
@@ -3238,54 +3156,6 @@ app.get('/docs', async (req, res) => {
         });
     }
     
-    async function onTurnstileSuccess(token) {
-    const statusText = document.getElementById('cfStatusText');
-    if (statusText) statusText.innerText = 'Memverifikasi Token...';
-
-    try {
-        const response = await fetch('/api/verify-turnstile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
-        });
-        const result = await response.json();
-
-        if (result.status) {
-            if (statusText) statusText.innerText = 'Verifikasi Berhasil!';
-            
-            // Sembunyikan Fullscreen Security Gate
-            const gate = document.getElementById('cfGateOverlay');
-            if (gate) {
-                gate.classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => gate.classList.add('hidden'), 300);
-            }
-        } else {
-            if (statusText) statusText.innerText = result.message || 'Verifikasi gagal, silakan coba lagi.';
-            if (typeof turnstile !== 'undefined') turnstile.reset();
-        }
-    } catch (err) {
-        if (statusText) statusText.innerText = 'Terjadi kesalahan koneksi saat memverifikasi Cloudflare.';
-        if (typeof turnstile !== 'undefined') turnstile.reset();
-    }
-}
-
-// Pengecekan Status Cookie Turnstile
-function checkTurnstileVerification() {
-    const isVerified = document.cookie.includes('cf_docs_verified=true');
-    const gate = document.getElementById('cfGateOverlay');
-
-    if (isVerified) {
-        if (gate) gate.classList.add('hidden');
-    } else {
-        if (gate && gate.classList.contains('hidden')) {
-            gate.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-            const statusText = document.getElementById('cfStatusText');
-            if (statusText) statusText.innerText = 'Sesi 1 jam berakhir. Silakan verifikasi ulang.';
-            if (typeof turnstile !== 'undefined') turnstile.reset();
-        }
-    }
-}
-
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
         const bioDropdown = document.getElementById('bioDropdown');
@@ -3294,10 +3164,7 @@ function checkTurnstileVerification() {
         const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
         const themeBtn = document.getElementById('themePickerBtn');
-        const themeDropdown = document.getElementById('themeMenuDropdown');
-        
-        checkTurnstileVerification();
-        setInterval(checkTurnstileVerification, 30 * 1000);
+        const themeDropdown = document.getElementById('themeMenuDropdown');                
 
         if (themeBtn && themeDropdown) {
             themeBtn.addEventListener('click', (e) => {
@@ -3312,20 +3179,6 @@ function checkTurnstileVerification() {
             });
         }
         
-        function generateRayId() {
-    const chars = '0123456789abcdef';
-    let id = '';
-    for (let i = 0; i < 16; i++) {
-        id += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return id;
-}
-
-const rayElem = document.getElementById('cfRayId');
-if (rayElem) {
-    rayElem.innerText = generateRayId();
-}
-
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
 
