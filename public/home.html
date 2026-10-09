@@ -15,9 +15,6 @@
 
     <title>Arulz-XD API - HOME</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" type="image/png">
-    
-    <!-- Cloudflare Turnstile CDN -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -95,9 +92,7 @@
             transition: all 0.15s ease;
         }
 
-        /* ======================================================= */
-        /* MODE RGB DYNAMIC ROTATING BORDER (HANYA OUTLINE/BORDER) */
-        /* ======================================================= */
+        /* MODE RGB DYNAMIC ROTATING BORDER */
         .rgb-mode-active .light-card,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active .btn-brutalism-light,
@@ -112,7 +107,6 @@
             background-clip: padding-box, border-box !important;
         }
 
-        /* Tombol Aksen & Badge (Latar Solid Tema + Outline RGB) */
         .rgb-mode-active .theme-bg-accent {
             border-color: transparent !important;
             background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
@@ -246,42 +240,6 @@
     </style>
 </head>
 <body class="min-h-screen relative flex flex-col justify-between antialiased">
-
-    <!-- Fullscreen Security Gate (Cloudflare Light Theme) -->
-    <div id="cfGateOverlay" class="fixed inset-0 z-[9999999] bg-white text-[#1d1d1d] flex flex-col justify-between p-6 sm:p-12 font-sans transition-all duration-300 overflow-y-auto">
-        <div class="max-w-2xl w-full mx-auto sm:mx-0 space-y-4 pt-6 sm:pt-12">
-            <h1 class="text-3xl sm:text-4xl font-bold text-[#1d1d1d] tracking-tight">
-                api.arulzzxd.my.id
-            </h1>
-
-            <h2 class="text-xl sm:text-2xl font-bold text-[#1d1d1d]">
-                Melakukan verifikasi keamanan
-            </h2>
-
-            <p class="text-sm sm:text-base text-[#313131] leading-relaxed font-normal">
-                Situs web menggunakan layanan keamanan untuk melindungi dari bot jahat. Halaman ini ditunjukkan semasa kami memverifikasi bahwa Anda bukan bot.
-            </p>
-
-            <div class="pt-3">
-                <div class="cf-turnstile" 
-                     data-sitekey="0x4AAAAAAFPfGMY9d47y14ob" 
-                     data-theme="light" 
-                     data-callback="onTurnstileSuccess">
-                </div>
-            </div>
-
-            <p id="cfStatusText" class="text-xs font-mono text-gray-500 font-medium"></p>
-        </div>
-
-        <div class="w-full max-w-2xl mx-auto sm:mx-0 mt-12 pt-6 border-t border-gray-300 text-center text-xs text-gray-600 space-y-1 font-sans">
-            <div>
-                Ray ID: <span id="cfRayId" class="font-mono"></span>
-            </div>
-            <div>
-                Performa dan Keamanan dari <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-700">Cloudflare</a> &bull; <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-700">Privasi</a>
-            </div>
-        </div>
-    </div>
 
     <!-- Loader Overlay Cyberpunk Light Style -->
     <div id="cyber-loader-overlay">
@@ -626,47 +584,6 @@
         });
         document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
-        // Generator Ray ID
-        function generateRayId() {
-            const chars = '0123456789abcdef';
-            let id = '';
-            for (let i = 0; i < 16; i++) {
-                id += chars[Math.floor(Math.random() * chars.length)];
-            }
-            return id;
-        }
-
-        // Callback sukses Cloudflare Turnstile
-        async function onTurnstileSuccess(token) {
-            const statusElem = document.getElementById('cfStatusText');
-            if (statusElem) statusElem.innerText = 'Memverifikasi keamanan...';
-
-            try {
-                const res = await fetch('/api/verify-turnstile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token })
-                });
-
-                const data = await res.json();
-
-                if (data.status) {
-                    sessionStorage.setItem('cf_verified', 'true');
-                    if (statusElem) statusElem.innerText = 'Verifikasi berhasil!';
-                    
-                    setTimeout(() => {
-                        const overlay = document.getElementById('cfGateOverlay');
-                        if (overlay) overlay.style.display = 'none';
-                    }, 400);
-                } else {
-                    if (statusElem) statusElem.innerText = 'Verifikasi gagal. Silakan muat ulang halaman.';
-                }
-            } catch (err) {
-                console.error('Turnstile verification error:', err);
-                if (statusElem) statusElem.innerText = 'Gagal terhubung ke server verifikasi.';
-            }
-        }
-
         // Presets Tema Warna & Border
         const THEME_PRESETS = {
             yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
@@ -714,16 +631,6 @@
 
         // Inisialisasi Handler & Event Sidebar + Theme Picker
         document.addEventListener('DOMContentLoaded', () => {
-            // Cek status verifikasi Turnstile
-            const rayElem = document.getElementById('cfRayId');
-            if (rayElem) rayElem.innerText = generateRayId();
-
-            const isVerified = sessionStorage.getItem('cf_verified');
-            const cfOverlay = document.getElementById('cfGateOverlay');
-            if (isVerified === 'true' && cfOverlay) {
-                cfOverlay.style.display = 'none';
-            }
-
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
             const closeMenuBtn = document.getElementById('closeMenuBtn');

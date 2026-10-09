@@ -1011,7 +1011,7 @@
                         const container = document.getElementById('sidebarAuthBtnContainer');
                         if (container) {
                             container.innerHTML = `
-                                <a href="/docs?showProfile=true" class="w-full dropdown-nav-card border-2 border-blue-600 bg-blue-50">
+                                <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
                                     <div class="flex items-center gap-2.5 truncate">
                                         <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-6 h-6 rounded-md border border-zinc-900 object-cover">
                                         <span class="truncate">${data.user.username}</span>
