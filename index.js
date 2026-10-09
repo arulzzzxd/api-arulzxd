@@ -1667,9 +1667,15 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username \vert{}\vert{} 'User',                              email: targetUser.email \vert{}\vert{} ''                          },$push: { 
+                        $set: { 
+                            apikey: userKey.trim(), 
+                            username: targetUser.username || 'User', 
+                            email: targetUser.email || '' 
+                        },
+                        $push: { 
                             log: { 
-                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
+                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
+                                $position: 0 
                             } 
                         }
                     },
@@ -1927,7 +1933,7 @@ mongoose.connection.once('open', async () => {
 // ====================================================
 // 14. PAGE ROUTES (HTML VIEWS & ASSETS)
 // ====================================================
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
+app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'home.html')));
 app.get('/login', (req, res) => req.user ? res.redirect('/docs') : res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/uploader', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uploader.html')));
