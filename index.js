@@ -833,7 +833,9 @@ app.get('/auth/logout', (req, res, next) => {
 // ====================================================
 // 6. USER PROFILE & API KEY CUSTOM ENDPOINTS
 // ====================================================
-const uploadavatar = multer({ 
+
+const uploadAvatar = multer({
+    storage: multer.memoryStorage(),
     limits: { fileSize: 4 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) cb(null, true);
@@ -841,35 +843,47 @@ const uploadavatar = multer({
     }
 });
 
-app.post('/api/user/update-avatar', checkAuthSession, (req, res) => {
-    uploadavatar.single('avatar')(req, res, async (err) => {
-        if (err) return res.status(400).json({ status: false, message: err.message || 'Gagal mengunggah gambar.' });
-
-        try {
-            if (!req.user) return res.status(401).json({ status: false, message: 'Anda belum login!' });
-            if (!req.file) return res.status(400).json({ status: false, message: 'Silakan pilih gambar terlebih dahulu!' });
-
-            const mimeType = req.file.mimetype || mime.lookup(req.file.originalname) || 'image/png';
-            const base64 = req.file.buffer.toString("base64");
-            const avatarDataUrl = `data:${mimeType};base64,${base64}`;
-
-            const updatedUser = await User.findByIdAndUpdate(
-                req.user.id || req.user._id,
-                { $set: { avatar: avatarDataUrl } },
-                { new: true, runValidators: true }
-            );
-
-            const token = jwt.sign({
-                id: updatedUser._id, username: updatedUser.username, email: updatedUser.email, name: updatedUser.username, avatar: updatedUser.avatar, role: updatedUser.role, apikey: updatedUser.apikey
-            }, JWT_SECRET, { expiresIn: '7d' });
-
-            res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-            return res.json({ status: true, message: 'Avatar berhasil diperbarui!', avatar: updatedUser.avatar });
-        } catch (error) {
-            console.error("Gagal update avatar:", error);
-            return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui avatar.' });
+// Endpoint Update Avatar Kompatibel Vercel
+app.post('/api/user/update-avatar', checkAuthSession, (req, res, next) => {
+    // Middleware penangan error ukuran file multer
+    uploadAvatar.single('avatar')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ status: false, message: 'File terlalu besar! Maksimal 4MB.' });
         }
-    });
+        next();
+            });
+}, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: 'Anda belum login!' });
+        if (!req.file) return res.status(400).json({ status: false, message: 'Tidak ada file avatar yang diunggah!' });
+
+        // Konversi file buffer menjadi Data URI Base64
+        const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+        // Update avatar di MongoDB (Gunakan returnDocument: 'after' untuk Mongoose terbaru)
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id || req.user._id,
+            { $set: { avatar: base64Image } },
+            { returnDocument: 'after', runValidators: true }
+        );
+
+        // Perbarui Cookie Sesi
+        const token = jwt.sign({
+            id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            avatar: updatedUser.avatar,
+            role: updatedUser.role,
+            apikey: updatedUser.apikey
+        }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+
+        return res.json({ status: true, message: 'Foto profil berhasil diperbarui!', avatar: updatedUser.avatar });
+    } catch (error) {
+        console.error("Gagal update avatar:", error);
+        return res.status(500).json({ status: false, message: 'Gagal memproses unggah avatar di server.' });
+    }
 });
 
 app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
