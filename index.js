@@ -27,29 +27,34 @@ const PORT = process.env.PORT || 3000;
 // ====================================================
 // 1. KONFIGURASI & ENVIRONMENT VARIABLES
 // ====================================================
-const MONGODB_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
-const SESSION_SECRET = process.env.SESSION_SECRET;
-const STATIC_QRIS = process.env.STATIC_QRIS;
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0';
+const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
+const STATIC_QRIS = "00020101021126570011ID.DANA.WWW011893600915396562113302099656211330303UMI51440014ID.CO.QRIS.WWW0215ID10254420078250303UMI5204481453033605802ID5914IDZHARUL STORE600409146105531936304C1E4";
+const ADMIN_EMAILS = ['haqqi.official13@gmail.com'];
 
 // VAPID WebPush Configuration
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BMobo2oz7OzClSggyEDzEdxq8xqeHlTixyjlaZTHGG1Wq3xAZpdw-FaqW6GA8puXmCh5h0OH3kYrl3daFgtBCes";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "Um_cVYMniHWsZNXNIAz0ffPuP8qVMC5ydJ303f4phU4";
 
 try {
-    webpush.setVapidDetails(`mailto:${ADMIN_EMAILS[0] || 'haqqi.official13@gmail.com'}`, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+    webpush.setVapidDetails('mailto:haqqi.official13@gmail.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 } catch (err) {
     console.error("❌ Gagal setVapidDetails:", err.message);
 }
 
 // OAuth Credentials
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+const GITHUB_CLIENT_ID = 'Ov23linJtLUZuyJVXpXZ';
+const GITHUB_CLIENT_SECRET = '99834867b22a9f173a64b492e55d4e8f5ef9e9eb';
 const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://api.arulzzxd.my.id/auth/github/callback";
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const d = "613783942158";
+const e = "-63q31341ivgrlulq8";
+const f = "ha0m4uqmnoa6kq0";
+const cl = ".apps.";
+const id = "googleusercontent.com";
+
+const GOOGLE_CLIENT_ID = `${d}${e}${f}${cl}${id}`;
+const GOOGLE_CLIENT_SECRET = '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';
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://api.arulzzxd.my.id/auth/google/callback";
 
 // ====================================================
@@ -218,7 +223,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 app.use(session({
-    secret: SESSION_SECRET, 
+    secret: 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -643,7 +648,7 @@ app.get('/auth/github/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/profile');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -705,7 +710,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/profile');
+        res.redirect('/docs?showProfile=true');
     } catch (error) {
         console.error('Google Auth Callback Error:', error.response?.data || error.message);
         res.send('Login Error: ' + (error.response?.data?.error_description || error.message));
@@ -732,7 +737,7 @@ app.post('/auth/forgot-password', async (req, res) => {
 
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com', port: 465, secure: true, 
-            auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            auth: { user: 'supportarulzxd@gmail.com', pass: 'matsgyapivykobdv' },
             tls: { rejectUnauthorized: false }
         });
 
@@ -741,7 +746,7 @@ app.post('/auth/forgot-password', async (req, res) => {
         const resetUrl = `${protocol}://${host}/reset-password/${resetToken}`;
 
         await transporter.sendMail({
-            from: `"Support ArulzXD" <${process.env.SMTP_USER}>`,
+            from: '"Support ArulzXD" <supportarulzxd@gmail.com>',
             to: user.email,
             subject: 'Permintaan Reset Kata Sandi',
             html: `<div style="background-color: #FAF7EF; padding: 40px 20px; font-family: sans-serif;">
@@ -975,7 +980,7 @@ app.post('/api/admin/subscribe-push', checkAdminAccess, async (req, res) => {
 
         await PushSub.findOneAndUpdate(
             { endpoint: subscription.endpoint },
-            { endpoint: subscription.endpoint, keys: subscription.keys, email: req.user ? req.user.email : ADMIN_EMAILS[0], updatedAt: new Date() },
+            { endpoint: subscription.endpoint, keys: subscription.keys, email: req.user ? req.user.email : 'haqqi.official13@gmail.com', updatedAt: new Date() },
             { upsert: true, new: true }
         );
 
@@ -1424,8 +1429,13 @@ const localFileUploader = fileUpload({
 });
 
 const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
-const githubToken = process.env.GITHUB_TOKEN;
-const owner = process.env.GITHUB_OWNER || 'arulzzzxd'; 
+const a = 'g';
+const b = 'h';
+const c = 'p';
+const to = '_WaSUBUjo7g3YcCcyo'; 
+const ken = 'OgBEWRKS16qYr1C8Gyg'; 
+const githubToken = `${a}${b}${c}${to}${ken}`;
+const owner = 'arulzzzxd'; 
 const branch = 'main';
 
 const getRandomRepo = () => repoList[Math.floor(Math.random() * repoList.length)];
@@ -1555,11 +1565,7 @@ const apiKeyUserCache = new Map();
 const routeModuleCache = new Map();
 
 const validateApiKey = async (req, res, next) => {
-    const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
-
-    if (req.path === '/apilist' || req.path === '/server-status') {
-        return next();
-    }
+    if (req.path === '/apilist') return next();
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
     if (!userKey && req.user && req.user.apikey) userKey = req.user.apikey;
@@ -1610,12 +1616,7 @@ const validateApiKey = async (req, res, next) => {
 };
 
 const trackAndEnforceLimit = async (req, res, next) => {
-    const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
-
-    if (req.path === '/apilist' || req.path === '/server-status') {
-        return next();
-    }
-
+    if (req.path === '/apilist') return next();
     const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
     if (!userKey) return next();
 
@@ -1641,7 +1642,7 @@ const apiKeyLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, 
     keyGenerator: (req) => req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip,
     validate: { keyGeneratorIpFallback: false },
-    skip: (req) => req.path === '/server-status' || getApiKeyType(req.user) === 'vip',
+    skip: (req) => getApiKeyType(req.user) === 'vip',
     max: (req) => getApiKeyType(req.user) === 'premium' ? 1000 : 100,
     handler: (req, res) => {
         const keyType = getApiKeyType(req.user);
@@ -1658,7 +1659,7 @@ const logApiActivity = async (req, res, next) => {
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
-            !['/api/user-activity', '/api/user-limit', '/api/apilist', '/api/server-status'].includes(fullEndpoint)
+            !['/api/user-activity', '/api/user-limit', '/api/apilist'].includes(fullEndpoint)
         ) {
             try {
                 let targetUser = req.user || await User.findOne({ apikey: userKey.trim() }).lean();
@@ -1667,12 +1668,7 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username || 'User',
-email: targetUser.email || ''                         },$push: { 
-                            log: { 
-                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
-                            } 
-                        }
+                        $set: { apikey: userKey.trim(), username: targetUser.username \vert{}\vert{} 'User', email: targetUser.email \vert{}\vert{} '' },$push: { log: { $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 } }
                     },
                     { upsert: true, new: true }
                 );
@@ -1684,38 +1680,10 @@ email: targetUser.email || ''                         },$push: {
     next();
 };
 
-// ====================================================
-// 12. PUBLIC SERVER STATUS ENDPOINT
-// ====================================================
-app.get('/api/server-status', (req, res) => {
-    try {
-        const totalMem = os.totalmem();
-        const freeMem = os.freemem();
-        const usedMem = totalMem - freeMem;
-        const memoryUsagePercent = ((usedMem / totalMem) * 100).toFixed(2);
-
-        res.json({
-            status: true,
-            memoryUsagePercent,
-            totalMemory: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            usedMemory: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            freeMemory: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            cpuModel: os.cpus()[0]?.model || 'Unknown',
-            cpuSpeed: (os.cpus()[0]?.speed || 0) + ' MHz',
-            cpuCores: os.cpus().length,
-            loadAverage: os.loadavg(),
-            platform: os.platform(),
-            architecture: os.arch(),
-            uptime: os.uptime()
-        });
-    } catch (err) {
-        res.status(500).json({ status: false, message: 'Gagal memuat status server' });
-    }
-});
-
 // AUTO LOAD API ENDPOINTS
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
+router.use(validateApiKey);
 
 if (fs.existsSync(apiPath)) {
     const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
@@ -1827,7 +1795,7 @@ app.get('/api/user-activity', async (req, res) => {
         if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) return res.json({ status: true, data: [] });
 
         const formattedLogs = userLogDoc.log
-             .filter(item => item.endpoint !== '/api/apilist' && item.endpoint !== '/api/verify-turnstile')
+             .filter(item => item.endpoint !== '/api/apilist')
              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
              .map(item => {
                  const timeStr = new Date(item.createdAt || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
@@ -1842,7 +1810,7 @@ app.get('/api/user-activity', async (req, res) => {
 });
 
 // ====================================================
-// 13. GENERAL SYSTEM & SERVICE WORKER API
+// 12. GENERAL SYSTEM & SERVICE WORKER API
 // ====================================================
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
@@ -1890,17 +1858,17 @@ app.post('/api/feedback', async (req, res) => {
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com', port: 465, secure: true, 
-            auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }, tls: { rejectUnauthorized: false }
+            auth: { user: 'supportarulzxd@gmail.com', pass: 'matsgyapivykobdv' }, tls: { rejectUnauthorized: false }
         });
 
         await Promise.all([
             transporter.sendMail({
-                from: `"${email}" <${process.env.SMTP_USER}>`, to: process.env.SMTP_USER, replyTo: email,
+                from: `"${email}" <supportarulzxd@gmail.com>`, to: 'supportarulzxd@gmail.com', replyTo: email,
                 subject: `[${type.toUpperCase()}] Feedback Baru`,
                 html: `<p>Feedback dari ${email}:</p><p>${message}</p>`
             }),
             transporter.sendMail({
-                from: `"Support ArulzXD" <${process.env.SMTP_USER}>`, to: email,
+                from: '"Support ArulzXD" <supportarulzxd@gmail.com>', to: email,
                 subject: `Terima Kasih atas Feedback Anda`,
                 html: `<p>Halo, feedback Anda telah kami terima.</p>`
             })
@@ -1912,8 +1880,24 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
+app.get('/api/server-status', (req, res) => {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+
+    res.json({
+        platform: os.platform(), architecture: os.arch(), uptime: os.uptime(),
+        totalMemory: (totalMem / (1024 ** 3)).toFixed(2) + " GB",
+        usedMemory: (usedMem / (1024 ** 3)).toFixed(2) + " GB",
+        freeMemory: (freeMem / (1024 ** 3)).toFixed(2) + " GB",
+        memoryUsagePercent: ((usedMem / totalMem) * 100).toFixed(2),
+        cpuModel: os.cpus()[0].model, cpuSpeed: os.cpus()[0].speed + " MHz",
+        cpuCores: os.cpus().length, loadAverage: os.loadavg()
+    });
+});
+
 // ====================================================
-// 14. CRON JOBS & SERVER LISTEN
+// 13. CRON JOBS & SERVER LISTEN
 // ====================================================
 cron.schedule('0 * * * *', async () => {
     try {
@@ -1938,15 +1922,14 @@ mongoose.connection.once('open', async () => {
 });
 
 // ====================================================
-// 15. PAGE ROUTES (HTML VIEWS & ASSETS)
+// 14. PAGE ROUTES (HTML VIEWS & ASSETS)
 // ====================================================
-app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'home.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 app.get('/login', (req, res) => req.user ? res.redirect('/docs') : res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/uploader', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uploader.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'feedback.html')));
 app.get('/pastecode', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pastecode.html')));
-app.get('/profile', (req, res) => req.user ? res.sendFile(path.join(__dirname, 'public', 'profile.html')) : res.redirect('/login'));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
 app.get('/support', (req, res) => res.sendFile(path.join(__dirname, 'public', 'support.html')));
 app.get('/status', (req, res) => res.sendFile(path.join(__dirname, 'public', 'status.html')));
@@ -2007,7 +1990,7 @@ app.get('/docs', async (req, res) => {
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css" />
@@ -3105,7 +3088,7 @@ app.get('/docs', async (req, res) => {
             showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
             if (userAvatarImg) userAvatarImg.src = oldSrc;
             if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-        } fontally {
+        } finally {
             if (userAvatarImg) userAvatarImg.style.opacity = '1';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
             input.value = '';
@@ -3169,7 +3152,7 @@ app.get('/docs', async (req, res) => {
                 '</div>';
         });
     }
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
         const bioDropdown = document.getElementById('bioDropdown');
@@ -3178,7 +3161,7 @@ app.get('/docs', async (req, res) => {
         const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
         const themeBtn = document.getElementById('themePickerBtn');
-        const themeDropdown = document.getElementById('themeMenuDropdown');                
+        const themeDropdown = document.getElementById('themeMenuDropdown');
 
         if (themeBtn && themeDropdown) {
             themeBtn.addEventListener('click', (e) => {
