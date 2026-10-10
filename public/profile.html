@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Arulz-XD API - USER PROFILE</title>
+    <title>Arulz-XD API - PROFIL & SETTINGS</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" type="image/png">
 
     <!-- Tailwind CSS, SweetAlert2, Google Fonts & FontAwesome -->
@@ -17,7 +17,7 @@
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
-            --theme-border: #a16207;
+            --theme-border: #18181b;
             --theme-accent: #fde047;
             --theme-text: #121212;
             --theme-light: #fef9c3;
@@ -279,7 +279,7 @@
                 </a>
                 <div>
                     <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">USER PROFILE DASHBOARD</span>
+                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">PROFIL &amp; SETTINGS</span>
                 </div>
             </div>
 
@@ -422,16 +422,15 @@
     </div>
 
     <!-- Main Content Container -->
-    <main class="w-full max-w-2xl mx-auto px-4 pt-20 pb-10 relative z-10 flex-1 flex flex-col items-center">
+    <main class="w-full max-w-2xl mx-auto px-4 pt-20 pb-10 relative z-10 flex-1 flex flex-col items-center space-y-5">
 
-        <!-- Card Profile Utama -->
-        <div class="w-full light-card p-6 mb-6">
-            
-            <!-- User Info Header -->
-            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-5 border-b-2 border-zinc-200 pb-6">
+        <!-- CARD 1: HEADER PROFIL & DETAIL KELOLA AKUN -->
+        <div class="w-full light-card p-5 sm:p-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-5 border-b-2 border-zinc-200 pb-5 mb-5">
+                <!-- Avatar Uploadable -->
                 <div class="relative w-24 h-24 flex-shrink-0">
                     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                    <div class="relative cursor-pointer w-full h-full group" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ubah avatar">
+                    <div class="relative cursor-pointer w-full h-full group" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ubah foto profil">
                         <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-sm overflow-hidden bg-white">
                             <img id="userAvatar" src="https://cdn.arulzzxd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                         </div>
@@ -442,15 +441,22 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col gap-2 w-full text-center sm:text-left">
-                    <div class="light-pill-capsule py-2 px-4 truncate shadow-xs">
-                        <span id="userName" class="text-sm font-black text-zinc-900">loading...</span>
+                <!-- Nama, Badge Role, Email -->
+                <div class="flex-1 flex flex-col gap-1.5 w-full text-center sm:text-left">
+                    <div class="flex items-center justify-center sm:justify-start gap-2">
+                        <h2 id="userName" class="text-lg font-black text-zinc-900 tracking-tight truncate">Loading...</h2>
+                        <span id="roleBadge" class="text-[9px] font-black theme-bg-accent border-2 border-zinc-900 px-2 py-0.5 rounded-md uppercase shadow-xs">
+                            FREE
+                        </span>
                     </div>
-                    <div class="light-pill-capsule py-2 px-4 truncate shadow-xs">
-                        <span id="userEmail" class="text-xs font-bold text-zinc-700">loading_email@gmail.com</span>
+                    <p id="userEmail" class="text-xs font-bold text-zinc-600 truncate">loading_email@gmail.com</p>
+                    <div class="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] font-bold text-emerald-600">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Akun Terverifikasi</span>
                     </div>
                 </div>
 
+                <!-- Plan Hexagon / Badge Box -->
                 <div id="planBoxContainer" class="relative w-20 h-24 flex flex-col items-center justify-center flex-shrink-0">
                     <svg class="w-full h-full" viewBox="0 0 100 130" fill="none">
                         <text x="50" y="20" fill="#121212" font-size="10" font-weight="900" text-anchor="middle">USER</text>
@@ -460,79 +466,160 @@
                 </div>
             </div>
 
-            <!-- API Key & Limit Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                
-                <!-- API Key Info Card -->
-                <div class="light-card-box p-4 relative flex flex-col justify-between shadow-xs">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10px] font-black text-white border-2 border-zinc-900 bg-zinc-900 px-2.5 py-1 rounded-lg uppercase">
-                                API Key Kamu
-                            </span>
-                        </div>
-                        
-                        <div class="light-pill-capsule text-zinc-900 text-xs font-black py-2 px-3 truncate mb-3 text-center code-font bg-amber-50/60">
-                            <span id="userApiKey">loading-key</span>
-                        </div>
-
-                        <div id="vipCustomKeyBox" class="hidden mb-3">
-                            <div class="flex gap-2">
-                                <input type="text" id="customApiKeyInput" placeholder="Ketik Custom Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 focus:outline-none font-bold">
-                                <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs px-3 rounded-xl uppercase font-extrabold shadow-sm active:scale-95">SET</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 rounded-xl uppercase tracking-wider font-extrabold active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xs">
-                        <i class="fa-regular fa-copy"></i> SALIN KEY
-                    </button>
+            <!-- Detail Grid Informasi Akun -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4 text-xs font-bold">
+                <div class="light-card-box p-3 flex items-center justify-between">
+                    <span class="text-zinc-500 uppercase text-[10px] code-font">Username:</span>
+                    <span id="detailUsername" class="text-zinc-900 font-extrabold truncate">loading...</span>
                 </div>
-
-                <!-- Limit Info Card -->
-                <div class="light-card-box p-4 text-center relative flex flex-col justify-between shadow-xs">
-                    <div>
-                        <div class="w-full light-solid-header text-[10px] py-1 uppercase tracking-widest mb-3">
-                            LIMIT REQUEST HARIAN
-                        </div>
-                        <div class="py-2">
-                            <span class="inline-block light-pill-capsule text-zinc-900 px-6 py-2 text-sm font-black tracking-widest code-font bg-amber-50/60">
-                                <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="text-[10px] font-bold text-zinc-500 uppercase mt-2">
-                        Reset Otomatis Setiap 00:00 WIB
-                    </div>
+                <div class="light-card-box p-3 flex items-center justify-between">
+                    <span class="text-zinc-500 uppercase text-[10px] code-font">Status Plan:</span>
+                    <span id="detailPlan" class="text-zinc-900 font-extrabold uppercase">FREE</span>
                 </div>
-
-            </div>
-
-            <!-- Activity Logs Card -->
-            <div class="light-card-box p-4 mb-6 shadow-xs">
-                <div class="w-full light-solid-header text-[10px] py-1 uppercase tracking-widest mb-3 text-center">
-                    AKTIVITAS REQUEST TERAKHIR
-                </div>
-                <div id="activityLogsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <div class="light-pill-capsule text-zinc-800 code-font text-xs py-2 px-3 text-center truncate">
-                        Memuat data aktivitas...
-                    </div>
+                <div class="light-card-box p-3 flex items-center justify-between sm:col-span-2">
+                    <span class="text-zinc-500 uppercase text-[10px] code-font">Email:</span>
+                    <span id="detailEmail" class="text-zinc-900 font-extrabold truncate">loading_email@gmail.com</span>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
-                    <i class="fa-solid fa-crown text-amber-700 text-sm"></i> UPGRADE VIP
+            <!-- Tombol Edit Profil (Nama & Email) -->
+            <button onclick="toggleEditProfileModal()" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
+                <i class="fa-solid fa-user-pen"></i> EDIT PROFIL (NAMA &amp; EMAIL)
+            </button>
+        </div>
+
+        <!-- CARD 2: KREDENSIAL API KEY -->
+        <div class="w-full light-card p-5">
+            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-key text-zinc-900"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider code-font">KREDENSIAL API KEY</h3>
+                </div>
+                <span class="text-[9px] font-black code-font bg-zinc-900 text-white px-2 py-0.5 rounded uppercase">
+                    PRIVATE KEY
+                </span>
+            </div>
+
+            <div class="light-card-box p-3 mb-3 relative bg-amber-50/60">
+                <input type="password" id="userApiKeyInput" readonly value="••••••••••••••••" class="w-full bg-transparent text-center code-font text-sm font-black text-zinc-900 focus:outline-none select-all">
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button onclick="toggleShowApiKey()" id="btnToggleKey" class="bg-[#FFFDF8] hover:bg-zinc-100 text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                    <i class="fa-solid fa-eye"></i> TAMPILKAN
+                </button>
+                <button onclick="copyApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                    <i class="fa-regular fa-copy"></i> SALIN KEY
+                </button>
+                <button onclick="toggleCustomKeyInput()" class="bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 shadow-xs">
+                    <i class="fa-solid fa-sliders"></i> CUSTOM KEY
+                </button>
+            </div>
+
+            <div id="vipCustomKeyBox" class="hidden mt-3 light-card-box p-3">
+                <p class="text-[10px] font-bold text-zinc-600 mb-2">Ubah API Key kustom Anda (Khusus VIP User):</p>
+                <div class="flex gap-2">
+                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 focus:outline-none font-bold">
+                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs px-4 rounded-xl uppercase font-extrabold shadow-xs active:scale-95">SIMPAN</button>
+                </div>
+            </div>
+
+            <p class="text-[10px] font-bold text-zinc-500 mt-3 text-center">
+                Gunakan API Key ini dengan parameter <code class="code-font text-zinc-800 bg-zinc-200 px-1 rounded">?apikey=</code> pada endpoint API.
+            </p>
+        </div>
+
+        <!-- CARD 3: PENGGUNAAN & KUOTA -->
+        <div class="w-full light-card p-5">
+            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-zinc-900"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider code-font">PENGGUNAAN &amp; KUOTA</h3>
+                </div>
+                <a href="/upgrade-apikey" class="text-[10px] font-black theme-bg-accent border-2 border-zinc-900 px-2.5 py-1 rounded-lg uppercase shadow-xs flex items-center gap-1 active:scale-95">
+                    <i class="fa-solid fa-plus"></i> UPGRADE KUOTA
                 </a>
-                <a href="/auth/logout" class="w-full border-2 border-zinc-900 bg-red-500 hover:bg-red-600 text-white font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
-                    <i class="fa-solid fa-right-from-bracket text-sm"></i> LOGOUT
-                </a>
             </div>
 
+            <div class="light-card-box p-4 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-black text-zinc-900 uppercase code-font">Kuota Harian (API)</span>
+                    <span class="text-xs font-black code-font text-zinc-900">
+                        <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
+                    </span>
+                </div>
+                <div class="w-full bg-zinc-200 h-3 rounded-full border-2 border-zinc-900 overflow-hidden">
+                    <div id="limitProgressBar" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
+                </div>
+                <p class="text-[10px] font-bold text-zinc-500 mt-2 flex items-center justify-between">
+                    <span>Masa Aktif: Selamanya (Tanpa Batas Waktu)</span>
+                    <span>Reset: 00:00 WIB</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- CARD 4: AKTIVITAS & RIWAYAT REQUEST -->
+        <div class="w-full light-card p-5">
+            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-zinc-900"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider code-font">AKTIVITAS &amp; RIWAYAT REQUEST</h3>
+                </div>
+            </div>
+
+            <div id="activityLogsContainer" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                <div class="light-pill-capsule text-zinc-800 code-font text-xs py-2 px-3 text-center truncate">
+                    Memuat data aktivitas...
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 5: KEAMANAN & AKSES -->
+        <div class="w-full light-card p-5">
+            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-zinc-900"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider code-font">KEAMANAN &amp; AKSES</h3>
+                </div>
+            </div>
+
+            <a href="/auth/logout" class="w-full border-2 border-zinc-900 bg-red-500 hover:bg-red-600 text-white font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
+                <i class="fa-solid fa-right-from-bracket text-sm"></i> KELUAR DARI AKUN (LOGOUT)
+            </a>
         </div>
 
     </main>
+
+    <!-- MODAL EDIT PROFIL (NAMA & EMAIL) -->
+    <div id="editProfileModal" class="fixed inset-0 bg-black/70 backdrop-blur-xs hidden z-[999] flex items-center justify-center p-4">
+        <div class="light-card p-6 w-full max-w-md relative bg-[#FFFDF8]">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-zinc-900">
+                <h3 class="text-sm font-black uppercase tracking-wider code-font">EDIT PROFIL PENGGUNA</h3>
+                <button onclick="toggleEditProfileModal()" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-zinc-200 flex items-center justify-center text-zinc-900 font-bold">✕</button>
+            </div>
+
+            <form id="formEditProfile" onsubmit="handleSaveProfile(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Nama / Username Baru:</label>
+                    <input type="text" id="editUsernameInput" required class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Email Baru:</label>
+                    <input type="email" id="editEmailInput" required class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="toggleEditProfileModal()" class="flex-1 border-2 border-zinc-900 bg-zinc-200 text-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider">
+                        BATAL
+                    </button>
+                    <button type="submit" class="flex-1 theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider shadow-xs active:scale-95">
+                        SIMPAN PERUBAHAN
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer Halaman -->
     <footer class="w-full max-w-2xl mx-auto px-4 py-6 border-t-2 border-zinc-300 text-center text-[10px] code-font font-bold text-zinc-500 uppercase tracking-widest relative z-10">
@@ -540,6 +627,9 @@
     </footer>
 
     <script>
+        let currentRawApiKey = '';
+        let isApiKeyVisible = false;
+
         // Presets Tema Warna & Border
         const THEME_PRESETS = {
             yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
@@ -578,13 +668,31 @@
             if (dropdown) dropdown.classList.add('hidden');
         }
 
-        function copyText(text, label) {
+        // Toggle Tampilkan / Sembunyikan API Key
+        function toggleShowApiKey() {
+            const input = document.getElementById('userApiKeyInput');
+            const btn = document.getElementById('btnToggleKey');
+            isApiKeyVisible = !isApiKeyVisible;
+
+            if (isApiKeyVisible) {
+                input.type = 'text';
+                input.value = currentRawApiKey || 'No Key';
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> SEMBUNYIKAN';
+            } else {
+                input.type = 'password';
+                input.value = '••••••••••••••••';
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i> TAMPILKAN';
+            }
+        }
+
+        function copyApiKey() {
+            if (!currentRawApiKey) return;
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
+                navigator.clipboard.writeText(currentRawApiKey).then(() => {
                     Swal.fire({
                         icon: 'success',
                         title: 'BERHASIL DISALIN',
-                        text: (label || 'Teks') + ' telah disalin ke clipboard!',
+                        text: 'API Key telah disalin ke clipboard!',
                         confirmButtonText: 'OKE',
                         buttonsStyling: false,
                         customClass: { confirmButton: 'px-4 py-2 bg-zinc-900 text-white font-black rounded-xl border-2 border-black' }
@@ -593,24 +701,75 @@
             }
         }
 
+        function toggleCustomKeyInput() {
+            const box = document.getElementById('vipCustomKeyBox');
+            box.classList.toggle('hidden');
+        }
+
         function setRoleTheme(roleName) {
             const planText = document.getElementById('userPlanText');
-            const vipCustomBox = document.getElementById('vipCustomKeyBox');
+            const badge = document.getElementById('roleBadge');
+            const detailPlan = document.getElementById('detailPlan');
             if (!planText) return;
 
             const role = (roleName || '').toLowerCase();
             if (role.includes('vip')) {
                 planText.textContent = 'VIP';
                 planText.setAttribute('fill', '#2563eb');
-                if (vipCustomBox) vipCustomBox.classList.remove('hidden');
+                if (badge) badge.innerText = 'VIP USER';
+                if (detailPlan) detailPlan.innerText = 'VIP USER';
             } else if (role.includes('premium')) {
                 planText.textContent = 'PREM';
                 planText.setAttribute('fill', '#d97706');
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
+                if (badge) badge.innerText = 'PREMIUM';
+                if (detailPlan) detailPlan.innerText = 'PREMIUM USER';
             } else {
                 planText.textContent = 'FREE';
                 planText.setAttribute('fill', '#121212');
-                if (vipCustomBox) vipCustomBox.classList.add('hidden');
+                if (badge) badge.innerText = 'FREE USER';
+                if (detailPlan) detailPlan.innerText = 'FREE USER';
+            }
+        }
+
+        // Toggle Modal Edit Profil
+        function toggleEditProfileModal() {
+            const modal = document.getElementById('editProfileModal');
+            modal.classList.toggle('hidden');
+
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('editUsernameInput').value = document.getElementById('userName').innerText !== 'Loading...' ? document.getElementById('userName').innerText : '';
+                document.getElementById('editEmailInput').value = document.getElementById('userEmail').innerText !== 'loading_email@gmail.com' ? document.getElementById('userEmail').innerText : '';
+            }
+        }
+
+        // Simpan Perubahan Profil (Nama & Email)
+        async function handleSaveProfile(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('editUsernameInput').value.trim();
+            const newEmail = document.getElementById('editEmailInput').value.trim();
+
+            if (!newUsername || !newEmail) {
+                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Nama & Email wajib diisi!' });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: newUsername, email: newEmail })
+                });
+
+                const resData = await response.json();
+                if (resData.status) {
+                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: resData.message || 'Profil berhasil diperbarui!' });
+                    toggleEditProfileModal();
+                    fetchUserProfile();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal memperbarui profil.' });
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'ERROR', text: 'Terjadi kesalahan koneksi server.' });
             }
         }
 
@@ -631,7 +790,8 @@
                 const resData = await response.json();
                 if (resData.status) {
                     Swal.fire({ icon: 'success', title: 'BERHASIL', text: resData.message });
-                    document.getElementById('userApiKey').innerText = resData.apikey;
+                    currentRawApiKey = resData.apikey;
+                    if (isApiKeyVisible) document.getElementById('userApiKeyInput').value = currentRawApiKey;
                     input.value = '';
                 } else {
                     Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal mengubah API Key.' });
@@ -676,13 +836,19 @@
                         document.getElementById('userAvatar').src = avatarUrl;
                         document.getElementById('userName').innerText = data.user.username || 'User';
                         document.getElementById('userEmail').innerText = data.user.email || 'no-email@mail.com';
-                        document.getElementById('userApiKey').innerText = data.user.apikey || 'No Key';
+                        document.getElementById('detailUsername').innerText = data.user.username || 'User';
+                        document.getElementById('detailEmail').innerText = data.user.email || 'no-email@mail.com';
+
+                        currentRawApiKey = data.user.apikey || '';
+                        if (isApiKeyVisible) {
+                            document.getElementById('userApiKeyInput').value = currentRawApiKey;
+                        }
+
                         setRoleTheme(data.user.role || 'Free User');
 
                         fetchUserLimit(data.user.apikey);
                         fetchUserActivityLogs();
 
-                        // Perbarui status card di sidebar dropdown jika elemennya ada
                         const sidebarAuth = document.getElementById('sidebarAuthBtnContainer');
                         if (sidebarAuth) {
                             sidebarAuth.innerHTML = `
@@ -709,8 +875,16 @@
             fetch('/api/user-limit?apikey=' + encodeURIComponent(apikey))
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('popupLimitUsed').innerText = data.limitUsed || 0;
-                    document.getElementById('popupLimitMax').innerText = data.maxLimit || 100;
+                    const used = data.limitUsed || 0;
+                    const max = data.maxLimit || 100;
+                    document.getElementById('popupLimitUsed').innerText = used;
+                    document.getElementById('popupLimitMax').innerText = max;
+
+                    const bar = document.getElementById('limitProgressBar');
+                    if (bar) {
+                        const pct = max === 'Unlimited' ? 100 : Math.min(100, (used / max) * 100);
+                        bar.style.width = pct + '%';
+                    }
                 });
         }
 
