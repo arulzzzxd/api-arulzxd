@@ -1666,12 +1666,22 @@ const logApiActivity = async (req, res, next) => {
                 if (!targetUser) return;
 
                 await ApiLog.findOneAndUpdate(
-                    { userId: targetUser._id || targetUser.id },
-                    { 
-                        $set: { apikey: userKey.trim(), username: targetUser.username \vert{}\vert{} 'User', email: targetUser.email \vert{}\vert{} '' },$push: { log: { $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 } }
-                    },
-                    { upsert: true, new: true }
-                );
+    { userId: targetUser._id || targetUser.id },
+    { 
+        $set: { 
+            apikey: userKey.trim(), 
+            username: targetUser.username || 'User', 
+            email: targetUser.email || '' 
+        },
+        $push: { 
+            log: { 
+                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
+                $position: 0 
+            } 
+        }
+    },
+    { upsert: true, new: true }
+);
             } catch (err) {
                 console.error("❌ Gagal simpan log ke MongoDB:", err.message);
             }
