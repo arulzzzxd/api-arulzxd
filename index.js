@@ -1191,18 +1191,30 @@ const checkAdminAccess = (req, res, next) => {
 };
 
 async function sendBackgroundPushNotification(payload) {
-    const pushPayload = JSON.stringify(payload);
-    const subscriptions = await PushSub.find({});
+    try {
+        const pushPayload = JSON.stringify(payload);
+        const subscriptions = await PushSub.find({});
 
-    subscriptions.forEach(async (sub) => {
-        try {
-            await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, pushPayload);
-        } catch (err) {
-            if (err.statusCode === 410 || err.statusCode === 404) {
-                await PushSub.deleteOne({ endpoint: sub.endpoint });
-            }
+        if (!subscriptions || subscriptions.length === 0) {
+            console.log("⚠️ Tidak ada perangkat admin yang terdaftar untuk Web Push.");
+            return;
         }
-    });
+
+        const pushPromises = subscriptions.map(async (sub) => {
+            try {
+                await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, pushPayload);
+            } catch (err) {
+                // Hapus token yang sudah kedaluwarsa atau di-reset oleh browser
+                if (err.statusCode === 410 || err.statusCode === 404) {
+                    await PushSub.deleteOne({ endpoint: sub.endpoint });
+                }
+            }
+        });
+
+        await Promise.all(pushPromises);
+    } catch (err) {
+        console.error("❌ Error mengirim background push notification:", err.message);
+    }
 }
 
 app.get('/api/admin/vapid-public-key', checkAdminAccess, (req, res) => {
@@ -1262,6 +1274,8 @@ app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (re
         await trx.save();
 
         const targetUser = await User.findById(trx.userId) || await User.findOne({ username: trx.username });
+        const buyerAvatar = targetUser?.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
+
         if (targetUser) {
             const daysToAdd = Number(trx.itemDetails?.qty) || 3;
             const isVip = (trx.itemDetails?.nama || '').toLowerCase().includes("vip");
@@ -1284,9 +1298,16 @@ app.post('/api/admin/transactions/:orderId/approve', checkAdminAccess, async (re
             await targetUser.save();
         }
 
-        return res.json({ status: true, message: "Transaksi berhasil dikonfirmasi LUNAS! Role pengguna telah diperbarui." });
+        // Notifikasi LUNAS dikirim ke background
+        sendBackgroundPushNotification({
+            title: '✅ TRANSAKSI LUNAS!',
+            body: `Order: ${trx.orderId}\nUser: ${trx.username}\nRole berhasil diperbarui!`,
+            icon: buyerAvatar,
+            orderId: trx.orderId
+        });
+
+        return res.json({ status: true, message: "Transaksi berhasil dikonfirmasi LUNAS!" });
     } catch (err) {
-        console.error("Approve Error:", err);
         return res.status(500).json({ status: false, message: "Gagal memproses konfirmasi." });
     }
 });
@@ -1538,7 +1559,7 @@ app.post('/transactions', async (req, res) => {
 app.post('/api/transactions/upload-proof', async (req, res) => {
     try {
         const { orderId, proofImage } = req.body;
-        if (!orderId || !proofImage) return res.status(400).json({ status: false, message: "OrderId dan foto bukti pembayaran wajib diisi!" });
+        if (!orderId || !proofImage) return res.status(400).json({ status: false, message: "OrderId dan bukti wajib diisi!" });
 
         const trx = await Transaction.findOne({ orderId });
         if (!trx) return res.status(404).json({ status: false, message: "Transaksi tidak ditemukan!" });
@@ -1551,22 +1572,20 @@ app.post('/api/transactions/upload-proof', async (req, res) => {
         const buyer = await User.findOne({ $or: [{ email: trx.email }, { username: trx.username }] });
         const buyerAvatar = buyer?.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
 
-        notifyAdminSse({
-            type: "NEW_PAYMENT_PROOF", orderId: trx.orderId, username: trx.username, amount: trx.amount,
-            item: trx.itemDetails?.nama || "Upgrade API Key", qty: trx.itemDetails?.qty || trx.qty || 1
-        });
-
+        // Pemicu push ke HP Admin walau Chrome ditutup
         sendBackgroundPushNotification({
             title: '⚡ BUKTI TRANSAKSI BARU!',
             body: `Order: ${trx.orderId}\nUser: ${trx.username}\nTotal: Rp ${trx.amount.toLocaleString('id-ID')}`,
-            icon: buyerAvatar, image: proofImage, orderId: trx.orderId
+            icon: buyerAvatar,
+            orderId: trx.orderId
         });
 
-        return res.json({ status: true, message: "Bukti pembayaran berhasil diunggah! Menunggu konfirmasi admin." });
+        return res.json({ status: true, message: "Bukti pembayaran berhasil diunggah!" });
     } catch (error) {
         return res.status(500).json({ status: false, message: "Terjadi kesalahan server." });
     }
 });
+
 
 app.get('/transactions/:orderId', async (req, res) => {
     try {
@@ -2082,31 +2101,58 @@ app.get('/sw.js', (req, res) => {
     res.send(`
         self.addEventListener('install', (event) => { self.skipWaiting(); });
         self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
+
+        // Event listener saat push dari FCM server masuk (HP Terkunci/Chrome Tutup)
         self.addEventListener('push', function(event) {
             let data = {};
-            if (event.data) { try { data = event.data.json(); } catch (e) { data = { title: 'Notifikasi', body: event.data.text() }; } }
-            const title = data.title || '⚡ BUKTI TRANSAKSI BARU!';
+            if (event.data) { 
+                try { data = event.data.json(); } 
+                catch (e) { data = { title: 'Notifikasi', body: event.data.text() }; } 
+            }
+
+            const title = data.title || '⚡ NOTIFIKASI TRANSAKSI';
+            const userAvatar = data.icon || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png';
+
             const options = {
-                body: data.body || 'Ada transaksi baru masuk.', icon: data.icon || 'https://cdn.arulzzxd.my.id/files/iJKbzK38.png',
-                badge: data.badge || 'https://cdn.arulzzxd.my.id/files/iJKbzK38.png', image: data.image || null,
-                vibrate: [500, 150, 500, 150, 500], tag: 'trx-' + (data.orderId || Date.now()),
-                requireInteraction: true, data: { orderId: data.orderId },
-                actions: [{ action: 'approve', title: '⚡ KONFIRMASI LUNAS' }]
+                body: data.body || 'Ada transaksi baru atau pembaruan status.',
+                icon: userAvatar,
+                badge: userAvatar,
+                vibrate: [500, 150, 500, 150, 500],
+                tag: 'trx-' + (data.orderId || Date.now()),
+                renotify: true,
+                requireInteraction: true, // Notifikasi tetap tampil di layar sampai di-klik
+                data: { orderId: data.orderId },
+                actions: [
+                    { action: 'approve', title: '⚡ KONFIRMASI LUNAS' }
+                ]
             };
-            event.waitUntil(self.registration.showNotification(title, options));
+
+            // Menjaga background thread Service Worker tetap hidup sampai notifikasi muncul
+            event.waitUntil(
+                self.registration.showNotification(title, options)
+            );
         });
+
         self.addEventListener('notificationclick', function(event) {
             event.notification.close();
             const data = event.notification.data || {};
+
             if (event.action === 'approve' && data.orderId) {
                 event.waitUntil(
                     fetch('/api/admin/transactions/' + data.orderId + '/approve', { method: 'POST' })
                         .then(res => res.json())
-                        .then(() => self.registration.showNotification('✅ TRANSAKSI LUNAS!', { body: 'Order ' + data.orderId + ' LUNAS!' }))
+                        .then(() => {
+                            self.registration.showNotification('✅ TRANSAKSI LUNAS!', {
+                                body: 'Order ' + data.orderId + ' berhasil dikonfirmasi LUNAS!',
+                                icon: event.notification.icon || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'
+                            });
+                        })
                 );
             } else {
                 event.waitUntil(clients.matchAll({ type: 'window' }).then(clientList => {
-                    for (let client of clientList) { if (client.url.includes('/admin') && 'focus' in client) return client.focus(); }
+                    for (let client of clientList) { 
+                        if (client.url.includes('/admin') && 'focus' in client) return client.focus(); 
+                    }
                     if (clients.openWindow) return clients.openWindow('/admin');
                 }));
             }
