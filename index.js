@@ -1667,7 +1667,8 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username \vert{}\vert{} 'User',                              email: targetUser.email \vert{}\vert{} ''                          },$push: { 
+                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username || 'User',
+email: targetUser.email || ''                         },$push: { 
                             log: { 
                                 $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
                             } 
@@ -2762,7 +2763,7 @@ app.get('/docs', async (req, res) => {
                 </div>
             </div>
             <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
-        </button>
+        </a>
         ` : `
         <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
             <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
