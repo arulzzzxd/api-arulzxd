@@ -59,44 +59,49 @@
 
         /* OUTLINE TEMA DINAMIS */
         .brutal-border,
-.cyber-loader-box,
-.cyber-option-card,
-.dropdown-nav-card,
-#themeMenuDropdown,
-#bioDropdown,
-nav,
-.cat-btn,
-.product-card,
-.modal-box,
-input,
-textarea,
-select,
-button,
-.swal2-popup.cyber-swal {
-    border-color: var(--theme-border) !important;
-}
+        .cyber-loader-box,
+        .cyber-option-card,
+        .dropdown-nav-card,
+        #themeMenuDropdown,
+        #bioDropdown,
+        nav,
+        .cat-btn,
+        .product-card,
+        .modal-box,
+        input,
+        textarea,
+        select,
+        button,
+        .swal2-popup.cyber-swal {
+            border-color: var(--theme-border) !important;
+        }
 
-.swal2-popup.cyber-swal {
-    background: #FFFDF8 !important;
-    border: 2.5px solid var(--theme-border) !important;
-    border-radius: 20px !important;
-    color: #121212 !important;
-    box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.2) !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-}
-.swal2-title.cyber-swal-title {
-    color: #121212 !important;
-    font-weight: 900 !important;
-    font-size: 1.1rem !important;
-}
-.swal2-confirm.cyber-swal-confirm {
-    background: var(--theme-accent) !important;
-    color: var(--theme-text) !important;
-    font-weight: 800 !important;
-    border: 2px solid var(--theme-border) !important;
-    border-radius: 12px !important;
-    box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
-}
+        .swal2-popup.cyber-swal {
+            background: #FFFDF8 !important;
+            border: 2.5px solid var(--theme-border) !important;
+            border-radius: 20px !important;
+            color: #121212 !important;
+            box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.2) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .swal2-title.cyber-swal-title {
+            color: #121212 !important;
+            font-weight: 900 !important;
+            font-size: 1.1rem !important;
+        }
+        .swal2-html-container.cyber-swal-text {
+            color: #374151 !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+        }
+        .swal2-confirm.cyber-swal-confirm {
+            background: var(--theme-accent) !important;
+            color: var(--theme-text) !important;
+            font-weight: 800 !important;
+            border: 2px solid var(--theme-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
+        }
 
         .theme-bg-accent {
             background-color: var(--theme-accent) !important;
@@ -117,12 +122,14 @@ button,
         }
 
         /* RGB DYNAMIC ROTATING BORDER MODE */
+        .rgb-mode-active .brutal-border,
         .rgb-mode-active .cyber-loader-box,
         .rgb-mode-active .dropdown-nav-card,
         .rgb-mode-active #themeMenuDropdown,
         .rgb-mode-active .product-card,
         .rgb-mode-active .cyber-option-card,
-        .rgb-mode-active .modal-box {
+        .rgb-mode-active .modal-box,
+        .rgb-mode-active .swal2-popup.cyber-swal {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
@@ -154,25 +161,6 @@ button,
         ::-webkit-scrollbar-thumb { background: var(--theme-border); border-radius: 4px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .swal2-popup.cyber-swal {
-            background: #FFFDF8 !important;
-            border: 2.5px solid var(--theme-border) !important;
-            border-radius: 20px !important;
-            color: #121212 !important;
-            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.2) !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-        }
-        .swal2-title.cyber-swal-title { color: #121212 !important; font-weight: 800 !important; font-size: 1.1rem !important; }
-        .swal2-html-container.cyber-swal-text { color: #374151 !important; font-weight: 600 !important; font-size: 0.85rem !important; }
-        .swal2-confirm.cyber-swal-confirm {
-            background: var(--theme-accent) !important;
-            color: #121212 !important;
-            font-weight: 800 !important;
-            border: 2px solid var(--theme-border) !important;
-            border-radius: 12px !important;
-            box-shadow: 2px 2px 0px rgba(18,18,18,0.2) !important;
-        }
 
         #qrcodeContainer canvas, #qrcodeContainer img {
             margin: 0 auto;
@@ -1805,8 +1793,9 @@ button,
             return jumlah + ' terjual';
         }
 
+        /* FUNGSI ID SANGAT UNIK UNTUK MENCEGAH DUPLICATE KEY E11000 */
         function generateUniqueOrderId() {
-            return `TRX-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+            return `TRX-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`;
         }
 
         function formatRupiah(angka) {
@@ -1843,23 +1832,24 @@ button,
             }
         }
 
+        /* PERBAIKAN FUNGSI GENERATE QR CODE (LEVEL M UNTUK CEGAH OVERFLOW) */
         function renderQrisCode(qrisString) {
             const qrContainer = document.getElementById('qrcodeContainer');
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
                 text: qrisString,
-                width: 500,
-                height: 500,
+                width: 300,
+                height: 300,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M
             });
         }
 
         async function checkActiveTransaction() {
             const savedOrderId = localStorage.getItem('active_order_id');
             const savedProduct = localStorage.getItem('active_order_product');
-            if (!savedOrderId) return;
+            if (!savedOrderId) return false;
 
             try {
                 if (savedProduct) {
@@ -1867,7 +1857,11 @@ button,
                 }
 
                 const res = await fetch(`/transactions/${savedOrderId}`);
-                if (!res.ok) return;
+                if (!res.ok) {
+                    localStorage.removeItem('active_order_id');
+                    localStorage.removeItem('active_order_product');
+                    return false;
+                }
                 const result = await res.json();
 
                 if ((result.status || result.data) && result.data) {
@@ -1899,6 +1893,7 @@ button,
 
                         startCountdown(qrisExpireTime);
                         startStatusPolling();
+                        return true;
                     } else if (["settlement", "success", "paid", "settled"].includes(status)) {
                         CURRENT_ORDER_ID = result.data.orderId;
                         if (SELECTED_PRODUCT) {
@@ -1909,16 +1904,22 @@ button,
                         
                         onPaymentSuccess(result.data.productLink || (SELECTED_PRODUCT ? SELECTED_PRODUCT.link : null) || "#");
                         document.getElementById('checkoutModal').classList.remove('hidden');
+                        return true;
                     } else {
                         localStorage.removeItem('active_order_id');
                         localStorage.removeItem('active_order_product');
+                        return false;
                     }
                 } else {
                     localStorage.removeItem('active_order_id');
                     localStorage.removeItem('active_order_product');
+                    return false;
                 }
             } catch (err) {
                 console.error("Gagal mengecek transaksi aktif:", err);
+                localStorage.removeItem('active_order_id');
+                localStorage.removeItem('active_order_product');
+                return false;
             }
         }
 
@@ -2124,13 +2125,13 @@ button,
 
         function filterProduk() { renderProduk(); }
 
-        function openCheckoutModal(index) {
+        async function openCheckoutModal(index) {
             const activeOrderId = localStorage.getItem('active_order_id');
             const activeProduct = localStorage.getItem('active_order_product');
 
             if (activeOrderId && activeProduct) {
-                checkActiveTransaction();
-                return;
+                const hasActive = await checkActiveTransaction();
+                if (hasActive) return;
             }
 
             SELECTED_PRODUCT = DATA_PRODUK[index];
@@ -2346,77 +2347,81 @@ button,
         }
 
         async function processAutoPayment() {
-    const btnAuto = document.getElementById('btnPayAuto');
-    btnAuto.disabled = true;
-    btnAuto.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat QRIS...`;
+            const btnAuto = document.getElementById('btnPayAuto');
+            btnAuto.disabled = true;
+            btnAuto.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat QRIS...`;
 
-    Swal.fire({
-        title: 'GENERATING QRIS',
-        text: 'Sedang membuat QRIS Dinamis...',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); },
-        customClass: { popup: 'cyber-swal' }
-    });
-
-    try {
-        const calc = calculateFinalTotal();
-
-        const res = await fetch('/transactions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                orderId: CURRENT_ORDER_ID,
-                amount: calc.total,
-                qty: CURRENT_QTY,
-                itemDetails: SELECTED_PRODUCT,
-                voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
-            })
-        });
-
-        const result = await res.json();
-        
-        if (!res.ok || !result.status) {
-            throw new Error(result.message || "Gagal menghasilkan QRIS Dinamis");
-        }
-
-        localStorage.setItem('active_order_id', CURRENT_ORDER_ID);
-        localStorage.setItem('active_order_product', JSON.stringify(SELECTED_PRODUCT));
-
-        const qrisString = result.data.paymentNumber;
-        qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
-
-        const finalAmount = result.data.amount || calc.total;
-
-        document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
-        document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
-
-        // Render QRCode dari string QRIS Dinamis
-        renderQrisCode(qrisString);
-
-        Swal.close();
-
-        document.getElementById('orderForm').classList.add('hidden');
-        document.getElementById('paymentStep2').classList.remove('hidden');
-
-        startCountdown(qrisExpireTime);
-        startStatusPolling();
-
-    } catch (err) {
-        Swal.fire({
-            icon: 'error',
-            title: 'TRANSAKSI GAGAL',
-            text: err.message || 'Gagal membuat transaksi QRIS.',
-            customClass: { 
-                popup: 'cyber-swal',
-                title: 'cyber-swal-title',
-                confirmButton: 'cyber-swal-confirm'
+            if (!CURRENT_ORDER_ID) {
+                CURRENT_ORDER_ID = generateUniqueOrderId();
             }
-        });
-    } finally {
-        btnAuto.disabled = false;
-        btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang`;
-    }
-}
+
+            Swal.fire({
+                title: 'GENERATING QRIS',
+                text: 'Sedang membuat QRIS Dinamis...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); },
+                customClass: { popup: 'cyber-swal' }
+            });
+
+            try {
+                const calc = calculateFinalTotal();
+
+                const res = await fetch('/transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: CURRENT_ORDER_ID,
+                        amount: calc.total,
+                        qty: CURRENT_QTY,
+                        itemDetails: SELECTED_PRODUCT,
+                        voucherCode: ACTIVE_VOUCHER ? ACTIVE_VOUCHER.code : null
+                    })
+                });
+
+                const result = await res.json();
+                
+                if (!res.ok || !result.status) {
+                    throw new Error(result.message || "Gagal menghasilkan QRIS Dinamis");
+                }
+
+                localStorage.setItem('active_order_id', CURRENT_ORDER_ID);
+                localStorage.setItem('active_order_product', JSON.stringify(SELECTED_PRODUCT));
+
+                const qrisString = result.data.paymentNumber;
+                qrisExpireTime = result.data.expiredAt ? new Date(result.data.expiredAt).getTime() : new Date().getTime() + (15 * 60 * 1000);
+
+                const finalAmount = result.data.amount || calc.total;
+
+                document.getElementById('qrisTotalAmount').innerText = formatRupiah(finalAmount);
+                document.getElementById('qrisOrderIdText').innerText = CURRENT_ORDER_ID;
+
+                // Render QRCode dari string QRIS Dinamis (Level M untuk cegah overflow)
+                renderQrisCode(qrisString);
+
+                Swal.close();
+
+                document.getElementById('orderForm').classList.add('hidden');
+                document.getElementById('paymentStep2').classList.remove('hidden');
+
+                startCountdown(qrisExpireTime);
+                startStatusPolling();
+
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'TRANSAKSI GAGAL',
+                    text: err.message || 'Gagal membuat transaksi QRIS.',
+                    customClass: { 
+                        popup: 'cyber-swal',
+                        title: 'cyber-swal-title',
+                        confirmButton: 'cyber-swal-confirm'
+                    }
+                });
+            } finally {
+                btnAuto.disabled = false;
+                btnAuto.innerHTML = `<i class="fa-solid fa-bolt"></i> Bayar Otomatis Sekarang`;
+            }
+        }
 
         function startCountdown(expireTimestamp) {
             if (countdownInterval) clearInterval(countdownInterval);
