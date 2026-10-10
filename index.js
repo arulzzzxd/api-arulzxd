@@ -1557,7 +1557,7 @@ const routeModuleCache = new Map();
 const validateApiKey = async (req, res, next) => {
     const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-    if (req.path === '/apilist') {
+    if (req.path === '/apilist' || req.path === '/server-status') {
         return next();
     }
 
@@ -1612,7 +1612,7 @@ const validateApiKey = async (req, res, next) => {
 const trackAndEnforceLimit = async (req, res, next) => {
     const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-    if (req.path === '/apilist') {
+    if (req.path === '/apilist' || req.path === '/server-status') {
         return next();
     }
 
@@ -1641,7 +1641,7 @@ const apiKeyLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, 
     keyGenerator: (req) => req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip,
     validate: { keyGeneratorIpFallback: false },
-    skip: (req) => getApiKeyType(req.user) === 'vip',
+    skip: (req) => req.path === '/server-status' || getApiKeyType(req.user) === 'vip',
     max: (req) => getApiKeyType(req.user) === 'premium' ? 1000 : 100,
     handler: (req, res) => {
         const keyType = getApiKeyType(req.user);
@@ -1658,7 +1658,7 @@ const logApiActivity = async (req, res, next) => {
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
-            !['/api/user-activity', '/api/user-limit', '/api/apilist'].includes(fullEndpoint)
+            !['/api/user-activity', '/api/user-limit', '/api/apilist', '/api/server-status'].includes(fullEndpoint)
         ) {
             try {
                 let targetUser = req.user || await User.findOne({ apikey: userKey.trim() }).lean();
@@ -1667,15 +1667,9 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: { 
-                            apikey: userKey.trim(), 
-                            username: targetUser.username || 'User', 
-                            email: targetUser.email || '' 
-                        },
-                        $push: { 
+                        $set: {                              apikey: userKey.trim(),                              username: targetUser.username \vert{}\vert{} 'User',                              email: targetUser.email \vert{}\vert{} ''                          },$push: { 
                             log: { 
-                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
-                                $position: 0 
+                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
                             } 
                         }
                     },
@@ -1689,10 +1683,38 @@ const logApiActivity = async (req, res, next) => {
     next();
 };
 
+// ====================================================
+// 12. PUBLIC SERVER STATUS ENDPOINT
+// ====================================================
+app.get('/api/server-status', (req, res) => {
+    try {
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memoryUsagePercent = ((usedMem / totalMem) * 100).toFixed(2);
+
+        res.json({
+            status: true,
+            memoryUsagePercent,
+            totalMemory: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            usedMemory: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            freeMemory: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            cpuModel: os.cpus()[0]?.model || 'Unknown',
+            cpuSpeed: (os.cpus()[0]?.speed || 0) + ' MHz',
+            cpuCores: os.cpus().length,
+            loadAverage: os.loadavg(),
+            platform: os.platform(),
+            architecture: os.arch(),
+            uptime: os.uptime()
+        });
+    } catch (err) {
+        res.status(500).json({ status: false, message: 'Gagal memuat status server' });
+    }
+});
+
 // AUTO LOAD API ENDPOINTS
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
-router.use(validateApiKey);
 
 if (fs.existsSync(apiPath)) {
     const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
@@ -1769,7 +1791,7 @@ if (fs.existsSync(apiPath)) {
 }
 
 // Mount Master API Endpoint Router
-app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, checkApiKeyAndLogActivity, router);
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
 // API User Limit & Activity Logs
 app.get('/api/user-limit', checkAuthSession, async (req, res) => {
@@ -1819,7 +1841,7 @@ app.get('/api/user-activity', async (req, res) => {
 });
 
 // ====================================================
-// 12. GENERAL SYSTEM & SERVICE WORKER API
+// 13. GENERAL SYSTEM & SERVICE WORKER API
 // ====================================================
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
@@ -1889,70 +1911,8 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
-app.get('/api/server-status', (req, res) => {
-    try {
-        const totalMem = os.totalmem();
-        const freeMem = os.freemem();
-        const usedMem = totalMem - freeMem;
-        const memoryUsagePercent = ((usedMem / totalMem) * 100).toFixed(2);
-
-        res.json({
-            status: true,
-            memoryUsagePercent,
-            totalMemory: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            usedMemory: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            freeMemory: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            cpuModel: os.cpus()[0]?.model || 'Unknown',
-            cpuSpeed: (os.cpus()[0]?.speed || 0) + ' MHz',
-            cpuCores: os.cpus().length,
-            loadAverage: os.loadavg(),
-            platform: os.platform(),
-            architecture: os.arch(),
-            uptime: os.uptime()
-        });
-    } catch (err) {
-        res.status(500).json({ status: false, message: 'Gagal memuat status server' });
-    }
-});
-
-app.use('/api', async (req, res, next) => {
-    const apikey = req.query.apikey || req.headers['x-api-key'];
-
-    if (!apikey) {
-        return res.status(401).json({ status: false, message: 'API Key wajib diisi!' });
-    }
-
-    // Proses validasi API Key & pencatatan aktivitas request user di sini...
-    // await logUserActivity(user, req.path);
-
-    next();
-});
-
-const checkApiKeyAndLogActivity = async (req, res, next) => {
-    // List endpoint yang tidak memerlukan API Key dan tidak dicatat ke aktivitas
-    const excludedRoutes = [
-        '/server-status',
-        '/user-status',
-        '/user-activity'
-    ];
-
-    // Bypass jika request menuju salah satu endpoint yang dikecualikan
-    if (excludedRoutes.some(route => req.path.startsWith(route))) {
-        return next();
-    }
-
-    // Pengecekan API Key untuk endpoint biasa
-    const apikey = req.query.apikey || req.headers['x-api-key'];
-    if (!apikey) {
-        return res.status(401).json({ status: false, message: 'API Key diperlukan!' });
-    }
-
-    // Logika validasi user & pencatatan aktivitas request...
-    next();
-};
-
 // ====================================================
-// 13. CRON JOBS & SERVER LISTEN
+// 14. CRON JOBS & SERVER LISTEN
 // ====================================================
 cron.schedule('0 * * * *', async () => {
     try {
@@ -1977,7 +1937,7 @@ mongoose.connection.once('open', async () => {
 });
 
 // ====================================================
-// 14. PAGE ROUTES (HTML VIEWS & ASSETS)
+// 15. PAGE ROUTES (HTML VIEWS & ASSETS)
 // ====================================================
 app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'home.html')));
 app.get('/login', (req, res) => req.user ? res.redirect('/docs') : res.sendFile(path.join(__dirname, 'public', 'login.html')));
@@ -3144,7 +3104,7 @@ app.get('/docs', async (req, res) => {
             showCyberAlert('error', 'CONNECTION ERROR', 'Terjadi kesalahan koneksi saat mengunggah gambar.');
             if (userAvatarImg) userAvatarImg.src = oldSrc;
             if (sidebarAvatarImg) sidebarAvatarImg.src = oldSrc;
-        } finally {
+        } fontally {
             if (userAvatarImg) userAvatarImg.style.opacity = '1';
             if (sidebarAvatarImg) sidebarAvatarImg.style.opacity = '1';
             input.value = '';
