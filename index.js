@@ -85,9 +85,11 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', function() {
     if (this.isModified('role')) {
         const roleLower = (this.role || '').toLowerCase();
+        const safeUsername = (this.username || 'user').toLowerCase();
+
         if (roleLower.includes('vip')) {
             if (!this.apikey || this.apikey.startsWith('arulzxdfree-') || this.apikey.includes('prem-')) {
-                this.apikey = `${this.username.toLowerCase()}-custom-vip`;
+                this.apikey = `${safeUsername}-custom-vip`;
             }
         } else if (roleLower.includes('premium')) {
             if (!this.apikey || !this.apikey.includes('prem-')) {
@@ -223,17 +225,16 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 app.use(session({
-    secret: 'arulzxd_secret_session_key_99', 
+    secret: process.env.SESSION_SECRET || 'arulzxd_secret_session_key_99', 
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        client: mongoose.connection.getClient(),
+        mongoUrl: MONGODB_URI, // <-- Gunakan mongoUrl langsung agar aman di serverless
         dbName: 'sessions',
         ttl: 24 * 60 * 60
     }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
-
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
@@ -460,15 +461,24 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
     async (usernameOrEmail, password, done) => {
         try {
+            if (!usernameOrEmail) {
+                return done(null, false, { message: 'Username atau Email wajib diisi.' });
+            }
+
+            const cleanIdentifier = String(usernameOrEmail).trim();
             const user = await User.findOne({
-                $or: [{ username: usernameOrEmail }, { email: usernameOrEmail.toLowerCase() }]
+                $or: [
+                    { username: cleanIdentifier }, 
+                    { email: cleanIdentifier.toLowerCase() }
+                ]
             });
 
             if (!user) return done(null, false, { message: 'Username atau Email tidak ditemukan.' });
 
-            if (!user.password || user.provider !== 'local') {
+            const provider = (user.provider || 'local').toLowerCase();
+            if (!user.password || provider !== 'local') {
                 return done(null, false, { 
-                    message: `Akun ini terdaftar via ${user.provider.toUpperCase()}. Silakan masuk dengan tombol ${user.provider.toUpperCase()}.` 
+                    message: `Akun ini terdaftar via ${provider.toUpperCase()}. Silakan masuk dengan tombol ${provider.toUpperCase()}.` 
                 });
             }
 
@@ -496,13 +506,13 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
-                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
+                const safeUsername = (user.username || 'user').toLowerCase();
 
                 if (roleLower.includes('vip')) {
                     if (!user.apikey) {
-                        user.apikey = `${user.username.toLowerCase()}-custom-vip`;
+                        user.apikey = `${safeUsername}-custom-vip`;
                         needSave = true;
                     }
                 } else if (roleLower.includes('premium')) {
@@ -526,7 +536,7 @@ app.post('/auth/login', (req, res, next) => {
                     username: user.username,
                     email: user.email,
                     name: user.username,
-                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
+                    avatar: user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
                     role: user.role,     
                     apikey: user.apikey   
                 };
