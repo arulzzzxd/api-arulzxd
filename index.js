@@ -911,6 +911,7 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
     }
 });
 
+// Endpoint Pembaruan Profil (Nama & Email)
 app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ status: false, message: 'Anda belum login!' });
@@ -923,23 +924,40 @@ app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
         const cleanUsername = username.trim();
         const cleanEmail = email.toLowerCase().trim();
 
-        // Cek apakah email/username sudah digunakan oleh pengguna lain
-        const existingUser = await User.findOne({
+        // 1. Pengecekan spesifik untuk Email yang sudah terdaftar
+        const existingEmail = await User.findOne({
             _id: { $ne: req.user.id || req.user._id },
-            $or: [{ email: cleanEmail }, { username: cleanUsername }]
+            email: cleanEmail
         });
 
-        if (existingUser) {
-            return res.status(400).json({ status: false, message: 'Username atau Email sudah digunakan akun lain!' });
+        if (existingEmail) {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'Email sudah terdaftar di database, harap gunakan email lain!' 
+            });
         }
 
+        // 2. Pengecekan spesifik untuk Username yang sudah digunakan
+        const existingUsername = await User.findOne({
+            _id: { $ne: req.user.id || req.user._id },
+            username: cleanUsername
+        });
+
+        if (existingUsername) {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'Username sudah digunakan akun lain, harap gunakan username lain!' 
+            });
+        }
+
+        // 3. Update data di database
         const updatedUser = await User.findByIdAndUpdate(
             req.user.id || req.user._id,
             { $set: { username: cleanUsername, email: cleanEmail } },
             { new: true, runValidators: true }
         );
 
-        // Perbarui JWT Cookie Session
+        // 4. Perbarui JWT Cookie Session
         const token = jwt.sign({
             id: updatedUser._id,
             username: updatedUser.username,
@@ -956,6 +974,29 @@ app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
     } catch (error) {
         console.error("Gagal update profile:", error);
         return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui profil.' });
+    }
+});
+
+// Endpoint Hapus Akun Permanen (Zona Berbahaya)
+app.post('/api/user/delete-account', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: 'Anda belum login!' });
+
+        const userId = req.user.id || req.user._id;
+
+        // 1. Hapus akun user dari MongoDB
+        await User.findByIdAndDelete(userId);
+
+        // 2. Hapus log aktivitas pengguna jika ada
+        await ApiLog.deleteMany({ userId });
+
+        // 3. Bersihkan cookie sesi auth
+        res.clearCookie('auth_session');
+
+        return res.json({ status: true, message: 'Akun Anda telah berhasil dihapus secara permanen.' });
+    } catch (error) {
+        console.error("Gagal hapus akun:", error);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat menghapus akun.' });
     }
 });
 
