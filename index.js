@@ -911,6 +911,54 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
     }
 });
 
+app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: 'Anda belum login!' });
+
+        const { username, email } = req.body;
+        if (!username || !email) {
+            return res.status(400).json({ status: false, message: 'Username dan Email wajib diisi!' });
+        }
+
+        const cleanUsername = username.trim();
+        const cleanEmail = email.toLowerCase().trim();
+
+        // Cek apakah email/username sudah digunakan oleh pengguna lain
+        const existingUser = await User.findOne({
+            _id: { $ne: req.user.id || req.user._id },
+            $or: [{ email: cleanEmail }, { username: cleanUsername }]
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ status: false, message: 'Username atau Email sudah digunakan akun lain!' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.id || req.user._id,
+            { $set: { username: cleanUsername, email: cleanEmail } },
+            { new: true, runValidators: true }
+        );
+
+        // Perbarui JWT Cookie Session
+        const token = jwt.sign({
+            id: updatedUser._id,
+            username: updatedUser.username,
+            email: updatedUser.email,
+            name: updatedUser.username,
+            avatar: updatedUser.avatar,
+            role: updatedUser.role,
+            apikey: updatedUser.apikey
+        }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+
+        return res.json({ status: true, message: 'Profil berhasil diperbarui!', user: updatedUser });
+    } catch (error) {
+        console.error("Gagal update profile:", error);
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server saat memperbarui profil.' });
+    }
+});
+
 // ====================================================
 // 7. ADMIN MIDDLEWARE & ADMIN ENDPOINTS
 // ====================================================
