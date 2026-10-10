@@ -227,12 +227,13 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: MONGODB_URI,
+        client: mongoose.connection.getClient(),
         dbName: 'sessions',
         ttl: 24 * 60 * 60
     }),
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
+
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
@@ -763,37 +764,34 @@ app.post('/auth/forgot-password', async (req, res) => {
     }
 });
 
-app.get('/reset-password/:token', async (req, res) => {
+app.post('/reset-password/:token', async (req, res) => {
     try {
+        const { password } = req.body;
+        if (!password || !password.trim()) {
+            return sendSweetAlert(res, 'error', 'Gagal', 'Kata sandi baru wajib diisi!', `/reset-password/${req.params.token}`);
+        }
+
+        // Cari user berdasarkan token yang cocok dan belum kadaluwarsa
         const user = await User.findOne({ 
-            resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } 
+            resetPasswordToken: req.params.token, 
+            resetPasswordExpires: { $gt: Date.now() } 
         });
 
         if (!user) {
             return sendSweetAlert(res, 'error', 'Link Kadaluwarsa', 'Link reset password tidak valid atau sudah kedaluwarsa.', '/login');
         }
 
-        res.send(`
-            <!DOCTYPE html>
-            <html lang="id">
-            <head>
-                <meta charset="UTF-8">
-                <title>Buat Password Baru</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-            </head>
-            <body class="bg-[#FAF7EF] flex items-center justify-center min-h-screen p-4">
-                <div class="bg-[#FFFDF8] border-2 border-black p-8 rounded-2xl max-w-md w-full">
-                    <h1 class="text-xl font-bold mb-4">Atur Ulang Kata Sandi</h1>
-                    <form action="/reset-password/${req.params.token}" method="POST" class="space-y-4">
-                        <input type="password" name="password" required placeholder="Password Baru" class="w-full border-2 border-black p-3 rounded-xl">
-                        <button type="submit" class="w-full bg-yellow-400 border-2 border-black font-bold py-3 rounded-xl">Simpan Password Baru</button>
-                    </form>
-                </div>
-            </body>
-            </html>
-        `);
+        // Hash password baru dan bersihkan token reset
+        const hashedPassword = await bcrypt.hash(password.trim(), 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return sendSweetAlert(res, 'success', 'Berhasil!', 'Kata sandi Anda berhasil diperbarui. Silakan masuk menggunakan kata sandi baru.', '/login');
     } catch (err) {
-        res.status(500).send("Error server.");
+        console.error("Gagal memproses reset password:", err);
+        return res.status(500).send("Terjadi kesalahan pada server saat memperbarui kata sandi.");
     }
 });
 
