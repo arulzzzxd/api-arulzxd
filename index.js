@@ -798,27 +798,26 @@ app.get('/reset-password/:token', async (req, res) => {
 });
 
 // --- USER STATUS & LOGOUT ---
-app.get('/api/user-status', async (req, res) => {
-    if (req.user) {
-        try {
-            const freshUser = await User.findById(req.user.id || req.user._id);
-            const activeUser = freshUser || req.user;
-            res.json({
-                loggedIn: true,
-                user: {
-                    name: activeUser.username, username: activeUser.username, email: activeUser.email, avatar: activeUser.avatar, apikey: activeUser.apikey, role: activeUser.role
-                }
-            });
-        } catch (err) {
-            res.json({
-                loggedIn: true,
-                user: {
-                    name: req.user.name || req.user.username, username: req.user.username, email: req.user.email, avatar: req.user.avatar, apikey: req.user.apikey, role: req.user.role
-                }
-            });
-        }
-    } else {
-        res.json({ loggedIn: false });
+app.get('/api/user-status', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.json({ loggedIn: false });
+        const user = await User.findById(req.user.id || req.user._id).select('-password');
+        if (!user) return res.json({ loggedIn: false });
+
+        return res.json({
+            loggedIn: true,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                role: user.role,
+                apikey: user.apikey,
+                provider: user.provider
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({ loggedIn: false });
     }
 });
 
