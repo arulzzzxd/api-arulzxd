@@ -2053,7 +2053,22 @@ mongoose.connection.once('open', async () => {
 // 14. PAGE ROUTES (HTML VIEWS & ASSETS)
 // ====================================================
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
-app.get('/login', (req, res) => req.user ? res.redirect('/docs') : res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/auth/login', (req, res) => {
+    return res.redirect('/login');
+});
+app.get('/login', (req, res) => {
+    if (req.user) return res.redirect('/docs');
+    
+    const loginFilePath = path.join(__dirname, 'public', 'login.html');
+    return res.sendFile(loginFilePath, (err) => {
+        if (err) {
+            console.error("Gagal mengirim berkas login.html:", err.message);
+            if (!res.headersSent) {
+                return res.status(500).send("Gagal memuat halaman login di server.");
+            }
+        }
+    });
+});
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/uploader', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uploader.html')));
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'feedback.html')));
