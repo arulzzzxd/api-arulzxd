@@ -1616,7 +1616,19 @@ const validateApiKey = async (req, res, next) => {
 };
 
 const trackAndEnforceLimit = async (req, res, next) => {
-    if (req.path === '/apilist') return next();
+    // Exclude endpoint sistem/internal agar tidak memotong limit saat refresh atau cek status
+    const systemEndpoints = [
+        '/apilist',
+        '/user-limit',
+        '/user-activity',
+        '/user-status',
+        '/server-status'
+    ];
+
+    if (systemEndpoints.some(endpoint => req.path.startsWith(endpoint))) {
+        return next();
+    }
+
     const userKey = req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'];
     if (!userKey) return next();
 
@@ -1642,7 +1654,11 @@ const apiKeyLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, 
     keyGenerator: (req) => req.activeApiKey || req.query.apikey || req.body?.apikey || req.headers['x-api-key'] || req.ip,
     validate: { keyGeneratorIpFallback: false },
-    skip: (req) => getApiKeyType(req.user) === 'vip',
+    skip: (req) => {
+        if (getApiKeyType(req.user) === 'vip') return true;
+        const systemEndpoints = ['/apilist', '/user-limit', '/user-activity', '/user-status', '/server-status'];
+        return systemEndpoints.some(endpoint => req.path.startsWith(endpoint));
+    },
     max: (req) => getApiKeyType(req.user) === 'premium' ? 1000 : 100,
     handler: (req, res) => {
         const keyType = getApiKeyType(req.user);
@@ -1941,6 +1957,7 @@ app.get('/uploader', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'feedback.html')));
 app.get('/pastecode', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pastecode.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
+app.get('/profile', (req, res) => req.user ? res.sendFile(path.join(__dirname, 'public', 'profile.html')) : res.redirect('/login'));
 app.get('/support', (req, res) => res.sendFile(path.join(__dirname, 'public', 'support.html')));
 app.get('/status', (req, res) => res.sendFile(path.join(__dirname, 'public', 'status.html')));
 app.get('/upgrade-apikey', (req, res) => res.sendFile(path.join(__dirname, 'public', 'upgrade-apikey.html')));
