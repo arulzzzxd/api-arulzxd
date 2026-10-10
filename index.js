@@ -496,6 +496,7 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
+                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
 
@@ -516,22 +517,31 @@ app.post('/auth/login', (req, res, next) => {
                     }
                 }
 
-                if (needSave) await user.save();
+                if (needSave) {
+                    await user.save();
+                }
 
                 const userPayload = {
                     id: user._id,
                     username: user.username,
                     email: user.email,
                     name: user.username,
-                    avatar: user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
+                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
                     role: user.role,     
                     apikey: user.apikey   
                 };
 
                 const token = jwt.sign(userPayload, JWT_SECRET, { expiresIn: '7d' });
-                res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+
+                res.cookie('auth_session', token, {
+                    maxAge: 7 * 24 * 60 * 60 * 1000, 
+                    httpOnly: true,
+                    secure: true, 
+                    sameSite: 'lax'
+                });
 
                 return res.redirect('/docs');
+
             } catch (error) {
                 console.error("Gagal sinkronisasi data saat login:", error);
                 return next(error);
@@ -722,23 +732,33 @@ app.get('/auth/google/callback', async (req, res) => {
 app.post('/auth/forgot-password', async (req, res) => {
     try {
         const email = req.body.email;
-        if (!email) return sendSweetAlert(res, 'error', 'Wajib Diisi', 'Email wajib diisi!', '/login');
+        if (!email) {
+            return sendSweetAlert(res, 'error', 'Wajib Diisi', 'Email wajib diisi!', '/login');
+        }
 
         const user = await User.findOne({ email: email.toLowerCase().trim() });
-        if (!user) return sendSweetAlert(res, 'error', 'Tidak Ditemukan', 'Email tersebut tidak terdaftar di sistem kami.', '/login');
+        if (!user) {
+            return sendSweetAlert(res, 'error', 'Tidak Ditemukan', 'Email tersebut tidak terdaftar di sistem kami.', '/login');
+        }
 
         if (user.provider !== 'local') {
             return sendSweetAlert(res, 'error', 'Metode Login OAuth', `Akun ini mendaftar via ${user.provider.toUpperCase()}, tidak memerlukan reset password.`, '/login');
         }
 
         const resetToken = crypto.randomBytes(20).toString('hex');
+
         user.resetPasswordToken = resetToken;
         user.resetPasswordExpires = Date.now() + 3600000; 
         await user.save();
 
         const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com', port: 465, secure: true, 
-            auth: { user: 'supportarulzxd@gmail.com', pass: 'matsgyapivykobdv' },
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, 
+            auth: {
+                user: 'supportarulzxd@gmail.com',
+                pass: 'matsgyapivykobdv'
+            },
             tls: { rejectUnauthorized: false }
         });
 
@@ -746,52 +766,146 @@ app.post('/auth/forgot-password', async (req, res) => {
         const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
         const resetUrl = `${protocol}://${host}/reset-password/${resetToken}`;
 
-        await transporter.sendMail({
+        const mailOptions = {
             from: '"Support ArulzXD" <supportarulzxd@gmail.com>',
             to: user.email,
             subject: 'Permintaan Reset Kata Sandi',
-            html: `<div style="background-color: #FAF7EF; padding: 40px 20px; font-family: sans-serif;">
-                <h2>Halo ${user.username},</h2>
-                <p>Klik tombol di bawah ini untuk mereset kata sandi Anda:</p>
-                <a href="${resetUrl}" style="background:#fde047; padding:10px 20px; color:#121212; font-weight:bold; text-decoration:none; display:inline-block; border-radius:8px;">Reset Kata Sandi</a>
-            </div>`
-        });
+            html: `
+<div style="background-color: #f8fafc; padding: 40px 20px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100%;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
+        <tr>
+            <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                <h1 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: 800; letter-spacing: -0.025em;">
+                    Arulz<span style="color: #0284c7;">XD</span> API
+                </h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0 32px 24px 32px;">
+                <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(2, 132, 199, 0.2), transparent);"></div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0 32px 32px 32px; color: #475569; font-size: 14px; line-height: 24px;">
+                <p style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">Halo ${user.username},</p>
+                <p style="margin: 0 0 16px 0;">Kami menerima permintaan untuk mengatur ulang kata sandi akun ArulzXD API Anda.</p>
+                <p style="margin: 0 0 24px 0;">Silakan klik tombol di bawah ini untuk membuat kata sandi baru:</p>
+                
+                <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                    <tr>
+                        <td align="center" bgcolor="#0284c7" style="border-radius: 12px;">
+                            <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Reset Kata Sandi</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0 32px 32px 32px; color: #64748b; font-size: 12px; line-height: 20px;">
+                <p style="margin: 0 0 12px 0; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                    <strong style="color: #dc2626;">Penting:</strong> Link ini hanya berlaku selama <span style="color: #334155; font-weight: 600;">1 jam</span> demi keamanan akun Anda.
+                </p>
+                <p style="margin: 0;">Jika Anda tidak merasa meminta reset password ini, Anda dapat mengabaikan email ini dengan aman.</p>
+            </td>
+        </tr>
+    </table>
+</div>
+`
+        };
 
+        await transporter.sendMail(mailOptions);
         return sendSweetAlert(res, 'success', 'Sukses!', 'Link reset password telah dikirim ke email Anda.', '/login');
+
     } catch (error) {
         console.error(error);
         res.status(500).send('Gagal memproses lupa password.');
     }
 });
 
-app.post('/reset-password/:token', async (req, res) => {
+app.get('/reset-password/:token', async (req, res) => {
     try {
-        const { password } = req.body;
-        if (!password || !password.trim()) {
-            return sendSweetAlert(res, 'error', 'Gagal', 'Kata sandi baru wajib diisi!', `/reset-password/${req.params.token}`);
-        }
-
-        // Cari user berdasarkan token yang cocok dan belum kadaluwarsa
         const user = await User.findOne({ 
             resetPasswordToken: req.params.token, 
             resetPasswordExpires: { $gt: Date.now() } 
         });
 
         if (!user) {
-            return sendSweetAlert(res, 'error', 'Link Kadaluwarsa', 'Link reset password tidak valid atau sudah kedaluwarsa.', '/login');
+            return sendSweetAlert(res, 'error', 'Link Kadaluwarsa', 'Link reset password tidak valid atau sudah kedaluwarsa. Silakan minta link baru.', '/login');
         }
 
-        // Hash password baru dan bersihkan token reset
-        const hashedPassword = await bcrypt.hash(password.trim(), 10);
-        user.password = hashedPassword;
+        res.send(`
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Buat Password Baru - ArulzXD REST API</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            body { background-color: #f8fafc; }
+            .solid-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        </style>
+    </head>
+    <body class="flex flex-col items-center justify-center min-h-screen p-4 antialiased text-slate-800">
+        <div class="solid-card p-8 rounded-2xl w-full max-w-md relative overflow-hidden">
+            <div class="text-center mb-6 relative z-10">
+                <h1 class="text-xl font-extrabold tracking-tight text-slate-900 mb-1">
+                    Atur Ulang <span class="text-sky-600">Kata Sandi</span>
+                </h1>
+                <p class="text-xs text-slate-500 font-medium">Silakan masukkan kata sandi baru Anda yang aman.</p>
+            </div>
+
+            <form action="/reset-password/${req.params.token}" method="POST" class="space-y-4 relative z-10">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Password Baru</label>
+                    <input id="new-password" type="password" name="password" required placeholder="••••••••" 
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white font-medium transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Konfirmasi Password Baru</label>
+                    <input id="confirm-password" type="password" name="confirmPassword" required placeholder="••••••••" 
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white font-medium transition">
+                </div>
+
+                <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl text-sm tracking-wide uppercase transition shadow-sm">Simpan Password Baru</button>
+            </form>
+        </div>
+    </body>
+    </html>
+`);
+
+    } catch (err) {
+        res.status(500).send("Error server.");
+    }
+});
+
+app.post('/reset-password/:token', async (req, res) => {
+    try {
+        const { password, confirmPassword } = req.body;
+
+        if (password !== confirmPassword) {
+            return sendSweetAlert(res, 'warning', 'Tidak Cocok', 'Password dan konfirmasi password tidak cocok!', '/login');
+        }
+
+        const user = await User.findOne({ 
+            resetPasswordToken: req.params.token, 
+            resetPasswordExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return sendSweetAlert(res, 'error', 'Gagal', 'Link reset password tidak valid atau sudah kedaluwarsa.', '/login');
+        }
+
+        user.password = await bcrypt.hash(password, 10);
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        return sendSweetAlert(res, 'success', 'Berhasil!', 'Kata sandi Anda berhasil diperbarui. Silakan masuk menggunakan kata sandi baru.', '/login');
+        return sendSweetAlert(res, 'success', 'Berhasil!', 'Password berhasil diubah! Silakan login dengan password baru Anda.', '/login');
     } catch (err) {
-        console.error("Gagal memproses reset password:", err);
-        return res.status(500).send("Terjadi kesalahan pada server saat memperbarui kata sandi.");
+        res.status(500).send("Gagal menyimpan password baru.");
     }
 });
 
@@ -2051,9 +2165,6 @@ mongoose.connection.once('open', async () => {
 // 14. PAGE ROUTES (HTML VIEWS & ASSETS)
 // ====================================================
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
-app.get('/auth/login', (req, res) => {
-    return res.redirect('/login');
-});
 app.get('/login', (req, res) => {
     if (req.user) return res.redirect('/docs');
     
