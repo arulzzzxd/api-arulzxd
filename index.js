@@ -1769,7 +1769,7 @@ if (fs.existsSync(apiPath)) {
 }
 
 // Mount Master API Endpoint Router
-app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, checkApiKeyAndLogActivity, router);
 
 // API User Limit & Activity Logs
 app.get('/api/user-limit', checkAuthSession, async (req, res) => {
@@ -1890,20 +1890,66 @@ app.post('/api/feedback', async (req, res) => {
 });
 
 app.get('/api/server-status', (req, res) => {
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
+    try {
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memoryUsagePercent = ((usedMem / totalMem) * 100).toFixed(2);
 
-    res.json({
-        platform: os.platform(), architecture: os.arch(), uptime: os.uptime(),
-        totalMemory: (totalMem / (1024 ** 3)).toFixed(2) + " GB",
-        usedMemory: (usedMem / (1024 ** 3)).toFixed(2) + " GB",
-        freeMemory: (freeMem / (1024 ** 3)).toFixed(2) + " GB",
-        memoryUsagePercent: ((usedMem / totalMem) * 100).toFixed(2),
-        cpuModel: os.cpus()[0].model, cpuSpeed: os.cpus()[0].speed + " MHz",
-        cpuCores: os.cpus().length, loadAverage: os.loadavg()
-    });
+        res.json({
+            status: true,
+            memoryUsagePercent,
+            totalMemory: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            usedMemory: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            freeMemory: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            cpuModel: os.cpus()[0]?.model || 'Unknown',
+            cpuSpeed: (os.cpus()[0]?.speed || 0) + ' MHz',
+            cpuCores: os.cpus().length,
+            loadAverage: os.loadavg(),
+            platform: os.platform(),
+            architecture: os.arch(),
+            uptime: os.uptime()
+        });
+    } catch (err) {
+        res.status(500).json({ status: false, message: 'Gagal memuat status server' });
+    }
 });
+
+app.use('/api', async (req, res, next) => {
+    const apikey = req.query.apikey || req.headers['x-api-key'];
+
+    if (!apikey) {
+        return res.status(401).json({ status: false, message: 'API Key wajib diisi!' });
+    }
+
+    // Proses validasi API Key & pencatatan aktivitas request user di sini...
+    // await logUserActivity(user, req.path);
+
+    next();
+});
+
+const checkApiKeyAndLogActivity = async (req, res, next) => {
+    // List endpoint yang tidak memerlukan API Key dan tidak dicatat ke aktivitas
+    const excludedRoutes = [
+        '/server-status',
+        '/user-status',
+        '/user-activity'
+    ];
+
+    // Bypass jika request menuju salah satu endpoint yang dikecualikan
+    if (excludedRoutes.some(route => req.path.startsWith(route))) {
+        return next();
+    }
+
+    // Pengecekan API Key untuk endpoint biasa
+    const apikey = req.query.apikey || req.headers['x-api-key'];
+    if (!apikey) {
+        return res.status(401).json({ status: false, message: 'API Key diperlukan!' });
+    }
+
+    // Logika validasi user & pencatatan aktivitas request...
+    next();
+};
 
 // ====================================================
 // 13. CRON JOBS & SERVER LISTEN
@@ -2747,7 +2793,7 @@ app.get('/docs', async (req, res) => {
 
     <div id="sidebarAuthBtnContainer" class="mb-3">
         ${req.user ? `
-        <button <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs"> 
+        <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
             <div class="flex items-center gap-2.5 truncate">
                 <img id="sidebarUserAvatar" src="${req.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
                 <div class="truncate text-left leading-tight">
