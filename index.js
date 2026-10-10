@@ -448,6 +448,7 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
 // ====================================================
 // 5. PASSPORT STRATEGY & OAUTH AUTHENTICATION
 // ====================================================
+
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
     try {
@@ -461,24 +462,18 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new LocalStrategy({ usernameField: 'username', passwordField: 'password' }, 
     async (usernameOrEmail, password, done) => {
         try {
-            if (!usernameOrEmail) {
-                return done(null, false, { message: 'Username atau Email wajib diisi.' });
-            }
-
-            const cleanIdentifier = String(usernameOrEmail).trim();
             const user = await User.findOne({
                 $or: [
-                    { username: cleanIdentifier }, 
-                    { email: cleanIdentifier.toLowerCase() }
+                    { username: usernameOrEmail }, 
+                    { email: usernameOrEmail.toLowerCase() }
                 ]
             });
 
             if (!user) return done(null, false, { message: 'Username atau Email tidak ditemukan.' });
 
-            const provider = (user.provider || 'local').toLowerCase();
-            if (!user.password || provider !== 'local') {
+            if (!user.password || user.provider !== 'local') {
                 return done(null, false, { 
-                    message: `Akun ini terdaftar via ${provider.toUpperCase()}. Silakan masuk dengan tombol ${provider.toUpperCase()}.` 
+                    message: `Akun ini terdaftar via ${user.provider.toUpperCase()}. Silakan masuk dengan tombol ${user.provider.toUpperCase()}.` 
                 });
             }
 
@@ -506,13 +501,13 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
+                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
-                const safeUsername = (user.username || 'user').toLowerCase();
 
                 if (roleLower.includes('vip')) {
                     if (!user.apikey) {
-                        user.apikey = `${safeUsername}-custom-vip`;
+                        user.apikey = `${user.username.toLowerCase()}-custom-vip`;
                         needSave = true;
                     }
                 } else if (roleLower.includes('premium')) {
@@ -536,7 +531,7 @@ app.post('/auth/login', (req, res, next) => {
                     username: user.username,
                     email: user.email,
                     name: user.username,
-                    avatar: user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
+                    avatar: user.avatar || 'https://arulz-xd.my.id/files/X1F0Cn.png',
                     role: user.role,     
                     apikey: user.apikey   
                 };
@@ -921,25 +916,44 @@ app.post('/reset-password/:token', async (req, res) => {
 
 // --- USER STATUS & LOGOUT ---
 app.get('/api/user-status', checkAuthSession, async (req, res) => {
+    // 1. Cek sesi login di awal untuk menghindari error null reference
+    if (!req.user) {
+        return res.json({ loggedIn: false });
+    }
+
     try {
-        if (!req.user) return res.json({ loggedIn: false });
-        const user = await User.findById(req.user.id || req.user._id).select('-password');
-        if (!user) return res.json({ loggedIn: false });
+        // 2. Ambil data terbaru dari MongoDB
+        const freshUser = await User.findById(req.user.id || req.user._id).select('-password').lean();
+        const activeUser = freshUser || req.user;
 
         return res.json({
             loggedIn: true,
             user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                avatar: user.avatar,
-                role: user.role,
-                apikey: user.apikey,
-                provider: user.provider
+                id: activeUser._id || activeUser.id,
+                name: activeUser.username,
+                username: activeUser.username,
+                email: activeUser.email,
+                avatar: activeUser.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
+                apikey: activeUser.apikey,
+                role: activeUser.role,
+                provider: activeUser.provider || 'local'
             }
         });
     } catch (err) {
-        return res.status(500).json({ loggedIn: false });
+        // 3. Fallback aman menggunakan data dari req.user jika MongoDB error
+        return res.json({
+            loggedIn: true,
+            user: {
+                id: req.user.id || req.user._id,
+                name: req.user.username,
+                username: req.user.username,
+                email: req.user.email,
+                avatar: req.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
+                apikey: req.user.apikey,
+                role: req.user.role,
+                provider: req.user.provider || 'local'
+            }
+        });
     }
 });
 
