@@ -1680,6 +1680,19 @@ app.post('/webhook', async (req, res) => {
 // ====================================================
 // 10. FILE UPLOADER & GITHUB CDN PROXY
 // ====================================================
+
+const uploadHistorySchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    username: { type: String, required: true },
+    fileName: { type: String, required: true },
+    url: { type: String, required: true },
+    contentType: { type: String, default: 'application/octet-stream' },
+    folder: { type: String, default: 'file' },
+    size: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now }
+});
+const UploadHistory = mongoose.models.UploadHistory || mongoose.model('UploadHistory', uploadHistorySchema);
+
 const localFileUploader = fileUpload({
     createParentPath: true,
     limits: { fileSize: 4.5 * 1024 * 1024 }, // Batas ukuran file 4.5 MB
@@ -1713,6 +1726,11 @@ function getCdnFolder(mimetype, ext) {
         return 'video';
     }
     return 'file';
+}
+
+function getRandomIdLength() {
+    const lengths = [4, 6, 8, 10];
+    return lengths[Math.floor(Math.random() * lengths.length)];
 }
 
 app.get('/files/*', async (req, res) => {
@@ -1763,7 +1781,6 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
 
   let uploadedFile = req.files.file;
 
-  // Validasi tambahan untuk memastikan file tidak lebih dari 4.5 MB
   const MAX_SIZE = 4.5 * 1024 * 1024;
   if (uploadedFile.size > MAX_SIZE) {
     return res.status(400).json({ 
@@ -1776,15 +1793,18 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
   const origExt = path.extname(originalName);
 
   let extension = origExt ? origExt.replace(/^\./, '') : (mime.extension(uploadedFile.mimetype) || 'bin');
-  let id = generateId(8);
+  
+  let randomLength = getRandomIdLength();
+  let id = generateId(randomLength);
+
   let fileName = origExt ? `${id}${origExt}` : `${id}.${extension}`;
   
-  // Penentuan folder di repo cdn (foto, video, atau file)
   let folder = getCdnFolder(uploadedFile.mimetype, extension);
   let gitPath = `${folder}/${fileName}`;
   let base64Content = Buffer.from(uploadedFile.data).toString('base64');
 
   try {
+    // 1. Upload ke GitHub CDN
     await axios.put(`https://api.github.com/repos/${owner}/${repoName}/contents/${gitPath}`, {
       message: `Upload file ${fileName} ke folder ${folder}`,
       content: base64Content,
@@ -1793,6 +1813,24 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
       headers: { Authorization: `Bearer ${githubToken}`, 'Content-Type': 'application/json' }
     });
 
+    // 2. SIMPAN RIWAYAT KE MONGODB (TARUH DI SINI)
+    if (req.user) {
+        try {
+            await UploadHistory.create({
+                userId: req.user.id || req.user._id,
+                username: req.user.username,
+                fileName: fileName,
+                url: `https://cdn.arulzzxd.my.id/files/${fileName}`,
+                contentType: uploadedFile.mimetype || mime.lookup(originalName) || 'application/octet-stream',
+                folder: folder,
+                size: uploadedFile.size
+            });
+        } catch (dbErr) {
+            console.error("Gagal menyimpan riwayat ke MongoDB:", dbErr.message);
+        }
+    }
+
+    // 3. Kirim respons ke client
     return res.json({
       status: true,
       message: 'Unggahan Berhasil!',
@@ -1805,6 +1843,21 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
     console.error("Gagal upload file ke GitHub CDN:", error.response?.data || error.message);
     return res.status(500).json({ status: false, message: 'Gagal mengunggah file ke server.' });
   }
+});
+
+app.get('/api/user/upload-history', checkAuthSession, async (req, res) => {
+    if (!req.user) {
+        return res.json({ status: false, loggedIn: false, message: "Anda belum login." });
+    }
+    try {
+        const history = await UploadHistory.find({ userId: req.user.id || req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(30)
+            .lean();
+        return res.json({ status: true, loggedIn: true, data: history });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "Gagal mengambil riwayat unggahan." });
+    }
 });
 
 app.get('/database/download', async (req, res) => {
