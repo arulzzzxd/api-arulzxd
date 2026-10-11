@@ -360,9 +360,9 @@
             </button>
         </div>
 
-        <!-- Banner Video -->
+        <!-- Banner Video Sidebar -->
         <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
-            <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+            <video id="sidebarBannerVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" class="w-full h-full object-cover">
                 <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
             </video>
         </div>
@@ -448,9 +448,9 @@
             Sistem Siap Digunakan
         </div>
 
-        <!-- Banner Video HD Container -->
+        <!-- Banner Video HD Utama Container -->
         <div class="w-full mb-8 rounded-2xl overflow-hidden border-2 brutal-border bg-black shadow-sm relative group">
-            <video autoplay loop muted playsinline class="w-full h-auto max-h-[350px] object-cover rounded-2xl">
+            <video id="mainBannerVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" class="w-full h-auto max-h-[350px] object-cover rounded-2xl">
                 <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
             </video>
         </div>
@@ -623,13 +623,26 @@
             if (dropdown) dropdown.classList.add('hidden');
         }
 
+        // Fungsi Pemutar Video Otomatis (Semua Banner)
+        function playBannerVideo() {
+            document.querySelectorAll('video').forEach(video => {
+                video.muted = true;
+                video.playsInline = true;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.log("Autoplay handled:", err);
+                    });
+                }
+            });
+        }
+
         // Inisialisasi Handler & Event Sidebar + Theme Picker
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
             const closeMenuBtn = document.getElementById('closeMenuBtn');
             const menuOverlay = document.getElementById('menuOverlay');
-            const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
             const themeBtn = document.getElementById('themePickerBtn');
             const themeDropdown = document.getElementById('themeMenuDropdown');
@@ -650,12 +663,6 @@
             // Muat Tema Tersimpan
             const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
             setAppTheme(savedTheme);
-
-            function playBannerVideo() {
-                if (sidebarBannerVideo) {
-                    sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
-                }
-            }
 
             function closeSidebarMenu() {
                 if (bioDropdown && menuOverlay) {
@@ -702,6 +709,14 @@
                 })
                 .catch(err => console.error("Gagal memuat status user:", err));
         });
+
+        // Auto-recovery video saat berpindah tab atau saat ada gesture pertama
+        window.addEventListener('load', playBannerVideo);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) playBannerVideo();
+        });
+        document.addEventListener('touchstart', playBannerVideo, { once: true });
+        document.addEventListener('click', playBannerVideo, { once: true });
 
         // Loader Progress
         let currentProgress = 0;
