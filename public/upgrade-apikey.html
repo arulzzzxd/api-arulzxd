@@ -16,13 +16,13 @@
     
     <style>
         :root {
-            --bg-cream: #FAF7EF;
-            --card-bg: #FFFDF8;
-            --theme-border: #a16207;
-            --theme-accent: #fde047;
-            --theme-text: #121212;
-            --theme-light: #fef9c3;
-            --rgb-angle: 0deg;
+           --bg-cream: #FAF7EF;
+           --card-bg: #FFFDF8;
+           --theme-border: #eab308;
+           --theme-accent: #fde047;
+           --theme-text: #121212;
+           --theme-light: #fef9c3;
+           --rgb-angle: 0deg;
         }
 
         * {
@@ -414,6 +414,12 @@
     </div>
 
     <nav class="space-y-2 flex-1 pb-4">
+        <a href="/" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    <span>DASHBOARD</span>
+                </div>
+            </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -423,7 +429,7 @@
         <a href="/store" class="dropdown-nav-card theme-light-bg">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                <span>STORE / BUY PLAN</span>
+                <span>STORE</span>
             </div>
         </a>
         <a href="/uploader" class="dropdown-nav-card">
@@ -441,7 +447,7 @@
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-                <span>REQUEST FITUR</span>
+                <span>FEEDBACK</span>
             </div>
         </a>
         <a href="/status" class="dropdown-nav-card">
@@ -565,7 +571,7 @@
                     </div>
                 </div>
                 <button onclick="processQrisPayment('premium')" id="lbl-btn-prem" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
-                    <i class="fa-solid fa-qrcode mr-1"></i> Beli Premium (QRIS Dynamic)
+                    <i class="fa-solid fa-qrcode mr-1"></i> Beli Premium (QRIS)
                 </button>
             </div>
         </div>
@@ -610,20 +616,20 @@
                     </div>
                 </div>
                 <button onclick="processQrisPayment('vip')" id="lbl-btn-vip" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
-                    <i class="fa-solid fa-qrcode mr-1"></i> Beli VIP (QRIS Dynamic)
+                    <i class="fa-solid fa-qrcode mr-1"></i> Beli VIP (QRIS)
                 </button>
             </div>
         </div>
 
     </div>
 
-    <!-- Modal Pembayaran QRIS Dinamis & Upload Bukti Transfer -->
+    <!-- Modal Pembayaran QRIS & Upload Bukti Transfer -->
     <div id="paymentModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="modal-card w-full max-w-md overflow-hidden my-auto max-h-[95vh] flex flex-col p-5 sm:p-6 relative">
 
             <div class="flex justify-between items-center pb-3 border-b-2 brutal-border mb-4">
                 <h3 id="lbl-modal-title" class="font-black text-sm font-mono flex items-center gap-2 text-zinc-900 uppercase">
-                    <i class="fa-solid fa-qrcode theme-text-accent"></i> Pembayaran QRIS Dinamis
+                    <i class="fa-solid fa-qrcode theme-text-accent"></i> Pembayaran QRIS
                 </h3>
                 <button onclick="closePaymentModal()" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
                     <i class="fa-solid fa-xmark text-sm"></i>
@@ -646,7 +652,7 @@
                     </div>
 
                     <div class="text-center">
-                        <p id="lbl-modal-subtext1" class="text-xs text-zinc-900 font-black">Scan QRIS Dinamis Di Bawah Ini</p>
+                        <p id="lbl-modal-subtext1" class="text-xs text-zinc-900 font-black">Scan QRIS Di Bawah Ini</p>
                         <p id="lbl-modal-subtext2" class="text-[10px] text-zinc-600 font-bold">Nominal otomatis terisi saat di-scan via GoPay, OVO, DANA, BCA, Dll</p>
                     </div>
 
@@ -794,10 +800,10 @@
             durationVip: "Durasi Paket",
             unitVip: "Hari",
             btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Beli VIP (QRIS Dynamic)",
-            modalTitle: "Pembayaran QRIS Dinamis",
+            modalTitle: "Pembayaran QRIS",
             modalTotal: "Total Pembayaran Paket",
             modalExpire: "Selesaikan Sebelum:",
-            modalSubtext1: "Scan QRIS Dinamis Di Bawah Ini",
+            modalSubtext1: "Scan QRIS Di Bawah Ini",
             modalSubtext2: "Nominal otomatis terisi saat di-scan via GoPay, OVO, DANA, BCA, Dll",
             modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Menunggu Unggah Bukti / Verifikasi Admin...",
             btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> BATALKAN TRANSAKSI",
@@ -1087,7 +1093,7 @@
         Swal.fire({
             ...swalConfig,
             title: currentLang === 'en' ? 'GENERATING QRIS' : 'MEMBUAT QRIS',
-            text: currentLang === 'en' ? 'Generating dynamic QRIS...' : 'Menyiapkan QRIS Dinamis...',
+            text: currentLang === 'en' ? 'Generating dynamic QRIS...' : 'Menyiapkan QRIS...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });

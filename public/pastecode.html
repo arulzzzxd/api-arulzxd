@@ -427,8 +427,8 @@
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
             <div class="flex items-center gap-2">
                 <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 fill-black" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                    STYLERA
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    ARULZXD API
                 </span>
             </div>
 
@@ -437,26 +437,38 @@
             </button>
         </div>
 
-        <!-- Banner Atas Dropdown -->
-        <div class="mb-4 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black relative">
-            <div class="bg-amber-400 px-3 py-1 border-b-2 border-zinc-900 flex items-center justify-between text-[10px] font-black uppercase text-black">
-                <span>BANNER</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.25l13.5 6.75-13.5 6.75V5.25z"/></svg>
-            </div>
-            <div class="h-28 w-full relative overflow-hidden">
-                <video autoplay loop muted playsinline class="w-full h-full object-cover">
-                    <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-                    <img src="https://files.catbox.moe/dvlk00.mp4" alt="Sidebar Banner" class="w-full h-full object-cover">
-                </video>
+        <!-- Banner Video -->
+        <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
+            <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+                <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Auth / Profile Status Container -->
+        <div id="sidebarAuthBtnContainer" class="mb-3">
+            <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
+                <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
+                    <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>PERINGATAN!</span>
+                </div>
+                <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
+                    Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
+                </p>
+                <a href="/login" class="w-full bg-zinc-900 text-white border-2 border-zinc-900 rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                    <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                    <span>LOGIN / REGISTER</span>
+                </a>
             </div>
         </div>
 
         <!-- Tombol Navigasi Dropdown -->
-        <nav class="space-y-2 flex-1">
+        <nav class="space-y-2 flex-1 pb-4">
             <a href="/" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
                     <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                    <span>BACK TO DASHBOARD</span>
+                    <span>DASHBOARD</span>
                 </div>
             </a>
             <a href="/docs" class="dropdown-nav-card">
@@ -468,7 +480,7 @@
             <a href="/store" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
                     <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                    <span>STORE / BUY PLAN</span>
+                    <span>STORE</span>
                 </div>
             </a>
             <a href="/uploader" class="dropdown-nav-card">
@@ -477,23 +489,10 @@
                     <span>UPLOADER FILE</span>
                 </div>
             </a>
-            <a href="/pastecode" class="dropdown-nav-card bg-amber-100">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
-                    <span>PASTECODE SNIPPET</span>
-                </div>
-            </a>
-            <a href="/changelog" class="dropdown-nav-card">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-                    <span>CHANGELOG</span>
-                </div>
-                <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
-            </a>
             <a href="/feedback" class="dropdown-nav-card">
                 <div class="flex items-center gap-2.5">
                     <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-                    <span>REQUEST FITUR</span>
+                    <span>FEEDBACK</span>
                 </div>
             </a>
             <a href="/status" class="dropdown-nav-card">
@@ -502,15 +501,19 @@
                     <span>SERVER STATUS</span>
                 </div>
             </a>
-        </nav>
-
-        <!-- Profile / Login Status Button di Bagian Bawah Sidebar -->
-        <div id="sidebarAuthBtnContainer" class="pt-4 mt-auto border-t-2 border-zinc-900">
-            <a href="/login" class="w-full dropdown-nav-card bg-zinc-900 text-white justify-center text-center py-2.5 flex items-center gap-2">
-                <svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                LOGIN / REGISTER
+            <a href="/support" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                    <span>SUPPORT / DONASI</span>
+                </div>
             </a>
-        </div>
+            <a href="/privacy" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                    <span>PRIVACY POLICY</span>
+                </div>
+            </a>
+        </nav>
     </div>
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
@@ -977,31 +980,39 @@
         }
 
         // Sidebar Drawer Handlers
-        function closeSidebarMenu() {
-            const bioDropdown = document.getElementById('bioDropdown');
-            const menuOverlay = document.getElementById('menuOverlay');
-            if (bioDropdown && menuOverlay) {
-                bioDropdown.style.transform = 'translateX(100%)';
-                menuOverlay.classList.add('hidden');
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
             const closeMenuBtn = document.getElementById('closeMenuBtn');
             const menuOverlay = document.getElementById('menuOverlay');
+            const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+            function playBannerVideo() {
+                if (sidebarBannerVideo) {
+                    sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
+                }
+            }
+
+            function closeSidebarMenu() {
+                if (bioDropdown && menuOverlay) {
+                    bioDropdown.style.transform = 'translateX(100%)';
+                    menuOverlay.classList.add('hidden');
+                }
+            }
 
             if (bioMenuBtn && bioDropdown && menuOverlay) {
                 bioMenuBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     bioDropdown.style.transform = 'translateX(0)';
                     menuOverlay.classList.remove('hidden');
+                    playBannerVideo();
                 });
                 if (closeMenuBtn) closeMenuBtn.addEventListener('click', closeSidebarMenu);
                 menuOverlay.addEventListener('click', closeSidebarMenu);
                 bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
             }
+
+            playBannerVideo();
 
             // Fetch Status User untuk Sidebar
             fetch('/api/user-status')
@@ -1013,10 +1024,13 @@
                             container.innerHTML = `
                                 <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
                                     <div class="flex items-center gap-2.5 truncate">
-                                        <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-6 h-6 rounded-md border border-zinc-900 object-cover">
-                                        <span class="truncate">${data.user.username}</span>
+                                        <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
+                                        <div class="truncate text-left leading-tight">
+                                            <span class="block text-xs font-black truncate">${data.user.username}</span>
+                                            <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
+                                        </div>
                                     </div>
-                                    <span class="text-[9px] text-blue-600 font-black">PROFILE</span>
+                                    <span class="text-[9px] bg-blue-600 text-white font-black px-2 py-1 rounded-md tracking-wider">PROFILE</span>
                                 </a>
                             `;
                         }

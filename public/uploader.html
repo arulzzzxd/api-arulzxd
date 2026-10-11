@@ -14,13 +14,13 @@
     
     <style>
         :root {
-            --bg-cream: #FAF7EF;
-            --card-bg: #FFFDF8;
-            --theme-border: #a16207;
-            --theme-accent: #fde047;
-            --theme-text: #121212;
-            --theme-light: #fef9c3;
-            --rgb-angle: 0deg;
+           --bg-cream: #FAF7EF;
+           --card-bg: #FFFDF8;
+           --theme-border: #eab308;
+           --theme-accent: #fde047;
+           --theme-text: #121212;
+           --theme-light: #fef9c3;
+           --rgb-angle: 0deg;
         }
 
         * { box-sizing: border-box; }
@@ -356,6 +356,12 @@
     </div>
 
     <nav class="space-y-2 flex-1 pb-4">
+        <a href="/" class="dropdown-nav-card">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    <span>DASHBOARD</span>
+                </div>
+            </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -365,7 +371,7 @@
         <a href="/store" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                <span>STORE / BUY PLAN</span>
+                <span>STORE</span>
             </div>
         </a>
         <a href="/uploader" class="dropdown-nav-card theme-light-bg">
@@ -383,7 +389,7 @@
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-                <span>REQUEST FITUR</span>
+                <span>FEEDBACK</span>
             </div>
         </a>
         <a href="/status" class="dropdown-nav-card">
@@ -527,14 +533,15 @@
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
     const THEME_PRESETS = {
-        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
-        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
-        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
-        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
-        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
-        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
-        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
-    };
+    // Ganti nilai border ke #eab308
+    yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+    red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+    blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+    cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+    purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+    green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+    black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+};
 
     let rgbInterval = null;
 
