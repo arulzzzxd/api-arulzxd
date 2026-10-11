@@ -2382,23 +2382,23 @@ app.get('/docs', async (req, res) => {
     }
 
     /* MODE RGB DYNAMIC ROTATING BORDER */
-.rgb-mode-active .light-card,
-.rgb-mode-active .stat-box,
-.rgb-mode-active .banner-video-container,
-.rgb-mode-active .category-group > div.glass-panel,
-.rgb-mode-active #searchInput,
-.rgb-mode-active .dropdown-nav-card,
-.rgb-mode-active #themeMenuDropdown,
-.rgb-mode-active .cyber-loader-box,
-.rgb-mode-active .cyber-bar,
-.rgb-mode-active .light-popup-bg,
-.rgb-mode-active .light-card-box {
-    border-color: transparent !important;
-    background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
-                      conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
-    background-origin: border-box !important;
-    background-clip: padding-box, border-box !important;
-}
+    .rgb-mode-active .light-card,
+    .rgb-mode-active .stat-box,
+    .rgb-mode-active .banner-video-container,
+    .rgb-mode-active .category-group > div.glass-panel,
+    .rgb-mode-active #searchInput,
+    .rgb-mode-active .dropdown-nav-card,
+    .rgb-mode-active #themeMenuDropdown,
+    .rgb-mode-active .cyber-loader-box,
+    .rgb-mode-active .cyber-bar,
+    .rgb-mode-active .light-popup-bg,
+    .rgb-mode-active .light-card-box {
+        border-color: transparent !important;
+        background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                          conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+        background-origin: border-box !important;
+        background-clip: padding-box, border-box !important;
+    }
 
     .rgb-mode-active .theme-bg-accent,
     .rgb-mode-active #categoryFilters button.active,
@@ -2960,7 +2960,7 @@ app.get('/docs', async (req, res) => {
     </div>
 
     <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
-        <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
+        <video id="sidebarBannerVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" class="w-full h-full object-cover">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
         </video>
     </div>
@@ -3052,9 +3052,8 @@ app.get('/docs', async (req, res) => {
     
     <!-- 1. Banner Video Utama -->
     <div class="banner-video-container h-52 sm:h-72 md:h-80">
-        <video autoplay loop muted playsinline class="banner-video-el">
+        <video id="mainBannerVideo" autoplay loop muted playsinline webkit-playsinline preload="auto" class="banner-video-el">
             <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
-            <img src="https://files.catbox.moe/dvlk00.mp4" alt="Main Banner" class="banner-video-el">
         </video>
     </div>
 
@@ -3374,12 +3373,25 @@ app.get('/docs', async (req, res) => {
         });
     }
 
+    // Fungsi pemutar video otomatis dibuat global agar dapat dipanggil oleh event listener apa pun
+    function playBannerVideo() {
+        document.querySelectorAll('video').forEach(video => {
+            video.muted = true;
+            video.playsInline = true;
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    // Penanganan autoplay jika terblokir browser
+                });
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
         const bioDropdown = document.getElementById('bioDropdown');
         const closeMenuBtn = document.getElementById('closeMenuBtn');
         const menuOverlay = document.getElementById('menuOverlay');
-        const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
 
         const themeBtn = document.getElementById('themePickerBtn');
         const themeDropdown = document.getElementById('themeMenuDropdown');
@@ -3399,12 +3411,6 @@ app.get('/docs', async (req, res) => {
         
         const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
         setAppTheme(savedTheme);
-
-        function playBannerVideo() {
-            if (sidebarBannerVideo) {
-                sidebarBannerVideo.play().catch(err => console.log("Autoplay handled:", err));
-            }
-        }
 
         function closeSidebarMenu() {
             if (bioDropdown && menuOverlay) {
@@ -3426,6 +3432,7 @@ app.get('/docs', async (req, res) => {
         }
 
         fetchUserProfile();
+        playBannerVideo();
     });
 
     let currentProgress = 0;
@@ -3462,6 +3469,14 @@ app.get('/docs', async (req, res) => {
 
     window.addEventListener('load', finishLoader);
     setTimeout(finishLoader, 1500);
+
+    // Event pemulihan pemutaran video otomatis
+    window.addEventListener('load', playBannerVideo);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) playBannerVideo();
+    });
+    document.addEventListener('touchstart', playBannerVideo, { once: true });
+    document.addEventListener('click', playBannerVideo, { once: true });
 </script>
 
 </body>
