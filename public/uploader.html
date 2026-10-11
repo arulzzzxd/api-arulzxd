@@ -513,6 +513,26 @@
 
     </div>
 
+    <!-- SEKSI RIWAYAT UNGGAHAN PER USER -->
+    <div class="uploader-card relative space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b-2 brutal-border">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-lg text-zinc-900"></i>
+                <h2 id="lbl-history-title" class="text-sm sm:text-base font-black text-zinc-900 uppercase tracking-tight">Riwayat Unggahan</h2>
+            </div>
+            <button type="button" onclick="loadUploadHistory()" class="px-2.5 py-1 rounded-lg border-2 brutal-border bg-[#FAF7EF] text-[10px] font-black text-zinc-800 hover:bg-zinc-200 transition flex items-center gap-1 active:scale-95">
+                <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
+            </button>
+        </div>
+
+        <!-- Container Daftar Riwayat -->
+        <div id="history-container" class="space-y-3">
+            <div class="text-center py-6 text-zinc-500 font-bold text-xs">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat riwayat unggahan...
+            </div>
+        </div>
+    </div>
+
     <footer class="mt-8 pt-6 border-t-2 border-zinc-300 text-center space-y-1">
         <h3 id="lbl-footer-title" class="text-xs font-black text-zinc-900 uppercase">Punya pertanyaan atau kendala?</h3>
         <p id="lbl-footer-desc" class="text-[11px] text-zinc-600 font-semibold">
@@ -533,15 +553,14 @@
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
     const THEME_PRESETS = {
-    // Ganti nilai border ke #eab308
-    yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
-    red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
-    blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
-    cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
-    purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
-    green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
-    black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
-};
+        yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+        blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+        cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+        purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+        green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+        black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+    };
 
     let rgbInterval = null;
 
@@ -585,6 +604,7 @@
             previewTitle: "File Terpilih:",
             btnRemove: "Hapus File",
             btnUpload: "Mulai Proses Upload",
+            historyTitle: "Riwayat Unggahan",
             footerNote: "File akan disimpan di server terisolasi secara otomatis. Butuh integrasi via kustom kode REST API? <a href='/docs' class='theme-text-accent font-black underline'>Lihat Dokumentasi API</a>.",
             footerTitle: "Punya pertanyaan atau kendala?",
             footerDesc: "Hubungi tim support teknis melalui email resmi kami di:"
@@ -598,6 +618,7 @@
             previewTitle: "Selected File:",
             btnRemove: "Remove File",
             btnUpload: "Start Upload Process",
+            historyTitle: "Upload History",
             footerNote: "Files are automatically stored in an isolated server. Need code integration via REST API? <a href='/docs' class='theme-text-accent font-black underline'>View API Documentation</a>.",
             footerTitle: "Have any questions or concerns?",
             footerDesc: "Contact our technical support team via our official email at:"
@@ -636,6 +657,7 @@
         document.getElementById('lbl-preview-title').innerText = data.previewTitle;
         document.getElementById('lbl-btn-remove').innerText = data.btnRemove;
         document.getElementById('uploadButton').innerText = data.btnUpload;
+        document.getElementById('lbl-history-title').innerText = data.historyTitle;
         document.getElementById('lbl-footer-note').innerHTML = data.footerNote;
 
         document.getElementById('lbl-footer-title').innerText = data.footerTitle;
@@ -704,6 +726,106 @@
         previewArea.classList.add('hidden');
     });
 
+    // FUNGSI MEMUAT RIWAYAT UNGGAHAN DARI MONGO DB
+    async function loadUploadHistory() {
+        const historyContainer = document.getElementById('history-container');
+        if (!historyContainer) return;
+
+        try {
+            const res = await fetch('/api/user/upload-history');
+            const data = await res.json();
+
+            if (!data.loggedIn) {
+                historyContainer.innerHTML = `
+                    <div class="p-4 bg-amber-50 border-2 brutal-border rounded-xl text-center space-y-2">
+                        <p class="text-xs font-bold text-amber-900">
+                            <i class="fa-solid fa-lock mr-1"></i> Silakan login terlebih dahulu untuk melihat dan menyimpan riwayat unggahan Anda secara permanen.
+                        </p>
+                        <a href="/login" class="inline-block bg-zinc-900 text-white font-black text-[10px] px-3.5 py-2 rounded-lg border-2 brutal-border uppercase tracking-wide active:scale-95 transition">
+                            LOGIN / REGISTER
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!data.status || !data.data || data.data.length === 0) {
+                historyContainer.innerHTML = `
+                    <div class="text-center py-6 text-zinc-500 font-bold text-xs">
+                        Belum ada riwayat unggahan file.
+                    </div>
+                `;
+                return;
+            }
+
+            historyContainer.innerHTML = data.data.map(item => {
+                const formattedDate = new Date(item.createdAt).toLocaleString('id-ID', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+                const sizeMb = item.size ? (item.size / (1024 * 1024)).toFixed(2) + ' MB' : '-';
+                const contentType = item.contentType || 'application/octet-stream';
+                
+                let iconClass = 'fa-regular fa-file text-zinc-700';
+                if (contentType.startsWith('image/')) iconClass = 'fa-regular fa-image text-blue-600';
+                else if (contentType.startsWith('video/')) iconClass = 'fa-regular fa-file-video text-purple-600';
+                else if (contentType.startsWith('audio/')) iconClass = 'fa-regular fa-file-audio text-emerald-600';
+                else if (contentType.includes('pdf')) iconClass = 'fa-regular fa-file-pdf text-red-600';
+                else if (contentType.includes('zip') || contentType.includes('rar')) iconClass = 'fa-regular fa-file-zipper text-amber-600';
+
+                return `
+                    <div class="p-3.5 bg-[#FAF7EF] border-2 brutal-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                        <div class="space-y-1 min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <i class="${iconClass} text-sm"></i>
+                                <span class="font-black text-xs text-zinc-900 truncate max-w-[200px] sm:max-w-xs block">${item.fileName}</span>
+                                <span class="px-2 py-0.5 rounded-md border border-zinc-900 bg-white text-[9px] font-mono font-bold text-zinc-700 shrink-0">
+                                    ${contentType}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[10px] font-semibold text-zinc-600">
+                                <span><i class="fa-regular fa-clock mr-1"></i>${formattedDate}</span>
+                                <span><i class="fa-solid fa-hard-drive mr-1"></i>${sizeMb}</span>
+                            </div>
+                            <a href="${item.url}" target="_blank" class="code-font text-[11px] text-blue-600 hover:underline font-bold break-all block">
+                                ${item.url}
+                            </a>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button type="button" onclick="copyUrlToClipboard('${item.url}')" class="px-2.5 py-1.5 bg-zinc-900 text-white font-black rounded-lg text-[10px] border-2 brutal-border uppercase tracking-wide active:scale-95 transition">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <a href="${item.url}" target="_blank" class="px-2.5 py-1.5 theme-bg-accent font-black rounded-lg text-[10px] border-2 brutal-border text-center uppercase tracking-wide active:scale-95 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error("Gagal memuat riwayat unggahan:", err);
+            historyContainer.innerHTML = `
+                <div class="text-center py-4 text-red-600 font-bold text-xs">
+                    Gagal memuat riwayat unggahan.
+                </div>
+            `;
+        }
+    }
+
+    function copyUrlToClipboard(urlText) {
+        navigator.clipboard.writeText(urlText).then(() => {
+            Swal.fire({
+                ...swalConfig,
+                icon: 'success',
+                title: 'Tersalin!',
+                text: 'URL berhasil disalin ke papan klip!',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
         const bioDropdown = document.getElementById('bioDropdown');
@@ -757,6 +879,7 @@
 
         playBannerVideo();
         switchLanguage(currentLang);
+        loadUploadHistory();
 
         fetch('/api/user-status')
             .then(res => res.json())
@@ -791,7 +914,7 @@
         buttonsStyling: false
     };
 
-    // PROSES SUBMIT UPLOAD DENGAN FETCH (ASINKRON / TANPA REFRESH)
+    // PROSES SUBMIT UPLOAD DENGAN FETCH
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -838,6 +961,9 @@
                 fileList.innerHTML = '';
                 previewArea.classList.add('hidden');
 
+                // Reload riwayat unggahan secara otomatis
+                loadUploadHistory();
+
                 Swal.fire({
                     ...swalConfig,
                     icon: 'success',
@@ -867,17 +993,7 @@
     });
 
     function copyResultUrl() {
-        const urlText = resultUrl.href;
-        navigator.clipboard.writeText(urlText).then(() => {
-            Swal.fire({
-                ...swalConfig,
-                icon: 'success',
-                title: 'Tersalin!',
-                text: 'URL berhasil disalin ke papan klip!',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        });
+        copyUrlToClipboard(resultUrl.href);
     }
 
     let currentProgress = 0;
