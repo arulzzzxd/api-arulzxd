@@ -664,7 +664,7 @@ app.get('/auth/github/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/docs?showProfile=true');
+        res.redirect('/profile');
     } catch (error) {
         console.error(error);
         res.send('Login Error: ' + error.message);
@@ -726,7 +726,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
-        res.redirect('/docs?showProfile=true');
+        res.redirect('/profile');
     } catch (error) {
         console.error('Google Auth Callback Error:', error.response?.data || error.message);
         res.send('Login Error: ' + (error.response?.data?.error_description || error.message));
@@ -1542,12 +1542,12 @@ app.post('/transactions', async (req, res) => {
 
         const newTransaction = new Transaction({
             orderId, userId, username, email, amount: inputAmount,
-            paymentNumber: dynamicQris, paymentMethod: "QRIS Dinamis Mandiri",
+            paymentNumber: dynamicQris, paymentMethod: "QRIS",
             status: "pending", itemDetails: { ...itemDetails, qty: buyQty }, expiredAt
         });
 
         await newTransaction.save();
-        return res.json({ status: true, message: "QRIS Dinamis berhasil dibuat", data: newTransaction });
+        return res.json({ status: true, message: "QRIS berhasil dibuat", data: newTransaction });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({ status: false, message: "ID Transaksi bentrok. Silakan coba lagi." });
@@ -2323,7 +2323,7 @@ app.get('/docs', async (req, res) => {
         --bg-cream: #FAF7EF;
         --card-bg: #FFFDF8;
         --border-dark: #121212;
-        --theme-border: #a16207;
+        --theme-border: #eab308;
         --theme-accent: #fde047;
         --theme-text: #121212;
         --theme-light: #fef9c3;
@@ -2868,99 +2868,6 @@ app.get('/docs', async (req, res) => {
   </div>
 </div>
           
-<!-- Profile Popup -->
-<div id="profilePopup" class="fixed inset-0 z-[99999] hidden">
-  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeProfilePopup()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="w-full max-w-[410px] light-popup-bg rounded-3xl p-5 relative font-sans my-auto">
-        <div class="flex items-center justify-between mb-5 gap-2">
-            <div class="relative w-20 h-20 flex-shrink-0">
-                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
-                <div class="relative cursor-pointer w-full h-full" onclick="document.getElementById('avatarInput').click()">
-                    <div class="w-full h-full rounded-full p-0.5 border-2 border-zinc-900 shadow-sm overflow-hidden bg-white">
-                        <img id="userAvatar" src="https://cdn.arulzzxd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col gap-2 min-w-0 px-2">
-                <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userName" class="text-xs font-black text-zinc-900">loading...</span>
-                </div>
-                <div class="light-pill-capsule py-1.5 px-3 text-center truncate">
-                    <span id="userEmail" class="text-[10px] font-bold text-zinc-700">loading_email@gmail.com</span>
-                </div>
-            </div>
-
-            <div id="planBoxContainer" class="relative w-20 h-24 flex flex-col items-center justify-center flex-shrink-0">
-                <svg class="w-full h-full" viewBox="0 0 100 130" fill="none">
-                    <text x="50" y="20" fill="#121212" font-size="10" font-weight="900" text-anchor="middle">USER</text>
-                    <path d="M 50 35 L 80 45 L 80 85 L 50 110 L 20 85 L 20 45 Z" fill="#FAF7EF" stroke="#121212" stroke-width="3"/>
-                    <text id="userPlanText" x="50" y="78" fill="#121212" font-size="18" font-weight="900" text-anchor="middle">FREE</text>
-                </svg>
-            </div>
-        </div>
-
-        <div class="light-card-box p-3 mb-4 relative">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-white border-2 border-zinc-900 bg-zinc-900 px-2.5 py-0.5 rounded-md uppercase">Api Key Kamu :</span>
-            </div>
-            
-            <div class="light-pill-capsule text-zinc-900 text-xs font-black py-1.5 px-3 truncate mb-3 text-center font-mono">
-                <span id="userApiKey">loading-key</span>
-            </div>
-
-            <div id="vipCustomKeyBox" class="hidden mb-3">
-                <div class="flex gap-1.5">
-                    <input type="text" id="customApiKeyInput" placeholder="Ketik Custom API Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-500 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-[10px] px-3 rounded-xl uppercase font-extrabold shadow-sm active:scale-95">SIMPAN</button>
-                </div>
-            </div>
-            
-            <button onclick="copyText(document.getElementById('userApiKey').innerText, 'API Key')" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 rounded-xl uppercase tracking-widest font-extrabold active:scale-95 transition-all">
-                SALIN API KEY
-            </button>
-        </div>
-
-        <div class="light-card-box p-3 mb-4 text-center relative">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3">
-                LIMIT USER
-            </div>
-            <div class="py-0.5">
-                <span class="inline-block light-pill-capsule text-zinc-900 px-6 py-1 text-xs font-black tracking-widest font-mono">
-                    <span id="popupLimitUsed">0</span> / <span id="popupLimitMax">100</span>
-                </span>
-            </div>
-        </div>
-
-        <div class="light-card-box p-3 mb-4">
-            <div class="w-full light-solid-header text-[11px] py-1 uppercase tracking-widest mb-3 text-center">
-                AKTIFITAS REQUEST API TERAKHIR
-            </div>
-            <div id="activityLogsContainer" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                <div class="light-pill-capsule text-zinc-800 font-mono text-[10px] py-1.5 px-3 text-center truncate">
-                    belum ada request
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-2">
-            <a href="/upgrade-apikey" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 uppercase tracking-widest active:scale-95 transition-all shadow-sm">
-                UPGRADE VIP
-            </a>
-            <div class="flex gap-2">
-                <button onclick="closeProfilePopup()" class="flex-1 light-pill-capsule hover:bg-zinc-200 text-zinc-900 font-black text-xs py-2 uppercase tracking-widest transition-all">
-                    TUTUP
-                </button>
-                <a href="/auth/logout" class="flex-1 border-2 border-zinc-900 bg-red-500 hover:bg-red-600 text-white font-black text-xs py-2 rounded-full flex items-center justify-center uppercase tracking-widest transition-all shadow-sm">
-                    LOG OUT
-                </a>
-            </div>
-        </div>
-    </div>
-  </div>
-</div>
-
 <div id="toast" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
 
 <!-- Header Top Bar -->
@@ -3093,19 +3000,13 @@ app.get('/docs', async (req, res) => {
         <a href="/" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                <span>BACK TO DASHBOARD</span>
-            </div>
-        </a>
-        <a href="/docs" class="dropdown-nav-card theme-light-bg">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <span>DOCS / ENDPOINTS</span>
+                <span>DASHBOARD</span>
             </div>
         </a>
         <a href="/store" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                <span>STORE / BUY PLAN</span>
+                <span>STORE</span>
             </div>
         </a>
         <a href="/uploader" class="dropdown-nav-card">
@@ -3119,13 +3020,10 @@ app.get('/docs', async (req, res) => {
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
                 <span>PASTECODE SNIPPET</span>
             </div>
-        </a>
-            <span class="bg-zinc-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full lowercase">new</span>
-        </a>
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
-                <span>REQUEST FITUR</span>
+                <span>FEEDBACK</span>
             </div>
         </a>
         <a href="/status" class="dropdown-nav-card">
@@ -3238,7 +3136,7 @@ app.get('/docs', async (req, res) => {
 
 <script>
     const THEME_PRESETS = {
-        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
         blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
         cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
@@ -3528,11 +3426,6 @@ app.get('/docs', async (req, res) => {
         }
 
         fetchUserProfile();
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('showProfile') === 'true') {
-            openProfilePopup();
-        }
     });
 
     let currentProgress = 0;
@@ -3545,25 +3438,6 @@ app.get('/docs', async (req, res) => {
         currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
         if (progressFill) progressFill.style.width = currentProgress + '%';
         if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-    }
-
-    function finishLoader() {
-        if (hasFinishedLoading) return;
-        hasFinishedLoading = true;
-        clearInterval(progressInterval);
-        updateProgress(100);
-
-        setTimeout(() => {
-            if (loaderOverlay) {
-                loaderOverlay.classList.add('fade-out');
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('showProfile') !== 'true') {
-                        showWelcomePopup();
-                    }
-                }, 200);
-            }
-        }, 400);
     }
 
     const progressInterval = setInterval(() => {
