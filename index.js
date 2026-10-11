@@ -1682,10 +1682,16 @@ app.post('/webhook', async (req, res) => {
 // ====================================================
 const localFileUploader = fileUpload({
     createParentPath: true,
-    limits: { fileSize: 100 * 1024 * 1024 }, 
+    limits: { fileSize: 4.5 * 1024 * 1024 }, // Batas ukuran file 4.5 MB
+    limitHandler: (req, res) => {
+        return res.status(400).json({ 
+            status: false, 
+            message: 'Ukuran file melebihi batas maksimal 4.5MB!' 
+        });
+    }
 });
 
-const repoList = ['uploadergh', 'uploaderghv2', 'uploaderghv3'];
+const repoName = 'cdn';
 const a = 'g';
 const b = 'h';
 const c = 'p';
@@ -1695,18 +1701,42 @@ const githubToken = `${a}${b}${c}${to}${ken}`;
 const owner = 'arulzzzxd'; 
 const branch = 'main';
 
-const getRandomRepo = () => repoList[Math.floor(Math.random() * repoList.length)];
+function getCdnFolder(mimetype, ext) {
+    const cleanExt = (ext || '').toLowerCase().replace(/^\./, '');
+    const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'heic'];
+    const videoExts = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'flv', '3gp', 'm4v'];
+
+    if (mimetype?.startsWith('image/') || imageExts.includes(cleanExt)) {
+        return 'foto';
+    }
+    if (mimetype?.startsWith('video/') || videoExts.includes(cleanExt)) {
+        return 'video';
+    }
+    return 'file';
+}
 
 app.get('/files/*', async (req, res) => {
   const requestedPath = req.params[0]; 
   if (!requestedPath) return res.status(400).send('Missing file path');
 
-  const gitPath = requestedPath.startsWith('uploads/') ? requestedPath : `uploads/${requestedPath}`;
-  const shuffledRepos = [...repoList].sort(() => Math.random() - 0.5);
+  const ext = path.extname(requestedPath);
+  const detectedMime = mime.lookup(requestedPath) || 'application/octet-stream';
+  const primaryFolder = getCdnFolder(detectedMime, ext);
 
-  for (const targetRepo of shuffledRepos) {
+  let pathsToTry = [];
+  if (requestedPath.includes('/')) {
+    pathsToTry.push(requestedPath);
+  } else {
+    pathsToTry.push(`${primaryFolder}/${requestedPath}`);
+    const fallbackFolders = ['foto', 'file', 'video', 'uploads'];
+    fallbackFolders.forEach(f => {
+      if (f !== primaryFolder) pathsToTry.push(`${f}/${requestedPath}`);
+    });
+  }
+
+  for (const gitPath of pathsToTry) {
     try {
-      const resp = await axios.get(`https://api.github.com/repos/${owner}/${targetRepo}/contents/${gitPath}?ref=${branch}`, {
+      const resp = await axios.get(`https://api.github.com/repos/${owner}/${repoName}/contents/${gitPath}?ref=${branch}`, {
         headers: { Authorization: `Bearer ${githubToken}`, Accept: 'application/vnd.github.v3.raw' },
         responseType: 'arraybuffer',
         validateStatus: status => status < 500
@@ -1719,7 +1749,7 @@ app.get('/files/*', async (req, res) => {
         return res.send(Buffer.from(resp.data));
       }
     } catch (error) {
-      console.error(`Gagal cek di repo ${targetRepo}:`, error.message);
+      console.error(`Gagal cek ${gitPath} di repo ${repoName}:`, error.message);
     }
   }
 
@@ -1732,30 +1762,47 @@ app.post('/uploadfile', localFileUploader, async (req, res) => {
   }
 
   let uploadedFile = req.files.file;
+
+  // Validasi tambahan untuk memastikan file tidak lebih dari 4.5 MB
+  const MAX_SIZE = 4.5 * 1024 * 1024;
+  if (uploadedFile.size > MAX_SIZE) {
+    return res.status(400).json({ 
+      status: false, 
+      message: 'Ukuran file melebihi batas maksimal 4.5MB!' 
+    });
+  }
+
   const originalName = uploadedFile.name || 'file';
   const origExt = path.extname(originalName);
 
   let extension = origExt ? origExt.replace(/^\./, '') : (mime.extension(uploadedFile.mimetype) || 'bin');
   let id = generateId(8);
   let fileName = origExt ? `${id}${origExt}` : `${id}.${extension}`;
-  let gitPath = `uploads/${fileName}`;
+  
+  // Penentuan folder di repo cdn (foto, video, atau file)
+  let folder = getCdnFolder(uploadedFile.mimetype, extension);
+  let gitPath = `${folder}/${fileName}`;
   let base64Content = Buffer.from(uploadedFile.data).toString('base64');
 
-  const selectedRepo = getRandomRepo(); 
-
   try {
-    await axios.put(`https://api.github.com/repos/${owner}/${selectedRepo}/contents/${gitPath}`, {
-      message: `Upload file ${fileName}`, content: base64Content, branch
+    await axios.put(`https://api.github.com/repos/${owner}/${repoName}/contents/${gitPath}`, {
+      message: `Upload file ${fileName} ke folder ${folder}`,
+      content: base64Content,
+      branch
     }, {
       headers: { Authorization: `Bearer ${githubToken}`, 'Content-Type': 'application/json' }
     });
 
     return res.json({
-      status: true, message: 'Unggahan Berhasil!',
+      status: true,
+      message: 'Unggahan Berhasil!',
       url: `https://cdn.arulzzxd.my.id/files/${fileName}`,
-      fileName, size: uploadedFile.size
+      fileName,
+      folder,
+      size: uploadedFile.size
     });
   } catch (error) {
+    console.error("Gagal upload file ke GitHub CDN:", error.response?.data || error.message);
     return res.status(500).json({ status: false, message: 'Gagal mengunggah file ke server.' });
   }
 });
