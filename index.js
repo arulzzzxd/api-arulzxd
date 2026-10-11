@@ -3439,6 +3439,19 @@ app.get('/docs', async (req, res) => {
         if (progressFill) progressFill.style.width = currentProgress + '%';
         if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
     }
+    
+    function finishLoader() {
+        if (hasFinishedLoading) return;
+        hasFinishedLoading = true;
+        clearInterval(progressInterval);
+        updateProgress(100);
+
+        setTimeout(() => {
+            if (loaderOverlay) {
+                loaderOverlay.classList.add('fade-out');
+            }
+        }, 300);
+    }
 
     const progressInterval = setInterval(() => {
         if (currentProgress < 85) {
