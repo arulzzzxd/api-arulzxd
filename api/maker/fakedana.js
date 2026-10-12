@@ -114,7 +114,7 @@ router.get("/", async (req, res) => {
 
 router.desc = "Maker untuk membuat tampilan Fake Saldo DANA.";
 router.paramsConfig = {
-  nominal: "contoh: 50000"
+  saldo: "contoh: 50000"
 };
 router.status = "ready";
 router.type = "free";
