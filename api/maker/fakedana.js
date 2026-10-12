@@ -115,3 +115,4 @@ router.paramsConfig = {
 };
 router.status = "ready";
 router.type = "free";
+module.exports = router;
