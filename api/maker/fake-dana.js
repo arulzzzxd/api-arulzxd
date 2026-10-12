@@ -64,11 +64,12 @@ router.get("/", async (req, res) => {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
+    // Titik koordinat & parameter presisi
     const valX = 138;
-    const valY = 52;
-    const maxFontSize = 37;
-    const eyeGap = 7;
-    const eyeScale = 1.3;
+    const valY = 62; // Center-line vertikal nominal
+    const maxFontSize = 36;
+    const eyeGap = 8;
+    const eyeScale = 1.1;
 
     const inputSaldo = formatAmount(nominal);
 
@@ -84,17 +85,17 @@ router.get("/", async (req, res) => {
       textWidth = ctx.measureText(inputSaldo).width;
     }
 
-    // Tulis nominal saldo
-    ctx.fillStyle = "#FFFFFF";
+    // Tulis nominal saldo dengan warna Hitam (#000000)
+    ctx.fillStyle = "#000000";
     ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+    ctx.textBaseline = "middle"; // Menggunakan middle agar posisi vertikal lebih presisi
     ctx.fillText(inputSaldo, valX, valY);
 
-    // Gambar icon mata di sebelah saldo
+    // Render ikon mata presisi secara vertikal di sebelah nominal
     const eyeHeight = currentFontSize * eyeScale;
     const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
     const eyeX = valX + textWidth + eyeGap;
-    const eyeY = valY + (currentFontSize - eyeHeight) / 2;
+    const eyeY = valY - (eyeHeight / 2); // Ditempatkan pas di tengah sumbu Y nominal
 
     ctx.drawImage(eyeImg, eyeX, eyeY, eyeWidth, eyeHeight);
 
@@ -114,7 +115,7 @@ router.get("/", async (req, res) => {
 
 router.desc = "Maker untuk membuat tampilan Fake Saldo DANA.";
 router.paramsConfig = {
-  nominal: "contoh: 500000"
+  nominal: "contoh: 50000"
 };
 router.status = "ready";
 router.type = "free";
