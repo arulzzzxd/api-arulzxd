@@ -40,7 +40,7 @@ async function getBuffer(url) {
 
 router.get("/", async (req, res) => {
     try {
-        const saldo = req.query.saldo?.trim() || req.query.text?.trim();
+        let saldo = req.query.saldo?.trim() || req.query.text?.trim();
 
         if (!saldo) {
             return res.status(400).json({
@@ -66,36 +66,37 @@ router.get("/", async (req, res) => {
         // Render Background
         ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
-        const valX = 138;
-        const valY = 52;
-        const maxFontSize = 37;
-        const eyeGap = 7;
-        const eyeScale = 1.3;
+        // Pengaturan Koordinat & Ukuran
+        const valX = 138;       // Posisi tepat di samping "Rp"
+        const valY = 50;        // Margin atas sejajar teks "Rp"
+        const maxFontSize = 35; // Ukuran font proporsional dengan "Rp"
+        const eyeGap = 8;       // Jarak antara teks saldo dan ikon mata
+        const eyeScale = 0.72;  // Skala ukuran ikon mata
 
         let currentFontSize = maxFontSize;
-        const maxAllowedWidth = canvas.width - valX - 100;
+        const maxAllowedWidth = canvas.width - valX - 120;
 
         ctx.font = `600 ${currentFontSize}px "DANA"`;
         let textWidth = ctx.measureText(saldo).width;
 
-        // Atur ukuran font jika teks terlalu panjang
+        // Atur ukuran font jika teks saldo terlalu panjang
         while (textWidth > maxAllowedWidth && currentFontSize > 16) {
             currentFontSize -= 2;
             ctx.font = `600 ${currentFontSize}px "DANA"`;
             textWidth = ctx.measureText(saldo).width;
         }
 
-        // Render Teks Saldo
-        ctx.fillStyle = "#FFFFFF";
+        // Render Teks Saldo (Warna hitam/gelap sesuai header DANA)
+        ctx.fillStyle = "#212121";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
         ctx.fillText(saldo, valX, valY);
 
-        // Render Icon Mata di Samping Saldo
+        // Render Icon Mata Presisi di Samping Saldo
         const eyeHeight = currentFontSize * eyeScale;
         const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
         const eyeX = valX + textWidth + eyeGap;
-        const eyeY = valY + (currentFontSize - eyeHeight) / 2;
+        const eyeY = valY + (currentFontSize - eyeHeight) / 2 + 1;
 
         ctx.drawImage(eyeImg, eyeX, eyeY, eyeWidth, eyeHeight);
 
