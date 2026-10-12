@@ -10,7 +10,7 @@ const router = express.Router();
 
 const FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-600-normal.ttf";
 const BG_URL = "https://cdn.arulzzxd.my.id/files/F4pjW08L.png";
-const EYE_URL = "https://cdn.arulzzxd.my.id/files/XqtOfI.jpg";
+const EYE_URL = "https://cdn.arulzzxd.my.id/files/XqtOfI.png";
 
 let fontLoaded = false;
 
