@@ -6,16 +6,18 @@ const router = express.Router();
 
 const BG_URL = "https://cdn.arulzzxd.my.id/files/F4pjW08L.png";
 const EYE_URL = "https://cdn.arulzzxd.my.id/files/XqtOfI.jpg";
-const FONT_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/plus-jakarta-sans_5.3.0_latin-600-normal.ttf";
+const FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-600-normal.ttf";
 
 let fontLoaded = false;
 
 async function loadFont() {
   if (fontLoaded) return;
+
   const { data } = await axios.get(FONT_URL, {
     responseType: "arraybuffer",
     headers: { "User-Agent": "Mozilla/5.0" }
   });
+
   GlobalFonts.register(Buffer.from(data), "DANA");
   fontLoaded = true;
 }
@@ -25,25 +27,27 @@ async function loadImageFromUrl(url) {
     responseType: "arraybuffer",
     headers: { "User-Agent": "Mozilla/5.0" }
   });
+
   return loadImage(Buffer.from(data));
 }
 
-// Fungsi untuk memformat nominal angka menjadi pemisah ribuan (titik)
 function formatAmount(input) {
   const digits = String(input).replace(/[^\d]/g, "") || "0";
   const normalized = digits.replace(/^0+(?=\d)/, "");
+
   return normalized.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 router.get("/", async (req, res) => {
   try {
-      const nominal = req.query.nominal;
+    const nominal = req.query.nominal || req.query.saldo;
 
     if (!nominal) {
       return res.status(400).json({
         status: false,
-        message: "Parameter 'nominal' diperlukan.",
-        example: "/api/maker/fakedana?apikey=arulzxd-keys&nominal=50000"
+        creator: "ArulzXD",
+        message: "Parameter 'nominal' atau 'saldo' diperlukan.",
+        example: "/api/maker/fakedana?nominal=50000"
       });
     }
 
@@ -57,6 +61,7 @@ router.get("/", async (req, res) => {
     const canvas = createCanvas(bgImg.width, bgImg.height);
     const ctx = canvas.getContext("2d");
 
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
     const valX = 138;
@@ -65,26 +70,27 @@ router.get("/", async (req, res) => {
     const eyeGap = 7;
     const eyeScale = 1.3;
 
-    // Otomatis memformat angka nominal menjadi titik ribuan
     const inputSaldo = formatAmount(nominal);
 
     let currentFontSize = maxFontSize;
     const maxAllowedWidth = canvas.width - valX - 100;
 
-    ctx.font = `600 ${currentFontSize}px DANA`;
+    ctx.font = `600 ${currentFontSize}px "DANA"`;
     let textWidth = ctx.measureText(inputSaldo).width;
 
     while (textWidth > maxAllowedWidth && currentFontSize > 16) {
       currentFontSize -= 2;
-      ctx.font = `600 ${currentFontSize}px DANA`;
+      ctx.font = `600 ${currentFontSize}px "DANA"`;
       textWidth = ctx.measureText(inputSaldo).width;
     }
 
+    // Tulis nominal saldo
     ctx.fillStyle = "#FFFFFF";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText(inputSaldo, valX, valY);
 
+    // Gambar icon mata di sebelah saldo
     const eyeHeight = currentFontSize * eyeScale;
     const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
     const eyeX = valX + textWidth + eyeGap;
@@ -106,6 +112,11 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.desc = "Maker untuk membuat tampilan Fake Saldo DANA.";
+router.paramsConfig = {
+  nominal: "contoh: 50000"
+};
 router.status = "ready";
 router.type = "free";
+
 module.exports = router;
