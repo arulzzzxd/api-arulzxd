@@ -248,7 +248,7 @@ app.use((req, res, next) => {
                 <title>ArulzXD API - Core REST Gateway</title>
                 <meta property="og:title" content="ArulzXD API - Core REST Gateway" />
                 <meta property="og:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
-                <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" />
+                <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/1wh5do.png" />
                 <meta property="og:url" content="https://api.arulzzxd.my.id/" />
                 <meta property="og:type" content="website" />
             </head>
@@ -1245,7 +1245,7 @@ app.post('/api/admin/test-push', checkAdminAccess, async (req, res) => {
         await sendBackgroundPushNotification({
             title: '🔔 TES NOTIFIKASI WEB PUSH',
             body: 'Notifikasi latar belakang berhasil dikonfigurasi!',
-            icon: 'https://cdn.arulzzxd.my.id/files/iJKbzK38.png',
+            icon: 'https://cdn.arulzzxd.my.id/files/1wh5do.png',
             orderId: 'TRX-TEST-' + Math.floor(1000 + Math.random() * 9000)
         });
         return res.json({ status: true, message: 'Push notification tes berhasil dikirim!' });
@@ -2405,10 +2405,10 @@ app.get('/docs', async (req, res) => {
     <title>Arulz-XD API - Documentation</title>
     <meta property="og:title" content="ArulzXD API - Documentation" />
     <meta property="og:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
-    <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" />
+    <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/1wh5do.png" />
     <meta property="og:url" content="https://api.arulzzxd.my.id/" />
     <meta property="og:type" content="website" />
-    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" type="image/png">
+    <link rel="icon" href="https://cdn.arulzzxd.my.id/files/1wh5do.png" type="image/png">
     
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2904,7 +2904,7 @@ app.get('/docs', async (req, res) => {
     <div class="cyber-loader-box">
         <div class="cyber-avatar-wrap mb-4">
             <div class="cyber-ring"></div>
-            <img src="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
+            <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
         </div>
         <div class="text-center">
             <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
@@ -2975,7 +2975,7 @@ app.get('/docs', async (req, res) => {
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
-                <img src="https://cdn.arulzzxd.my.id/files/iJKbzK38.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+                <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
             </div>
             <div>
                 <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
