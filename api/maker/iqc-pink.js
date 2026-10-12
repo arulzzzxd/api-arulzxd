@@ -10,7 +10,7 @@ const axios = require('axios');
 
 const router = express.Router();
 
-const BG_URL = "https://arulz-xd.my.id/files/UCVykl.png";
+const BG_URL = "https://cdn.arulzzxd.my.id/files/UCVykl.png";
 
 const INTER_FONTS = [
     { url: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2', name: 'Inter' },

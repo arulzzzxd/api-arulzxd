@@ -29,12 +29,12 @@ const REMOTE_ASSETS = [
     dest: path.join(FONTS_DIR, 'SFPRODISPLAYSEMIBOLD.ttf'),
   },
   {
-    url: 'https://arulz-xd.my.id/files/azNi7F.jpg',
+    url: 'https://cdn.arulzzxd.my.id/files/azNi7F.jpg',
     dest: path.join(BG_DIR, 'bg.jpg'),
   },
   {
-    url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Image/artworks-gWLRE6HyPH3DgVMG-ZFFxtg-t500x500.jpg',
-    dest: path.join(IMG_DIR, 'photo.jpg'),
+    url: 'https://cdn.arulzzxd.my.id/files/1wh5do.png',
+    dest: path.join(IMG_DIR, 'photo.png'),
   },
 ];
 

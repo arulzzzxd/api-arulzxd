@@ -13,7 +13,7 @@ const router = express.Router();
 const upload = multer();
 
 // Konfigurasi assets
-const TEMPLATE_URL = 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/qyzwa.png';
+const TEMPLATE_URL = 'https://cdn.arulzzxd.my.id/files/7vmHHe.png';
 
 const FONT_ASSETS = [
   { name: 'PlusJakartaSans-Regular', url: 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/ttqc/PlusJakartaSans-Regular.ttf', family: 'Plus Jakarta Sans' },

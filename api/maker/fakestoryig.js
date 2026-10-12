@@ -12,7 +12,7 @@ const BG_URL =
     "https://files.catbox.moe/3gwr1l.jpg";
 
 const DEFAULT_PP =
-    "https://img1.pixhost.to/images/5831/600387261_biyu-offc.jpg";
+    "https://cdn.arulzzxd.my.id/files/iGcSpm.png";
 
 const FONT_URL =
     "https://raw.githubusercontent.com/arulzzzxd/database/heads/main/font/arialnarrow.ttf";

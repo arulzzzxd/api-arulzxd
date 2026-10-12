@@ -8,7 +8,7 @@ const router = express.Router();
 const emojiDb = new EmojiDbLib({ useDefaultDb: true });
 
 const EMOJI_URLS = {
-    apple:     'https://raw.githubusercontent.com/SaurusAraAra/mentahan/refs/heads/main/lainnya/emoji-apple-image.json',
+    apple:     'https://raw.githubusercontent.com/arulzzzxd/database/refs/heads/main/emoji-apple.json',
     blob:      'https://raw.githubusercontent.com/SaurusAraAra/mentahan/refs/heads/main/lainnya/emoji-blob-image.json',
     google:    'https://raw.githubusercontent.com/SaurusAraAra/mentahan/refs/heads/main/lainnya/emoji-google-image.json',
     joypixels: 'https://raw.githubusercontent.com/SaurusAraAra/mentahan/refs/heads/main/lainnya/emoji-joypixels-image.json',
@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
     if (!txt) {
         return res.status(400).json({
             status: false,
-            creator: "Lynx Decode",
+            creator: "Arulzxd",
             message: "Masukkan parameter '?text=' pada URL endpoint."
         });
     }

@@ -14,7 +14,7 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // Limit 10MB
 });
 
-const RIN_BG_URL = 'https://arulz-xd.my.id/files/7q7gFa.png';
+const RIN_BG_URL = 'https://cdn.arulzzxd.my.id/files/7q7gFa.png';
 const APPLE_EMOJI_JSON_URL = 'https://raw.githubusercontent.com/arulzzzxd/database/refs/heads/main/emoji-apple.json';
 
 const RIN_FONTS = [{
