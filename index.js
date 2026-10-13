@@ -65,7 +65,7 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
 // Mongoose Schemas
-const userSchema = new mongoose.Schema({
+userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String, default: null },
@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema({
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
     avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/1wh5do.png' }, 
-    ipWhitelist: [{ type: String, trim: true }], // <-- FITUR IP WHITELIST
+    ipWhitelist: [{ type: String, trim: true }], // <-- IP Whitelist khusus per user
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -109,6 +109,7 @@ const User = mongoose.models.User || mongoose.model('User', userSchema);
 // Model Log Perangkat Login
 const deviceLogSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userEmail: { type: String, required: true, index: true, lowercase: true, trim: true },
     deviceType: { type: String, default: 'DESKTOP' },
     loginMethod: { type: String, default: 'local' },
     browser: { type: String, default: 'Chrome' },
@@ -117,6 +118,7 @@ const deviceLogSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now }
 });
+
 const DeviceLog = mongoose.models.DeviceLog || mongoose.model('DeviceLog', deviceLogSchema);
 
 const reviewSchema = new mongoose.Schema({
@@ -475,19 +477,23 @@ function parseUserAgent(uaString = '') {
     return { os, browser, deviceType };
 }
 
-async function createDeviceLog(userId, req, loginMethod = 'local') {
+async function createDeviceLog(user, req, loginMethod = 'local') {
     try {
-        // Ambil IP publik dari header proxy Vercel
+        if (!user || (!user._id && !user.id)) return;
+        const userId = new mongoose.Types.ObjectId(user._id || user.id);
+        const userEmail = (user.email || '').toLowerCase().trim();
+        
         const rawIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.ip || '127.0.0.1';
         const clientIp = rawIp.split(',')[0].trim();
         const ua = parseUserAgent(req.headers['user-agent'] || '');
 
-        // Nonaktifkan status aktif log lama
+        // Nonaktifkan status aktif log lama HANYA milik userId ini
         await DeviceLog.updateMany({ userId }, { $set: { isActive: false } });
 
-        // Simpan log perangkat baru
+        // Simpan log perangkat baru terisolasi khusus user ini
         await DeviceLog.create({
             userId,
+            userEmail,
             deviceType: ua.deviceType,
             loginMethod,
             browser: ua.browser,
@@ -503,20 +509,51 @@ async function createDeviceLog(userId, req, loginMethod = 'local') {
 // --- ENDPOINT MANAJEMEN IP WHITELIST ---
 app.get('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
     if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
-    const user = await User.findById(req.user.id || req.user._id).select('ipWhitelist');
-    const clientIp = (req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
-    return res.json({ status: true, currentIp: clientIp, whitelist: user?.ipWhitelist || [], max: 5 });
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const role = (req.user.role || '').toLowerCase();
+        const isPremiumOrVip = role.includes('premium') || role.includes('vip');
+
+        const user = await User.findById(userId).select('ipWhitelist email role');
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan." });
+
+        const clientIp = (req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
+
+        return res.json({ 
+            status: true, 
+            email: user.email,
+            isAllowed: isPremiumOrVip,
+            currentIp: clientIp, 
+            whitelist: user.ipWhitelist || [], 
+            max: 5 
+        });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal memuat IP Whitelist." });
+    }
 });
 
 app.post('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        
+        // Validasi Role Premium / VIP
+        const role = (req.user.role || '').toLowerCase();
+        if (!role.includes('premium') && !role.includes('vip')) {
+            return res.status(403).json({ 
+                status: false, 
+                message: "Akses Ditolak! Fitur IP Whitelist System hanya untuk pengguna Premium atau VIP." 
+            });
+        }
+
         const { ip } = req.body;
         if (!ip || !ip.trim()) return res.status(400).json({ status: false, message: "IP tidak boleh kosong!" });
 
         const cleanIp = ip.trim();
-        const user = await User.findById(req.user.id || req.user._id);
-        
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan." });
+
         if (user.ipWhitelist.length >= 5) {
             return res.status(400).json({ status: false, message: "Batas maksimal 5 IP whitelist telah tercapai!" });
         }
@@ -528,14 +565,11 @@ app.post('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
         user.ipWhitelist.push(cleanIp);
         await user.save();
 
-        // -------------------------------------------------------------
-        // TAROH DISINI: Invalidate cache agar IP Whitelist baru langsung aktif
-        // -------------------------------------------------------------
         if (typeof apiKeyUserCache !== 'undefined') {
             apiKeyUserCache.delete(user.apikey);
         }
 
-        return res.json({ status: true, message: `IP ${cleanIp} berhasil ditambahkan ke Whitelist!`, whitelist: user.ipWhitelist });
+        return res.json({ status: true, message: `IP ${cleanIp} berhasil ditambahkan!`, whitelist: user.ipWhitelist });
     } catch (e) {
         return res.status(500).json({ status: false, message: "Gagal menyimpan IP." });
     }
@@ -544,15 +578,24 @@ app.post('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
 app.delete('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        
+        const role = (req.user.role || '').toLowerCase();
+        if (!role.includes('premium') && !role.includes('vip')) {
+            return res.status(403).json({ 
+                status: false, 
+                message: "Akses Ditolak! Fitur IP Whitelist System hanya untuk pengguna Premium atau VIP." 
+            });
+        }
+
         const { ip } = req.body;
-        const user = await User.findById(req.user.id || req.user._id);
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan." });
 
         user.ipWhitelist = user.ipWhitelist.filter(i => i !== ip);
         await user.save();
 
-        // -------------------------------------------------------------
-        // TAROH DISINI JUGA: Invalidate cache saat IP dihapus
-        // -------------------------------------------------------------
         if (typeof apiKeyUserCache !== 'undefined') {
             apiKeyUserCache.delete(user.apikey);
         }
@@ -563,20 +606,20 @@ app.delete('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- ENDPOINT MANAJEMEN DEVICE LOGS ---
+// --- ENDPOINT DEVICE LOGS ---
 app.get('/api/user/device-logs', checkAuthSession, async (req, res) => {
     if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
     try {
-        const userId = req.user._id || req.user.id;
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
         let logs = await DeviceLog.find({ userId }).sort({ createdAt: -1 }).limit(10).lean();
 
-        // Jika belum ada log sama sekali, buatkan log untuk sesi aktif saat ini
+        // Jika user ini belum memiliki log, buatkan log baru khusus user ini
         if (!logs || logs.length === 0) {
-            await createDeviceLog(userId, req, req.user.provider || 'local');
+            await createDeviceLog(req.user, req, req.user.provider || 'local');
             logs = await DeviceLog.find({ userId }).sort({ createdAt: -1 }).limit(10).lean();
         }
 
-        return res.json({ status: true, data: logs });
+        return res.json({ status: true, userEmail: req.user.email, data: logs });
     } catch (e) {
         console.error("Error fetch device logs:", e.message);
         return res.status(500).json({ status: false, message: "Gagal memuat log perangkat." });
@@ -586,8 +629,9 @@ app.get('/api/user/device-logs', checkAuthSession, async (req, res) => {
 app.delete('/api/user/device-logs', checkAuthSession, async (req, res) => {
     if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
     try {
-        await DeviceLog.deleteMany({ userId: req.user.id || req.user._id });
-        return res.json({ status: true, message: "Histori log perangkat berhasil dibersihkan!" });
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        await DeviceLog.deleteMany({ userId });
+        return res.json({ status: true, message: "Histori log perangkat Anda berhasil dibersihkan!" });
     } catch (e) {
         return res.status(500).json({ status: false, message: "Gagal menghapus log." });
     }
