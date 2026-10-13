@@ -417,26 +417,23 @@
     <!-- Main Content Container -->
     <main class="w-full max-w-2xl mx-auto px-4 pt-20 pb-10 relative z-10 flex-1 flex flex-col items-center space-y-5">
 
-        <!-- KARTU 1: HEADER PROFIL & DETAIL KELOLA AKUN (LAYOUT PERSIS GAMBAR 2 LIGHT THEME) -->
+        <!-- KARTU 1: HEADER PROFIL & DETAIL KELOLA AKUN -->
         <div class="w-full light-card p-5 sm:p-6">
             
             <!-- Top Section: Avatar & Info Header -->
             <div class="flex flex-col gap-3 mb-5">
-                <!-- Avatar Lingkaran dengan Tombol Kamera di Sudut Kanan Bawah -->
                 <div class="relative w-20 h-20 flex-shrink-0">
                     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                     <div class="relative cursor-pointer w-full h-full group" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ubah foto profil">
                         <div class="w-full h-full rounded-full border-2 border-zinc-900 shadow-sm overflow-hidden bg-emerald-500 p-0.5">
                             <img id="userAvatar" src="https://cdn.arulzzxd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                         </div>
-                        <!-- Tombol Badge Kamera Melayang (Sesuai Gambar 2) -->
                         <div class="absolute bottom-0 right-0 bg-zinc-900 text-white w-7 h-7 rounded-full border-2 border-white flex items-center justify-center shadow-md hover:bg-zinc-800 transition-all">
                             <i class="fa-solid fa-camera text-[11px]"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Username & Role Badge (Layout Baris) -->
                 <div>
                     <div class="flex items-center gap-2.5 flex-wrap">
                         <h2 id="userName" class="text-xl font-black text-zinc-900 tracking-tight truncate">Loading...</h2>
@@ -445,7 +442,6 @@
                         </span>
                     </div>
 
-                    <!-- Email & Terverifikasi (Dot Separator) -->
                     <div class="flex items-center gap-2 text-xs font-bold text-zinc-600 mt-1 flex-wrap">
                         <span id="userEmail" class="truncate">loading_email@gmail.com</span>
                         <span class="text-zinc-400">•</span>
@@ -457,15 +453,13 @@
                 </div>
             </div>
 
-            <!-- Sub-Box Detail Profil (3 Baris: Username, Status Plan, Login Provider) -->
+            <!-- Sub-Box Detail Profil -->
             <div class="light-card-box p-4 mb-4 space-y-3 bg-[#FFFDF8]">
-                <!-- Row 1: Username -->
                 <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
                     <span class="text-zinc-500 uppercase code-font text-[11px]">Username:</span>
                     <span id="detailUsername" class="text-zinc-900 font-extrabold truncate">loading...</span>
                 </div>
 
-                <!-- Row 2: Status Plan -->
                 <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
                     <span class="text-zinc-500 uppercase code-font text-[11px]">Status Plan:</span>
                     <span id="detailPlanBadge" class="text-[10px] font-black border-2 border-zinc-900 px-3 py-0.5 rounded-full uppercase shadow-xs bg-zinc-200 text-zinc-800">
@@ -473,7 +467,6 @@
                     </span>
                 </div>
 
-                <!-- Row 3: Provider Login (Google / GitHub / Local Email) & Logo -->
                 <div class="flex items-center justify-between text-xs font-bold">
                     <span id="providerLabel" class="text-zinc-500 uppercase code-font text-[11px]">Email:</span>
                     <div class="flex items-center gap-2 truncate max-w-[70%] justify-end">
@@ -485,7 +478,6 @@
                 </div>
             </div>
 
-            <!-- Tombol Edit Profil -->
             <button onclick="toggleEditProfileModal()" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
                 <i class="fa-solid fa-user-pen text-sm"></i> EDIT PROFIL (NAMA &amp; EMAIL)
             </button>
@@ -597,17 +589,32 @@
             </div>
         </div>
 
-        <!-- KARTU 5: AKTIVITAS & RIWAYAT REQUEST -->
+        <!-- KARTU 5: AKTIVITAS & RIWAYAT REQUEST (DESIGN LIGHT THEME SESUAI GAMBAR) -->
         <div class="w-full light-card p-5">
-            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left text-zinc-900"></i>
-                    <h3 class="text-xs font-black uppercase tracking-wider code-font">AKTIVITAS &amp; RIWAYAT REQUEST</h3>
+            <div class="border-b-2 border-zinc-200 pb-3 mb-3">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-500 font-mono font-black text-sm">&gt;_</span>
+                        <h3 class="text-xs font-black uppercase tracking-wider code-font text-zinc-900">
+                            AKTIVITAS &amp; RIWAYAT REQUEST
+                        </h3>
+                    </div>
+                </div>
+                <p class="text-[11px] font-semibold text-zinc-600 code-font">
+                    Histori pemanggilan endpoint API secara langsung.
+                </p>
+
+                <!-- Tombol Hapus Riwayat -->
+                <div class="mt-3">
+                    <button onclick="clearActivityLogs()" class="border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-extrabold text-[10px] px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-xs flex items-center gap-1.5 uppercase code-font cursor-pointer">
+                        <i class="fa-solid fa-trash-can text-xs"></i> Hapus Riwayat
+                    </button>
                 </div>
             </div>
 
-            <div id="activityLogsContainer" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-                <div class="light-pill-capsule text-zinc-800 code-font text-xs py-2 px-3 text-center truncate">
+            <!-- Container List Log Aktivitas -->
+            <div id="activityLogsContainer" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                <div class="light-pill-capsule text-zinc-800 code-font text-xs py-3 px-3 text-center truncate">
                     Memuat data aktivitas...
                 </div>
             </div>
@@ -813,7 +820,6 @@
                 if (providerLabel) providerLabel.innerText = 'GitHub:';
                 if (providerIcon) providerIcon.innerHTML = `<i class="fa-brands fa-github text-base text-zinc-900"></i>`;
             } else {
-                // Local / Default
                 if (providerLabel) providerLabel.innerText = 'Email:';
                 if (providerIcon) providerIcon.innerHTML = `<i class="fa-solid fa-envelope text-base text-amber-600"></i>`;
             }
@@ -1016,22 +1022,95 @@
                 });
         }
 
+        // Ambil Data Riwayat Aktivitas Request
         function fetchUserActivityLogs() {
             const container = document.getElementById('activityLogsContainer');
             fetch('/api/user-activity')
                 .then(res => res.json())
                 .then(resData => {
-                    if (resData.status && resData.data && resData.data.length > 0) {
+                    const logs = resData.logs || [];
+                    if (resData.status && logs.length > 0) {
+                        container.innerHTML = logs.map(log => {
+                            const isSuccess = log.status_code >= 200 && log.status_code < 300;
+                            const statusBg = isSuccess ? 'bg-emerald-300 text-zinc-900 border-emerald-700' : 'bg-red-300 text-zinc-900 border-red-700';
+                            
+                            return `
+                                <div class="light-card-box p-3 border-2 border-zinc-900 bg-[#FFFDF8] hover:bg-amber-50/50 transition-all rounded-xl shadow-xs">
+                                    <div class="flex items-center justify-between mb-1.5 gap-2 flex-wrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <!-- Badge HTTP Method -->
+                                            <span class="px-2 py-0.5 text-[10px] font-black code-font border-2 border-zinc-900 rounded-md bg-amber-300 text-zinc-900 shadow-2xs uppercase">
+                                                ${log.method || 'GET'}
+                                            </span>
+                                            <!-- Badge Status Code -->
+                                            <span class="px-2 py-0.5 text-[10px] font-black code-font border-2 rounded-md ${statusBg} shadow-2xs">
+                                                ${log.status_code}
+                                            </span>
+                                        </div>
+                                        <!-- Tanggal, Bulan, Tahun, & Jam -->
+                                        <span class="text-[10px] font-bold code-font text-zinc-600 flex items-center gap-1">
+                                            <i class="fa-regular fa-clock text-[9px] text-zinc-500"></i>
+                                            <span>${log.fullDate || log.time || ''}</span>
+                                        </span>
+                                    </div>
+                                    <!-- Endpoint API -->
+                                    <div class="code-font text-xs font-black text-zinc-900 truncate tracking-tight pt-0.5">
+                                        ${log.endpoint}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else if (resData.status && resData.data && resData.data.length > 0) {
+                        // Fallback format string
                         container.innerHTML = resData.data.map(logText => 
-                            '<div class="light-pill-capsule text-zinc-800 code-font text-[10px] py-1.5 px-3 text-center truncate bg-amber-50/60">' + logText + '</div>'
+                            '<div class="light-pill-capsule text-zinc-800 code-font text-[10px] py-2 px-3 text-center truncate bg-amber-50/60">' + logText + '</div>'
                         ).join('');
                     } else {
-                        container.innerHTML = '<div class="light-pill-capsule text-zinc-500 code-font text-[10px] py-2 px-3 text-center">Belum ada aktivitas request</div>';
+                        container.innerHTML = '<div class="light-pill-capsule text-zinc-500 code-font text-[10px] py-3 px-3 text-center">Belum ada aktivitas request</div>';
                     }
                 })
                 .catch(err => {
-                    container.innerHTML = '<div class="light-pill-capsule text-red-600 code-font text-[10px] py-2 px-3 text-center">Gagal memuat aktivitas</div>';
+                    container.innerHTML = '<div class="light-pill-capsule text-red-600 code-font text-[10px] py-3 px-3 text-center">Gagal memuat aktivitas</div>';
                 });
+        }
+
+        // Fungsi Hapus Riwayat Request
+        function clearActivityLogs() {
+            Swal.fire({
+                title: 'HAPUS RIWAYAT REQUEST?',
+                text: 'Apakah Anda yakin ingin menghapus seluruh log riwayat aktivitas request API?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'YA, HAPUS',
+                cancelButtonText: 'BATAL',
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: 'px-4 py-2.5 bg-red-600 text-white font-black rounded-xl border-2 border-black m-1 text-xs uppercase shadow-xs',
+                    cancelButton: 'px-4 py-2.5 bg-zinc-200 text-zinc-900 font-black rounded-xl border-2 border-black m-1 text-xs uppercase shadow-xs'
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('/api/user-activity', { method: 'DELETE' });
+                        const resData = await response.json();
+                        if (resData.status) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'BERHASIL',
+                                text: resData.message || 'Riwayat request berhasil dibersihkan!',
+                                confirmButtonText: 'OKE',
+                                buttonsStyling: false,
+                                customClass: { confirmButton: 'px-4 py-2 bg-zinc-900 text-white font-black rounded-xl border-2 border-black' }
+                            });
+                            fetchUserActivityLogs();
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal menghapus riwayat.' });
+                        }
+                    } catch (err) {
+                        Swal.fire({ icon: 'error', title: 'ERROR', text: 'Terjadi kesalahan koneksi server.' });
+                    }
+                }
+            });
         }
 
         // Deteksi Informasi Klien (OS, Browser, Screen)
