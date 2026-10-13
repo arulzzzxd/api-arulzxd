@@ -6,36 +6,25 @@
     <!-- Mencegah zoom di HP / Touch Screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- OpenGraph Meta Tags Standar Resmi (1200x630 Respon Cepat Tanpa Timeout) -->
+    <!-- OpenGraph Meta Tags Rasio 10:10 / 1:1 (1000x1000) -->
     <meta property="og:title" content="ArulzXD API - Core REST Gateway">
     <meta property="og:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi.">
-    <meta property="og:image" content="https://image.thum.io/get/width/1200/crop/630/jpeg/noanimate/https://api.arulzzxd.my.id/">
-    <meta property="og:image:secure_url" content="https://image.thum.io/get/width/1200/crop/630/jpeg/noanimate/https://api.arulzzxd.my.id/">
+    <meta property="og:image" content="https://image.thum.io/get/viewportWidth/1000/viewportHeight/1000/width/1000/crop/1000/jpeg/noanimate/https://api.arulzzxd.my.id/">
+    <meta property="og:image:secure_url" content="https://image.thum.io/get/viewportWidth/1000/viewportHeight/1000/width/1000/crop/1000/jpeg/noanimate/https://api.arulzzxd.my.id/">
     <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:width" content="1000">
+    <meta property="og:image:height" content="1000">
     <meta property="og:url" content="https://api.arulzzxd.my.id/">
     <meta property="og:type" content="website">
 
     <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="ArulzXD API - Core REST Gateway">
     <meta name="twitter:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi.">
-    <meta name="twitter:image" content="https://image.thum.io/get/width/1200/crop/630/jpeg/noanimate/https://api.arulzzxd.my.id/">
+    <meta name="twitter:image" content="https://image.thum.io/get/viewportWidth/1000/viewportHeight/1000/width/1000/crop/1000/jpeg/noanimate/https://api.arulzzxd.my.id/">
 
     <title>Arulz-XD API - HOME</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/1wh5do.png" type="image/png">
-
-    <!-- Script Deteksi Bot / Headless Browser (Sembunyikan Loader Instan) -->
-    <script>
-        (function() {
-            var ua = navigator.userAgent || '';
-            var isBot = /bot|crawler|spider|facebookexternalhit|whatsapp|telegram|twitter|discord|thum|phantom|headless|puppeteer|lighthouse/i.test(ua) || navigator.webdriver;
-            if (isBot) {
-                document.documentElement.classList.add('is-bot-preview');
-            }
-        })();
-    </script>
 
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,14 +32,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Sembunyikan Loader Jika Dideteksi Sebagai Bot/Scraper */
-        .is-bot-preview #cyber-loader-overlay {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
-
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
@@ -745,47 +726,41 @@
         document.addEventListener('touchstart', playBannerVideo, { once: true });
         document.addEventListener('click', playBannerVideo, { once: true });
 
-        // Loader Progress Logic (Hanya untuk Pengunjung Asli Manusia)
-        const isBotPreview = document.documentElement.classList.contains('is-bot-preview');
+        // Loader Progress
+        let currentProgress = 0;
+        const progressFill = document.getElementById('loader-progress-fill');
+        const percentageText = document.getElementById('loader-percentage');
         const loaderOverlay = document.getElementById('cyber-loader-overlay');
 
-        if (isBotPreview && loaderOverlay) {
-            loaderOverlay.style.display = 'none';
-        } else {
-            let currentProgress = 0;
-            const progressFill = document.getElementById('loader-progress-fill');
-            const percentageText = document.getElementById('loader-percentage');
+        function updateProgress(targetVal) {
+            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+            if (progressFill) progressFill.style.width = currentProgress + '%';
+            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+        }
 
-            function updateProgress(targetVal) {
-                currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-                if (progressFill) progressFill.style.width = currentProgress + '%';
-                if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
+        const progressInterval = setInterval(() => {
+            if (currentProgress < 85) {
+                const increment = Math.random() * 12 + 5;
+                updateProgress(currentProgress + increment);
             }
+        }, 120);
 
-            const progressInterval = setInterval(() => {
-                if (currentProgress < 85) {
-                    const increment = Math.random() * 12 + 5;
-                    updateProgress(currentProgress + increment);
-                }
-            }, 120);
-
-            window.addEventListener('load', () => {
-                clearInterval(progressInterval);
-                updateProgress(100);
-
-                setTimeout(() => {
-                    if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-                }, 400);
-            });
+        window.addEventListener('load', () => {
+            clearInterval(progressInterval);
+            updateProgress(100);
 
             setTimeout(() => {
-                clearInterval(progressInterval);
-                updateProgress(100);
-                if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
-                    loaderOverlay.classList.add('fade-out');
-                }
-            }, 4000);
-        }
+                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+            }, 400);
+        });
+
+        setTimeout(() => {
+            clearInterval(progressInterval);
+            updateProgress(100);
+            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+                loaderOverlay.classList.add('fade-out');
+            }
+        }, 4000);
     </script>
 </body>
 </html>
