@@ -40,13 +40,11 @@ async function getBuffer(url) {
     return Buffer.from(data);
 }
 
-function formatSaldo(input) {
-    let text = input.trim();
-    if (!/^rp/i.test(text)) {
-        if (/^\d+$/.test(text)) {
-            text = parseInt(text, 10).toLocaleString("id-ID");
-        }
-        text = `Rp ${text}`;
+function cleanSaldo(input) {
+    // Hapus "Rp" atau "rp" jika dimasukkan oleh user karena background sudah memiliki teks "Rp"
+    let text = input.trim().replace(/^rp\s*/i, "");
+    if (/^\d+$/.test(text)) {
+        text = parseInt(text, 10).toLocaleString("id-ID");
     }
     return text;
 }
@@ -58,11 +56,11 @@ router.get("/", async (req, res) => {
         if (!rawSaldo) {
             return res.status(400).json({
                 status: false,
-                message: "Parameter saldo/nominal/text wajib diisi (contoh: ?saldo=50.000)"
+                message: "Parameter saldo/nominal/text wajib diisi (contoh: ?saldo=123.456)"
             });
         }
 
-        const saldo = formatSaldo(rawSaldo);
+        const saldo = cleanSaldo(rawSaldo);
 
         await loadFont();
 
@@ -72,43 +70,42 @@ router.get("/", async (req, res) => {
         const bgImg = await loadImage(bgCache);
         const eyeImg = await loadImage(eyeCache);
 
-        // Canvas ukuran asli tanpa scaling
         const canvas = createCanvas(bgImg.width, bgImg.height);
         const ctx = canvas.getContext("2d");
 
         // Render Background
         ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
-        // Koordinat & Pengaturan Presisi
-        const valX = 112;
-        const centerY = 44;
-        const maxFontSize = 30;
-        const eyeScale = 0.68;
-        const eyeGap = 8;
+        // KOORDINAT PRESISI SAMA DENGAN BACKGROUND DANA
+        const valX = 138;           // Posisi tepat setelah teks "Rp" bawaan gambar
+        const valY = 48;           // Posisi Y sejajar dengan teks "Rp" bawaan gambar
+        const maxFontSize = 35;     // Ukuran font yang pas dengan "Rp" bawaan
+        const eyeGap = 8;           // Jarak antara angka dan ikon mata
+        const eyeScale = 0.85;      // Skala proporsional ikon mata
 
         let currentFontSize = maxFontSize;
-        const maxAllowedWidth = canvas.width - valX - 120;
+        const maxAllowedWidth = canvas.width - valX - 100;
 
         ctx.font = `700 ${currentFontSize}px "DANA"`;
         let textWidth = ctx.measureText(saldo).width;
 
-        while (textWidth > maxAllowedWidth && currentFontSize > 14) {
-            currentFontSize -= 1;
+        while (textWidth > maxAllowedWidth && currentFontSize > 16) {
+            currentFontSize -= 2;
             ctx.font = `700 ${currentFontSize}px "DANA"`;
             textWidth = ctx.measureText(saldo).width;
         }
 
-        // Tulis Nominal Saldo
+        // Tulis Angka Nominal Saldo
         ctx.fillStyle = "#000000";
         ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(saldo, valX, centerY);
+        ctx.textBaseline = "top";
+        ctx.fillText(saldo, valX, valY);
 
-        // Render Ikon Mata (Presisi Sejajar Tengah)
+        // Render Ikon Mata (Presisi Sejajar Teks)
         const eyeHeight = currentFontSize * eyeScale;
         const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
         const eyeX = valX + textWidth + eyeGap;
-        const eyeY = centerY - (eyeHeight / 2);
+        const eyeY = valY + (currentFontSize - eyeHeight) / 2 + 2;
 
         ctx.drawImage(eyeImg, eyeX, eyeY, eyeWidth, eyeHeight);
 
@@ -126,7 +123,7 @@ router.get("/", async (req, res) => {
 
 router.desc = "Maker untuk membuat tampilan Fake Saldo DANA.";
 router.paramsConfig = {
-  saldo: "contoh: 50000"
+  saldo: "contoh: 123.456"
 };
 router.status = "ready";
 router.type = "free";
