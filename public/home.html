@@ -26,12 +26,31 @@
     <title>Arulz-XD API - HOME</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/1wh5do.png" type="image/png">
 
+    <!-- Script Deteksi Dini Bot / Scraper / Headless Browser untuk OpenGraph -->
+    <script>
+        (function() {
+            var ua = navigator.userAgent || '';
+            var isBot = /bot|crawler|spider|facebookexternalhit|whatsapp|telegram|twitter|discord|thum|phantom|headless|puppeteer|lighthouse/i.test(ua) || navigator.webdriver;
+            if (isBot) {
+                document.documentElement.classList.add('is-bot-preview');
+            }
+        })();
+    </script>
+
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* Sembunyikan Loader Otomatis Jika Diakses Oleh Scraper / Bot Screenshot */
+        .is-bot-preview #cyber-loader-overlay {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
@@ -726,41 +745,47 @@
         document.addEventListener('touchstart', playBannerVideo, { once: true });
         document.addEventListener('click', playBannerVideo, { once: true });
 
-        // Loader Progress
-        let currentProgress = 0;
-        const progressFill = document.getElementById('loader-progress-fill');
-        const percentageText = document.getElementById('loader-percentage');
+        // Loader Progress Logic (Hanya untuk Pengunjung Asli Manusia)
+        const isBotPreview = document.documentElement.classList.contains('is-bot-preview');
         const loaderOverlay = document.getElementById('cyber-loader-overlay');
 
-        function updateProgress(targetVal) {
-            currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
-            if (progressFill) progressFill.style.width = currentProgress + '%';
-            if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
-        }
+        if (isBotPreview && loaderOverlay) {
+            loaderOverlay.style.display = 'none';
+        } else {
+            let currentProgress = 0;
+            const progressFill = document.getElementById('loader-progress-fill');
+            const percentageText = document.getElementById('loader-percentage');
 
-        const progressInterval = setInterval(() => {
-            if (currentProgress < 85) {
-                const increment = Math.random() * 12 + 5;
-                updateProgress(currentProgress + increment);
+            function updateProgress(targetVal) {
+                currentProgress = Math.min(Math.max(currentProgress, targetVal), 100);
+                if (progressFill) progressFill.style.width = currentProgress + '%';
+                if (percentageText) percentageText.innerText = Math.floor(currentProgress) + '%';
             }
-        }, 120);
 
-        window.addEventListener('load', () => {
-            clearInterval(progressInterval);
-            updateProgress(100);
+            const progressInterval = setInterval(() => {
+                if (currentProgress < 85) {
+                    const increment = Math.random() * 12 + 5;
+                    updateProgress(currentProgress + increment);
+                }
+            }, 120);
+
+            window.addEventListener('load', () => {
+                clearInterval(progressInterval);
+                updateProgress(100);
+
+                setTimeout(() => {
+                    if (loaderOverlay) loaderOverlay.classList.add('fade-out');
+                }, 400);
+            });
 
             setTimeout(() => {
-                if (loaderOverlay) loaderOverlay.classList.add('fade-out');
-            }, 400);
-        });
-
-        setTimeout(() => {
-            clearInterval(progressInterval);
-            updateProgress(100);
-            if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
-                loaderOverlay.classList.add('fade-out');
-            }
-        }, 4000);
+                clearInterval(progressInterval);
+                updateProgress(100);
+                if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
+                    loaderOverlay.classList.add('fade-out');
+                }
+            }, 4000);
+        }
     </script>
 </body>
 </html>
