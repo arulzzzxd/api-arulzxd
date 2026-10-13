@@ -251,9 +251,18 @@ app.delete('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
 app.get('/api/user/device-logs', checkAuthSession, async (req, res) => {
     if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
     try {
-        const logs = await DeviceLog.find({ userId: req.user.id || req.user._id }).sort({ createdAt: -1 }).limit(10);
+        const userId = req.user._id || req.user.id;
+        let logs = await DeviceLog.find({ userId }).sort({ createdAt: -1 }).limit(10).lean();
+
+        // Jika belum ada log sama sekali, buatkan log untuk sesi aktif saat ini
+        if (!logs || logs.length === 0) {
+            await createDeviceLog(userId, req, req.user.provider || 'local');
+            logs = await DeviceLog.find({ userId }).sort({ createdAt: -1 }).limit(10).lean();
+        }
+
         return res.json({ status: true, data: logs });
     } catch (e) {
+        console.error("Error fetch device logs:", e.message);
         return res.status(500).json({ status: false, message: "Gagal memuat log perangkat." });
     }
 });
