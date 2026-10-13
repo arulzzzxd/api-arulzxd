@@ -1,4 +1,3 @@
-
 const express = require("express");
 const axios = require("axios");
 const {
@@ -9,9 +8,9 @@ const {
 
 const router = express.Router();
 
-const FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-600-normal.ttf";
+const FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf";
 const BG_URL = "https://cdn.arulzzxd.my.id/files/F4pjW08L.png";
-const EYE_URL = "https://cdn.arulzzxd.my.id/files/XqtOfI.jpg";
+const EYE_URL = "https://cdn.arulzzxd.my.id/files/XqtOfI.png";
 
 let fontLoaded = false;
 let bgCache = null;
@@ -41,16 +40,29 @@ async function getBuffer(url) {
     return Buffer.from(data);
 }
 
+function formatSaldo(input) {
+    let text = input.trim();
+    if (!/^rp/i.test(text)) {
+        if (/^\d+$/.test(text)) {
+            text = parseInt(text, 10).toLocaleString("id-ID");
+        }
+        text = `Rp ${text}`;
+    }
+    return text;
+}
+
 router.get("/", async (req, res) => {
     try {
-        const saldo = req.query.saldo?.trim() || req.query.nominal?.trim() || req.query.text?.trim();
+        const rawSaldo = req.query.saldo?.trim() || req.query.nominal?.trim() || req.query.text?.trim();
 
-        if (!saldo) {
+        if (!rawSaldo) {
             return res.status(400).json({
                 status: false,
                 message: "Parameter saldo/nominal/text wajib diisi (contoh: ?saldo=50.000)"
             });
         }
+
+        const saldo = formatSaldo(rawSaldo);
 
         await loadFont();
 
@@ -60,40 +72,43 @@ router.get("/", async (req, res) => {
         const bgImg = await loadImage(bgCache);
         const eyeImg = await loadImage(eyeCache);
 
+        // Canvas ukuran asli tanpa scaling
         const canvas = createCanvas(bgImg.width, bgImg.height);
         const ctx = canvas.getContext("2d");
 
+        // Render Background
         ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
-        const valX = 138;
-        const valY = 52;
-        const maxFontSize = 37;
-        const eyeGap = 7;
-        const eyeScale = 1.3;
+        // Koordinat & Pengaturan Presisi
+        const valX = 112;
+        const centerY = 44;
+        const maxFontSize = 30;
+        const eyeScale = 0.68;
+        const eyeGap = 8;
 
         let currentFontSize = maxFontSize;
-        const maxAllowedWidth = canvas.width - valX - 100;
+        const maxAllowedWidth = canvas.width - valX - 120;
 
-        ctx.font = `600 ${currentFontSize}px DANA`;
+        ctx.font = `700 ${currentFontSize}px "DANA"`;
         let textWidth = ctx.measureText(saldo).width;
 
-        while (textWidth > maxAllowedWidth && currentFontSize > 16) {
-            currentFontSize -= 2;
-            ctx.font = `600 ${currentFontSize}px DANA`;
+        while (textWidth > maxAllowedWidth && currentFontSize > 14) {
+            currentFontSize -= 1;
+            ctx.font = `700 ${currentFontSize}px "DANA"`;
             textWidth = ctx.measureText(saldo).width;
         }
 
         // Tulis Nominal Saldo
         ctx.fillStyle = "#000000";
         ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText(saldo, valX, valY);
+        ctx.textBaseline = "middle";
+        ctx.fillText(saldo, valX, centerY);
 
-        // Render Icon Mata
+        // Render Ikon Mata (Presisi Sejajar Tengah)
         const eyeHeight = currentFontSize * eyeScale;
         const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
         const eyeX = valX + textWidth + eyeGap;
-        const eyeY = valY + (currentFontSize - eyeHeight) / 2;
+        const eyeY = centerY - (eyeHeight / 2);
 
         ctx.drawImage(eyeImg, eyeX, eyeY, eyeWidth, eyeHeight);
 
