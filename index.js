@@ -78,7 +78,8 @@ const userSchema = new mongoose.Schema({
     roleExpiresAt: { type: Date, default: null },
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
-    avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png' }, 
+    avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/1wh5do.png' }, 
+    ipWhitelist: [{ type: String, trim: true }], // <-- FITUR IP WHITELIST
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -104,6 +105,143 @@ userSchema.pre('save', function() {
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+// Model Log Perangkat Login
+const deviceLogSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    deviceType: { type: String, default: 'DESKTOP' },
+    loginMethod: { type: String, default: 'Local Email' },
+    browser: { type: String, default: 'Chrome' },
+    os: { type: String, default: 'Linux' },
+    ip: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+});
+const DeviceLog = mongoose.models.DeviceLog || mongoose.model('DeviceLog', deviceLogSchema);
+
+function parseUserAgent(uaString = '') {
+    let os = 'Unknown OS';
+    if (uaString.includes('Android')) os = 'Android';
+    else if (uaString.includes('iPhone') || uaString.includes('iPad')) os = 'iOS';
+    else if (uaString.includes('Windows')) os = 'Windows';
+    else if (uaString.includes('Macintosh')) os = 'macOS';
+    else if (uaString.includes('Linux')) os = 'Linux';
+
+    let browser = 'Chrome';
+    if (uaString.includes('Firefox')) browser = 'Firefox';
+    else if (uaString.includes('Safari') && !uaString.includes('Chrome')) browser = 'Safari';
+    else if (uaString.includes('Edg')) browser = 'Edge';
+
+    const deviceType = (os === 'Android' || os === 'iOS') ? 'MOBILE' : 'DESKTOP';
+    return { os, browser, deviceType };
+}
+
+async function createDeviceLog(userId, req, loginMethod = 'Local Email') {
+    try {
+        const clientIp = (req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
+        const ua = parseUserAgent(req.headers['user-agent'] || '');
+
+        // Nonaktifkan status aktif log lama
+        await DeviceLog.updateMany({ userId }, { $set: { isActive: false } });
+
+        // Simpan log perangkat baru
+        await DeviceLog.create({
+            userId,
+            deviceType: ua.deviceType,
+            loginMethod,
+            browser: ua.browser,
+            os: ua.os,
+            ip: clientIp,
+            isActive: true
+        });
+    } catch (e) {
+        console.error("Gagal mencatat log perangkat:", e.message);
+    }
+}
+
+// --- ENDPOINT MANAJEMEN IP WHITELIST ---
+app.get('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    const user = await User.findById(req.user.id || req.user._id).select('ipWhitelist');
+    const clientIp = (req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
+    return res.json({ status: true, currentIp: clientIp, whitelist: user?.ipWhitelist || [], max: 5 });
+});
+
+app.post('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        const { ip } = req.body;
+        if (!ip || !ip.trim()) return res.status(400).json({ status: false, message: "IP tidak boleh kosong!" });
+
+        const cleanIp = ip.trim();
+        const user = await User.findById(req.user.id || req.user._id);
+        
+        if (user.ipWhitelist.length >= 5) {
+            return res.status(400).json({ status: false, message: "Batas maksimal 5 IP whitelist telah tercapai!" });
+        }
+
+        if (user.ipWhitelist.includes(cleanIp)) {
+            return res.status(400).json({ status: false, message: "IP ini sudah terdaftar!" });
+        }
+
+        user.ipWhitelist.push(cleanIp);
+        await user.save();
+
+        // -------------------------------------------------------------
+        // TAROH DISINI: Invalidate cache agar IP Whitelist baru langsung aktif
+        // -------------------------------------------------------------
+        if (typeof apiKeyUserCache !== 'undefined') {
+            apiKeyUserCache.delete(user.apikey);
+        }
+
+        return res.json({ status: true, message: `IP ${cleanIp} berhasil ditambahkan ke Whitelist!`, whitelist: user.ipWhitelist });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menyimpan IP." });
+    }
+});
+
+app.delete('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        const { ip } = req.body;
+        const user = await User.findById(req.user.id || req.user._id);
+
+        user.ipWhitelist = user.ipWhitelist.filter(i => i !== ip);
+        await user.save();
+
+        // -------------------------------------------------------------
+        // TAROH DISINI JUGA: Invalidate cache saat IP dihapus
+        // -------------------------------------------------------------
+        if (typeof apiKeyUserCache !== 'undefined') {
+            apiKeyUserCache.delete(user.apikey);
+        }
+
+        return res.json({ status: true, message: "IP berhasil dihapus!", whitelist: user.ipWhitelist });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menghapus IP." });
+    }
+});
+
+// --- ENDPOINT MANAJEMEN DEVICE LOGS ---
+app.get('/api/user/device-logs', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    try {
+        const logs = await DeviceLog.find({ userId: req.user.id || req.user._id }).sort({ createdAt: -1 }).limit(10);
+        return res.json({ status: true, data: logs });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal memuat log perangkat." });
+    }
+});
+
+app.delete('/api/user/device-logs', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    try {
+        await DeviceLog.deleteMany({ userId: req.user.id || req.user._id });
+        return res.json({ status: true, message: "Histori log perangkat berhasil dibersihkan!" });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menghapus log." });
+    }
+});
 
 const reviewSchema = new mongoose.Schema({
     productId: { type: String, required: true, index: true },
@@ -1045,8 +1183,17 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
             return res.status(400).json({ status: false, message: 'API Key tersebut sudah digunakan oleh user lain!' });
         }
 
+        // 1. Simpan key lama sebelum di-update
+        const oldKey = user.apikey;
+
         user.apikey = cleanKey;
         await user.save();
+
+        // 2. Hapus cache key lama & key baru
+        if (typeof apiKeyUserCache !== 'undefined') {
+            if (oldKey) apiKeyUserCache.delete(oldKey);
+            apiKeyUserCache.delete(cleanKey);
+        }
 
         const token = jwt.sign({
             id: user._id, username: user.username, email: user.email, name: user.username, avatar: user.avatar, role: user.role, apikey: user.apikey
@@ -1059,6 +1206,7 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat memperbarui API Key.' });
     }
 });
+
 
 // Endpoint Pembaruan Profil (Nama & Email)
 app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
@@ -1948,6 +2096,18 @@ const validateApiKey = async (req, res, next) => {
 
     if (!callerUser) {
         return res.status(403).json({ status: false, creator: "Arulz-XD", message: "API Key salah atau tidak terdaftar!" });
+    }
+
+    // --- PROTEKSI FITUR IP WHITELIST ---
+    if (callerUser.ipWhitelist && callerUser.ipWhitelist.length > 0) {
+        const clientIp = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
+        if (!callerUser.ipWhitelist.includes(clientIp)) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: `Akses Ditolak! IP Anda (${clientIp}) belum terdaftar di IP Whitelist akun ini.`
+            });
+        }
     }
 
     req.user = callerUser;
