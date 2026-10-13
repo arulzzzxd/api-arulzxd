@@ -730,11 +730,12 @@ app.post('/auth/register', async (req, res) => {
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
 
-        req.logIn(newUser, (err) => {
-            if (err) return res.redirect('/login');
-            await createDeviceLog(newUser._id, req, 'local');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
-        });
+        req.logIn(newUser, async (err) => {
+          if (err) return res.redirect('/login');
+          await createDeviceLog(newUser._id, req, 'local');
+          return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
+    });
+
     } catch (error) {
         console.error(error);
         res.status(500).send('Terjadi error internal saat pendaftaran.');
