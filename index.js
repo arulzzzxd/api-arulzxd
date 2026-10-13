@@ -27,6 +27,29 @@ const PORT = process.env.PORT || 3000;
 // ====================================================
 // 1. KONFIGURASI & ENVIRONMENT VARIABLES
 // ====================================================
+// Middleware Cek Auth Session (Gunakan kata kunci function agar ter-hoist otomatis)
+async function checkAuthSession(req, res, next) {
+    const token = req.cookies.auth_session;
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const freshUser = await User.findById(decoded.id || decoded._id).lean();
+        if (freshUser) {
+            req.user = { ...freshUser, id: freshUser._id };
+        } else {
+            req.user = null;
+        }
+        next();
+    } catch (err) {
+        res.clearCookie('auth_session');
+        req.user = null;
+        next();
+    }
+}
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://arulz-xd-owner:Haqqi0213@cluster0.fgxhxqm.mongodb.net/?appName=Cluster0';
 const JWT_SECRET = process.env.JWT_SECRET || 'arulzxd-super-secret-jwt-key-999';
 const STATIC_QRIS = "00020101021126570011ID.DANA.WWW011893600915396562113302099656211330303UMI51440014ID.CO.QRIS.WWW0215ID10254420078250303UMI5204481453033605802ID5914IDZHARUL STORE600409146105531936304C1E4";
@@ -402,30 +425,6 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Middleware Cek Auth Session
-const checkAuthSession = async (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const freshUser = await User.findById(decoded.id || decoded._id).lean();
-        if (freshUser) {
-            req.user = { ...freshUser, id: freshUser._id };
-        } else {
-            req.user = null;
-        }
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
-};
-
 app.use(checkAuthSession);
 
 // ====================================================
