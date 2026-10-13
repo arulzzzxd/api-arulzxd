@@ -1064,20 +1064,18 @@ function loadApis() {
                         let inputPlaceholder = `Masukkan ${paramName}`;
 
                         if (paramName.toLowerCase() === 'apikey') {
-                            const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
+    const isUserLoggedIn = (typeof displayApiKey !== 'undefined' && displayApiKey !== 'Silakan Login' && displayApiKey !== '');
 
-                            if (epType === 'vip') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey VIP';
-                            } else if (epType === 'premium') {
-                                inputValue = ''; 
-                                inputPlaceholder = 'Masukkan apikey Premium';
-                            } else {
-                                inputValue = isUserLoggedIn ? displayApiKey : '';
-                                inputPlaceholder = isUserLoggedIn ? 'Masukkan apikey' : 'Silakan login terlebih dahulu';
-                            }
-                        }
+    inputValue = isUserLoggedIn ? displayApiKey : '';
 
+    if (epType === 'vip') {
+        inputPlaceholder = isUserLoggedIn ? displayApiKey : 'Masukkan apikey VIP Anda';
+    } else if (epType === 'premium') {
+        inputPlaceholder = isUserLoggedIn ? displayApiKey : 'Masukkan apikey Premium Anda';
+    } else {
+        inputPlaceholder = isUserLoggedIn ? displayApiKey : 'Silakan login terlebih dahulu';
+    }
+}
                         html += `
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
