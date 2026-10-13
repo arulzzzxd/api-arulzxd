@@ -417,25 +417,26 @@
     <!-- Main Content Container -->
     <main class="w-full max-w-2xl mx-auto px-4 pt-20 pb-10 relative z-10 flex-1 flex flex-col items-center space-y-5">
 
-        <!-- KARTU 1: HEADER PROFIL & DETAIL KELOLA AKUN -->
+        <!-- KARTU 1: HEADER PROFIL & DETAIL KELOLA AKUN (LAYOUT PERSIS GAMBAR 2 LIGHT THEME) -->
         <div class="w-full light-card p-5 sm:p-6">
             
             <!-- Top Section: Avatar & Info Header -->
             <div class="flex flex-col gap-3 mb-5">
-                <!-- Avatar Lingkaran dengan Tombol Kamera -->
+                <!-- Avatar Lingkaran dengan Tombol Kamera di Sudut Kanan Bawah -->
                 <div class="relative w-20 h-20 flex-shrink-0">
                     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatarFile(this)">
                     <div class="relative cursor-pointer w-full h-full group" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ubah foto profil">
                         <div class="w-full h-full rounded-full border-2 border-zinc-900 shadow-sm overflow-hidden bg-emerald-500 p-0.5">
                             <img id="userAvatar" src="https://cdn.arulzzxd.my.id/files/X1F0Cn.png" class="w-full h-full rounded-full object-cover">
                         </div>
+                        <!-- Tombol Badge Kamera Melayang (Sesuai Gambar 2) -->
                         <div class="absolute bottom-0 right-0 bg-zinc-900 text-white w-7 h-7 rounded-full border-2 border-white flex items-center justify-center shadow-md hover:bg-zinc-800 transition-all">
                             <i class="fa-solid fa-camera text-[11px]"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Username & Role Badge -->
+                <!-- Username & Role Badge (Layout Baris) -->
                 <div>
                     <div class="flex items-center gap-2.5 flex-wrap">
                         <h2 id="userName" class="text-xl font-black text-zinc-900 tracking-tight truncate">Loading...</h2>
@@ -444,7 +445,7 @@
                         </span>
                     </div>
 
-                    <!-- Email & Terverifikasi -->
+                    <!-- Email & Terverifikasi (Dot Separator) -->
                     <div class="flex items-center gap-2 text-xs font-bold text-zinc-600 mt-1 flex-wrap">
                         <span id="userEmail" class="truncate">loading_email@gmail.com</span>
                         <span class="text-zinc-400">•</span>
@@ -456,7 +457,7 @@
                 </div>
             </div>
 
-            <!-- Sub-Box Detail Profil -->
+            <!-- Sub-Box Detail Profil (3 Baris: Username, Status Plan, Login Provider) -->
             <div class="light-card-box p-4 mb-4 space-y-3 bg-[#FFFDF8]">
                 <!-- Row 1: Username -->
                 <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
@@ -472,7 +473,7 @@
                     </span>
                 </div>
 
-                <!-- Row 3: Provider Login -->
+                <!-- Row 3: Provider Login (Google / GitHub / Local Email) & Logo -->
                 <div class="flex items-center justify-between text-xs font-bold">
                     <span id="providerLabel" class="text-zinc-500 uppercase code-font text-[11px]">Email:</span>
                     <div class="flex items-center gap-2 truncate max-w-[70%] justify-end">
@@ -486,7 +487,7 @@
 
             <!-- Tombol Edit Profil -->
             <button onclick="toggleEditProfileModal()" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
-                <i class="fa-solid fa-user-pen text-sm"></i> EDIT PROFIL
+                <i class="fa-solid fa-user-pen text-sm"></i> EDIT PROFIL (NAMA &amp; EMAIL)
             </button>
         </div>
 
@@ -596,64 +597,7 @@
             </div>
         </div>
 
-        <!-- KARTU 5: IP WHITELIST SYSTEM -->
-        <div class="w-full light-card p-5">
-            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-zinc-900"></i>
-                    <h3 class="text-xs font-black uppercase tracking-wider code-font">IP Whitelist System</h3>
-                </div>
-                <span id="ipWhitelistCount" class="text-[9px] font-black code-font bg-zinc-200 text-zinc-900 border border-zinc-900 px-2 py-0.5 rounded uppercase">
-                    0 / 5 IP
-                </span>
-            </div>
-
-            <p class="text-[11px] font-bold text-zinc-600 mb-3 leading-relaxed">
-                Kunci akses API Key hanya dari IP terdaftar. Jika API Key bocor, request dari IP luar otomatis ditolak.
-            </p>
-
-            <div class="flex gap-2 mb-2">
-                <input type="text" id="inputWhitelistIp" placeholder="Masukkan IP (Contoh: 158.140.171.29)" class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs font-bold code-font text-zinc-900 focus:outline-none">
-                <button onclick="addIpWhitelist()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs px-4 rounded-xl uppercase font-extrabold shadow-xs active:scale-95 whitespace-nowrap">
-                    + TAMBAH IP
-                </button>
-            </div>
-
-            <button onclick="addCurrentIp()" class="text-[10px] font-black theme-text-accent underline cursor-pointer mb-3 inline-block">
-                + Tambahkan IP Saya Saat Ini (<span id="currentClientIp">Detecting...</span>)
-            </button>
-
-            <div id="whitelistContainer" class="space-y-2 mt-2">
-                <div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">
-                    Memuat status IP Whitelist...
-                </div>
-            </div>
-        </div>
-
-        <!-- KARTU 6: LOGS PERANGKAT & RIWAYAT LOGIN -->
-        <div class="w-full light-card p-5">
-            <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-laptop-code text-zinc-900"></i>
-                    <h3 class="text-xs font-black uppercase tracking-wider code-font">Logs Perangkat &amp; Riwayat Login</h3>
-                </div>
-                <button onclick="clearDeviceLogs()" class="text-[9px] font-black code-font bg-zinc-200 hover:bg-zinc-300 text-zinc-900 border border-zinc-900 px-2.5 py-1 rounded-lg uppercase shadow-xs active:scale-95">
-                    Hapus Log
-                </button>
-            </div>
-
-            <p class="text-[11px] font-bold text-zinc-600 mb-3">
-                Histori sesi autentikasi, browser, IP, dan lokasi login akun kamu.
-            </p>
-
-            <div id="deviceLogsContainer" class="space-y-3">
-                <div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">
-                    Memuat riwayat sesi login...
-                </div>
-            </div>
-        </div>
-
-        <!-- KARTU 7: AKTIVITAS & RIWAYAT REQUEST -->
+        <!-- KARTU 5: AKTIVITAS & RIWAYAT REQUEST -->
         <div class="w-full light-card p-5">
             <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
                 <div class="flex items-center gap-2">
@@ -669,7 +613,7 @@
             </div>
         </div>
 
-        <!-- KARTU 8: SESI AKUN -->
+        <!-- KARTU 6: SESI AKUN -->
         <div class="w-full light-card p-5">
             <div class="flex items-center justify-between mb-3 border-b-2 border-zinc-200 pb-2">
                 <div class="flex items-center gap-2">
@@ -683,7 +627,7 @@
             </a>
         </div>
 
-        <!-- KARTU 9: ZONA BERBAHAYA: HAPUS AKUN -->
+        <!-- KARTU 7: ZONA BERBAHAYA: HAPUS AKUN -->
         <div class="w-full border-2 border-red-600 bg-red-50/60 rounded-2xl p-5 shadow-xs">
             <div class="flex items-center gap-2 mb-2 text-red-700">
                 <i class="fa-solid fa-triangle-exclamation text-base"></i>
@@ -740,8 +684,6 @@
     <script>
         let currentRawApiKey = '';
         let isApiKeyVisible = false;
-        let detectedClientIp = '';
-        let isUserPremiumOrVip = false;
 
         // Presets Tema Warna & Border
         const THEME_PRESETS = {
@@ -854,6 +796,7 @@
             }
         }
 
+        // TAMPILAN PROVIDER LOGIN (Local, Google, GitHub)
         function updateProviderUI(provider, email) {
             const providerLabel = document.getElementById('providerLabel');
             const providerIcon = document.getElementById('providerIcon');
@@ -870,11 +813,13 @@
                 if (providerLabel) providerLabel.innerText = 'GitHub:';
                 if (providerIcon) providerIcon.innerHTML = `<i class="fa-brands fa-github text-base text-zinc-900"></i>`;
             } else {
+                // Local / Default
                 if (providerLabel) providerLabel.innerText = 'Email:';
                 if (providerIcon) providerIcon.innerHTML = `<i class="fa-solid fa-envelope text-base text-amber-600"></i>`;
             }
         }
 
+        // Toggle Modal Edit Profil
         function toggleEditProfileModal() {
             const modal = document.getElementById('editProfileModal');
             modal.classList.toggle('hidden');
@@ -885,6 +830,7 @@
             }
         }
 
+        // Simpan Perubahan Profil
         async function handleSaveProfile(e) {
             e.preventDefault();
             const newUsername = document.getElementById('editUsernameInput').value.trim();
@@ -915,6 +861,7 @@
             }
         }
 
+        // Handle Hapus Akun Permanen
         function handleDeleteAccount() {
             Swal.fire({
                 title: 'HAPUS AKUN PERMANEN?',
@@ -1087,184 +1034,7 @@
                 });
         }
 
-        // --- LOGIC IP WHITELIST ---
-        async function fetchIpWhitelist() {
-            try {
-                const res = await fetch('/api/user/ip-whitelist');
-                const data = await res.json();
-                if (data.status) {
-                    isUserPremiumOrVip = data.isAllowed;
-                    detectedClientIp = data.currentIp;
-                    document.getElementById('currentClientIp').innerText = data.currentIp;
-                    document.getElementById('ipWhitelistCount').innerText = `${data.whitelist.length} / ${data.max} IP`;
-
-                    const container = document.getElementById('whitelistContainer');
-                    
-                    if (!data.isAllowed) {
-                        container.innerHTML = `
-                            <div class="light-card-box p-4 text-center space-y-2 bg-amber-50/80 border-amber-500">
-                                <div class="text-xs font-black text-amber-900 uppercase code-font flex items-center justify-center gap-1.5">
-                                    <i class="fa-solid fa-lock text-amber-600"></i>
-                                    <span>FITUR KHUSUS PREMIUM & VIP</span>
-                                </div>
-                                <p class="text-[10px] font-bold text-zinc-600">
-                                    Upgrade akun Anda ke Premium atau VIP untuk mengaktifkan penguncian IP Whitelist API Key.
-                                </p>
-                                <a href="/upgrade-apikey" class="inline-block theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-[10px] font-black px-3 py-1.5 rounded-xl uppercase shadow-xs active:scale-95">
-                                    UPGRADE SEKARANG
-                                </a>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    if (data.whitelist.length === 0) {
-                        container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">Belum ada IP yang didaftarkan.</div>`;
-                    } else {
-                        container.innerHTML = data.whitelist.map(ip => `
-                            <div class="light-card-box p-3 flex items-center justify-between text-xs font-bold code-font">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-network-wired text-amber-600"></i>
-                                    <span>${ip}</span>
-                                </div>
-                                <button onclick="removeIpWhitelist('${ip}')" class="text-red-600 hover:text-red-800 text-sm font-black px-2">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        `).join('');
-                    }
-                }
-            } catch (err) {
-                console.error("Gagal memuat IP Whitelist:", err);
-            }
-        }
-
-        async function addIpWhitelist(ipToAdd) {
-            if (!isUserPremiumOrVip) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'AKSES DITOLAK',
-                    text: 'Fitur IP Whitelist System hanya dapat digunakan oleh pengguna Premium atau VIP!',
-                    confirmButtonText: 'UPGRADE AKUN',
-                    showCancelButton: true,
-                    cancelButtonText: 'BATAL'
-                }).then((result) => {
-                    if (result.isConfirmed) window.location.href = '/upgrade-apikey';
-                });
-                return;
-            }
-
-            const ip = ipToAdd || document.getElementById('inputWhitelistIp').value.trim();
-            if (!ip) {
-                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Masukkan alamat IP terlebih dahulu!' });
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/user/ip-whitelist', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ip })
-                });
-                const data = await res.json();
-                if (data.status) {
-                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: data.message });
-                    document.getElementById('inputWhitelistIp').value = '';
-                    fetchIpWhitelist();
-                } else {
-                    Swal.fire({ icon: 'error', title: 'GAGAL', text: data.message });
-                }
-            } catch (err) {
-                Swal.fire({ icon: 'error', title: 'ERROR', text: 'Gagal terhubung ke server.' });
-            }
-        }
-
-        function addCurrentIp() {
-            if (detectedClientIp) addIpWhitelist(detectedClientIp);
-        }
-
-        async function removeIpWhitelist(ip) {
-            if (!isUserPremiumOrVip) return;
-            try {
-                const res = await fetch('/api/user/ip-whitelist', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ip })
-                });
-                const data = await res.json();
-                if (data.status) {
-                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: data.message });
-                    fetchIpWhitelist();
-                }
-            } catch (err) {
-                Swal.fire({ icon: 'error', title: 'ERROR', text: 'Gagal menghapus IP.' });
-            }
-        }
-
-        // --- LOGIC LOGS PERANGKAT & RIWAYAT LOGIN ---
-        async function fetchDeviceLogs() {
-            const container = document.getElementById('deviceLogsContainer');
-            if (!container) return;
-
-            try {
-                const res = await fetch('/api/user/device-logs', { credentials: 'same-origin' });
-                const resData = await res.json();
-
-                if (resData.status && Array.isArray(resData.data) && resData.data.length > 0) {
-                    container.innerHTML = resData.data.map(log => {
-                        const dateStr = new Date(log.createdAt || Date.now()).toLocaleString('id-ID', {
-                            day: '2-digit', month: 'short', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit', second: '2-digit'
-                        }) + ' WIB';
-
-                        const statusBadge = log.isActive 
-                            ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-600 px-2 py-0.5 rounded text-[9px] font-black code-font">SESI AKTIF</span>`
-                            : `<span class="bg-zinc-200 text-zinc-700 border border-zinc-400 px-2 py-0.5 rounded text-[9px] font-black code-font">EXPIRED</span>`;
-
-                        return `
-                            <div class="light-card-box p-3.5 space-y-2">
-                                <div class="flex items-center justify-between flex-wrap gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-black text-xs uppercase code-font text-zinc-900">${log.deviceType || 'DESKTOP'}</span>
-                                        <span class="bg-amber-100 text-amber-900 border border-zinc-900 text-[9px] font-black px-2 py-0.5 rounded-full">${log.loginMethod || 'local'}</span>
-                                    </div>
-                                    ${statusBadge}
-                                </div>
-                                <div class="text-[11px] font-bold code-font text-zinc-700">
-                                    ${dateStr}
-                                </div>
-                                <div class="text-[11px] font-extrabold code-font text-zinc-900">
-                                    ${log.browser || 'Browser'} • ${log.os || 'OS'} • IP: <span class="text-blue-600">${log.ip || '127.0.0.1'}</span>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">Belum ada riwayat sesi login.</div>`;
-                }
-            } catch (err) {
-                console.error("Gagal memuat log perangkat:", err);
-                container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-red-600">Gagal memuat log perangkat.</div>`;
-            }
-        }
-
-        async function clearDeviceLogs() {
-            Swal.fire({
-                title: 'HAPUS LOG PERANGKAT?',
-                text: 'Seluruh riwayat sesi login akan dibersihkan.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'YA, HAPUS',
-                cancelButtonText: 'BATAL'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await fetch('/api/user/device-logs', { method: 'DELETE' });
-                    fetchDeviceLogs();
-                }
-            });
-        }
-
-        // Deteksi Informasi Klien
+        // Deteksi Informasi Klien (OS, Browser, Screen)
         function detectClientInfo() {
             const osEl = document.getElementById('clientOS');
             const browserEl = document.getElementById('clientBrowser');
@@ -1291,8 +1061,6 @@
             if (navigator.getBattery && batteryEl) {
                 navigator.getBattery().then(b => {
                     batteryEl.innerText = Math.round(b.level * 100) + '%';
-                }).catch(() => {
-                    batteryEl.innerText = '100%';
                 });
             } else if (batteryEl) {
                 batteryEl.innerText = '100%';
@@ -1344,11 +1112,9 @@
 
             fetchUserProfile();
             detectClientInfo();
-            fetchIpWhitelist();
-            fetchDeviceLogs();
         });
 
-        // Cyber Loader Progress Animation
+        // Cyber Loader Overlay Animation Logic
         let currentProgress = 0;
         const progressFill = document.getElementById('loader-progress-fill');
         const percentageText = document.getElementById('loader-percentage');
