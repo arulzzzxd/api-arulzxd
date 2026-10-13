@@ -1167,47 +1167,50 @@
 
         // --- LOGIC LOGS PERANGKAT & RIWAYAT LOGIN ---
         async function fetchDeviceLogs() {
-            const container = document.getElementById('deviceLogsContainer');
-            try {
-                const res = await fetch('/api/user/device-logs');
-                const resData = await res.json();
+    const container = document.getElementById('deviceLogsContainer');
+    if (!container) return;
 
-                if (resData.status && resData.data && resData.data.length > 0) {
-                    container.innerHTML = resData.data.map(log => {
-                        const dateStr = new Date(log.createdAt).toLocaleString('id-ID', {
-                            day: '2-digit', month: 'short', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit', second: '2-digit'
-                        }) + ' WIB';
+    try {
+        const res = await fetch('/api/user/device-logs', { credentials: 'same-origin' });
+        const resData = await res.json();
 
-                        const statusBadge = log.isActive 
-                            ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-600 px-2 py-0.5 rounded text-[9px] font-black code-font">SESI AKTIF</span>`
-                            : `<span class="bg-zinc-200 text-zinc-700 border border-zinc-400 px-2 py-0.5 rounded text-[9px] font-black code-font">EXPIRED</span>`;
+        if (resData.status && Array.isArray(resData.data) && resData.data.length > 0) {
+            container.innerHTML = resData.data.map(log => {
+                const dateStr = new Date(log.createdAt || Date.now()).toLocaleString('id-ID', {
+                    day: '2-digit', month: 'short', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                }) + ' WIB';
 
-                        return `
-                            <div class="light-card-box p-3.5 space-y-2">
-                                <div class="flex items-center justify-between flex-wrap gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-black text-xs uppercase code-font text-zinc-900">${log.deviceType || 'DESKTOP'}</span>
-                                        <span class="bg-amber-100 text-amber-900 border border-zinc-900 text-[9px] font-black px-2 py-0.5 rounded-full">${log.loginMethod || 'Local'}</span>
-                                    </div>
-                                    ${statusBadge}
-                                </div>
-                                <div class="text-[11px] font-bold code-font text-zinc-700">
-                                    ${dateStr}
-                                </div>
-                                <div class="text-[11px] font-extrabold code-font text-zinc-900">
-                                    ${log.browser || 'Browser'} • ${log.os || 'OS'} • IP: <span class="text-blue-600">${log.ip}</span>
-                                </div>
+                const statusBadge = log.isActive 
+                    ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-600 px-2 py-0.5 rounded text-[9px] font-black code-font">SESI AKTIF</span>`
+                    : `<span class="bg-zinc-200 text-zinc-700 border border-zinc-400 px-2 py-0.5 rounded text-[9px] font-black code-font">EXPIRED</span>`;
+
+                return `
+                    <div class="light-card-box p-3.5 space-y-2">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="font-black text-xs uppercase code-font text-zinc-900">${log.deviceType || 'DESKTOP'}</span>
+                                <span class="bg-amber-100 text-amber-900 border border-zinc-900 text-[9px] font-black px-2 py-0.5 rounded-full">${log.loginMethod || 'Local'}</span>
                             </div>
-                        `;
-                    }).join('');
-                } else {
-                    container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">Belum ada riwayat sesi login.</div>`;
-                }
-            } catch (err) {
-                container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-red-600">Gagal memuat log perangkat.</div>`;
-            }
+                            ${statusBadge}
+                        </div>
+                        <div class="text-[11px] font-bold code-font text-zinc-700">
+                            ${dateStr}
+                        </div>
+                        <div class="text-[11px] font-extrabold code-font text-zinc-900">
+                            ${log.browser || 'Browser'} • ${log.os || 'OS'} • IP: <span class="text-blue-600">${log.ip || '127.0.0.1'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-zinc-500">Belum ada riwayat sesi login.</div>`;
         }
+    } catch (err) {
+        console.error("Gagal memuat log perangkat:", err);
+        container.innerHTML = `<div class="light-card-box p-3 text-center text-xs font-bold text-red-600">Gagal memuat log perangkat.</div>`;
+    }
+}
 
         async function clearDeviceLogs() {
             Swal.fire({
@@ -1227,36 +1230,38 @@
 
         // Deteksi Informasi Klien
         function detectClientInfo() {
-            const osEl = document.getElementById('clientOS');
-            const browserEl = document.getElementById('clientBrowser');
-            const resEl = document.getElementById('clientRes');
-            const batteryEl = document.getElementById('clientBattery');
+    const osEl = document.getElementById('clientOS');
+    const browserEl = document.getElementById('clientBrowser');
+    const resEl = document.getElementById('clientRes');
+    const batteryEl = document.getElementById('clientBattery');
 
-            const ua = navigator.userAgent;
-            let os = 'Unknown OS';
-            if (ua.indexOf('Android') !== -1) os = 'Android';
-            else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) os = 'iOS';
-            else if (ua.indexOf('Windows') !== -1) os = 'Windows';
-            else if (ua.indexOf('Mac') !== -1) os = 'macOS';
-            else if (ua.indexOf('Linux') !== -1) os = 'Linux';
-            if (osEl) osEl.innerText = os;
+    const ua = navigator.userAgent;
+    let os = 'Unknown OS';
+    if (ua.indexOf('Android') !== -1) os = 'Android';
+    else if (ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1) os = 'iOS';
+    else if (ua.indexOf('Windows') !== -1) os = 'Windows';
+    else if (ua.indexOf('Mac') !== -1) os = 'macOS';
+    else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+    if (osEl) osEl.innerText = os;
 
-            let browser = 'Chrome';
-            if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
-            else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
-            else if (ua.indexOf('Edg') !== -1) browser = 'Edge';
-            if (browserEl) browserEl.innerText = browser;
+    let browser = 'Chrome';
+    if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+    else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+    else if (ua.indexOf('Edg') !== -1) browser = 'Edge';
+    if (browserEl) browserEl.innerText = browser;
 
-            if (resEl) resEl.innerText = `${window.screen.width}x${window.screen.height}`;
+    if (resEl) resEl.innerText = `${window.screen.width}x${window.screen.height}`;
 
-            if (navigator.getBattery && batteryEl) {
-                navigator.getBattery().then(b => {
-                    batteryEl.innerText = Math.round(b.level * 100) + '%';
-                });
-            } else if (batteryEl) {
-                batteryEl.innerText = '100%';
-            }
-        }
+    if (navigator.getBattery && batteryEl) {
+        navigator.getBattery().then(b => {
+            batteryEl.innerText = Math.round(b.level * 100) + '%';
+        }).catch(() => {
+            batteryEl.innerText = '100%';
+        });
+    } else if (batteryEl) {
+        batteryEl.innerText = '100%';
+    }
+}
 
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
