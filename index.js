@@ -159,9 +159,11 @@ function parseUserAgent(uaString = '') {
     return { os, browser, deviceType };
 }
 
-async function createDeviceLog(userId, req, loginMethod = 'Local Email') {
+async function createDeviceLog(userId, req, loginMethod = 'local') {
     try {
-        const clientIp = (req.headers['x-forwarded-for'] || req.ip || '127.0.0.1').split(',')[0].trim();
+        // Ambil IP publik dari header proxy Vercel
+        const rawIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.ip || '127.0.0.1';
+        const clientIp = rawIp.split(',')[0].trim();
         const ua = parseUserAgent(req.headers['user-agent'] || '');
 
         // Nonaktifkan status aktif log lama
@@ -638,7 +640,7 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
-                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
+                await createDeviceLog(user._id, req, 'local');
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
 
@@ -730,6 +732,7 @@ app.post('/auth/register', async (req, res) => {
 
         req.logIn(newUser, (err) => {
             if (err) return res.redirect('/login');
+            await createDeviceLog(newUser._id, req, 'local');
             return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
         });
     } catch (error) {
@@ -801,6 +804,7 @@ app.get('/auth/github/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+        await createDeviceLog(dbUser._id, req, 'github');
         res.redirect('/profile');
     } catch (error) {
         console.error(error);
@@ -863,6 +867,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+        await createDeviceLog(dbUser._id, req, 'google');
         res.redirect('/profile');
     } catch (error) {
         console.error('Google Auth Callback Error:', error.response?.data || error.message);
