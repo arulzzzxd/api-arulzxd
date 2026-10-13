@@ -65,7 +65,7 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
 
 // Mongoose Schemas
-const userSchema = new mongoose.Schema({
+userSchema = new mongoose.Schema({
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String, default: null },
@@ -78,7 +78,8 @@ const userSchema = new mongoose.Schema({
     roleExpiresAt: { type: Date, default: null },
     limit: { type: Number, default: 0 },
     lastLimitReset: { type: Date, default: Date.now },
-    avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png' }, 
+    avatar: { type: String, default: 'https://cdn.arulzzxd.my.id/files/1wh5do.png' }, 
+    ipWhitelist: [{ type: String, trim: true }], // <-- IP Whitelist khusus per user
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -104,6 +105,21 @@ userSchema.pre('save', function() {
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+// Model Log Perangkat Login
+const deviceLogSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userEmail: { type: String, required: true, index: true, lowercase: true, trim: true },
+    deviceType: { type: String, default: 'DESKTOP' },
+    loginMethod: { type: String, default: 'local' },
+    browser: { type: String, default: 'Chrome' },
+    os: { type: String, default: 'Linux' },
+    ip: { type: String, required: true },
+    isActive: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const DeviceLog = mongoose.models.DeviceLog || mongoose.model('DeviceLog', deviceLogSchema);
 
 const reviewSchema = new mongoose.Schema({
     productId: { type: String, required: true, index: true },
@@ -236,6 +252,29 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
+async function checkAuthSession(req, res, next) {
+    // Tambahkan optional chaining (?.) untuk mencegah Unhandled Rejection
+    const token = req.cookies?.auth_session;
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const freshUser = await User.findById(decoded.id || decoded._id).lean();
+        if (freshUser) {
+            req.user = { ...freshUser, id: freshUser._id };
+        } else {
+            req.user = null;
+        }
+        next();
+    } catch (err) {
+        if (res.clearCookie) res.clearCookie('auth_session');
+        req.user = null;
+        next();
+    }
+}
+
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
     const userAgent = req.headers['user-agent'] || '';
@@ -264,30 +303,6 @@ app.use((req, res, next) => {
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Middleware Cek Auth Session
-const checkAuthSession = async (req, res, next) => {
-    const token = req.cookies.auth_session;
-    if (!token) {
-        req.user = null;
-        return next();
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const freshUser = await User.findById(decoded.id || decoded._id).lean();
-        if (freshUser) {
-            req.user = { ...freshUser, id: freshUser._id };
-        } else {
-            req.user = null;
-        }
-        next();
-    } catch (err) {
-        res.clearCookie('auth_session');
-        req.user = null;
-        next();
-    }
-};
-
 app.use(checkAuthSession);
 
 // ====================================================
@@ -445,6 +460,204 @@ function sendSweetAlert(res, icon, title, text, redirectUrl) {
     `);
 }
 
+// Helper deteksi IP publik asli pengguna (Mendukung Cloudflare, Vercel, & Proxy)
+function getRealClientIp(req) {
+    const cfIp = req.headers['cf-connecting-ip'];
+    const xForwardedFor = req.headers['x-forwarded-for'];
+    const xRealIp = req.headers['x-real-ip'];
+
+    if (cfIp) return cfIp.trim();
+    if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
+    if (xRealIp) return xRealIp.trim();
+    return (req.socket?.remoteAddress || req.ip || '127.0.0.1').replace(/^.*:/, '');
+}
+
+function parseUserAgent(uaString = '') {
+    let os = 'Unknown OS';
+    if (uaString.includes('Android')) os = 'Android';
+    else if (uaString.includes('iPhone') || uaString.includes('iPad')) os = 'iOS';
+    else if (uaString.includes('Windows')) os = 'Windows';
+    else if (uaString.includes('Macintosh')) os = 'macOS';
+    else if (uaString.includes('Linux')) os = 'Linux';
+
+    let browser = 'Chrome';
+    if (uaString.includes('Firefox')) browser = 'Firefox';
+    else if (uaString.includes('Safari') && !uaString.includes('Chrome')) browser = 'Safari';
+    else if (uaString.includes('Edg')) browser = 'Edge';
+
+    const deviceType = (os === 'Android' || os === 'iOS') ? 'MOBILE' : 'DESKTOP';
+    return { os, browser, deviceType };
+}
+
+async function createDeviceLog(user, req, loginMethod = 'local') {
+    try {
+        if (!user || (!user._id && !user.id)) return;
+        const userId = new mongoose.Types.ObjectId(user._id || user.id);
+        const userEmail = (user.email || '').toLowerCase().trim();
+        const clientIp = getRealClientIp(req);
+        const ua = parseUserAgent(req.headers['user-agent'] || '');
+
+        // Update log yang ada berdasarkan userEmail.
+        // Jika belum ada, buat baru (upsert: true).
+        await DeviceLog.findOneAndUpdate(
+            { userEmail },
+            {
+                $set: {
+                    userId,
+                    userEmail,
+                    deviceType: ua.deviceType,
+                    loginMethod,
+                    browser: ua.browser,
+                    os: ua.os,
+                    ip: clientIp,
+                    isActive: true,
+                    createdAt: new Date()
+                }
+            },
+            { upsert: true, new: true }
+        );
+    } catch (e) {
+        console.error("Gagal mencatat log perangkat:", e.message);
+    }
+}
+
+// --- ENDPOINT MANAJEMEN IP WHITELIST ---
+app.get('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const user = await User.findById(userId).select('ipWhitelist email role');
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan" });
+
+        const role = (user.role || '').toLowerCase();
+        const isPremiumOrVip = role.includes('premium') || role.includes('vip');
+        const clientIp = getRealClientIp(req);
+
+        return res.json({ 
+            status: true, 
+            email: user.email,
+            isAllowed: isPremiumOrVip,
+            currentIp: clientIp, 
+            whitelist: user.ipWhitelist || [], 
+            max: 5 
+        });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal memuat IP Whitelist." });
+    }
+});
+
+// --- ADD IP WHITELIST ---
+app.post('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        
+        const role = (req.user.role || '').toLowerCase();
+        if (!role.includes('premium') && !role.includes('vip')) {
+            return res.status(403).json({ 
+                status: false, 
+                message: "Akses Ditolak! Fitur IP Whitelist System hanya untuk pengguna Premium atau VIP." 
+            });
+        }
+
+        const { ip } = req.body;
+        if (!ip || !ip.trim()) return res.status(400).json({ status: false, message: "IP tidak boleh kosong!" });
+
+        const cleanIp = ip.trim();
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan" });
+
+        if (user.ipWhitelist.length >= 5) {
+            return res.status(400).json({ status: false, message: "Batas maksimal 5 IP whitelist telah tercapai!" });
+        }
+
+        if (user.ipWhitelist.includes(cleanIp)) {
+            return res.status(400).json({ status: false, message: "IP ini sudah terdaftar di akun Anda!" });
+        }
+
+        user.ipWhitelist.push(cleanIp);
+        await user.save();
+
+        if (typeof apiKeyUserCache !== 'undefined') {
+            apiKeyUserCache.delete(user.apikey);
+        }
+
+        return res.json({ status: true, message: `IP ${cleanIp} berhasil ditambahkan!`, whitelist: user.ipWhitelist });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menyimpan IP." });
+    }
+});
+
+// --- DELETE IP WHITELIST ---
+app.delete('/api/user/ip-whitelist', checkAuthSession, async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+        
+        const role = (req.user.role || '').toLowerCase();
+        if (!role.includes('premium') && !role.includes('vip')) {
+            return res.status(403).json({ 
+                status: false, 
+                message: "Akses Ditolak! Fitur IP Whitelist System hanya untuk pengguna Premium atau VIP." 
+            });
+        }
+
+        const { ip } = req.body;
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ status: false, message: "User tidak ditemukan" });
+
+        user.ipWhitelist = user.ipWhitelist.filter(i => i !== ip);
+        await user.save();
+
+        if (typeof apiKeyUserCache !== 'undefined') {
+            apiKeyUserCache.delete(user.apikey);
+        }
+
+        return res.json({ status: true, message: "IP berhasil dihapus!", whitelist: user.ipWhitelist });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menghapus IP." });
+    }
+});
+
+// --- GET DEVICE LOGS ---
+app.get('/api/user/device-logs', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const userEmail = (req.user.email || '').toLowerCase().trim();
+
+        // Kunci query HANYA untuk userId & userEmail milik pengguna yang sedang login
+        let logs = await DeviceLog.find({ userId, userEmail }).sort({ createdAt: -1 }).limit(10).lean();
+
+        if (!logs || logs.length === 0) {
+            await createDeviceLog(req.user, req, req.user.provider || 'local');
+            logs = await DeviceLog.find({ userId, userEmail }).sort({ createdAt: -1 }).limit(10).lean();
+        }
+
+        return res.json({ status: true, userEmail, data: logs });
+    } catch (e) {
+        console.error("Error fetch device logs:", e.message);
+        return res.status(500).json({ status: false, message: "Gagal memuat log perangkat." });
+    }
+});
+
+// --- DELETE DEVICE LOGS ---
+app.delete('/api/user/device-logs', checkAuthSession, async (req, res) => {
+    if (!req.user) return res.status(401).json({ status: false, message: "Belum login" });
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id || req.user.id);
+        const userEmail = (req.user.email || '').toLowerCase().trim();
+
+        // Hapus HANYA log milik user ini
+        await DeviceLog.deleteMany({ userId, userEmail });
+        return res.json({ status: true, message: "Histori log perangkat Anda berhasil dibersihkan!" });
+    } catch (e) {
+        return res.status(500).json({ status: false, message: "Gagal menghapus log." });
+    }
+});
+
 // ====================================================
 // 5. PASSPORT STRATEGY & OAUTH AUTHENTICATION
 // ====================================================
@@ -501,7 +714,7 @@ app.post('/auth/login', (req, res, next) => {
             if (err) return next(err);
 
             try {
-                // Pastikan apikey sesuai dengan format role milik dokumen Mongo
+                await createDeviceLog(user._id, req, 'local');
                 let needSave = false;
                 const roleLower = (user.role || '').toLowerCase();
 
@@ -591,10 +804,12 @@ app.post('/auth/register', async (req, res) => {
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
 
-        req.logIn(newUser, (err) => {
-            if (err) return res.redirect('/login');
-            return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
-        });
+        req.logIn(newUser, async (err) => {
+          if (err) return res.redirect('/login');
+          await createDeviceLog(newUser._id, req, 'local');
+          return sendSweetAlert(res, 'success', 'Berhasil!', 'Pendaftaran berhasil! Selamat datang.', '/docs');
+    });
+
     } catch (error) {
         console.error(error);
         res.status(500).send('Terjadi error internal saat pendaftaran.');
@@ -664,6 +879,7 @@ app.get('/auth/github/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+        await createDeviceLog(dbUser._id, req, 'github');
         res.redirect('/profile');
     } catch (error) {
         console.error(error);
@@ -726,6 +942,7 @@ app.get('/auth/google/callback', async (req, res) => {
         }, JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('auth_session', token, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, sameSite: 'lax' });
+        await createDeviceLog(dbUser._id, req, 'google');
         res.redirect('/profile');
     } catch (error) {
         console.error('Google Auth Callback Error:', error.response?.data || error.message);
@@ -1045,8 +1262,17 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
             return res.status(400).json({ status: false, message: 'API Key tersebut sudah digunakan oleh user lain!' });
         }
 
+        // 1. Simpan key lama sebelum di-update
+        const oldKey = user.apikey;
+
         user.apikey = cleanKey;
         await user.save();
+
+        // 2. Hapus cache key lama & key baru
+        if (typeof apiKeyUserCache !== 'undefined') {
+            if (oldKey) apiKeyUserCache.delete(oldKey);
+            apiKeyUserCache.delete(cleanKey);
+        }
 
         const token = jwt.sign({
             id: user._id, username: user.username, email: user.email, name: user.username, avatar: user.avatar, role: user.role, apikey: user.apikey
@@ -1059,6 +1285,7 @@ app.post('/api/user/custom-apikey', checkAuthSession, async (req, res) => {
         return res.status(500).json({ status: false, message: 'Terjadi kesalahan server saat memperbarui API Key.' });
     }
 });
+
 
 // Endpoint Pembaruan Profil (Nama & Email)
 app.post('/api/user/update-profile', checkAuthSession, async (req, res) => {
@@ -1950,6 +2177,18 @@ const validateApiKey = async (req, res, next) => {
         return res.status(403).json({ status: false, creator: "Arulz-XD", message: "API Key salah atau tidak terdaftar!" });
     }
 
+    // --- PROTEKSI FITUR IP WHITELIST ---
+    if (callerUser.ipWhitelist && callerUser.ipWhitelist.length > 0) {
+        const clientIp = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
+        if (!callerUser.ipWhitelist.includes(clientIp)) {
+            return res.status(403).json({
+                status: false,
+                creator: "Arulz-XD",
+                message: `Akses Ditolak! IP Anda (${clientIp}) belum terdaftar di IP Whitelist akun ini.`
+            });
+        }
+    }
+
     req.user = callerUser;
     req.activeApiKey = userKey;
 
@@ -2161,6 +2400,7 @@ app.get('/api/user-limit', checkAuthSession, async (req, res) => {
     }
 });
 
+// Endpoint Ambil Riwayat Request Pengguna
 app.get('/api/user-activity', async (req, res) => {
     try {
         let userId = req.user ? (req.user._id || req.user.id) : null;
@@ -2172,23 +2412,80 @@ app.get('/api/user-activity', async (req, res) => {
             }
         }
 
-        if (!userId) return res.json({ status: true, data: [] });
+        if (!userId) return res.json({ status: true, data: [], logs: [] });
 
         const userLogDoc = await ApiLog.findOne({ userId }).lean();
-        if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) return res.json({ status: true, data: [] });
+        if (!userLogDoc || !userLogDoc.log || userLogDoc.log.length === 0) {
+            return res.json({ status: true, data: [], logs: [] });
+        }
 
-        const formattedLogs = userLogDoc.log
+        const filteredLogs = userLogDoc.log
              .filter(item => item.endpoint !== '/api/apilist')
-             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-             .map(item => {
-                 const timeStr = new Date(item.createdAt || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
-                 const statusStr = item.status_code >= 200 && item.status_code < 300 ? 'OK' : 'ERR';
-                 return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
-             });
+             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        return res.json({ status: true, data: formattedLogs });
+        const formattedLogs = filteredLogs.map(item => {
+            const timeStr = new Date(item.createdAt || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
+            const statusStr = item.status_code >= 200 && item.status_code < 300 ? 'OK' : 'ERR';
+            return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
+        });
+
+        // Format terstruktur lengkap dengan tanggal, bulan, tahun, dan jam (WIB)
+        const structuredLogs = filteredLogs.map(item => {
+            const dateObj = new Date(item.createdAt || Date.now());
+            const dateStr = dateObj.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                timeZone: 'Asia/Jakarta'
+            });
+            const timeStr = dateObj.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Jakarta'
+            });
+
+            return {
+                method: item.method || 'GET',
+                endpoint: item.endpoint,
+                status_code: item.status_code || 200,
+                date: dateStr,
+                time: timeStr,
+                fullDate: `${dateStr}, ${timeStr}`
+            };
+        });
+
+        return res.json({ status: true, data: formattedLogs, logs: structuredLogs });
     } catch (err) {
-        return res.status(500).json({ status: false, data: [] });
+        return res.status(500).json({ status: false, data: [], logs: [] });
+    }
+});
+
+// Endpoint Hapus Riwayat Request Pengguna
+app.delete('/api/user-activity', checkAuthSession, async (req, res) => {
+    try {
+        let userId = req.user ? (req.user._id || req.user.id) : null;
+        if (!userId) {
+            const userKey = req.query?.apikey || req.headers['x-api-key'];
+            if (userKey) {
+                const foundUser = await User.findOne({ apikey: userKey.trim() }).lean();
+                if (foundUser) userId = foundUser._id;
+            }
+        }
+
+        if (!userId) {
+            return res.status(401).json({ status: false, message: "Anda belum login!" });
+        }
+
+        await ApiLog.findOneAndUpdate(
+            { userId },
+            { $set: { log: [] } }
+        );
+
+        return res.json({ status: true, message: "Riwayat request berhasil dihapus!" });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "Gagal menghapus riwayat request." });
     }
 });
 
