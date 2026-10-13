@@ -1,5 +1,3 @@
-# 🚀 ArulzXD REST API Gateway - Complete Developer & System Documentation
-
 <div align="center">
 
 <img src="https://readme-typing-svg.demolab.com?font=Plus+Jakarta+Sans&weight=800&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=600&lines=Welcome+To+ArulzXD+API;Fast+%F0%9F%9A%80+Reliable+%E2%9A%A1;Official+Developer+REST+Gateway;Powered+by+Node.js+%26+Express" alt="Typing SVG" />
