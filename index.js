@@ -239,27 +239,63 @@ app.use(session({
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
+    // 1. Abaikan middleware ini jika request menuju ke endpoint gambar OG Image
+    if (req.path.startsWith('/api/og')) {
+        return next();
+    }
+
     const userAgent = req.headers['user-agent'] || '';
-    if (userAgent.includes('facebookexternalhit') || userAgent.includes('WhatsApp')) {
+    const isMetaCrawler = userAgent.includes('facebookexternalhit') || userAgent.includes('WhatsApp');
+
+    if (isMetaCrawler) {
+        // Tentukan key halaman berdasarkan path URL (misal: /pastecode -> pastecode)
+        const pathKey = req.path.replace(/^\//, '').toLowerCase() || 'home';
+        const baseConfig = PAGE_CONFIGS[pathKey] || PAGE_CONFIGS.home;
+
+        // Ambil meta data dinamis dari query URL jika ada override
+        const title = req.query.title || baseConfig.title;
+        const desc = req.query.desc || baseConfig.desc;
+        const pageKey = PAGE_CONFIGS[pathKey] ? pathKey : 'home';
+        
+        // URL OG Image dinamis sesuai halaman
+        const ogImageUrl = `https://api.arulzzxd.my.id/api/og?page=${pageKey}`;
+        const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
+
         return res.send(`
             <!DOCTYPE html>
             <html lang="id">
             <head>
                 <meta charset="UTF-8">
-                <title>ArulzXD API - Core REST Gateway</title>
-                <meta property="og:title" content="ArulzXD API - Core REST Gateway" />
-                <meta property="og:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
-                <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/1wh5do.png" />
-                <meta property="og:url" content="https://api.arulzzxd.my.id/" />
+                <title>${title}</title>
+                <meta name="title" content="${title}" />
+                <meta name="description" content="${desc}" />
+
+                <!-- Open Graph / Facebook / WhatsApp -->
                 <meta property="og:type" content="website" />
+                <meta property="og:url" content="${fullUrl}" />
+                <meta property="og:title" content="${title}" />
+                <meta property="og:description" content="${desc}" />
+                <meta property="og:image" content="${ogImageUrl}" />
+                <meta property="og:image:secure_url" content="${ogImageUrl}" />
+                <meta property="og:image:type" content="image/png" />
+                <meta property="og:image:width" content="600" />
+                <meta property="og:image:height" content="600" />
+
+                <!-- Twitter Card -->
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:url" content="${fullUrl}" />
+                <meta name="twitter:title" content="${title}" />
+                <meta name="twitter:description" content="${desc}" />
+                <meta name="twitter:image" content="${ogImageUrl}" />
             </head>
             <body>
-                <h1>ArulzXD REST API Service</h1>
-                <p>Official developer REST API documentation and integration gateway.</p>
+                <h1>${title}</h1>
+                <p>${desc}</p>
             </body>
             </html>
         `);
     }
+
     next();
 });
 
@@ -2260,115 +2296,128 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        const width = 1200;
-        const height = 630;
+        // Resolusi 600x600 (Rasio 1:1) khusus tampilan thumbnail kecil di WhatsApp & FB
+        const width = 600;
+        const height = 600;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Krem (#FAF7EF)
+        // 1. Background Krem
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
         // 2. Pattern Radial Grid Dot
         ctx.fillStyle = 'rgba(18, 18, 18, 0.12)';
-        const dotSize = 2;
-        const dotGap = 20;
-        for (let x = 0; x < width; x += dotGap) {
-            for (let y = 0; y < height; y += dotGap) {
+        for (let x = 0; x < width; x += 20) {
+            for (let y = 0; y < height; y += 20) {
                 ctx.beginPath();
-                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
         // 3. Shadow Kartu Utama
         ctx.fillStyle = '#121212';
-        ctx.roundRect(88, 88, 1040, 474, 28);
+        ctx.roundRect(48, 48, 504, 504, 24);
         ctx.fill();
 
-        // 4. Kartu Utama Putih (#FFFDF8)
+        // 4. Kartu Utama Putih
         ctx.fillStyle = '#FFFDF8';
         ctx.lineWidth = 4;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(80, 80, 1040, 474, 28);
+        ctx.roundRect(40, 40, 504, 504, 24);
         ctx.fill();
         ctx.stroke();
 
-        // 5. Logo Arulz-XD API
+        // 5. Logo
         try {
             const logo = await loadImage('https://cdn.arulzzxd.my.id/files/1wh5do.png');
             ctx.fillStyle = '#121212';
             ctx.beginPath();
-            ctx.arc(170, 170, 45, 0, Math.PI * 2);
+            ctx.arc(105, 105, 35, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.save();
             ctx.beginPath();
-            ctx.arc(170, 170, 42, 0, Math.PI * 2);
+            ctx.arc(105, 105, 32, 0, Math.PI * 2);
             ctx.clip();
-            ctx.drawImage(logo, 128, 128, 84, 84);
+            ctx.drawImage(logo, 73, 73, 64, 64);
             ctx.restore();
 
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2.5;
             ctx.strokeStyle = '#121212';
             ctx.beginPath();
-            ctx.arc(170, 170, 42, 0, Math.PI * 2);
+            ctx.arc(105, 105, 32, 0, Math.PI * 2);
             ctx.stroke();
         } catch (e) {
             console.error('Failed to load logo image:', e.message);
         }
 
-        // 6. Badge Kategori (Font Fallback Aman: sans-serif)
+        // 6. Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(240, 140, 280, 38, 10);
+        ctx.roundRect(160, 88, 220, 34, 8);
         ctx.fill();
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = '#121212';
         ctx.stroke();
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(`⚡ ${config.badge}`, 254, 164);
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`⚡ ${config.badge}`, 172, 110);
 
-        // 7. Judul Halaman (Font Fallback Aman: sans-serif)
+        // 7. Judul Halaman
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillText(config.title, 130, 270);
-
-        // 8. Deskripsi Halaman (Auto Word Wrap)
-        ctx.fillStyle = '#3f3f46';
-        ctx.font = '22px sans-serif';
-        const words = config.desc.split(' ');
-        let line = '';
-        let y = 330;
-        const maxWidth = 940;
-        const lineHeight = 34;
-
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && n > 0) {
-                ctx.fillText(line, 130, y);
-                line = words[n] + ' ';
-                y += lineHeight;
+        ctx.font = 'bold 26px sans-serif';
+        
+        // Wrap Judul jika terlalu panjang
+        const titleWords = config.title.split(' ');
+        let titleLine = '';
+        let titleY = 190;
+        for (let n = 0; n < titleWords.length; n++) {
+            const testLine = titleLine + titleWords[n] + ' ';
+            if (ctx.measureText(testLine).width > 440 && n > 0) {
+                ctx.fillText(titleLine, 70, titleY);
+                titleLine = titleWords[n] + ' ';
+                titleY += 32;
             } else {
-                line = testLine;
+                titleLine = testLine;
             }
         }
-        ctx.fillText(line, 130, y);
+        ctx.fillText(titleLine, 70, titleY);
 
-        // 9. Footer Branding (Font Fallback Aman: monospace)
+        // 8. Deskripsi Halaman
+        ctx.fillStyle = '#3f3f46';
+        ctx.font = '16px sans-serif';
+        const descWords = config.desc.split(' ');
+        let descLine = '';
+        let descY = titleY + 40;
+        const maxDescWidth = 440;
+
+        for (let n = 0; n < descWords.length; n++) {
+            const testLine = descLine + descWords[n] + ' ';
+            if (ctx.measureText(testLine).width > maxDescWidth && n > 0) {
+                ctx.fillText(descLine, 70, descY);
+                descLine = descWords[n] + ' ';
+                descY += 24;
+            } else {
+                descLine = testLine;
+            }
+        }
+        ctx.fillText(descLine, 70, descY);
+
+        // 9. Footer Branding
         ctx.fillStyle = '#71717a';
-        ctx.font = 'bold 16px monospace';
-        ctx.fillText('© 2026 ARULZ-XD API · https://api.arulzzxd.my.id', 130, 500);
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText('© 2026 ARULZ-XD API', 70, 500);
 
-        // Output Gambar PNG
+        // Output PNG
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Length', buffer.length);
         res.setHeader('Cache-Control', 'public, max-age=86400');
-        res.send(buffer);
+        res.status(200).send(buffer);
 
     } catch (error) {
         console.error('Error generating OG Image:', error);
