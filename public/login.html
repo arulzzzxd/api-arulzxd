@@ -22,7 +22,7 @@
     <meta name="twitter:title" content="ArulzXD API - Portal Autentikasi" />
     <meta name="twitter:description" content="Masuk atau buat akun baru untuk mengakses kredensial API Key, kuota limit, dan fitur premium." />
     <meta name="twitter:image" content="https://api.arulzzxd.my.id/og/login" />
-
+    
     <title>Login & Authentication - Arulz-XD API</title>
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/1wh5do.png" type="image/png">
     
@@ -329,7 +329,7 @@
         </div>
     </div>
 
-    <!-- Header Top Bar (Fixed Solid Krem z-30) -->
+    <!-- Header Top Bar -->
     <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -401,10 +401,10 @@
         </div>
     </header>
 
-    <!-- Overlay Latar Belakang (z-40) -->
+    <!-- Overlay Latar Belakang -->
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
-    <!-- Sidebar Dropdown Nav (z-50) -->
+    <!-- Sidebar Dropdown Nav -->
     <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         
         <!-- Header Dropdown -->
@@ -428,7 +428,7 @@
             </video>
         </div>
 
-        <!-- Auth / Profile Status Container -->
+        <!-- Auth Status Container -->
         <div id="sidebarAuthBtnContainer" class="mb-3">
             <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
                 <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
@@ -518,7 +518,7 @@
             </div>
 
             <!-- Tab Switcher (LOGIN / REGISTER) -->
-            <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="grid grid-cols-2 gap-2 mb-5">
                 <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')" class="auth-tab-btn active w-full">
                     <i class="fa-solid fa-right-to-bracket mr-1.5"></i> MASUK
                 </button>
@@ -527,18 +527,25 @@
                 </button>
             </div>
 
-            <!-- Alert Message Box -->
-            <div id="authAlert" class="hidden p-3 rounded-xl border-2 brutal-border text-xs font-bold mb-5 leading-snug"></div>
+            <!-- Global Agreement Checkbox (Syarat & Kebijakan Privasi) -->
+            <div class="mb-5 p-3 bg-[#FAF7EF] border-2 brutal-border rounded-xl">
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input type="checkbox" id="termsAgree" class="mt-0.5 w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0 cursor-pointer shrink-0">
+                    <span class="text-[11px] font-bold text-zinc-800 leading-snug">
+                        Saya menyetujui <a href="/privacy" target="_blank" class="theme-text-accent underline font-extrabold hover:opacity-80">Syarat & Kebijakan Privasi</a> layanan.
+                    </span>
+                </label>
+            </div>
 
-            <!-- FORM LOGIN -->
-            <form id="loginForm" class="space-y-4">
+            <!-- FORM LOGIN (Menggunakan POST /auth/login) -->
+            <form id="loginForm" action="/auth/login" method="POST" class="space-y-4">
                 <div>
                     <label for="loginUsername" class="block text-[11px] font-black code-font uppercase text-zinc-900 mb-1.5">USERNAME / EMAIL</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-900">
                             <i class="fa-solid fa-user"></i>
                         </span>
-                        <input type="text" id="loginUsername" required
+                        <input type="text" id="loginUsername" name="username" required
                             class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="username / email">
                     </div>
@@ -550,7 +557,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-900">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" id="loginPassword" required
+                        <input type="password" id="loginPassword" name="password" required
                             class="theme-input w-full pl-10 pr-10 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-900">
@@ -561,10 +568,10 @@
 
                 <div class="flex items-center justify-between text-xs font-bold">
                     <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0">
+                        <input type="checkbox" id="rememberMe" name="remember" class="w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0">
                         <span class="text-zinc-700">Ingat Saya</span>
                     </label>
-                    <a href="/reset-password" class="theme-text-accent hover:underline text-[11px]">Lupa Password?</a>
+                    <button type="button" onclick="openForgotModal()" class="theme-text-accent hover:underline text-[11px] bg-transparent border-none cursor-pointer">Lupa Password?</button>
                 </div>
 
                 <button type="submit" id="loginSubmitBtn" class="btn-brutalism-light theme-bg-accent w-full py-3.5 mt-2">
@@ -572,15 +579,15 @@
                 </button>
             </form>
 
-            <!-- FORM REGISTER -->
-            <form id="registerForm" class="space-y-4 hidden">
+            <!-- FORM REGISTER (Menggunakan POST /auth/register) -->
+            <form id="registerForm" action="/auth/register" method="POST" class="space-y-4 hidden">
                 <div>
                     <label for="regUsername" class="block text-[11px] font-black code-font uppercase text-zinc-900 mb-1.5">USERNAME BARU</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-900">
                             <i class="fa-solid fa-user"></i>
                         </span>
-                        <input type="text" id="regUsername" required
+                        <input type="text" id="regUsername" name="username" required
                             class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="username">
                     </div>
@@ -592,7 +599,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-900">
                             <i class="fa-solid fa-envelope"></i>
                         </span>
-                        <input type="email" id="regEmail" required
+                        <input type="email" id="regEmail" name="email" required
                             class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="nama@email.com">
                     </div>
@@ -604,7 +611,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-900">
                             <i class="fa-solid fa-lock"></i>
                         </span>
-                        <input type="password" id="regPassword" required
+                        <input type="password" id="regPassword" name="password" required
                             class="theme-input w-full pl-10 pr-10 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="Minimal 6 Karakter">
                         <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-900">
@@ -618,23 +625,49 @@
                 </button>
             </form>
 
-            <!-- Social / Quick Access -->
+            <!-- Social OAuth (Google & Authentic GitHub Mark SVG) -->
             <div class="mt-6 pt-5 border-t-2 border-zinc-200 text-center">
                 <p class="text-[10px] font-black code-font uppercase text-zinc-500 mb-3">ATAU MASUK DENGAN</p>
-                <a href="/api/auth/google" class="btn-brutalism-light w-full text-xs py-2.5 bg-white text-zinc-900">
-                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    <span>GOOGLE ACCOUNT</span>
-                </a>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <a href="/auth/google" class="oauth-link btn-brutalism-light w-full text-xs py-2.5 bg-white text-zinc-900">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>GOOGLE</span>
+                    </a>
+                    <a href="/auth/github" class="oauth-link btn-brutalism-light w-full text-xs py-2.5 bg-zinc-900 text-white">
+                        <svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                        <span>GITHUB</span>
+                    </a>
+                </div>
             </div>
 
         </div>
 
     </main>
+
+    <!-- Modal Lupa Password -->
+    <div id="forgotModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="light-card p-6 w-full max-w-sm relative">
+            <button type="button" onclick="closeForgotModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-900 font-black text-sm">✕</button>
+            <h3 class="text-lg font-black text-zinc-900 mb-1">Lupa Password</h3>
+            <p class="text-xs text-zinc-600 font-medium mb-4">Masukkan email Anda untuk menerima link reset password.</p>
+            <form action="/auth/forgot-password" method="POST" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-black code-font text-zinc-900 mb-1">EMAIL TERDAFTAR</label>
+                    <input type="email" name="email" required placeholder="nama@email.com" class="theme-input w-full px-3.5 py-2.5 bg-white border-2 brutal-border rounded-xl text-xs font-bold text-zinc-900">
+                </div>
+                <button type="submit" class="btn-brutalism-light theme-bg-accent w-full py-2.5 text-xs mt-2">
+                    <i class="fa-solid fa-paper-plane mr-1"></i> KIRIM LINK RESET
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer Halaman -->
     <footer class="w-full max-w-3xl mx-auto px-4 py-6 border-t-2 border-zinc-300 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest relative z-10">
@@ -643,7 +676,6 @@
 
     <!-- JavaScript Handling -->
     <script>
-        // Konfigurasi Tema Style Warna
         const THEME_PRESETS = {
             yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
             red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
@@ -692,9 +724,6 @@
             const registerForm = document.getElementById('registerForm');
             const tabLoginBtn = document.getElementById('tabLoginBtn');
             const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-            const alertBox = document.getElementById('authAlert');
-
-            if (alertBox) alertBox.classList.add('hidden');
 
             if (type === 'login') {
                 loginForm.classList.remove('hidden');
@@ -707,6 +736,15 @@
                 tabLoginBtn.classList.remove('active');
                 tabRegisterBtn.classList.add('active');
             }
+        }
+
+        // Modal Lupa Password
+        function openForgotModal() {
+            document.getElementById('forgotModal').classList.remove('hidden');
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.add('hidden');
         }
 
         // Toggle Password Visibility
@@ -722,25 +760,19 @@
             }
         }
 
-        // Tampilkan Alert Notifikasi
-        function showAlert(msg, isSuccess = false) {
-            const alertBox = document.getElementById('authAlert');
-            if (!alertBox) return;
-            alertBox.classList.remove('hidden', 'bg-red-100', 'bg-emerald-100', 'text-red-900', 'text-emerald-900', 'border-red-500', 'border-emerald-500');
-            if (isSuccess) {
-                alertBox.classList.add('bg-emerald-100', 'text-emerald-900', 'border-emerald-500');
-            } else {
-                alertBox.classList.add('bg-red-100', 'text-red-900', 'border-red-500');
+        // Memvalidasi Persetujuan Syarat & Kebijakan
+        function validateTerms(e) {
+            const termsAgree = document.getElementById('termsAgree');
+            if (!termsAgree || !termsAgree.checked) {
+                e.preventDefault();
+                alert('Anda harus menyetujui Syarat & Kebijakan Privasi terlebih dahulu!');
+                return false;
             }
-            alertBox.innerHTML = msg;
+            return true;
         }
 
-        // Memblokir Pinch Zoom & Gesture Zoom
+        // Memblokir Gesture Zoom
         document.addEventListener('gesturestart', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
-        });
-        document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
         // Event Handlers
         document.addEventListener('DOMContentLoaded', () => {
@@ -795,82 +827,14 @@
                 bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
             }
 
+            // Pasang event listener persetujuan ke form dan tombol OAuth (Google & GitHub)
+            document.getElementById('loginForm').addEventListener('submit', validateTerms);
+            document.getElementById('registerForm').addEventListener('submit', validateTerms);
+            document.querySelectorAll('.oauth-link').forEach(link => {
+                link.addEventListener('click', validateTerms);
+            });
+
             playBannerVideo();
-
-            // Submit Login Form
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const btn = document.getElementById('loginSubmitBtn');
-                    const username = document.getElementById('loginUsername').value;
-                    const password = document.getElementById('loginPassword').value;
-
-                    btn.disabled = true;
-                    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> MEMPROSES...`;
-
-                    fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status || data.success) {
-                            showAlert('Login berhasil! Mengalihkan ke dashboard...', true);
-                            setTimeout(() => { window.location.href = data.redirect || '/'; }, 1000);
-                        } else {
-                            showAlert(data.message || 'Username atau password salah.');
-                            btn.disabled = false;
-                            btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> MASUK KE AKUN`;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error:', err);
-                        showAlert('Terjadi kesalahan jaringan.');
-                        btn.disabled = false;
-                        btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> MASUK KE AKUN`;
-                    });
-                });
-            }
-
-            // Submit Register Form
-            const registerForm = document.getElementById('registerForm');
-            if (registerForm) {
-                registerForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const btn = document.getElementById('regSubmitBtn');
-                    const username = document.getElementById('regUsername').value;
-                    const email = document.getElementById('regEmail').value;
-                    const password = document.getElementById('regPassword').value;
-
-                    btn.disabled = true;
-                    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> MENDAFTAR...`;
-
-                    fetch('/api/auth/register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, email, password })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status || data.success) {
-                            showAlert('Registrasi berhasil! Silakan login.', true);
-                            switchAuthTab('login');
-                        } else {
-                            showAlert(data.message || 'Gagal mendaftar.');
-                        }
-                        btn.disabled = false;
-                        btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> BUAT AKUN BARU`;
-                    })
-                    .catch(err => {
-                        console.error('Error:', err);
-                        showAlert('Terjadi kesalahan sistem.');
-                        btn.disabled = false;
-                        btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> BUAT AKUN BARU`;
-                    });
-                });
-            }
         });
 
         // Loader Progress
@@ -907,7 +871,7 @@
             if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
                 loaderOverlay.classList.add('fade-out');
             }
-        }, 4000);
+        }, 3000);
     </script>
 </body>
 </html>
