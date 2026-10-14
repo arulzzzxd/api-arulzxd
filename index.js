@@ -239,7 +239,6 @@ app.use(session({
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
-    // 1. Abaikan middleware ini jika request menuju ke endpoint gambar OG Image
     if (req.path.startsWith('/api/og')) {
         return next();
     }
@@ -248,16 +247,13 @@ app.use((req, res, next) => {
     const isMetaCrawler = userAgent.includes('facebookexternalhit') || userAgent.includes('WhatsApp');
 
     if (isMetaCrawler) {
-        // Tentukan key halaman berdasarkan path URL (misal: /pastecode -> pastecode)
         const pathKey = req.path.replace(/^\//, '').toLowerCase() || 'home';
         const baseConfig = PAGE_CONFIGS[pathKey] || PAGE_CONFIGS.home;
 
-        // Ambil meta data dinamis dari query URL jika ada override
         const title = req.query.title || baseConfig.title;
         const desc = req.query.desc || baseConfig.desc;
         const pageKey = PAGE_CONFIGS[pathKey] ? pathKey : 'home';
         
-        // URL OG Image dinamis sesuai halaman
         const ogImageUrl = `https://api.arulzzxd.my.id/api/og?page=${pageKey}`;
         const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
 
@@ -270,7 +266,7 @@ app.use((req, res, next) => {
                 <meta name="title" content="${title}" />
                 <meta name="description" content="${desc}" />
 
-                <!-- Open Graph / Facebook / WhatsApp -->
+                <!-- Open Graph / Facebook / WhatsApp (Format Lanskap Besar) -->
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="${fullUrl}" />
                 <meta property="og:title" content="${title}" />
@@ -278,11 +274,11 @@ app.use((req, res, next) => {
                 <meta property="og:image" content="${ogImageUrl}" />
                 <meta property="og:image:secure_url" content="${ogImageUrl}" />
                 <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="600" />
-                <meta property="og:image:height" content="600" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
 
-                <!-- Twitter Card -->
-                <meta name="twitter:card" content="summary" />
+                <!-- Twitter Card Large -->
+                <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:url" content="${fullUrl}" />
                 <meta name="twitter:title" content="${title}" />
                 <meta name="twitter:description" content="${desc}" />
@@ -2296,123 +2292,222 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        // Resolusi 600x600 (Rasio 1:1) khusus tampilan thumbnail kecil di WhatsApp & FB
-        const width = 600;
-        const height = 600;
+        const width = 1200;
+        const height = 630;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Krem
+        // 1. Background Luar (Krem Neubrutalism)
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // 2. Pattern Radial Grid Dot
-        ctx.fillStyle = 'rgba(18, 18, 18, 0.12)';
-        for (let x = 0; x < width; x += 20) {
-            for (let y = 0; y < height; y += 20) {
+        // Pattern Grid Dots
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
+        for (let x = 0; x < width; x += 24) {
+            for (let y = 0; y < height; y += 24) {
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // 3. Shadow Kartu Utama
+        // 2. Mockup Window Container Dashboard
+        const windowX = 40;
+        const windowY = 35;
+        const windowW = 1120;
+        const windowH = 560;
+
+        // Window Shadow
         ctx.fillStyle = '#121212';
-        ctx.roundRect(48, 48, 504, 504, 24);
+        ctx.roundRect(windowX + 8, windowY + 8, windowW, windowH, 20);
         ctx.fill();
 
-        // 4. Kartu Utama Putih
+        // Window Body
         ctx.fillStyle = '#FFFDF8';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(40, 40, 504, 504, 24);
+        ctx.roundRect(windowX, windowY, windowW, windowH, 20);
         ctx.fill();
         ctx.stroke();
 
-        // 5. Logo
-        try {
-            const logo = await loadImage('https://cdn.arulzzxd.my.id/files/1wh5do.png');
-            ctx.fillStyle = '#121212';
-            ctx.beginPath();
-            ctx.arc(105, 105, 35, 0, Math.PI * 2);
-            ctx.fill();
+        // 3. Header Navbar
+        ctx.fillStyle = '#FAF7EF';
+        ctx.beginPath();
+        ctx.roundRect(windowX, windowY, windowW, 64, [20, 20, 0, 0]);
+        ctx.fill();
 
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(105, 105, 32, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(logo, 73, 73, 64, 64);
-            ctx.restore();
+        ctx.beginPath();
+        ctx.moveTo(windowX, windowY + 64);
+        ctx.lineTo(windowX + windowW, windowY + 64);
+        ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-            ctx.lineWidth = 2.5;
-            ctx.strokeStyle = '#121212';
-            ctx.beginPath();
-            ctx.arc(105, 105, 32, 0, Math.PI * 2);
-            ctx.stroke();
-        } catch (e) {
-            console.error('Failed to load logo image:', e.message);
-        }
+        // --- IKON SVG 1: Logo Petir/API (Menggunakan Path2D) ---
+        ctx.save();
+        ctx.translate(windowX + 24, windowY + 16);
+        ctx.fillStyle = '#121212';
+        const logoSvgPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z'); // Lightning SVG Path
+        ctx.fill(logoSvgPath);
+        ctx.restore();
 
-        // 6. Badge
+        // Brand Name
+        ctx.fillStyle = '#121212';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('ArulzXD API', windowX + 56, windowY + 38);
+
+        ctx.fillStyle = '#71717a';
+        ctx.font = '13px monospace';
+        ctx.fillText('api.arulzzxd.my.id', windowX + 175, windowY + 37);
+
+        // Badge Online Status (Kanan Navbar)
+        ctx.fillStyle = '#dcfce7';
+        ctx.beginPath();
+        ctx.roundRect(windowX + windowW - 175, windowY + 18, 150, 28, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.arc(windowX + windowW - 158, windowY + 32, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#166534';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 146, windowY + 36);
+
+        // 4. Hero Content Area
+        const contentX = windowX + 50;
+
+        // Badge Tag Kategori
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(160, 88, 220, 34, 8);
+        ctx.roundRect(contentX, windowY + 100, 210, 30, 8);
         ctx.fill();
-        ctx.lineWidth = 2;
         ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 13px sans-serif';
-        ctx.fillText(`⚡ ${config.badge}`, 172, 110);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(`⚡ ${config.badge}`, contentX + 12, windowY + 120);
 
-        // 7. Judul Halaman
+        // Main Title (Headline)
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 26px sans-serif';
-        
-        // Wrap Judul jika terlalu panjang
-        const titleWords = config.title.split(' ');
-        let titleLine = '';
-        let titleY = 190;
-        for (let n = 0; n < titleWords.length; n++) {
-            const testLine = titleLine + titleWords[n] + ' ';
-            if (ctx.measureText(testLine).width > 440 && n > 0) {
-                ctx.fillText(titleLine, 70, titleY);
-                titleLine = titleWords[n] + ' ';
-                titleY += 32;
+        ctx.font = 'bold 38px sans-serif';
+        ctx.fillText(config.title, contentX, windowY + 175);
+
+        // Description
+        ctx.fillStyle = '#52525b';
+        ctx.font = '18px sans-serif';
+        const words = config.desc.split(' ');
+        let line = '';
+        let lineY = windowY + 215;
+        const maxW = 1000;
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            if (ctx.measureText(testLine).width > maxW && n > 0) {
+                ctx.fillText(line, contentX, lineY);
+                line = words[n] + ' ';
+                lineY += 26;
             } else {
-                titleLine = testLine;
+                line = testLine;
             }
         }
-        ctx.fillText(titleLine, 70, titleY);
+        ctx.fillText(line, contentX, lineY);
 
-        // 8. Deskripsi Halaman
-        ctx.fillStyle = '#3f3f46';
-        ctx.font = '16px sans-serif';
-        const descWords = config.desc.split(' ');
-        let descLine = '';
-        let descY = titleY + 40;
-        const maxDescWidth = 440;
+        // 5. Grid Feature Cards (Menggunakan SVG Path Murni)
+        const cardY = windowY + 310;
+        const cardW = 235;
+        const cardH = 145;
+        const gap = 20;
 
-        for (let n = 0; n < descWords.length; n++) {
-            const testLine = descLine + descWords[n] + ' ';
-            if (ctx.measureText(testLine).width > maxDescWidth && n > 0) {
-                ctx.fillText(descLine, 70, descY);
-                descLine = descWords[n] + ' ';
-                descY += 24;
-            } else {
-                descLine = testLine;
+        const features = [
+            { 
+                svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 
+                title: '210+ Endpoints', 
+                sub: 'Production Ready' 
+            },
+            { 
+                svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', 
+                title: 'Media Downloader', 
+                sub: 'TikTok, IG, YT, FB' 
+            },
+            { 
+                svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', 
+                title: 'AI & Search', 
+                sub: 'OpenAI, Gemini, Tools' 
+            },
+            { 
+                svg: 'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z', 
+                title: 'Sub-Store Order', 
+                sub: 'Automated QRIS' 
             }
-        }
-        ctx.fillText(descLine, 70, descY);
+        ];
 
-        // 9. Footer Branding
-        ctx.fillStyle = '#71717a';
-        ctx.font = 'bold 13px monospace';
-        ctx.fillText('© 2026 ARULZ-XD API', 70, 500);
+        features.forEach((feat, i) => {
+            const cX = contentX + (i * (cardW + gap));
 
-        // Output PNG
+            // Card Shadow
+            ctx.fillStyle = '#121212';
+            ctx.roundRect(cX + 4, cardY + 4, cardW, cardH, 14);
+            ctx.fill();
+
+            // Card Body
+            ctx.fillStyle = '#FAF7EF';
+            ctx.beginPath();
+            ctx.roundRect(cX, cardY, cardW, cardH, 14);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Icon Circle Background
+            ctx.fillStyle = '#FFFDF8';
+            ctx.beginPath();
+            ctx.arc(cX + 30, cardY + 35, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Render SVG Icon Path2D ke dalam Kartu
+            ctx.save();
+            ctx.translate(cX + 22, cardY + 27);
+            ctx.scale(0.7, 0.7); // Scaling ukuran SVG
+            ctx.strokeStyle = '#121212';
+            ctx.fillStyle = '#121212';
+            ctx.lineWidth = 2;
+            
+            const cardIconPath = new Path2D(feat.svg);
+            if (i === 0) {
+                ctx.fill(cardIconPath); // Isi solid untuk logo petir
+            } else {
+                ctx.stroke(cardIconPath); // Stroke outline untuk ikon lainnya
+            }
+            ctx.restore();
+
+            // Text Feature
+            ctx.fillStyle = '#121212';
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillText(feat.title, cX + 16, cardY + 85);
+
+            ctx.fillStyle = '#71717a';
+            ctx.font = '12px sans-serif';
+            ctx.fillText(feat.sub, cX + 16, cardY + 110);
+        });
+
+        // 6. Footer Line
+        ctx.fillStyle = '#a1a1aa';
+        ctx.font = '12px monospace';
+        ctx.fillText('High availability REST API Gateway v2.0 · Zero-Downtime Engine', contentX, windowY + windowH - 25);
+        ctx.fillText('© 2026 ArulzXD API. All rights reserved.', windowX + windowW - 310, windowY + windowH - 25);
+
+        // Output Buffer PNG
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Length', buffer.length);
