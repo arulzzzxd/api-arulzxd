@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
-    <!-- Mencegah zoom di HP / Touch Screen -->
+    <!-- Mencegah zoom di HP / Touch Screen & Penyesuaian Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://api.arulzzxd.my.id/login" />
@@ -46,6 +47,7 @@
 
         * {
             box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
         }
 
         html, body {
@@ -68,6 +70,73 @@
             font-family: 'JetBrains Mono', monospace !important;
         }
 
+        /* HEADER: DIAM = 100% SOLID, SCROLLED = 15% TRANSPARAN SANGAT BENING */
+        header.header-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        header.header-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ANIMASI CYBERPUNK GLITCH & NEON FOR TITLE */
+        .cyber-title {
+            position: relative;
+            display: inline-block;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #121212;
+            text-transform: uppercase;
+            font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+        }
+
+        .cyber-title::before,
+        .cyber-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip: rect(0, 0, 0, 0);
+        }
+
+        .cyber-title::before {
+            left: -2px;
+            text-shadow: 2px 0 #00ffd5;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+
+        .cyber-title::after {
+            left: 2px;
+            text-shadow: -2px 0 #ff007f;
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 15px, 0); }
+            20% { clip: rect(40px, 9999px, 50px, 0); }
+            40% { clip: rect(10px, 9999px, 80px, 0); }
+            60% { clip: rect(60px, 9999px, 10px, 0); }
+            80% { clip: rect(30px, 9999px, 30px, 0); }
+            100% { clip: rect(70px, 9999px, 60px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(50px, 9999px, 30px, 0); }
+            20% { clip: rect(10px, 9999px, 10px, 0); }
+            40% { clip: rect(70px, 9999px, 60px, 0); }
+            60% { clip: rect(20px, 9999px, 40px, 0); }
+            80% { clip: rect(80px, 9999px, 20px, 0); }
+            100% { clip: rect(30px, 9999px, 70px, 0); }
+        }
+
         /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
         .brutal-border,
         .light-card,
@@ -79,7 +148,8 @@
         .cyber-loader-box,
         .cyber-bar,
         .theme-input,
-        .auth-tab-btn {
+        .auth-tab-btn,
+        .plan-card {
             border-color: var(--theme-border) !important;
             transition: border-color 0.15s ease;
         }
@@ -118,7 +188,8 @@
         .rgb-mode-active .cyber-loader-box,
         .rgb-mode-active .cyber-bar,
         .rgb-mode-active .theme-input,
-        .rgb-mode-active .auth-tab-btn {
+        .rgb-mode-active .auth-tab-btn,
+        .rgb-mode-active .plan-card {
             border-color: transparent !important;
             background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
@@ -135,13 +206,42 @@
             color: var(--theme-text) !important;
         }
 
-        .rgb-mode-active header,
+        /* HEADER TETAP WARNA TEMA DAN SESUAI TRANSPARANSI SCROLL SAAT RGB MODE */
+        .rgb-mode-active header.header-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active header.header-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
         .rgb-mode-active #bioDropdown {
             border-color: transparent !important;
             background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
                               conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
             background-origin: border-box !important;
             background-clip: padding-box, border-box !important;
+        }
+
+        /* FIX KHUSUS BUTTON GITHUB SAAT MODE RGB */
+        .oauth-github-btn {
+            background-color: #18181b !important;
+            color: #ffffff !important;
+        }
+        .oauth-github-btn svg {
+            fill: #ffffff !important;
+        }
+        .rgb-mode-active .oauth-github-btn {
+            border-color: transparent !important;
+            background-image: linear-gradient(#18181b, #18181b), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: #ffffff !important;
         }
 
         /* Tab Switcher Style */
@@ -161,6 +261,15 @@
             background-color: var(--theme-accent) !important;
             color: var(--theme-text) !important;
             box-shadow: 2px 2px 0px rgba(18, 18, 18, 0.12);
+        }
+
+        /* Status Tombol Ketika Belum Dicentang Syarat & Ketentuan */
+        .action-disabled {
+            opacity: 0.4 !important;
+            filter: grayscale(100%) !important;
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+            user-select: none !important;
         }
 
         /* Cyber Loader Overlay Light Style */
@@ -193,7 +302,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
-            width: 320px;
+            width: min(320px, 90vw);
         }
 
         .cyber-avatar-wrap {
@@ -244,12 +353,12 @@
             border-radius: 9999px;
         }
 
-        /* Card Light Neubrutalism */
+        /* Card Light Neubrutalism Full-Screen Adaptive */
         .light-card {
             background-color: var(--card-bg) !important;
             border: 2.5px solid var(--theme-border) !important;
-            border-radius: 20px !important;
-            box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
+            border-radius: clamp(16px, 4vw, 24px) !important;
+            box-shadow: 5px 5px 0px rgba(18, 18, 18, 0.1) !important;
         }
 
         /* Menu Navigasi Kartu Dropdown Sidebar */
@@ -329,32 +438,32 @@
         </div>
     </div>
 
-    <!-- Header Top Bar -->
-    <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="/" class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
-                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+    <!-- Header Top Bar (Diam = Solid 100%, Scroll = 15% Transparan) -->
+    <header id="mainHeader" class="fixed top-0 left-0 right-0 w-full header-translucent border-b-2 brutal-border z-30">
+        <div class="w-full max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <a href="/" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm shrink-0">
+                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover">
                 </a>
                 <div>
-                    <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">AUTHENTICATION PORTAL</span>
+                    <span class="text-sm sm:text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                    <span class="text-[9px] sm:text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-tight">AUTHENTICATION PORTAL</span>
                 </div>
             </div>
 
             <!-- Tombol Aksi Kanan -->
-            <div class="flex items-center gap-2 relative">
+            <div class="flex items-center gap-1.5 sm:gap-2 relative">
                 
                 <!-- Tombol Switcher Tema Warna -->
-                <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <button id="themePickerBtn" title="Ubah Style Warna" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                     </svg>
                 </button>
 
                 <!-- Tombol Menu Sidebar -->
-                <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <button id="bioMenuBtn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
@@ -405,7 +514,7 @@
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
     <!-- Sidebar Dropdown Nav -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         
         <!-- Header Dropdown -->
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
@@ -503,38 +612,28 @@
     </div>
 
     <!-- Main Content Area -->
-    <main class="max-w-md mx-auto px-4 pt-20 pb-8 relative z-10 flex-1 w-full flex flex-col justify-center">
+    <main class="w-full max-w-2xl mx-auto px-3.5 sm:px-6 pt-20 pb-8 relative z-10 flex-1 flex flex-col justify-center">
         
         <!-- Main Card Authentication -->
-        <div class="light-card p-6 sm:p-8">
+        <div class="light-card p-5 sm:p-8 w-full">
             
-            <!-- Logo Header Form -->
+            <!-- Logo Header Form + ANIMASI CYBERPUNK GLITCH -->
             <div class="text-center mb-6">
-                <div class="w-16 h-16 rounded-2xl theme-bg-accent border-2 brutal-border flex items-center justify-center mx-auto mb-3 shadow-xs">
-                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-11 h-11 object-cover rounded-xl">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl theme-bg-accent border-2 brutal-border flex items-center justify-center mx-auto mb-3 shadow-xs shrink-0">
+                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-10 h-10 sm:w-11 sm:h-11 object-cover rounded-xl">
                 </div>
-                <h1 class="text-2xl font-black text-zinc-900 tracking-tight">Portal Akses</h1>
-                <p class="text-xs font-bold text-zinc-600 mt-0.5">Kelola Akun & API Key Anda</p>
+                <h1 class="cyber-title" data-text="ArulzXD-Auth">ArulzXD-Auth</h1>
+                <p class="text-[11px] sm:text-xs font-bold text-zinc-600 mt-1">Sistem Autentikasi Kredensial & Manajemen API Key</p>
             </div>
 
             <!-- Tab Switcher (LOGIN / REGISTER) -->
-            <div class="grid grid-cols-2 gap-2 mb-5">
-                <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')" class="auth-tab-btn active w-full">
+            <div class="grid grid-cols-2 gap-2.5 mb-5">
+                <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')" class="auth-tab-btn active w-full py-2.5 sm:py-3">
                     <i class="fa-solid fa-right-to-bracket mr-1.5"></i> MASUK
                 </button>
-                <button type="button" id="tabRegisterBtn" onclick="switchAuthTab('register')" class="auth-tab-btn w-full">
+                <button type="button" id="tabRegisterBtn" onclick="switchAuthTab('register')" class="auth-tab-btn w-full py-2.5 sm:py-3">
                     <i class="fa-solid fa-user-plus mr-1.5"></i> DAFTAR
                 </button>
-            </div>
-
-            <!-- Global Agreement Checkbox (Syarat & Kebijakan Privasi) -->
-            <div class="mb-5 p-3 bg-[#FAF7EF] border-2 brutal-border rounded-xl">
-                <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                    <input type="checkbox" id="termsAgree" class="mt-0.5 w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0 cursor-pointer shrink-0">
-                    <span class="text-[11px] font-bold text-zinc-800 leading-snug">
-                        Saya menyetujui <a href="/privacy" target="_blank" class="theme-text-accent underline font-extrabold hover:opacity-80">Syarat & Kebijakan Privasi</a> layanan.
-                    </span>
-                </label>
             </div>
 
             <!-- FORM LOGIN (Menggunakan POST /auth/login) -->
@@ -546,7 +645,7 @@
                             <i class="fa-solid fa-user"></i>
                         </span>
                         <input type="text" id="loginUsername" name="username" required
-                            class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
+                            class="theme-input w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="username / email">
                     </div>
                 </div>
@@ -558,7 +657,7 @@
                             <i class="fa-solid fa-lock"></i>
                         </span>
                         <input type="password" id="loginPassword" name="password" required
-                            class="theme-input w-full pl-10 pr-10 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
+                            class="theme-input w-full pl-10 pr-10 py-2.5 sm:py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-900">
                             <i class="fa-solid fa-eye"></i>
@@ -566,15 +665,26 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-xs font-bold">
+                <!-- INGAT SAYA & LUPA PASSWORD -->
+                <div class="flex items-center justify-between text-xs font-bold pt-1">
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <input type="checkbox" id="rememberMe" name="remember" class="w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0">
                         <span class="text-zinc-700">Ingat Saya</span>
                     </label>
-                    <button type="button" onclick="openForgotModal()" class="theme-text-accent hover:underline text-[11px] bg-transparent border-none cursor-pointer">Lupa Password?</button>
+                    <button type="button" onclick="openForgotModal()" class="theme-text-accent hover:underline text-[11px] bg-transparent border-none cursor-pointer font-extrabold">Lupa Password?</button>
                 </div>
 
-                <button type="submit" id="loginSubmitBtn" class="btn-brutalism-light theme-bg-accent w-full py-3.5 mt-2">
+                <!-- CHECKBOX PERSERUJUAN SEKARANG DIBAWAH INGAT SAYA -->
+                <div class="p-3 bg-[#FAF7EF] border-2 brutal-border rounded-xl shadow-xs">
+                    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="termsAgree" class="mt-0.5 w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0 cursor-pointer shrink-0">
+                        <span class="text-[11px] font-bold text-zinc-800 leading-snug">
+                            Saya menyetujui <a href="/privacy" target="_blank" class="theme-text-accent underline font-extrabold hover:opacity-80">Syarat & Kebijakan Privasi</a> layanan.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" id="loginSubmitBtn" class="auth-action-btn action-disabled btn-brutalism-light theme-bg-accent w-full py-3 sm:py-3.5 mt-2 transition-all">
                     <i class="fa-solid fa-right-to-bracket"></i> MASUK KE AKUN
                 </button>
             </form>
@@ -588,7 +698,7 @@
                             <i class="fa-solid fa-user"></i>
                         </span>
                         <input type="text" id="regUsername" name="username" required
-                            class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
+                            class="theme-input w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="username">
                     </div>
                 </div>
@@ -600,7 +710,7 @@
                             <i class="fa-solid fa-envelope"></i>
                         </span>
                         <input type="email" id="regEmail" name="email" required
-                            class="theme-input w-full pl-10 pr-4 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
+                            class="theme-input w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="nama@email.com">
                     </div>
                 </div>
@@ -612,7 +722,7 @@
                             <i class="fa-solid fa-lock"></i>
                         </span>
                         <input type="password" id="regPassword" name="password" required
-                            class="theme-input w-full pl-10 pr-10 py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
+                            class="theme-input w-full pl-10 pr-10 py-2.5 sm:py-3 bg-white border-2 brutal-border rounded-xl text-xs font-bold code-font text-zinc-900 placeholder:text-zinc-400 transition-all" 
                             placeholder="Minimal 6 Karakter">
                         <button type="button" onclick="togglePasswordVisibility('regPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-900">
                             <i class="fa-solid fa-eye"></i>
@@ -620,7 +730,17 @@
                     </div>
                 </div>
 
-                <button type="submit" id="regSubmitBtn" class="btn-brutalism-light theme-bg-accent w-full py-3.5 mt-2">
+                <!-- CHECKBOX PERSETUJUAN DI FORM REGISTER JUGA DIBAWAH INPUT -->
+                <div class="p-3 bg-[#FAF7EF] border-2 brutal-border rounded-xl shadow-xs">
+                    <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="termsAgreeReg" class="mt-0.5 w-4 h-4 rounded border-2 brutal-border text-amber-500 focus:ring-0 cursor-pointer shrink-0">
+                        <span class="text-[11px] font-bold text-zinc-800 leading-snug">
+                            Saya menyetujui <a href="/privacy" target="_blank" class="theme-text-accent underline font-extrabold hover:opacity-80">Syarat & Kebijakan Privasi</a> layanan.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" id="regSubmitBtn" class="auth-action-btn action-disabled btn-brutalism-light theme-bg-accent w-full py-3 sm:py-3.5 mt-2 transition-all">
                     <i class="fa-solid fa-user-plus"></i> BUAT AKUN BARU
                 </button>
             </form>
@@ -629,7 +749,7 @@
             <div class="mt-6 pt-5 border-t-2 border-zinc-200 text-center">
                 <p class="text-[10px] font-black code-font uppercase text-zinc-500 mb-3">ATAU MASUK DENGAN</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <a href="/auth/google" class="oauth-link btn-brutalism-light w-full text-xs py-2.5 bg-white text-zinc-900">
+                    <a href="/auth/google" class="oauth-link auth-action-btn action-disabled btn-brutalism-light w-full text-xs py-2.5 bg-white text-zinc-900 transition-all">
                         <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -638,12 +758,65 @@
                         </svg>
                         <span>GOOGLE</span>
                     </a>
-                    <a href="/auth/github" class="oauth-link btn-brutalism-light w-full text-xs py-2.5 bg-zinc-900 text-white">
-                        <svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
+                    <a href="/auth/github" class="oauth-link oauth-github-btn auth-action-btn action-disabled btn-brutalism-light w-full text-xs py-2.5 transition-all">
+                        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
                         </svg>
                         <span>GITHUB</span>
                     </a>
+                </div>
+            </div>
+
+            <!-- SECTION PLAN TERSEDIA (FREE, PREMIUM, VIP) -->
+            <div class="mt-8 pt-6 border-t-2 border-zinc-200">
+                <div class="text-center mb-4">
+                    <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[9px] font-black code-font uppercase tracking-wider">
+                        PILIHAN PAKET LAYANAN
+                    </span>
+                    <h2 class="text-base font-black text-zinc-900 mt-2">Plan Disediakan</h2>
+                    <p class="text-[11px] font-semibold text-zinc-600">Pilih paket akses API yang sesuai dengan kebutuhan Anda</p>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- FREE PLAN -->
+                    <div class="plan-card p-3.5 bg-white border-2 brutal-border rounded-xl flex items-center justify-between shadow-xs">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 bg-zinc-200 border border-zinc-800 rounded text-[9px] font-black uppercase text-zinc-800">FREE</span>
+                                <span class="text-xs font-extrabold text-zinc-900">Gratis Selamanya</span>
+                            </div>
+                            <p class="text-[10px] font-semibold text-zinc-600 mt-1">100 Request / Hari · Akses Endpoint Standar</p>
+                        </div>
+                        <span class="text-xs font-black code-font text-zinc-900">Rp 0</span>
+                    </div>
+
+                    <!-- PREMIUM PLAN -->
+                    <div class="plan-card p-3.5 bg-amber-50 border-2 brutal-border rounded-xl flex items-center justify-between shadow-xs">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 bg-amber-300 border border-amber-800 rounded text-[9px] font-black uppercase text-amber-950">PREMIUM</span>
+                                <span class="text-xs font-extrabold text-amber-950">Favorit Dev</span>
+                            </div>
+                            <p class="text-[10px] font-semibold text-zinc-700 mt-1">1.000 Request / Hari · Buka Fitur Premium</p>
+                        </div>
+                        <a href="/upgrade-apikey" class="px-2.5 py-1.5 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase text-zinc-900 hover:opacity-90 transition-all">
+                            UPGRADE
+                        </a>
+                    </div>
+
+                    <!-- VIP PLAN -->
+                    <div class="plan-card p-3.5 bg-purple-50 border-2 brutal-border rounded-xl flex items-center justify-between shadow-xs">
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2 py-0.5 bg-purple-400 border border-purple-900 rounded text-[9px] font-black uppercase text-white">VIP</span>
+                                <span class="text-xs font-extrabold text-purple-950">Akses Tanpa Batas</span>
+                            </div>
+                            <p class="text-[10px] font-semibold text-zinc-700 mt-1">Unlimited Request · Custom API Key · Prioritas High</p>
+                        </div>
+                        <a href="/upgrade-apikey" class="px-2.5 py-1.5 bg-purple-600 text-white border-2 border-purple-950 rounded-lg text-[10px] font-black uppercase hover:opacity-90 transition-all">
+                            UPGRADE
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -760,10 +933,28 @@
             }
         }
 
-        // Memvalidasi Persetujuan Syarat & Kebijakan
+        // Toggle State Tombol Berdasarkan Checkbox Agreement
+        function handleTermsToggle() {
+            const termsAgree = document.getElementById('termsAgree');
+            const termsAgreeReg = document.getElementById('termsAgreeReg');
+            const isChecked = (termsAgree && termsAgree.checked) || (termsAgreeReg && termsAgreeReg.checked);
+            
+            const actionButtons = document.querySelectorAll('.auth-action-btn');
+
+            if (isChecked) {
+                actionButtons.forEach(btn => btn.classList.remove('action-disabled'));
+            } else {
+                actionButtons.forEach(btn => btn.classList.add('action-disabled'));
+            }
+        }
+
+        // Memvalidasi Persetujuan Syarat & Kebijakan saat submit/klik
         function validateTerms(e) {
             const termsAgree = document.getElementById('termsAgree');
-            if (!termsAgree || !termsAgree.checked) {
+            const termsAgreeReg = document.getElementById('termsAgreeReg');
+            const isChecked = (termsAgree && termsAgree.checked) || (termsAgreeReg && termsAgreeReg.checked);
+
+            if (!isChecked) {
                 e.preventDefault();
                 alert('Anda harus menyetujui Syarat & Kebijakan Privasi terlebih dahulu!');
                 return false;
@@ -773,6 +964,18 @@
 
         // Memblokir Gesture Zoom
         document.addEventListener('gesturestart', e => e.preventDefault());
+
+        // Event Transparansi Header saat Di-scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                if (window.scrollY > 10) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            }
+        });
 
         // Event Handlers
         document.addEventListener('DOMContentLoaded', () => {
@@ -826,6 +1029,25 @@
                 menuOverlay.addEventListener('click', closeSidebarMenu);
                 bioDropdown.addEventListener('click', (e) => { e.stopPropagation(); });
             }
+
+            // Pasang event listener ke checkbox persetujuan di kedua form
+            const termsCheckbox = document.getElementById('termsAgree');
+            const termsCheckboxReg = document.getElementById('termsAgreeReg');
+            
+            if (termsCheckbox) {
+                termsCheckbox.addEventListener('change', () => {
+                    if (termsCheckboxReg) termsCheckboxReg.checked = termsCheckbox.checked;
+                    handleTermsToggle();
+                });
+            }
+            if (termsCheckboxReg) {
+                termsCheckboxReg.addEventListener('change', () => {
+                    if (termsCheckbox) termsCheckbox.checked = termsCheckboxReg.checked;
+                    handleTermsToggle();
+                });
+            }
+
+            handleTermsToggle(); // Inisialisasi awal
 
             // Pasang event listener persetujuan ke form dan tombol OAuth (Google & GitHub)
             document.getElementById('loginForm').addEventListener('submit', validateTerms);
