@@ -239,7 +239,6 @@ app.use(session({
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
-    // Abaikan jika request menuju ke endpoint OG Image
     if (req.path.startsWith('/api/og')) {
         return next();
     }
@@ -267,7 +266,7 @@ app.use((req, res, next) => {
                 <meta name="title" content="${title}" />
                 <meta name="description" content="${desc}" />
 
-                <!-- Open Graph / Facebook / WhatsApp -->
+                <!-- Open Graph / Facebook / WhatsApp (Rasio 600x300) -->
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="${fullUrl}" />
                 <meta property="og:title" content="${title}" />
@@ -275,10 +274,10 @@ app.use((req, res, next) => {
                 <meta property="og:image" content="${ogImageUrl}" />
                 <meta property="og:image:secure_url" content="${ogImageUrl}" />
                 <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="1280" />
-                <meta property="og:image:height" content="720" />
+                <meta property="og:image:width" content="600" />
+                <meta property="og:image:height" content="300" />
 
-                <!-- Twitter Card Large -->
+                <!-- Twitter Card -->
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:url" content="${fullUrl}" />
                 <meta name="twitter:title" content="${title}" />
@@ -295,6 +294,7 @@ app.use((req, res, next) => {
 
     next();
 });
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -2307,202 +2307,180 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        // Resolusi 16:9 Presisi (1280 x 720)
-        const width = 1280;
-        const height = 720;
+        // Resolusi Presisi 600 x 300 (Rasio 2:1)
+        const width = 600;
+        const height = 300;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Luar
+        // 1. Background Luar Krem
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Pattern Grid Dots
+        // Grid Dot Pattern
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
-        for (let x = 0; x < width; x += 32) {
-            for (let y = 0; y < height; y += 32) {
+        for (let x = 0; x < width; x += 18) {
+            for (let y = 0; y < height; y += 18) {
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.arc(x, y, 1.2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // 2. Window Container
-        const windowX = 48;
-        const windowY = 40;
-        const windowW = 1184;
-        const windowH = 640;
+        // 2. Mockup Window Container Dashboard
+        const windowX = 18;
+        const windowY = 16;
+        const windowW = 564;
+        const windowH = 268;
 
-        // Shadow Window
+        // Window Shadow
         ctx.fillStyle = '#121212';
-        ctx.roundRect(windowX + 10, windowY + 10, windowW, windowH, 24);
+        ctx.roundRect(windowX + 6, windowY + 6, windowW, windowH, 16);
         ctx.fill();
 
-        // Body Window
+        // Window Body
         ctx.fillStyle = '#FFFDF8';
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, windowH, 24);
+        ctx.roundRect(windowX, windowY, windowW, windowH, 16);
         ctx.fill();
         ctx.stroke();
 
-        // 3. Navbar Header
+        // 3. Header Navbar
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 72, [24, 24, 0, 0]);
+        ctx.roundRect(windowX, windowY, windowW, 38, [16, 16, 0, 0]);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(windowX, windowY + 72);
-        ctx.lineTo(windowX + windowW, windowY + 72);
-        ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // SVG Logo Petir (Path2D)
-        ctx.save();
-        ctx.translate(windowX + 28, windowY + 20);
-        ctx.fillStyle = '#121212';
-        const logoPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z');
-        ctx.fill(logoPath);
-        ctx.restore();
-
-        // Brand Name
-        ctx.fillStyle = '#121212';
-        ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 64, windowY + 44);
-
-        ctx.fillStyle = '#71717a';
-        ctx.font = '14px monospace';
-        ctx.fillText('api.arulzzxd.my.id', windowX + 200, windowY + 43);
-
-        // Status Badge Online
-        ctx.fillStyle = '#dcfce7';
-        ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 190, windowY + 20, 160, 32, 16);
-        ctx.fill();
-        ctx.strokeStyle = '#16a34a';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.fillStyle = '#15803d';
-        ctx.beginPath();
-        ctx.arc(windowX + windowW - 172, windowY + 36, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#166534';
-        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 158, windowY + 40);
-
-        // 4. Hero Content Area
-        const contentX = windowX + 56;
-
-        // Tag Category Badge
-        ctx.fillStyle = config.accent;
-        ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 115, 230, 34, 10);
-        ctx.fill();
+        ctx.moveTo(windowX, windowY + 38);
+        ctx.lineTo(windowX + windowW, windowY + 38);
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = '#121212';
-        ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(`⚡ ${config.badge}`, contentX + 14, windowY + 137);
-
-        // Main Headline Title
-        ctx.fillStyle = '#121212';
-        ctx.font = 'bold 42px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(config.title, contentX, windowY + 200);
-
-        // Description Paragraph
-        ctx.fillStyle = '#52525b';
-        ctx.font = '20px "Plus Jakarta Sans", sans-serif';
-        const words = config.desc.split(' ');
-        let line = '';
-        let lineY = windowY + 248;
-        const maxW = 1060;
-
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            if (ctx.measureText(testLine).width > maxW && n > 0) {
-                ctx.fillText(line, contentX, lineY);
-                line = words[n] + ' ';
-                lineY += 30;
-            } else {
-                line = testLine;
-            }
-        }
-        ctx.fillText(line, contentX, lineY);
-
-        // 5. Grid Feature Cards
-        const cardY = windowY + 355;
-        const cardW = 250;
-        const cardH = 160;
-        const gap = 24;
-
-        const features = [
-            { svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', title: '210+ Endpoints', sub: 'Production Ready' },
-            { svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', title: 'Media Downloader', sub: 'TikTok, IG, YT, FB' },
-            { svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', title: 'AI & Search', sub: 'OpenAI, Gemini, Tools' },
-            { svg: 'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z', title: 'Sub-Store Order', sub: 'Automated QRIS' }
-        ];
-
-        features.forEach((feat, i) => {
-            const cX = contentX + (i * (cardW + gap));
-
-            // Card Shadow
-            ctx.fillStyle = '#121212';
-            ctx.roundRect(cX + 5, cardY + 5, cardW, cardH, 16);
-            ctx.fill();
-
-            // Card Body
-            ctx.fillStyle = '#FAF7EF';
+        // Dots Kontrol Window (Merah, Kuning, Hijau)
+        const dots = ['#ef4444', '#f59e0b', '#10b981'];
+        dots.forEach((color, i) => {
+            ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.roundRect(cX, cardY, cardW, cardH, 16);
+            ctx.arc(windowX + 16 + (i * 12), windowY + 19, 3.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1;
             ctx.stroke();
-
-            // Circle Icon Background
-            ctx.fillStyle = '#FFFDF8';
-            ctx.beginPath();
-            ctx.arc(cX + 34, cardY + 38, 18, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            // Icon SVG Path2D
-            ctx.save();
-            ctx.translate(cX + 25, cardY + 29);
-            ctx.scale(0.75, 0.75);
-            ctx.strokeStyle = '#121212';
-            ctx.fillStyle = '#121212';
-            ctx.lineWidth = 2;
-
-            const iconPath = new Path2D(feat.svg);
-            if (i === 0) ctx.fill(iconPath);
-            else ctx.stroke(iconPath);
-            ctx.restore();
-
-            // Label Text
-            ctx.fillStyle = '#121212';
-            ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.title, cX + 18, cardY + 96);
-
-            ctx.fillStyle = '#71717a';
-            ctx.font = '13px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.sub, cX + 18, cardY + 122);
         });
 
-        // 6. Footer Text
-        ctx.fillStyle = '#a1a1aa';
-        ctx.font = '13px monospace';
-        ctx.fillText('High availability REST API Gateway v2.0 · Zero-Downtime Engine', contentX, windowY + windowH - 28);
-        ctx.fillText('© 2026 ArulzXD API. All rights reserved.', windowX + windowW - 330, windowY + windowH - 28);
+        // Brand Name & URL
+        ctx.fillStyle = '#121212';
+        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ArulzXD API', windowX + 58, windowY + 23);
+
+        ctx.fillStyle = '#71717a';
+        ctx.font = '10px monospace';
+        ctx.fillText('api.arulzzxd.my.id', windowX + 135, windowY + 23);
+
+        // Status Badge Online
+        ctx.fillStyle = '#dcfce7';
+        ctx.beginPath();
+        ctx.roundRect(windowX + windowW - 120, windowY + 9, 108, 20, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.arc(windowX + windowW - 110, windowY + 19, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#166534';
+        ctx.font = 'bold 8.5px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 102, windowY + 22);
+
+        // 4. Hero Content
+        const contentX = windowX + 22;
+
+        // Tag Category Badge
+        ctx.fillStyle = config.accent;
+        ctx.beginPath();
+        ctx.roundRect(contentX, windowY + 52, 160, 22, 6);
+        ctx.fill();
+        ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#121212';
+        ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(`⚡ ${config.badge}`, contentX + 8, windowY + 66);
+
+        // Judul Utama (Headline)
+        ctx.fillStyle = '#121212';
+        ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+        
+        const titleWords = config.title.split(' ');
+        let titleLine = '';
+        let titleY = windowY + 102;
+        for (let n = 0; n < titleWords.length; n++) {
+            const testLine = titleLine + titleWords[n] + ' ';
+            if (ctx.measureText(testLine).width > 510 && n > 0) {
+                ctx.fillText(titleLine, contentX, titleY);
+                titleLine = titleWords[n] + ' ';
+                titleY += 22;
+            } else {
+                titleLine = testLine;
+            }
+        }
+        ctx.fillText(titleLine, contentX, titleY);
+
+        // Deskripsi Halaman
+        ctx.fillStyle = '#52525b';
+        ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+        const words = config.desc.split(' ');
+        let descLine = '';
+        let descY = titleY + 20;
+        const maxW = 515;
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = descLine + words[n] + ' ';
+            if (ctx.measureText(testLine).width > maxW && n > 0) {
+                ctx.fillText(descLine, contentX, descY);
+                descLine = words[n] + ' ';
+                descY += 15;
+            } else {
+                descLine = testLine;
+            }
+        }
+        ctx.fillText(descLine, contentX, descY);
+
+        // 5. Grid Feature Badges (3 Kartu Fitur Kustom)
+        const featureY = windowY + windowH - 50;
+        const miniW = 162;
+        const miniH = 32;
+        const miniGap = 12;
+
+        const miniFeatures = [
+            { icon: '⚡', label: '210+ Endpoints' },
+            { icon: '📥', label: 'Media Downloader' },
+            { icon: '🤖', label: 'AI & Automations' }
+        ];
+
+        miniFeatures.forEach((feat, i) => {
+            const mX = contentX + (i * (miniW + miniGap));
+
+            ctx.fillStyle = '#FAF7EF';
+            ctx.beginPath();
+            ctx.roundRect(mX, featureY, miniW, miniH, 8);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#121212';
+            ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(`${feat.icon} ${feat.label}`, mX + 10, featureY + 20);
+        });
 
         // Encode Buffer PNG
         const buffer = await canvas.encode('png');
