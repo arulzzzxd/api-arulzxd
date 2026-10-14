@@ -2307,12 +2307,96 @@ const PAGE_CONFIGS = {
     }
 };
 
-router.get('/api/og', async (req, res) => {
-    try {
-        const pageKey = (req.query.page || 'pastecode').toLowerCase();
-        const config = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.pastecode;
+// Konfigurasi Metadata Halaman Publik
+const PAGE_CONFIGS = {
+    home: {
+        title: "ArulzXD API - Core REST Gateway",
+        desc: "Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi secara cepat dan andal.",
+        badge: "CORE REST GATEWAY",
+        accent: "#fde047"
+    },
+    docs: {
+        title: "ArulzXD API - Dokumentasi REST API",
+        desc: "Jelajahi dokumentasi endpoint REST API lengkap dengan fitur pengujian langsung dan respons terstruktur.",
+        badge: "API DOCUMENTATION",
+        accent: "#fde047"
+    },
+    login: {
+        title: "ArulzXD API - Portal Autentikasi",
+        desc: "Masuk atau buat akun baru untuk mengakses kredensial API Key, kuota limit, dan fitur premium.",
+        badge: "PORTAL AUTENTIKASI",
+        accent: "#fde047"
+    },
+    uploader: {
+        title: "ArulzXD API - File & Media Uploader",
+        desc: "Layanan unggah berkas media instan berbasis CDN publik dengan akses cepat dan penyimpanan aman.",
+        badge: "FILE & MEDIA UPLOADER",
+        accent: "#fde047"
+    },
+    status: {
+        title: "ArulzXD API - Server & System Status",
+        desc: "Pantau ketersediaan sistem, penggunaan memori, performa CPU, dan status kesehatan server secara real-time.",
+        badge: "SERVER MONITORING",
+        accent: "#fde047"
+    },
+    privacy: {
+        title: "ArulzXD API - Kebijakan Privasi",
+        desc: "Informasi mengenai perlindungan data pribadi, penggunaan sesi, dan keamanan transaksi pengguna.",
+        badge: "KEBIJAKAN PRIVASI",
+        accent: "#fde047"
+    },
+    pastecode: {
+        title: "ArulzXD API - Pastecode Snippet",
+        desc: "Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi.",
+        badge: "PASTECODE SNIPPET",
+        accent: "#fde047"
+    },
+    feedback: {
+        title: "ArulzXD API - Feedback & Support",
+        desc: "Layanan bantuan REST API resmi untuk dokumentasi, laporan bug, dan request fitur.",
+        badge: "FEEDBACK & LAPORAN",
+        accent: "#fde047"
+    },
+    profile: {
+        title: "ArulzXD API - Profil & Settings",
+        desc: "Kelola informasi pengguna, kredensial API Key, kuota limit, dan riwayat aktivitas.",
+        badge: "USER PROFILE & API KEY",
+        accent: "#fde047"
+    },
+    store: {
+        title: "ArulzXD Store - Marketplace & Layanan Digital",
+        desc: "Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat.",
+        badge: "MARKETPLACE & STORE",
+        accent: "#fde047"
+    },
+    support: {
+        title: "Dukung ArulzXD — Support & Donasi",
+        desc: "Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk menjaga platform tetap zero-downtime.",
+        badge: "SUPPORT & DONASI",
+        accent: "#fde047"
+    },
+    upgrade: {
+        title: "ArulzXD API - Upgrade Apikey VIP",
+        desc: "Tingkatkan limit request harian dan buka akses fitur VIP / Premium REST API ArulzXD.",
+        badge: "UPGRADE APIKEY VIP",
+        accent: "#fde047"
+    }
+};
 
-        // Ukuran Standar Open Graph
+// Endpoint OG Image Publik (Langsung terikat pada app)
+app.get('/api/og', async (req, res) => {
+    try {
+        const pageKey = (req.query.page || 'home').toLowerCase();
+        const baseConfig = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.home;
+
+        // Opsi override judul, deskripsi, badge, dan warna accent secara dinamis via query URL
+        const config = {
+            title: req.query.title || baseConfig.title,
+            desc: req.query.desc || baseConfig.desc,
+            badge: req.query.badge || baseConfig.badge,
+            accent: req.query.accent || baseConfig.accent
+        };
+
         const width = 1200;
         const height = 630;
         const canvas = createCanvas(width, height);
@@ -2351,7 +2435,6 @@ router.get('/api/og', async (req, res) => {
         // 5. Logo Arulz-XD API
         try {
             const logo = await loadImage('https://cdn.arulzzxd.my.id/files/1wh5do.png');
-            // Background lingkaran logo
             ctx.fillStyle = '#121212';
             ctx.beginPath();
             ctx.arc(170, 170, 45, 0, Math.PI * 2);
@@ -2370,13 +2453,13 @@ router.get('/api/og', async (req, res) => {
             ctx.arc(170, 170, 42, 0, Math.PI * 2);
             ctx.stroke();
         } catch (e) {
-            console.error('Failed to load logo image', e);
+            console.error('Failed to load logo image:', e.message);
         }
 
-        // 6. Badge Kategori (Kuning Neubrutalist)
+        // 6. Badge Kategori
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(240, 140, 260, 38, 10);
+        ctx.roundRect(240, 140, 280, 38, 10);
         ctx.fill();
         ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#121212';
@@ -2418,17 +2501,18 @@ router.get('/api/og', async (req, res) => {
         ctx.font = '700 16px "JetBrains Mono", monospace';
         ctx.fillText('© 2026 ARULZ-XD API · https://api.arulzzxd.my.id', 130, 500);
 
-        // Response Buffer PNG
+        // Output PNG Image
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Cache-Control', 'public, max-age=86400');
         res.send(buffer);
 
     } catch (error) {
-        console.error(error);
+        console.error('Error generating OG Image:', error);
         res.status(500).send('Error generating OG Image');
     }
 });
+
 // ====================================================
 // 12. GENERAL SYSTEM & SERVICE WORKER API
 // ====================================================
