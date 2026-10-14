@@ -273,9 +273,8 @@ app.use((req, res, next) => {
                 <meta property="og:description" content="${desc}" />
                 <meta property="og:image" content="${ogImageUrl}" />
                 <meta property="og:image:secure_url" content="${ogImageUrl}" />
-                <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="1200" />
-                <meta property="og:image:height" content="630" />
+                <meta property="og:image:width" content="1280" />
+                <meta property="og:image:height" content="720" />
 
                 <!-- Twitter Card Large -->
                 <meta name="twitter:card" content="summary_large_image" />
@@ -2279,7 +2278,6 @@ const PAGE_CONFIGS = {
     }
 };
 
-// Endpoint OG Image Publik dengan Fallback Font Aman
 app.get('/api/og', async (req, res) => {
     try {
         const pageKey = (req.query.page || 'home').toLowerCase();
@@ -2292,8 +2290,9 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        const width = 1200;
-        const height = 630;
+        // Resolusi Standar 16:9 Presisi (1280 x 720)
+        const width = 1280;
+        const height = 720;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
@@ -2301,70 +2300,70 @@ app.get('/api/og', async (req, res) => {
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Pattern Grid Dots
+        // Grid Dot Pattern Ringan (Gap 32px agar tidak berat)
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
-        for (let x = 0; x < width; x += 24) {
-            for (let y = 0; y < height; y += 24) {
+        for (let x = 0; x < width; x += 32) {
+            for (let y = 0; y < height; y += 32) {
                 ctx.beginPath();
-                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // 2. Mockup Window Container Dashboard
-        const windowX = 40;
-        const windowY = 35;
-        const windowW = 1120;
-        const windowH = 560;
+        // 2. Mockup Window Dashboard
+        const windowX = 48;
+        const windowY = 40;
+        const windowW = 1184;
+        const windowH = 640;
 
         // Window Shadow
         ctx.fillStyle = '#121212';
-        ctx.roundRect(windowX + 8, windowY + 8, windowW, windowH, 20);
+        ctx.roundRect(windowX + 10, windowY + 10, windowW, windowH, 24);
         ctx.fill();
 
         // Window Body
         ctx.fillStyle = '#FFFDF8';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, windowH, 20);
+        ctx.roundRect(windowX, windowY, windowW, windowH, 24);
         ctx.fill();
         ctx.stroke();
 
-        // 3. Header Navbar
+        // 3. Header Navbar Mockup
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 64, [20, 20, 0, 0]);
+        ctx.roundRect(windowX, windowY, windowW, 72, [24, 24, 0, 0]);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(windowX, windowY + 64);
-        ctx.lineTo(windowX + windowW, windowY + 64);
+        ctx.moveTo(windowX, windowY + 72);
+        ctx.lineTo(windowX + windowW, windowY + 72);
         ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // --- IKON SVG 1: Logo Petir/API (Menggunakan Path2D) ---
+        // Logo Petir SVG Path2D
         ctx.save();
-        ctx.translate(windowX + 24, windowY + 16);
+        ctx.translate(windowX + 28, windowY + 20);
         ctx.fillStyle = '#121212';
-        const logoSvgPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z'); // Lightning SVG Path
-        ctx.fill(logoSvgPath);
+        const logoPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z');
+        ctx.fill(logoPath);
         ctx.restore();
 
         // Brand Name
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 18px sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 56, windowY + 38);
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText('ArulzXD API', windowX + 64, windowY + 44);
 
         ctx.fillStyle = '#71717a';
-        ctx.font = '13px monospace';
-        ctx.fillText('api.arulzzxd.my.id', windowX + 175, windowY + 37);
+        ctx.font = '14px monospace';
+        ctx.fillText('api.arulzzxd.my.id', windowX + 200, windowY + 43);
 
-        // Badge Online Status (Kanan Navbar)
+        // Status Badge Online
         ctx.fillStyle = '#dcfce7';
         ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 175, windowY + 18, 150, 28, 14);
+        ctx.roundRect(windowX + windowW - 190, windowY + 20, 160, 32, 16);
         ctx.fill();
         ctx.strokeStyle = '#16a34a';
         ctx.lineWidth = 1.5;
@@ -2372,81 +2371,65 @@ app.get('/api/og', async (req, res) => {
 
         ctx.fillStyle = '#15803d';
         ctx.beginPath();
-        ctx.arc(windowX + windowW - 158, windowY + 32, 4, 0, Math.PI * 2);
+        ctx.arc(windowX + windowW - 172, windowY + 36, 4.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#166534';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 146, windowY + 36);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 158, windowY + 40);
 
-        // 4. Hero Content Area
-        const contentX = windowX + 50;
+        // 4. Hero Section Body
+        const contentX = windowX + 56;
 
         // Badge Tag Kategori
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 100, 210, 30, 8);
+        ctx.roundRect(contentX, windowY + 115, 230, 34, 10);
         ctx.fill();
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(`⚡ ${config.badge}`, contentX + 12, windowY + 120);
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`⚡ ${config.badge}`, contentX + 14, windowY + 137);
 
-        // Main Title (Headline)
+        // Judul Utama (Headline)
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 38px sans-serif';
-        ctx.fillText(config.title, contentX, windowY + 175);
+        ctx.font = 'bold 42px sans-serif';
+        ctx.fillText(config.title, contentX, windowY + 200);
 
-        // Description
+        // Deskripsi Halaman
         ctx.fillStyle = '#52525b';
-        ctx.font = '18px sans-serif';
+        ctx.font = '20px sans-serif';
         const words = config.desc.split(' ');
         let line = '';
-        let lineY = windowY + 215;
-        const maxW = 1000;
+        let lineY = windowY + 248;
+        const maxW = 1060;
 
         for (let n = 0; n < words.length; n++) {
             const testLine = line + words[n] + ' ';
             if (ctx.measureText(testLine).width > maxW && n > 0) {
                 ctx.fillText(line, contentX, lineY);
                 line = words[n] + ' ';
-                lineY += 26;
+                lineY += 30;
             } else {
                 line = testLine;
             }
         }
         ctx.fillText(line, contentX, lineY);
 
-        // 5. Grid Feature Cards (Menggunakan SVG Path Murni)
-        const cardY = windowY + 310;
-        const cardW = 235;
-        const cardH = 145;
-        const gap = 20;
+        // 5. Grid Cards Features (Format 16:9 Presisi)
+        const cardY = windowY + 355;
+        const cardW = 250;
+        const cardH = 160;
+        const gap = 24;
 
         const features = [
-            { 
-                svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 
-                title: '210+ Endpoints', 
-                sub: 'Production Ready' 
-            },
-            { 
-                svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', 
-                title: 'Media Downloader', 
-                sub: 'TikTok, IG, YT, FB' 
-            },
-            { 
-                svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', 
-                title: 'AI & Search', 
-                sub: 'OpenAI, Gemini, Tools' 
-            },
-            { 
-                svg: 'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z', 
-                title: 'Sub-Store Order', 
-                sub: 'Automated QRIS' 
-            }
+            { svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', title: '210+ Endpoints', sub: 'Production Ready' },
+            { svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', title: 'Media Downloader', sub: 'TikTok, IG, YT, FB' },
+            { svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', title: 'AI & Search', sub: 'OpenAI, Gemini, Tools' },
+            { svg: 'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z', title: 'Sub-Store Order', sub: 'Automated QRIS' }
         ];
 
         features.forEach((feat, i) => {
@@ -2454,58 +2437,55 @@ app.get('/api/og', async (req, res) => {
 
             // Card Shadow
             ctx.fillStyle = '#121212';
-            ctx.roundRect(cX + 4, cardY + 4, cardW, cardH, 14);
+            ctx.roundRect(cX + 5, cardY + 5, cardW, cardH, 16);
             ctx.fill();
 
             // Card Body
             ctx.fillStyle = '#FAF7EF';
             ctx.beginPath();
-            ctx.roundRect(cX, cardY, cardW, cardH, 14);
+            ctx.roundRect(cX, cardY, cardW, cardH, 16);
             ctx.fill();
             ctx.strokeStyle = '#121212';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Icon Circle Background
+            // Circle SVG Background
             ctx.fillStyle = '#FFFDF8';
             ctx.beginPath();
-            ctx.arc(cX + 30, cardY + 35, 16, 0, Math.PI * 2);
+            ctx.arc(cX + 34, cardY + 38, 18, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Render SVG Icon Path2D ke dalam Kartu
+            // SVG Icon Path2D
             ctx.save();
-            ctx.translate(cX + 22, cardY + 27);
-            ctx.scale(0.7, 0.7); // Scaling ukuran SVG
+            ctx.translate(cX + 25, cardY + 29);
+            ctx.scale(0.75, 0.75);
             ctx.strokeStyle = '#121212';
             ctx.fillStyle = '#121212';
             ctx.lineWidth = 2;
-            
-            const cardIconPath = new Path2D(feat.svg);
-            if (i === 0) {
-                ctx.fill(cardIconPath); // Isi solid untuk logo petir
-            } else {
-                ctx.stroke(cardIconPath); // Stroke outline untuk ikon lainnya
-            }
+
+            const iconPath = new Path2D(feat.svg);
+            if (i === 0) ctx.fill(iconPath);
+            else ctx.stroke(iconPath);
             ctx.restore();
 
-            // Text Feature
+            // Text Label
             ctx.fillStyle = '#121212';
-            ctx.font = 'bold 15px sans-serif';
-            ctx.fillText(feat.title, cX + 16, cardY + 85);
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText(feat.title, cX + 18, cardY + 96);
 
             ctx.fillStyle = '#71717a';
-            ctx.font = '12px sans-serif';
-            ctx.fillText(feat.sub, cX + 16, cardY + 110);
+            ctx.font = '13px sans-serif';
+            ctx.fillText(feat.sub, cX + 18, cardY + 122);
         });
 
-        // 6. Footer Line
+        // 6. Footer Information
         ctx.fillStyle = '#a1a1aa';
-        ctx.font = '12px monospace';
-        ctx.fillText('High availability REST API Gateway v2.0 · Zero-Downtime Engine', contentX, windowY + windowH - 25);
-        ctx.fillText('© 2026 ArulzXD API. All rights reserved.', windowX + windowW - 310, windowY + windowH - 25);
+        ctx.font = '13px monospace';
+        ctx.fillText('High availability REST API Gateway v2.0 · Zero-Downtime Engine', contentX, windowY + windowH - 28);
+        ctx.fillText('© 2026 ArulzXD API. All rights reserved.', windowX + windowW - 330, windowY + windowH - 28);
 
         // Output Buffer PNG
         const buffer = await canvas.encode('png');
