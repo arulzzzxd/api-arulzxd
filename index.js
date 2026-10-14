@@ -2307,7 +2307,7 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        // Deteksi URL Dinamis Sesuai Halaman (misal: /pastecode -> https://api.arulzzxd.my.id/pastecode)
+        // Deteksi URL Dinamis Sesuai Halaman
         const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
         const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
 
@@ -2354,8 +2354,10 @@ app.get('/api/og', async (req, res) => {
         // 3. Header Navbar
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 38, [16, 16, 0, 0]);
+        ctx.roundRect(windowX, windowY, windowW, 38, 16);
         ctx.fill();
+        // Tutup sudut bawah navbar
+        ctx.fillRect(windowX, windowY + 20, windowW, 18);
 
         ctx.beginPath();
         ctx.moveTo(windowX, windowY + 38);
@@ -2377,12 +2379,12 @@ app.get('/api/og', async (req, res) => {
         });
 
         // SVG Logo Petir Navbar (Path2D)
+        const logoSvgStr = 'M13 2L3 14h9l-1 8 10-12h-9l1-8z';
         ctx.save();
         ctx.translate(windowX + 54, windowY + 11);
         ctx.scale(0.75, 0.75);
         ctx.fillStyle = '#121212';
-        const logoPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z');
-        ctx.fill(logoPath);
+        ctx.fill(new Path2D(logoSvgStr));
         ctx.restore();
 
         // Brand Name & Dynamic Page URL (Navbar)
@@ -2415,7 +2417,7 @@ app.get('/api/og', async (req, res) => {
         // 4. Hero Content Section
         const contentX = windowX + 22;
 
-        // Tag Category Badge (Dengan SVG Petir Mini)
+        // Tag Category Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
         ctx.roundRect(contentX, windowY + 50, 175, 22, 6);
@@ -2429,7 +2431,7 @@ app.get('/api/og', async (req, res) => {
         ctx.translate(contentX + 8, windowY + 54);
         ctx.scale(0.6, 0.6);
         ctx.fillStyle = '#121212';
-        ctx.fill(logoPath);
+        ctx.fill(new Path2D(logoSvgStr));
         ctx.restore();
 
         ctx.fillStyle = '#121212';
@@ -2475,7 +2477,7 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(descLine, contentX, descY);
 
-        // 5. Grid Feature Cards (Menggunakan SVG Path Murni Tanpa Emoji)
+        // 5. Grid Feature Cards (Path SVG yang Aman & Valid)
         const featureY = windowY + windowH - 56;
         const miniW = 162;
         const miniH = 38;
@@ -2484,16 +2486,19 @@ app.get('/api/og', async (req, res) => {
         const miniFeatures = [
             { 
                 svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 
+                fillMode: true,
                 title: '210+ Endpoints', 
                 sub: 'Production Ready' 
             },
             { 
-                svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', 
+                svg: 'M12 2v11m0 0l-3-3m3 3l3-3M4 17h16', 
+                fillMode: false,
                 title: 'Media Downloader', 
                 sub: 'TikTok, IG, YT, FB' 
             },
             { 
-                svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', 
+                svg: 'M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 110 12 6 6 0 010-12z', 
+                fillMode: true,
                 title: 'AI & Automations', 
                 sub: 'OpenAI, Tools, Search' 
             }
@@ -2520,7 +2525,7 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Render SVG Icon Path2D
+            // Render SVG Icon Path2D Aman
             ctx.save();
             ctx.translate(mX + 13, featureY + 14);
             ctx.scale(0.42, 0.42);
@@ -2529,8 +2534,11 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 2;
 
             const iconPath = new Path2D(feat.svg);
-            if (i === 0) ctx.fill(iconPath);
-            else ctx.stroke(iconPath);
+            if (feat.fillMode) {
+                ctx.fill(iconPath);
+            } else {
+                ctx.stroke(iconPath);
+            }
             ctx.restore();
 
             // Title & Subtitle Card Feature
