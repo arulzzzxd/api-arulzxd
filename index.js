@@ -20,6 +20,7 @@ const crypto = require('crypto');
 const compression = require('compression');
 const os = require('os');
 const webpush = require('web-push');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -2267,6 +2268,167 @@ app.delete('/api/user-activity', checkAuthSession, async (req, res) => {
     }
 });
 
+const PAGE_CONFIGS = {
+    pastecode: {
+        title: "ArulzXD API - Pastecode Snippet",
+        desc: "Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi.",
+        badge: "PASTECODE SNIPPET",
+        accent: "#fde047"
+    },
+    feedback: {
+        title: "ArulzXD API - Feedback & Support",
+        desc: "Layanan bantuan REST API resmi untuk dokumentasi, laporan bug, dan request fitur.",
+        badge: "FEEDBACK & LAPORAN",
+        accent: "#fde047"
+    },
+    profile: {
+        title: "ArulzXD API - Profil & Settings",
+        desc: "Kelola informasi pengguna, kredensial API Key, kuota limit, dan riwayat aktivitas.",
+        badge: "USER PROFILE & API KEY",
+        accent: "#fde047"
+    },
+    store: {
+        title: "ArulzXD Store - Marketplace & Layanan Digital",
+        desc: "Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat.",
+        badge: "MARKETPLACE & STORE",
+        accent: "#fde047"
+    },
+    support: {
+        title: "Dukung ArulzXD — Support & Donasi",
+        desc: "Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk menjaga platform tetap zero-downtime.",
+        badge: "SUPPORT & DONASI",
+        accent: "#fde047"
+    },
+    upgrade: {
+        title: "ArulzXD API - Upgrade Apikey VIP",
+        desc: "Tingkatkan limit request harian dan buka akses fitur VIP / Premium REST API ArulzXD.",
+        badge: "UPGRADE APIKEY VIP",
+        accent: "#fde047"
+    }
+};
+
+router.get('/api/og', async (req, res) => {
+    try {
+        const pageKey = (req.query.page || 'pastecode').toLowerCase();
+        const config = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.pastecode;
+
+        // Ukuran Standar Open Graph
+        const width = 1200;
+        const height = 630;
+        const canvas = createCanvas(width, height);
+        const ctx = canvas.getContext('2d');
+
+        // 1. Background Krem (#FAF7EF)
+        ctx.fillStyle = '#FAF7EF';
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Pattern Radial Grid Dot
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.12)';
+        const dotSize = 2;
+        const dotGap = 20;
+        for (let x = 0; x < width; x += dotGap) {
+            for (let y = 0; y < height; y += dotGap) {
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 3. Shadow Kartu Utama Neubrutalism
+        ctx.fillStyle = '#121212';
+        ctx.roundRect(88, 88, 1040, 474, 28);
+        ctx.fill();
+
+        // 4. Kartu Utama Putih (#FFFDF8)
+        ctx.fillStyle = '#FFFDF8';
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#121212';
+        ctx.beginPath();
+        ctx.roundRect(80, 80, 1040, 474, 28);
+        ctx.fill();
+        ctx.stroke();
+
+        // 5. Logo Arulz-XD API
+        try {
+            const logo = await loadImage('https://cdn.arulzzxd.my.id/files/1wh5do.png');
+            // Background lingkaran logo
+            ctx.fillStyle = '#121212';
+            ctx.beginPath();
+            ctx.arc(170, 170, 45, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(170, 170, 42, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(logo, 128, 128, 84, 84);
+            ctx.restore();
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#121212';
+            ctx.beginPath();
+            ctx.arc(170, 170, 42, 0, Math.PI * 2);
+            ctx.stroke();
+        } catch (e) {
+            console.error('Failed to load logo image', e);
+        }
+
+        // 6. Badge Kategori (Kuning Neubrutalist)
+        ctx.fillStyle = config.accent;
+        ctx.beginPath();
+        ctx.roundRect(240, 140, 260, 38, 10);
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#121212';
+        ctx.stroke();
+
+        ctx.fillStyle = '#121212';
+        ctx.font = '900 14px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(`⚡ ${config.badge}`, 254, 164);
+
+        // 7. Judul Halaman
+        ctx.fillStyle = '#121212';
+        ctx.font = '900 38px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(config.title, 130, 270);
+
+        // 8. Deskripsi Halaman (Auto Word Wrap)
+        ctx.fillStyle = '#3f3f46';
+        ctx.font = '600 22px "Plus Jakarta Sans", sans-serif';
+        const words = config.desc.split(' ');
+        let line = '';
+        let y = 330;
+        const maxWidth = 940;
+        const lineHeight = 34;
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+                ctx.fillText(line, 130, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, 130, y);
+
+        // 9. Footer Branding
+        ctx.fillStyle = '#71717a';
+        ctx.font = '700 16px "JetBrains Mono", monospace';
+        ctx.fillText('© 2026 ARULZ-XD API · https://api.arulzzxd.my.id', 130, 500);
+
+        // Response Buffer PNG
+        const buffer = await canvas.encode('png');
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(buffer);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating OG Image');
+    }
+});
 // ====================================================
 // 12. GENERAL SYSTEM & SERVICE WORKER API
 // ====================================================
