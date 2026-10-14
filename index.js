@@ -2307,17 +2307,21 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
+        // Deteksi URL Dinamis Sesuai Halaman (misal: /pastecode -> https://api.arulzzxd.my.id/pastecode)
+        const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
+        const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
+
         // Resolusi Presisi 600 x 300 (Rasio 2:1)
         const width = 600;
         const height = 300;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Luar Krem
+        // 1. Background Luar Krem (#FAF7EF)
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Grid Dot Pattern
+        // Pattern Grid Dot Neubrutalism
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
         for (let x = 0; x < width; x += 18) {
             for (let y = 0; y < height; y += 18) {
@@ -2338,7 +2342,7 @@ app.get('/api/og', async (req, res) => {
         ctx.roundRect(windowX + 6, windowY + 6, windowW, windowH, 16);
         ctx.fill();
 
-        // Window Body
+        // Window Body (#FFFDF8)
         ctx.fillStyle = '#FFFDF8';
         ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#121212';
@@ -2360,7 +2364,7 @@ app.get('/api/og', async (req, res) => {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Dots Kontrol Window (Merah, Kuning, Hijau)
+        // Dots Window Control (Merah, Kuning, Hijau)
         const dots = ['#ef4444', '#f59e0b', '#10b981'];
         dots.forEach((color, i) => {
             ctx.fillStyle = color;
@@ -2372,19 +2376,28 @@ app.get('/api/og', async (req, res) => {
             ctx.stroke();
         });
 
-        // Brand Name & URL
+        // SVG Logo Petir Navbar (Path2D)
+        ctx.save();
+        ctx.translate(windowX + 54, windowY + 11);
+        ctx.scale(0.75, 0.75);
+        ctx.fillStyle = '#121212';
+        const logoPath = new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z');
+        ctx.fill(logoPath);
+        ctx.restore();
+
+        // Brand Name & Dynamic Page URL (Navbar)
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 58, windowY + 23);
+        ctx.fillText('ArulzXD API', windowX + 74, windowY + 23);
 
         ctx.fillStyle = '#71717a';
         ctx.font = '10px monospace';
-        ctx.fillText('api.arulzzxd.my.id', windowX + 135, windowY + 23);
+        ctx.fillText(pageUrl, windowX + 150, windowY + 23);
 
         // Status Badge Online
         ctx.fillStyle = '#dcfce7';
         ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 120, windowY + 9, 108, 20, 10);
+        ctx.roundRect(windowX + windowW - 122, windowY + 9, 110, 20, 10);
         ctx.fill();
         ctx.strokeStyle = '#16a34a';
         ctx.lineWidth = 1.2;
@@ -2392,28 +2405,36 @@ app.get('/api/og', async (req, res) => {
 
         ctx.fillStyle = '#15803d';
         ctx.beginPath();
-        ctx.arc(windowX + windowW - 110, windowY + 19, 3, 0, Math.PI * 2);
+        ctx.arc(windowX + windowW - 112, windowY + 19, 3, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#166534';
         ctx.font = 'bold 8.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 102, windowY + 22);
+        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 104, windowY + 22);
 
-        // 4. Hero Content
+        // 4. Hero Content Section
         const contentX = windowX + 22;
 
-        // Tag Category Badge
+        // Tag Category Badge (Dengan SVG Petir Mini)
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 52, 160, 22, 6);
+        ctx.roundRect(contentX, windowY + 50, 175, 22, 6);
         ctx.fill();
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
+        // SVG Petir Badge
+        ctx.save();
+        ctx.translate(contentX + 8, windowY + 54);
+        ctx.scale(0.6, 0.6);
+        ctx.fillStyle = '#121212';
+        ctx.fill(logoPath);
+        ctx.restore();
+
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(`⚡ ${config.badge}`, contentX + 8, windowY + 66);
+        ctx.fillText(config.badge, contentX + 24, windowY + 64);
 
         // Judul Utama (Headline)
         ctx.fillStyle = '#121212';
@@ -2421,7 +2442,7 @@ app.get('/api/og', async (req, res) => {
         
         const titleWords = config.title.split(' ');
         let titleLine = '';
-        let titleY = windowY + 102;
+        let titleY = windowY + 98;
         for (let n = 0; n < titleWords.length; n++) {
             const testLine = titleLine + titleWords[n] + ' ';
             if (ctx.measureText(testLine).width > 510 && n > 0) {
@@ -2454,21 +2475,34 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(descLine, contentX, descY);
 
-        // 5. Grid Feature Badges (3 Kartu Fitur Kustom)
-        const featureY = windowY + windowH - 50;
+        // 5. Grid Feature Cards (Menggunakan SVG Path Murni Tanpa Emoji)
+        const featureY = windowY + windowH - 56;
         const miniW = 162;
-        const miniH = 32;
+        const miniH = 38;
         const miniGap = 12;
 
         const miniFeatures = [
-            { icon: '⚡', label: '210+ Endpoints' },
-            { icon: '📥', label: 'Media Downloader' },
-            { icon: '🤖', label: 'AI & Automations' }
+            { 
+                svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 
+                title: '210+ Endpoints', 
+                sub: 'Production Ready' 
+            },
+            { 
+                svg: 'M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2', 
+                title: 'Media Downloader', 
+                sub: 'TikTok, IG, YT, FB' 
+            },
+            { 
+                svg: 'M9.75 3.104v1.244m0 0a7.5 7.5 0 01-5.356 6.382m5.356-6.382a7.5 7.5 0 005.356 6.382M12 10.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z', 
+                title: 'AI & Automations', 
+                sub: 'OpenAI, Tools, Search' 
+            }
         ];
 
         miniFeatures.forEach((feat, i) => {
             const mX = contentX + (i * (miniW + miniGap));
 
+            // Card Body
             ctx.fillStyle = '#FAF7EF';
             ctx.beginPath();
             ctx.roundRect(mX, featureY, miniW, miniH, 8);
@@ -2477,9 +2511,36 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
+            // Circle Background Icon
+            ctx.fillStyle = '#FFFDF8';
+            ctx.beginPath();
+            ctx.arc(mX + 18, featureY + 19, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Render SVG Icon Path2D
+            ctx.save();
+            ctx.translate(mX + 13, featureY + 14);
+            ctx.scale(0.42, 0.42);
+            ctx.strokeStyle = '#121212';
+            ctx.fillStyle = '#121212';
+            ctx.lineWidth = 2;
+
+            const iconPath = new Path2D(feat.svg);
+            if (i === 0) ctx.fill(iconPath);
+            else ctx.stroke(iconPath);
+            ctx.restore();
+
+            // Title & Subtitle Card Feature
             ctx.fillStyle = '#121212';
             ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(`${feat.icon} ${feat.label}`, mX + 10, featureY + 20);
+            ctx.fillText(feat.title, mX + 34, featureY + 16);
+
+            ctx.fillStyle = '#71717a';
+            ctx.font = '8px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(feat.sub, mX + 34, featureY + 28);
         });
 
         // Encode Buffer PNG
@@ -2494,6 +2555,7 @@ app.get('/api/og', async (req, res) => {
         res.status(500).send('Error generating OG Image');
     }
 });
+
 
 // Mount Master API Endpoint Router
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
