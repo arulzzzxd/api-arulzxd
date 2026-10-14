@@ -2894,11 +2894,24 @@ app.get('/docs', async (req, res) => {
     <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <title>Arulz-XD API - Documentation</title>
-    <meta property="og:title" content="ArulzXD API - Documentation" />
-    <meta property="og:description" content="Layanan REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
-    <meta property="og:image" content="https://cdn.arulzzxd.my.id/files/1wh5do.png" />
-    <meta property="og:url" content="https://api.arulzzxd.my.id/" />
+    <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://api.arulzzxd.my.id/docs" />
+    <meta property="og:title" content="ArulzXD API - Dokumentasi REST API" />
+    <meta property="og:description" content="Jelajahi dokumentasi endpoint REST API lengkap dengan fitur pengujian langsung dan respons terstruktur." />
+    <meta property="og:image" content="https://api.arulzzxd.my.id/og/docs" />
+    <meta property="og:image:secure_url" content="https://api.arulzzxd.my.id/og/docs" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="300" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content="https://api.arulzzxd.my.id/docs" />
+    <meta name="twitter:title" content="ArulzXD API - Dokumentasi REST API" />
+    <meta name="twitter:description" content="Jelajahi dokumentasi endpoint REST API lengkap dengan fitur pengujian langsung dan respons terstruktur." />
+    <meta name="twitter:image" content="https://api.arulzzxd.my.id/og/docs" />
+
     <link rel="icon" href="https://cdn.arulzzxd.my.id/files/1wh5do.png" type="image/png">
     
     <!-- Tailwind CSS, Google Fonts, & FontAwesome -->
