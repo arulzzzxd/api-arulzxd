@@ -239,6 +239,7 @@ app.use(session({
 
 // Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
+    // Abaikan jika request menuju ke endpoint OG Image
     if (req.path.startsWith('/api/og')) {
         return next();
     }
@@ -266,13 +267,14 @@ app.use((req, res, next) => {
                 <meta name="title" content="${title}" />
                 <meta name="description" content="${desc}" />
 
-                <!-- Open Graph / Facebook / WhatsApp (Format Lanskap Besar) -->
+                <!-- Open Graph / Facebook / WhatsApp -->
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="${fullUrl}" />
                 <meta property="og:title" content="${title}" />
                 <meta property="og:description" content="${desc}" />
                 <meta property="og:image" content="${ogImageUrl}" />
                 <meta property="og:image:secure_url" content="${ogImageUrl}" />
+                <meta property="og:image:type" content="image/png" />
                 <meta property="og:image:width" content="1280" />
                 <meta property="og:image:height" content="720" />
 
@@ -2191,16 +2193,28 @@ if (fs.existsSync(apiPath)) {
     });
 }
 
-// Opsional: Muat font dari URL atau file lokal saat startup server
-async function loadCustomFonts() {
+let isFontLoaded = false;
+
+async function initCustomFont() {
+    if (isFontLoaded) return true;
     try {
-        const response = await axios.get('https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf', { responseType: 'arraybuffer' });
+        const response = await axios.get('https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf', { 
+            responseType: 'arraybuffer',
+            timeout: 5000 
+        });
+        
         GlobalFonts.register(Buffer.from(response.data), 'Plus Jakarta Sans');
+        isFontLoaded = true;
+        console.log('✅ Font "Plus Jakarta Sans" berhasil dimuat!');
+        return true;
     } catch (e) {
-        console.error('Gagal memuat font kustom:', e.message);
+        console.error('⚠️ Gagal memuat font kustom, fallback ke sans-serif:', e.message);
+        return false;
     }
 }
-loadCustomFonts();
+
+// Panggil di awal startup server
+initCustomFont();
 
 // Konfigurasi Metadata Halaman Publik (Gabungan Lengkap)
 const PAGE_CONFIGS = {
@@ -2280,6 +2294,9 @@ const PAGE_CONFIGS = {
 
 app.get('/api/og', async (req, res) => {
     try {
+        // Pastikan font terikat sebelum render
+        await initCustomFont();
+
         const pageKey = (req.query.page || 'home').toLowerCase();
         const baseConfig = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.home;
 
@@ -2290,17 +2307,17 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        // Resolusi Standar 16:9 Presisi (1280 x 720)
+        // Resolusi 16:9 Presisi (1280 x 720)
         const width = 1280;
         const height = 720;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Luar (Krem Neubrutalism)
+        // 1. Background Luar
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Grid Dot Pattern Ringan (Gap 32px agar tidak berat)
+        // Pattern Grid Dots
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
         for (let x = 0; x < width; x += 32) {
             for (let y = 0; y < height; y += 32) {
@@ -2310,18 +2327,18 @@ app.get('/api/og', async (req, res) => {
             }
         }
 
-        // 2. Mockup Window Dashboard
+        // 2. Window Container
         const windowX = 48;
         const windowY = 40;
         const windowW = 1184;
         const windowH = 640;
 
-        // Window Shadow
+        // Shadow Window
         ctx.fillStyle = '#121212';
         ctx.roundRect(windowX + 10, windowY + 10, windowW, windowH, 24);
         ctx.fill();
 
-        // Window Body
+        // Body Window
         ctx.fillStyle = '#FFFDF8';
         ctx.lineWidth = 3.5;
         ctx.strokeStyle = '#121212';
@@ -2330,7 +2347,7 @@ app.get('/api/og', async (req, res) => {
         ctx.fill();
         ctx.stroke();
 
-        // 3. Header Navbar Mockup
+        // 3. Navbar Header
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
         ctx.roundRect(windowX, windowY, windowW, 72, [24, 24, 0, 0]);
@@ -2343,7 +2360,7 @@ app.get('/api/og', async (req, res) => {
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Logo Petir SVG Path2D
+        // SVG Logo Petir (Path2D)
         ctx.save();
         ctx.translate(windowX + 28, windowY + 20);
         ctx.fillStyle = '#121212';
@@ -2353,7 +2370,7 @@ app.get('/api/og', async (req, res) => {
 
         // Brand Name
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 20px sans-serif';
+        ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ArulzXD API', windowX + 64, windowY + 44);
 
         ctx.fillStyle = '#71717a';
@@ -2375,13 +2392,13 @@ app.get('/api/og', async (req, res) => {
         ctx.fill();
 
         ctx.fillStyle = '#166534';
-        ctx.font = 'bold 12px sans-serif';
+        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 158, windowY + 40);
 
-        // 4. Hero Section Body
+        // 4. Hero Content Area
         const contentX = windowX + 56;
 
-        // Badge Tag Kategori
+        // Tag Category Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
         ctx.roundRect(contentX, windowY + 115, 230, 34, 10);
@@ -2391,17 +2408,17 @@ app.get('/api/og', async (req, res) => {
         ctx.stroke();
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 13px sans-serif';
+        ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
         ctx.fillText(`⚡ ${config.badge}`, contentX + 14, windowY + 137);
 
-        // Judul Utama (Headline)
+        // Main Headline Title
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 42px sans-serif';
+        ctx.font = 'bold 42px "Plus Jakarta Sans", sans-serif';
         ctx.fillText(config.title, contentX, windowY + 200);
 
-        // Deskripsi Halaman
+        // Description Paragraph
         ctx.fillStyle = '#52525b';
-        ctx.font = '20px sans-serif';
+        ctx.font = '20px "Plus Jakarta Sans", sans-serif';
         const words = config.desc.split(' ');
         let line = '';
         let lineY = windowY + 248;
@@ -2419,7 +2436,7 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(line, contentX, lineY);
 
-        // 5. Grid Cards Features (Format 16:9 Presisi)
+        // 5. Grid Feature Cards
         const cardY = windowY + 355;
         const cardW = 250;
         const cardH = 160;
@@ -2449,7 +2466,7 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Circle SVG Background
+            // Circle Icon Background
             ctx.fillStyle = '#FFFDF8';
             ctx.beginPath();
             ctx.arc(cX + 34, cardY + 38, 18, 0, Math.PI * 2);
@@ -2458,7 +2475,7 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // SVG Icon Path2D
+            // Icon SVG Path2D
             ctx.save();
             ctx.translate(cX + 25, cardY + 29);
             ctx.scale(0.75, 0.75);
@@ -2471,23 +2488,23 @@ app.get('/api/og', async (req, res) => {
             else ctx.stroke(iconPath);
             ctx.restore();
 
-            // Text Label
+            // Label Text
             ctx.fillStyle = '#121212';
-            ctx.font = 'bold 16px sans-serif';
+            ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(feat.title, cX + 18, cardY + 96);
 
             ctx.fillStyle = '#71717a';
-            ctx.font = '13px sans-serif';
+            ctx.font = '13px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(feat.sub, cX + 18, cardY + 122);
         });
 
-        // 6. Footer Information
+        // 6. Footer Text
         ctx.fillStyle = '#a1a1aa';
         ctx.font = '13px monospace';
         ctx.fillText('High availability REST API Gateway v2.0 · Zero-Downtime Engine', contentX, windowY + windowH - 28);
         ctx.fillText('© 2026 ArulzXD API. All rights reserved.', windowX + windowW - 330, windowY + windowH - 28);
 
-        // Output Buffer PNG
+        // Encode Buffer PNG
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Length', buffer.length);
