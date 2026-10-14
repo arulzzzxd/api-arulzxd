@@ -2292,33 +2292,30 @@ const PAGE_CONFIGS = {
     }
 };
 
-app.get('/api/og', async (req, res) => {
+app.get('/og/:page?', async (req, res) => {
     try {
-        // Pastikan font terikat sebelum render
         await initCustomFont();
 
-        const pageKey = (req.query.page || 'home').toLowerCase();
+        // Mengambil param dari route baru (/og/pastecode -> pageKey = 'pastecode')
+        const pageKey = (req.params.page || req.query.page || 'home').toLowerCase();
         const baseConfig = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.home;
 
         const config = {
             title: req.query.title || baseConfig.title,
             desc: req.query.desc || baseConfig.desc,
             badge: req.query.badge || baseConfig.badge,
-            accent: req.query.accent || baseConfig.accent
+            accent: req.query.accent || baseConfig.accent || '#FFE600'
         };
 
-        // Dynamic URL untuk navbar
         const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
         const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
 
-        // Resolusi Presisi 600 x 300 (Rasio 2:1)
         const width = 600;
         const height = 300;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // Helper fungsi pengganti Path2D agar aman di semua versi @napi-rs/canvas
-        function drawPetirIcon(x, y, scale = 1) {
+        function drawPetirIcon(x, y, scale = 1, fill = '#121212') {
             ctx.save();
             ctx.translate(x, y);
             ctx.scale(scale, scale);
@@ -2331,40 +2328,47 @@ app.get('/api/og', async (req, res) => {
             ctx.lineTo(12, 10);
             ctx.lineTo(13, 2);
             ctx.closePath();
-            ctx.fillStyle = '#121212';
+            ctx.fillStyle = fill;
             ctx.fill();
             ctx.restore();
         }
 
-        // 1. Background Outer Krem (#FAF7EF)
+        // 1. Background Outer Base
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Grid Dot Pattern Neubrutalism
-        ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
-        for (let x = 0; x < width; x += 18) {
-            for (let y = 0; y < height; y += 18) {
+        // Dot Grid Pattern
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.07)';
+        for (let x = 0; x < width; x += 16) {
+            for (let y = 0; y < height; y += 16) {
                 ctx.beginPath();
                 ctx.arc(x, y, 1.2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // 2. Mockup Window Container Dashboard
-        const windowX = 18;
-        const windowY = 16;
-        const windowW = 564;
-        const windowH = 268;
+        // Accent Glow Di Belakang Frame
+        const glowGradient = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, 280);
+        glowGradient.addColorStop(0, config.accent + '33');
+        glowGradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGradient;
+        ctx.fillRect(0, 0, width, height);
 
-        // Window Shadow
+        // 2. Window Container Neubrutalism
+        const windowX = 16;
+        const windowY = 14;
+        const windowW = 568;
+        const windowH = 272;
+
+        // Shadow Tegas 8px
         ctx.fillStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(windowX + 6, windowY + 6, windowW, windowH, 16);
+        ctx.roundRect(windowX + 8, windowY + 8, windowW, windowH, 16);
         ctx.fill();
 
-        // Window Body
+        // Window Card Body
         ctx.fillStyle = '#FFFDF8';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
         ctx.roundRect(windowX, windowY, windowW, windowH, 16);
@@ -2372,87 +2376,90 @@ app.get('/api/og', async (req, res) => {
         ctx.stroke();
 
         // 3. Header Navbar Mockup
-        ctx.fillStyle = '#FAF7EF';
+        ctx.fillStyle = '#F4EFE6';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 38, 16);
+        ctx.roundRect(windowX, windowY, windowW, 38, [16, 16, 0, 0]);
         ctx.fill();
-        ctx.fillRect(windowX, windowY + 20, windowW, 18);
 
         ctx.beginPath();
         ctx.moveTo(windowX, windowY + 38);
         ctx.lineTo(windowX + windowW, windowY + 38);
         ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Dots Window Control (Merah, Kuning, Hijau)
-        const dots = ['#ef4444', '#f59e0b', '#10b981'];
+        // Window Controls (Merah, Kuning, Hijau)
+        const dots = ['#FF5F56', '#FFBD2E', '#27C93F'];
         dots.forEach((color, i) => {
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(windowX + 16 + (i * 12), windowY + 19, 3.5, 0, Math.PI * 2);
+            ctx.arc(windowX + 18 + (i * 13), windowY + 19, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
         });
 
-        // Logo Petir Navbar (Menggunakan Native Path)
-        drawPetirIcon(windowX + 52, windowY + 8, 0.75);
+        // Brand Logo
+        drawPetirIcon(windowX + 58, windowY + 9, 0.75, '#121212');
 
-        // Brand Name & Dynamic Page URL
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 74, windowY + 23);
+        ctx.fillText('ArulzXD API', windowX + 80, windowY + 23);
 
-        ctx.fillStyle = '#71717a';
-        ctx.font = '10px monospace';
-        ctx.fillText(pageUrl, windowX + 150, windowY + 23);
-
-        // Status Badge Online
-        ctx.fillStyle = '#dcfce7';
+        // URL Pill Badge
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.06)';
         ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 122, windowY + 9, 110, 20, 10);
+        ctx.roundRect(windowX + 160, windowY + 9, 210, 20, 10);
         ctx.fill();
-        ctx.strokeStyle = '#16a34a';
+
+        ctx.fillStyle = '#52525B';
+        ctx.font = '10px monospace';
+        ctx.fillText(pageUrl, windowX + 170, windowY + 23);
+
+        // System Online Badge
+        ctx.fillStyle = '#DCFCE7';
+        ctx.beginPath();
+        ctx.roundRect(windowX + windowW - 128, windowY + 9, 116, 20, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#16A34A';
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        ctx.fillStyle = '#15803d';
+        ctx.fillStyle = '#22C55E';
         ctx.beginPath();
-        ctx.arc(windowX + windowW - 112, windowY + 19, 3, 0, Math.PI * 2);
+        ctx.arc(windowX + windowW - 118, windowY + 19, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#166534';
+        ctx.fillStyle = '#15803D';
         ctx.font = 'bold 8.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 104, windowY + 22);
+        ctx.fillText('SYSTEMS 100%', windowX + windowW - 108, windowY + 22);
 
-        // 4. Hero Content Section
+        // 4. Content Area
         const contentX = windowX + 22;
 
         // Category Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 50, 160, 22, 6);
+        ctx.roundRect(contentX, windowY + 52, 160, 22, 6);
         ctx.fill();
         ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Icon Petir Badge
-        drawPetirIcon(contentX + 6, windowY + 51, 0.55);
+        drawPetirIcon(contentX + 6, windowY + 53, 0.55, '#121212');
 
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(config.badge, contentX + 24, windowY + 64);
+        ctx.fillText(config.badge.toUpperCase(), contentX + 24, windowY + 66);
 
-        // Headline Title
+        // Title
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
-        
+
         const titleWords = config.title.split(' ');
         let titleLine = '';
-        let titleY = windowY + 98;
+        let titleY = windowY + 100;
         for (let n = 0; n < titleWords.length; n++) {
             const testLine = titleLine + titleWords[n] + ' ';
             if (ctx.measureText(testLine).width > 510 && n > 0) {
@@ -2465,17 +2472,16 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(titleLine, contentX, titleY);
 
-        // Description Paragraph
-        ctx.fillStyle = '#52525b';
+        // Description
+        ctx.fillStyle = '#52525B';
         ctx.font = '11px "Plus Jakarta Sans", sans-serif';
         const words = config.desc.split(' ');
         let descLine = '';
         let descY = titleY + 20;
-        const maxW = 515;
 
         for (let n = 0; n < words.length; n++) {
             const testLine = descLine + words[n] + ' ';
-            if (ctx.measureText(testLine).width > maxW && n > 0) {
+            if (ctx.measureText(testLine).width > 515 && n > 0) {
                 ctx.fillText(descLine, contentX, descY);
                 descLine = words[n] + ' ';
                 descY += 15;
@@ -2485,9 +2491,9 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(descLine, contentX, descY);
 
-        // 5. Grid Feature Cards (Native Canvas Vector)
-        const featureY = windowY + windowH - 58;
-        const miniW = 162;
+        // 5. Grid Feature Cards
+        const featureY = windowY + windowH - 56;
+        const miniW = 164;
         const miniH = 38;
         const miniGap = 12;
 
@@ -2500,27 +2506,26 @@ app.get('/api/og', async (req, res) => {
         miniFeatures.forEach((feat, i) => {
             const mX = contentX + (i * (miniW + miniGap));
 
-            // Card Body
+            // Card Base
             ctx.fillStyle = '#FAF7EF';
             ctx.beginPath();
             ctx.roundRect(mX, featureY, miniW, miniH, 8);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Circle Icon Background
+            // Icon Circle
             ctx.fillStyle = '#FFFDF8';
             ctx.beginPath();
             ctx.arc(mX + 18, featureY + 19, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
 
-            // Render Native Icon
             if (feat.type === 'bolt') {
-                drawPetirIcon(mX + 13, featureY + 11, 0.55);
+                drawPetirIcon(mX + 13, featureY + 11, 0.55, '#121212');
             } else if (feat.type === 'download') {
                 ctx.save();
                 ctx.strokeStyle = '#121212';
@@ -2539,7 +2544,7 @@ app.get('/api/og', async (req, res) => {
                 ctx.save();
                 ctx.fillStyle = '#121212';
                 ctx.beginPath();
-                ctx.arc(mX + 18, featureY + 19, 4, 0, Math.PI * 2);
+                ctx.arc(mX + 18, featureY + 19, 3.5, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#121212';
                 ctx.lineWidth = 1.2;
@@ -2549,17 +2554,15 @@ app.get('/api/og', async (req, res) => {
                 ctx.restore();
             }
 
-            // Title & Subtitle Card
             ctx.fillStyle = '#121212';
             ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(feat.title, mX + 34, featureY + 16);
 
-            ctx.fillStyle = '#71717a';
+            ctx.fillStyle = '#71717A';
             ctx.font = '8px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(feat.sub, mX + 34, featureY + 28);
         });
 
-        // Encode Buffer PNG
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Length', buffer.length);
@@ -2571,7 +2574,6 @@ app.get('/api/og', async (req, res) => {
         res.status(500).send('Error generating OG Image');
     }
 });
-
 
 // Mount Master API Endpoint Router
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
