@@ -2307,7 +2307,7 @@ app.get('/api/og', async (req, res) => {
             accent: req.query.accent || baseConfig.accent
         };
 
-        // Deteksi URL Dinamis Sesuai Halaman
+        // Dynamic URL untuk navbar
         const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
         const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
 
@@ -2317,11 +2317,30 @@ app.get('/api/og', async (req, res) => {
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // 1. Background Luar Krem (#FAF7EF)
+        // Helper fungsi pengganti Path2D agar aman di semua versi @napi-rs/canvas
+        function drawPetirIcon(x, y, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+            ctx.beginPath();
+            ctx.moveTo(13, 2);
+            ctx.lineTo(3, 14);
+            ctx.lineTo(12, 14);
+            ctx.lineTo(11, 22);
+            ctx.lineTo(21, 10);
+            ctx.lineTo(12, 10);
+            ctx.lineTo(13, 2);
+            ctx.closePath();
+            ctx.fillStyle = '#121212';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // 1. Background Outer Krem (#FAF7EF)
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Pattern Grid Dot Neubrutalism
+        // Grid Dot Pattern Neubrutalism
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
         for (let x = 0; x < width; x += 18) {
             for (let y = 0; y < height; y += 18) {
@@ -2339,10 +2358,11 @@ app.get('/api/og', async (req, res) => {
 
         // Window Shadow
         ctx.fillStyle = '#121212';
+        ctx.beginPath();
         ctx.roundRect(windowX + 6, windowY + 6, windowW, windowH, 16);
         ctx.fill();
 
-        // Window Body (#FFFDF8)
+        // Window Body
         ctx.fillStyle = '#FFFDF8';
         ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#121212';
@@ -2351,12 +2371,11 @@ app.get('/api/og', async (req, res) => {
         ctx.fill();
         ctx.stroke();
 
-        // 3. Header Navbar
+        // 3. Header Navbar Mockup
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
         ctx.roundRect(windowX, windowY, windowW, 38, 16);
         ctx.fill();
-        // Tutup sudut bawah navbar
         ctx.fillRect(windowX, windowY + 20, windowW, 18);
 
         ctx.beginPath();
@@ -2378,16 +2397,10 @@ app.get('/api/og', async (req, res) => {
             ctx.stroke();
         });
 
-        // SVG Logo Petir Navbar (Path2D)
-        const logoSvgStr = 'M13 2L3 14h9l-1 8 10-12h-9l1-8z';
-        ctx.save();
-        ctx.translate(windowX + 54, windowY + 11);
-        ctx.scale(0.75, 0.75);
-        ctx.fillStyle = '#121212';
-        ctx.fill(new Path2D(logoSvgStr));
-        ctx.restore();
+        // Logo Petir Navbar (Menggunakan Native Path)
+        drawPetirIcon(windowX + 52, windowY + 8, 0.75);
 
-        // Brand Name & Dynamic Page URL (Navbar)
+        // Brand Name & Dynamic Page URL
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ArulzXD API', windowX + 74, windowY + 23);
@@ -2417,28 +2430,23 @@ app.get('/api/og', async (req, res) => {
         // 4. Hero Content Section
         const contentX = windowX + 22;
 
-        // Tag Category Badge
+        // Category Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 50, 175, 22, 6);
+        ctx.roundRect(contentX, windowY + 50, 160, 22, 6);
         ctx.fill();
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // SVG Petir Badge
-        ctx.save();
-        ctx.translate(contentX + 8, windowY + 54);
-        ctx.scale(0.6, 0.6);
-        ctx.fillStyle = '#121212';
-        ctx.fill(new Path2D(logoSvgStr));
-        ctx.restore();
+        // Icon Petir Badge
+        drawPetirIcon(contentX + 6, windowY + 51, 0.55);
 
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
         ctx.fillText(config.badge, contentX + 24, windowY + 64);
 
-        // Judul Utama (Headline)
+        // Headline Title
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
         
@@ -2457,7 +2465,7 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(titleLine, contentX, titleY);
 
-        // Deskripsi Halaman
+        // Description Paragraph
         ctx.fillStyle = '#52525b';
         ctx.font = '11px "Plus Jakarta Sans", sans-serif';
         const words = config.desc.split(' ');
@@ -2477,31 +2485,16 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(descLine, contentX, descY);
 
-        // 5. Grid Feature Cards (Path SVG yang Aman & Valid)
-        const featureY = windowY + windowH - 56;
+        // 5. Grid Feature Cards (Native Canvas Vector)
+        const featureY = windowY + windowH - 58;
         const miniW = 162;
         const miniH = 38;
         const miniGap = 12;
 
         const miniFeatures = [
-            { 
-                svg: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 
-                fillMode: true,
-                title: '210+ Endpoints', 
-                sub: 'Production Ready' 
-            },
-            { 
-                svg: 'M12 2v11m0 0l-3-3m3 3l3-3M4 17h16', 
-                fillMode: false,
-                title: 'Media Downloader', 
-                sub: 'TikTok, IG, YT, FB' 
-            },
-            { 
-                svg: 'M12 2a10 10 0 100 20 10 10 0 000-20zm0 4a6 6 0 110 12 6 6 0 010-12z', 
-                fillMode: true,
-                title: 'AI & Automations', 
-                sub: 'OpenAI, Tools, Search' 
-            }
+            { type: 'bolt', title: '210+ Endpoints', sub: 'Production Ready' },
+            { type: 'download', title: 'Media Downloader', sub: 'TikTok, IG, YT, FB' },
+            { type: 'ai', title: 'AI & Automations', sub: 'OpenAI, Tools, Search' }
         ];
 
         miniFeatures.forEach((feat, i) => {
@@ -2516,7 +2509,7 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 1.2;
             ctx.stroke();
 
-            // Circle Background Icon
+            // Circle Icon Background
             ctx.fillStyle = '#FFFDF8';
             ctx.beginPath();
             ctx.arc(mX + 18, featureY + 19, 10, 0, Math.PI * 2);
@@ -2525,23 +2518,38 @@ app.get('/api/og', async (req, res) => {
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Render SVG Icon Path2D Aman
-            ctx.save();
-            ctx.translate(mX + 13, featureY + 14);
-            ctx.scale(0.42, 0.42);
-            ctx.strokeStyle = '#121212';
-            ctx.fillStyle = '#121212';
-            ctx.lineWidth = 2;
-
-            const iconPath = new Path2D(feat.svg);
-            if (feat.fillMode) {
-                ctx.fill(iconPath);
-            } else {
-                ctx.stroke(iconPath);
+            // Render Native Icon
+            if (feat.type === 'bolt') {
+                drawPetirIcon(mX + 13, featureY + 11, 0.55);
+            } else if (feat.type === 'download') {
+                ctx.save();
+                ctx.strokeStyle = '#121212';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(mX + 18, featureY + 13);
+                ctx.lineTo(mX + 18, featureY + 22);
+                ctx.lineTo(mX + 15, featureY + 19);
+                ctx.moveTo(mX + 18, featureY + 22);
+                ctx.lineTo(mX + 21, featureY + 19);
+                ctx.moveTo(mX + 13, featureY + 25);
+                ctx.lineTo(mX + 23, featureY + 25);
+                ctx.stroke();
+                ctx.restore();
+            } else if (feat.type === 'ai') {
+                ctx.save();
+                ctx.fillStyle = '#121212';
+                ctx.beginPath();
+                ctx.arc(mX + 18, featureY + 19, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#121212';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.arc(mX + 18, featureY + 19, 6.5, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
             }
-            ctx.restore();
 
-            // Title & Subtitle Card Feature
+            // Title & Subtitle Card
             ctx.fillStyle = '#121212';
             ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(feat.title, mX + 34, featureY + 16);
