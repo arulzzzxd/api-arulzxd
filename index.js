@@ -20,7 +20,7 @@ const crypto = require('crypto');
 const compression = require('compression');
 const os = require('os');
 const webpush = require('web-push');
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -2160,6 +2160,17 @@ if (fs.existsSync(apiPath)) {
     });
 }
 
+// Opsional: Muat font dari URL atau file lokal saat startup server
+async function loadCustomFonts() {
+    try {
+        const response = await axios.get('https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf', { responseType: 'arraybuffer' });
+        GlobalFonts.register(Buffer.from(response.data), 'Plus Jakarta Sans');
+    } catch (e) {
+        console.error('Gagal memuat font kustom:', e.message);
+    }
+}
+loadCustomFonts();
+
 // Konfigurasi Metadata Halaman Publik (Gabungan Lengkap)
 const PAGE_CONFIGS = {
     home: {
@@ -2236,7 +2247,7 @@ const PAGE_CONFIGS = {
     }
 };
 
-// Endpoint OG Image Publik (Langsung terikat pada app)
+// Endpoint OG Image Publik dengan Fallback Font Aman
 app.get('/api/og', async (req, res) => {
     try {
         const pageKey = (req.query.page || 'home').toLowerCase();
@@ -2308,7 +2319,7 @@ app.get('/api/og', async (req, res) => {
             console.error('Failed to load logo image:', e.message);
         }
 
-        // 6. Badge Kategori
+        // 6. Badge Kategori (Font Fallback Aman: sans-serif)
         ctx.fillStyle = config.accent;
         ctx.beginPath();
         ctx.roundRect(240, 140, 280, 38, 10);
@@ -2318,17 +2329,17 @@ app.get('/api/og', async (req, res) => {
         ctx.stroke();
 
         ctx.fillStyle = '#121212';
-        ctx.font = '900 14px "Plus Jakarta Sans", sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.fillText(`⚡ ${config.badge}`, 254, 164);
 
-        // 7. Judul Halaman
+        // 7. Judul Halaman (Font Fallback Aman: sans-serif)
         ctx.fillStyle = '#121212';
-        ctx.font = '900 38px "Plus Jakarta Sans", sans-serif';
+        ctx.font = 'bold 36px sans-serif';
         ctx.fillText(config.title, 130, 270);
 
         // 8. Deskripsi Halaman (Auto Word Wrap)
         ctx.fillStyle = '#3f3f46';
-        ctx.font = '600 22px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '22px sans-serif';
         const words = config.desc.split(' ');
         let line = '';
         let y = 330;
@@ -2348,9 +2359,9 @@ app.get('/api/og', async (req, res) => {
         }
         ctx.fillText(line, 130, y);
 
-        // 9. Footer Branding
+        // 9. Footer Branding (Font Fallback Aman: monospace)
         ctx.fillStyle = '#71717a';
-        ctx.font = '700 16px "JetBrains Mono", monospace';
+        ctx.font = 'bold 16px monospace';
         ctx.fillText('© 2026 ARULZ-XD API · https://api.arulzzxd.my.id', 130, 500);
 
         // Output Gambar PNG
