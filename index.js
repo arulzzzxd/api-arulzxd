@@ -237,14 +237,16 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 }));
 
-// Middleware pencegah penandatanganan salah (false positive) crawler Meta/WhatsApp
 app.use((req, res, next) => {
-    if (req.path.startsWith('/api/og')) {
+    if (req.path.startsWith('/og')) {
         return next();
     }
 
     const userAgent = req.headers['user-agent'] || '';
-    const isMetaCrawler = userAgent.includes('facebookexternalhit') || userAgent.includes('WhatsApp');
+    const isMetaCrawler = userAgent.includes('facebookexternalhit') || 
+                          userAgent.includes('WhatsApp') || 
+                          userAgent.includes('Twitterbot') || 
+                          userAgent.includes('LinkedInBot');
 
     if (isMetaCrawler) {
         const pathKey = req.path.replace(/^\//, '').toLowerCase() || 'home';
@@ -262,22 +264,23 @@ app.use((req, res, next) => {
             <html lang="id">
             <head>
                 <meta charset="UTF-8">
-                <title>${title}</title>
-                <meta name="title" content="${title}" />
+                <title>${title} | ArulzXD API</title>
+                <meta name="title" content="${title} | ArulzXD API" />
                 <meta name="description" content="${desc}" />
 
-                <!-- Open Graph / Facebook / WhatsApp (Rasio 600x300) -->
+                <!-- Open Graph / Facebook / WhatsApp (Rasio Standard 1200x630) -->
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="${fullUrl}" />
+                <meta property="og:site_name" content="ArulzXD API Gateway" />
                 <meta property="og:title" content="${title}" />
                 <meta property="og:description" content="${desc}" />
                 <meta property="og:image" content="${ogImageUrl}" />
                 <meta property="og:image:secure_url" content="${ogImageUrl}" />
                 <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="600" />
-                <meta property="og:image:height" content="300" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
 
-                <!-- Twitter Card -->
+                <!-- Twitter Card Standard -->
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:url" content="${fullUrl}" />
                 <meta name="twitter:title" content="${title}" />
@@ -294,7 +297,6 @@ app.use((req, res, next) => {
 
     next();
 });
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -2296,7 +2298,6 @@ app.get('/og/:page?', async (req, res) => {
     try {
         await initCustomFont();
 
-        // Mengambil param dari route baru (/og/pastecode -> pageKey = 'pastecode')
         const pageKey = (req.params.page || req.query.page || 'home').toLowerCase();
         const baseConfig = PAGE_CONFIGS[pageKey] || PAGE_CONFIGS.home;
 
@@ -2310,8 +2311,9 @@ app.get('/og/:page?', async (req, res) => {
         const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
         const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
 
-        const width = 600;
-        const height = 300;
+        // Standard OpenGraph Resolution (1200 x 630 px)
+        const width = 1200;
+        const height = 630;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
@@ -2339,133 +2341,133 @@ app.get('/og/:page?', async (req, res) => {
 
         // Dot Grid Pattern
         ctx.fillStyle = 'rgba(18, 18, 18, 0.07)';
-        for (let x = 0; x < width; x += 16) {
-            for (let y = 0; y < height; y += 16) {
+        for (let x = 0; x < width; x += 32) {
+            for (let y = 0; y < height; y += 32) {
                 ctx.beginPath();
-                ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+                ctx.arc(x, y, 2.4, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // Accent Glow Di Belakang Frame
-        const glowGradient = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, 280);
+        // Accent Radial Glow
+        const glowGradient = ctx.createRadialGradient(width / 2, height / 2, 100, width / 2, height / 2, 560);
         glowGradient.addColorStop(0, config.accent + '33');
         glowGradient.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGradient;
         ctx.fillRect(0, 0, width, height);
 
         // 2. Window Container Neubrutalism
-        const windowX = 16;
-        const windowY = 14;
-        const windowW = 568;
-        const windowH = 272;
+        const windowX = 32;
+        const windowY = 28;
+        const windowW = 1136;
+        const windowH = 574;
 
-        // Shadow Tegas 8px
+        // Shadow Tegas
         ctx.fillStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(windowX + 8, windowY + 8, windowW, windowH, 16);
+        ctx.roundRect(windowX + 16, windowY + 16, windowW, windowH, 32);
         ctx.fill();
 
         // Window Card Body
         ctx.fillStyle = '#FFFDF8';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 6;
         ctx.strokeStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, windowH, 16);
+        ctx.roundRect(windowX, windowY, windowW, windowH, 32);
         ctx.fill();
         ctx.stroke();
 
         // 3. Header Navbar Mockup
         ctx.fillStyle = '#F4EFE6';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 38, [16, 16, 0, 0]);
+        ctx.roundRect(windowX, windowY, windowW, 80, [32, 32, 0, 0]);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(windowX, windowY + 38);
-        ctx.lineTo(windowX + windowW, windowY + 38);
+        ctx.moveTo(windowX, windowY + 80);
+        ctx.lineTo(windowX + windowW, windowY + 80);
         ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 5;
         ctx.stroke();
 
-        // Window Controls (Merah, Kuning, Hijau)
+        // Window Controls
         const dots = ['#FF5F56', '#FFBD2E', '#27C93F'];
         dots.forEach((color, i) => {
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(windowX + 18 + (i * 13), windowY + 19, 4, 0, Math.PI * 2);
+            ctx.arc(windowX + 36 + (i * 26), windowY + 40, 8, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
         });
 
         // Brand Logo
-        drawPetirIcon(windowX + 58, windowY + 9, 0.75, '#121212');
+        drawPetirIcon(windowX + 120, windowY + 20, 1.6, '#121212');
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 80, windowY + 23);
+        ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ArulzXD API', windowX + 165, windowY + 48);
 
         // URL Pill Badge
         ctx.fillStyle = 'rgba(18, 18, 18, 0.06)';
         ctx.beginPath();
-        ctx.roundRect(windowX + 160, windowY + 9, 210, 20, 10);
+        ctx.roundRect(windowX + 330, windowY + 20, 420, 40, 20);
         ctx.fill();
 
         ctx.fillStyle = '#52525B';
-        ctx.font = '10px monospace';
-        ctx.fillText(pageUrl, windowX + 170, windowY + 23);
+        ctx.font = '20px monospace';
+        ctx.fillText(pageUrl, windowX + 350, windowY + 47);
 
         // System Online Badge
         ctx.fillStyle = '#DCFCE7';
         ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 128, windowY + 9, 116, 20, 10);
+        ctx.roundRect(windowX + windowW - 250, windowY + 20, 220, 40, 20);
         ctx.fill();
         ctx.strokeStyle = '#16A34A';
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         ctx.fillStyle = '#22C55E';
         ctx.beginPath();
-        ctx.arc(windowX + windowW - 118, windowY + 19, 3.5, 0, Math.PI * 2);
+        ctx.arc(windowX + windowW - 230, windowY + 40, 7, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#15803D';
-        ctx.font = 'bold 8.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('SYSTEMS 100%', windowX + windowW - 108, windowY + 22);
+        ctx.font = 'bold 17px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('SYSTEMS 100%', windowX + windowW - 210, windowY + 46);
 
         // 4. Content Area
-        const contentX = windowX + 22;
+        const contentX = windowX + 48;
 
         // Category Badge
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 52, 160, 22, 6);
+        ctx.roundRect(contentX, windowY + 110, 320, 44, 12);
         ctx.fill();
         ctx.strokeStyle = '#121212';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 4;
         ctx.stroke();
 
-        drawPetirIcon(contentX + 6, windowY + 53, 0.55, '#121212');
+        drawPetirIcon(contentX + 12, windowY + 114, 1.1, '#121212');
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(config.badge.toUpperCase(), contentX + 24, windowY + 66);
+        ctx.font = 'bold 19px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(config.badge.toUpperCase(), contentX + 48, windowY + 138);
 
         // Title
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+        ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
 
         const titleWords = config.title.split(' ');
         let titleLine = '';
-        let titleY = windowY + 100;
+        let titleY = windowY + 210;
         for (let n = 0; n < titleWords.length; n++) {
             const testLine = titleLine + titleWords[n] + ' ';
-            if (ctx.measureText(testLine).width > 510 && n > 0) {
+            if (ctx.measureText(testLine).width > 1020 && n > 0) {
                 ctx.fillText(titleLine, contentX, titleY);
                 titleLine = titleWords[n] + ' ';
-                titleY += 22;
+                titleY += 44;
             } else {
                 titleLine = testLine;
             }
@@ -2474,17 +2476,17 @@ app.get('/og/:page?', async (req, res) => {
 
         // Description
         ctx.fillStyle = '#52525B';
-        ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+        ctx.font = '22px "Plus Jakarta Sans", sans-serif';
         const words = config.desc.split(' ');
         let descLine = '';
-        let descY = titleY + 20;
+        let descY = titleY + 40;
 
         for (let n = 0; n < words.length; n++) {
             const testLine = descLine + words[n] + ' ';
-            if (ctx.measureText(testLine).width > 515 && n > 0) {
+            if (ctx.measureText(testLine).width > 1030 && n > 0) {
                 ctx.fillText(descLine, contentX, descY);
                 descLine = words[n] + ' ';
-                descY += 15;
+                descY += 30;
             } else {
                 descLine = testLine;
             }
@@ -2492,10 +2494,10 @@ app.get('/og/:page?', async (req, res) => {
         ctx.fillText(descLine, contentX, descY);
 
         // 5. Grid Feature Cards
-        const featureY = windowY + windowH - 56;
-        const miniW = 164;
-        const miniH = 38;
-        const miniGap = 12;
+        const featureY = windowY + windowH - 110;
+        const miniW = 328;
+        const miniH = 76;
+        const miniGap = 24;
 
         const miniFeatures = [
             { type: 'bolt', title: '210+ Endpoints', sub: 'Production Ready' },
@@ -2509,58 +2511,58 @@ app.get('/og/:page?', async (req, res) => {
             // Card Base
             ctx.fillStyle = '#FAF7EF';
             ctx.beginPath();
-            ctx.roundRect(mX, featureY, miniW, miniH, 8);
+            ctx.roundRect(mX, featureY, miniW, miniH, 16);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 3;
             ctx.stroke();
 
             // Icon Circle
             ctx.fillStyle = '#FFFDF8';
             ctx.beginPath();
-            ctx.arc(mX + 18, featureY + 19, 10, 0, Math.PI * 2);
+            ctx.arc(mX + 36, featureY + 38, 20, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
             if (feat.type === 'bolt') {
-                drawPetirIcon(mX + 13, featureY + 11, 0.55, '#121212');
+                drawPetirIcon(mX + 26, featureY + 22, 1.1, '#121212');
             } else if (feat.type === 'download') {
                 ctx.save();
                 ctx.strokeStyle = '#121212';
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(mX + 18, featureY + 13);
-                ctx.lineTo(mX + 18, featureY + 22);
-                ctx.lineTo(mX + 15, featureY + 19);
-                ctx.moveTo(mX + 18, featureY + 22);
-                ctx.lineTo(mX + 21, featureY + 19);
-                ctx.moveTo(mX + 13, featureY + 25);
-                ctx.lineTo(mX + 23, featureY + 25);
+                ctx.moveTo(mX + 36, featureY + 26);
+                ctx.lineTo(mX + 36, featureY + 44);
+                ctx.lineTo(mX + 30, featureY + 38);
+                ctx.moveTo(mX + 36, featureY + 44);
+                ctx.lineTo(mX + 42, featureY + 38);
+                ctx.moveTo(mX + 26, featureY + 50);
+                ctx.lineTo(mX + 46, featureY + 50);
                 ctx.stroke();
                 ctx.restore();
             } else if (feat.type === 'ai') {
                 ctx.save();
                 ctx.fillStyle = '#121212';
                 ctx.beginPath();
-                ctx.arc(mX + 18, featureY + 19, 3.5, 0, Math.PI * 2);
+                ctx.arc(mX + 36, featureY + 38, 7, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#121212';
-                ctx.lineWidth = 1.2;
+                ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                ctx.arc(mX + 18, featureY + 19, 6.5, 0, Math.PI * 2);
+                ctx.arc(mX + 36, featureY + 38, 13, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.restore();
             }
 
             ctx.fillStyle = '#121212';
-            ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.title, mX + 34, featureY + 16);
+            ctx.font = 'bold 19px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(feat.title, mX + 68, featureY + 32);
 
             ctx.fillStyle = '#71717A';
-            ctx.font = '8px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.sub, mX + 34, featureY + 28);
+            ctx.font = '16px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(feat.sub, mX + 68, featureY + 56);
         });
 
         const buffer = await canvas.encode('png');
