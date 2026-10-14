@@ -254,7 +254,7 @@ app.use((req, res, next) => {
         const desc = req.query.desc || baseConfig.desc;
         const pageKey = PAGE_CONFIGS[pathKey] ? pathKey : 'home';
         
-        const ogImageUrl = `https://api.arulzzxd.my.id/api/og?page=${pageKey}`;
+        const ogImageUrl = `https://api.arulzzxd.my.id/og/${pageKey}`;
         const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
 
         return res.send(`
