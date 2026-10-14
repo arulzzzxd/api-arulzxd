@@ -2305,14 +2305,12 @@ app.get('/og/:page?', async (req, res) => {
             title: req.query.title || baseConfig.title,
             desc: req.query.desc || baseConfig.desc,
             badge: req.query.badge || baseConfig.badge,
-            accent: req.query.accent || baseConfig.accent || '#FFE600'
+            accent: req.query.accent || baseConfig.accent || '#FACC15'
         };
 
-        // URL Gambar untuk bagian kanan (Bisa diisi via query ?img= atau default logo)
-        const customImageUrl = 'https://cdn.arulzzxd.my.id/files/1wh5do.png';
-
+        const customImageUrl = req.query.img || 'https://cdn.arulzzxd.my.id/files/1wh5do.png';
         const displayPath = pageKey === 'home' ? '' : `/${pageKey}`;
-        const pageUrl = `https://api.arulzzxd.my.id${displayPath}`;
+        const pageUrl = `api.arulzzxd.my.id${displayPath}`;
 
         // Standard OpenGraph Resolution (1200 x 630 px)
         const width = 1200;
@@ -2338,40 +2336,40 @@ app.get('/og/:page?', async (req, res) => {
             ctx.restore();
         }
 
-        // 1. Background Base Outer
+        // 1. Background Luar Neubrutalism (#FAF7EF)
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Neubrutalism Dot Grid Pattern
-        ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
-        for (let x = 0; x < width; x += 32) {
-            for (let y = 0; y < height; y += 32) {
+        // Pattern Grid Dot Padat
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.09)';
+        for (let x = 0; x < width; x += 24) {
+            for (let y = 0; y < height; y += 24) {
                 ctx.beginPath();
-                ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // Radial Accent Glow
-        const glowGradient = ctx.createRadialGradient(width / 2, height / 2, 80, width / 2, height / 2, 580);
-        glowGradient.addColorStop(0, config.accent + '33');
+        // Radial Glow Aksen
+        const glowGradient = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, 550);
+        glowGradient.addColorStop(0, config.accent + '44');
         glowGradient.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGradient;
         ctx.fillRect(0, 0, width, height);
 
-        // 2. Main Window Container Card
-        const windowX = 32;
-        const windowY = 28;
-        const windowW = 1136;
-        const windowH = 574;
+        // 2. Main Container Dashboard
+        const windowX = 28;
+        const windowY = 24;
+        const windowW = 1144;
+        const windowH = 582;
 
-        // Solid Shadow (Neubrutalism)
+        // Shadow Solid Hitam 16px
         ctx.fillStyle = '#121212';
         ctx.beginPath();
         ctx.roundRect(windowX + 16, windowY + 16, windowW, windowH, 28);
         ctx.fill();
 
-        // Window Card Body
+        // Window Body Utuh (#FFFDF8)
         ctx.fillStyle = '#FFFDF8';
         ctx.lineWidth = 6;
         ctx.strokeStyle = '#121212';
@@ -2383,49 +2381,52 @@ app.get('/og/:page?', async (req, res) => {
         // 3. Header Navbar Mockup
         ctx.fillStyle = '#F4EFE6';
         ctx.beginPath();
-        ctx.roundRect(windowX, windowY, windowW, 76, [28, 28, 0, 0]);
+        ctx.roundRect(windowX, windowY, windowW, 82, [28, 28, 0, 0]);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(windowX, windowY + 76);
-        ctx.lineTo(windowX + windowW, windowY + 76);
+        ctx.moveTo(windowX, windowY + 82);
+        ctx.lineTo(windowX + windowW, windowY + 82);
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 5;
         ctx.stroke();
 
-        // Window Control Buttons (Merah, Kuning, Hijau)
-        const dots = ['#FF5F56', '#FFBD2E', '#27C93F'];
+        // Window Control Dots
+        const dots = ['#EF4444', '#F59E0B', '#10B981'];
         dots.forEach((color, i) => {
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(windowX + 36 + (i * 26), windowY + 38, 8, 0, Math.PI * 2);
+            ctx.arc(windowX + 38 + (i * 28), windowY + 41, 9, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#121212';
             ctx.lineWidth = 2.5;
             ctx.stroke();
         });
 
-        // Brand Logo & Title
-        drawPetirIcon(windowX + 120, windowY + 18, 1.6, '#121212');
+        // Brand Name Header
+        drawPetirIcon(windowX + 130, windowY + 22, 1.6, '#121212');
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('ArulzXD API', windowX + 165, windowY + 46);
+        ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ArulzXD API', windowX + 175, windowY + 50);
 
         // URL Pill Badge
-        ctx.fillStyle = 'rgba(18, 18, 18, 0.06)';
+        ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
-        ctx.roundRect(windowX + 330, windowY + 18, 430, 40, 20);
+        ctx.roundRect(windowX + 340, windowY + 20, 440, 42, 21);
         ctx.fill();
+        ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-        ctx.fillStyle = '#52525B';
-        ctx.font = '20px monospace';
-        ctx.fillText(pageUrl, windowX + 350, windowY + 45);
+        ctx.fillStyle = '#27272A';
+        ctx.font = 'bold 19px monospace';
+        ctx.fillText(`https://${pageUrl}`, windowX + 360, windowY + 47);
 
-        // System Status Badge
+        // Status Badge Online
         ctx.fillStyle = '#DCFCE7';
         ctx.beginPath();
-        ctx.roundRect(windowX + windowW - 250, windowY + 18, 220, 40, 20);
+        ctx.roundRect(windowX + windowW - 245, windowY + 20, 215, 42, 21);
         ctx.fill();
         ctx.strokeStyle = '#16A34A';
         ctx.lineWidth = 2.5;
@@ -2433,188 +2434,227 @@ app.get('/og/:page?', async (req, res) => {
 
         ctx.fillStyle = '#22C55E';
         ctx.beginPath();
-        ctx.arc(windowX + windowW - 230, windowY + 38, 7, 0, Math.PI * 2);
+        ctx.arc(windowX + windowW - 225, windowY + 41, 7.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#15803D';
-        ctx.font = 'bold 17px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('SYSTEMS 100%', windowX + windowW - 210, windowY + 44);
+        ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ALL SYSTEMS 100%', windowX + windowW - 206, windowY + 47);
 
-        // 4. Hero Content Section (2 Columns Layout)
+        // 4. Content Hero Section (2-Column Layout Berisi)
         const contentX = windowX + 44;
 
-        // Category Tag Badge
+        // Category Tag Badge (Warna Aksen Menyala)
         ctx.fillStyle = config.accent;
         ctx.beginPath();
-        ctx.roundRect(contentX, windowY + 104, 300, 42, 12);
+        ctx.roundRect(contentX, windowY + 112, 330, 46, 12);
         ctx.fill();
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 3.5;
         ctx.stroke();
 
-        drawPetirIcon(contentX + 12, windowY + 108, 1.0, '#121212');
+        drawPetirIcon(contentX + 14, windowY + 117, 1.1, '#121212');
 
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(config.badge.toUpperCase(), contentX + 46, windowY + 131);
+        ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(config.badge.toUpperCase(), contentX + 50, windowY + 142);
 
-        // SISI KIRI: Title & Description
-        const maxLeftWidth = 650;
+        // SISI KIRI: Headline Title (Font Sangat Besar & Tebal)
+        const leftWidth = 630;
         ctx.fillStyle = '#121212';
-        ctx.font = 'bold 34px "Plus Jakarta Sans", sans-serif';
+        ctx.font = 'bold 42px "Plus Jakarta Sans", sans-serif';
 
         const titleWords = config.title.split(' ');
         let titleLine = '';
-        let titleY = windowY + 195;
+        let titleY = windowY + 215;
         for (let n = 0; n < titleWords.length; n++) {
             const testLine = titleLine + titleWords[n] + ' ';
-            if (ctx.measureText(testLine).width > maxLeftWidth && n > 0) {
+            if (ctx.measureText(testLine).width > leftWidth && n > 0) {
                 ctx.fillText(titleLine, contentX, titleY);
                 titleLine = titleWords[n] + ' ';
-                titleY += 42;
+                titleY += 50;
             } else {
                 titleLine = testLine;
             }
         }
         ctx.fillText(titleLine, contentX, titleY);
 
-        // Description
-        ctx.fillStyle = '#52525B';
-        ctx.font = '20px "Plus Jakarta Sans", sans-serif';
-        const words = config.desc.split(' ');
+        // SISI KIRI: Description Paragraph (Warna Gelap & Sangat Jelas)
+        ctx.fillStyle = '#27272A';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
+        const descWords = config.desc.split(' ');
         let descLine = '';
-        let descY = titleY + 38;
+        let descY = titleY + 42;
 
-        for (let n = 0; n < words.length; n++) {
-            const testLine = descLine + words[n] + ' ';
-            if (ctx.measureText(testLine).width > maxLeftWidth && n > 0) {
+        for (let n = 0; n < descWords.length; n++) {
+            const testLine = descLine + descWords[n] + ' ';
+            if (ctx.measureText(testLine).width > leftWidth && n > 0) {
                 ctx.fillText(descLine, contentX, descY);
-                descLine = words[n] + ' ';
-                descY += 28;
+                descLine = descWords[n] + ' ';
+                descY += 32;
             } else {
                 descLine = testLine;
             }
         }
         ctx.fillText(descLine, contentX, descY);
 
-        // SISI KANAN: Gambar dari URL (Replacing the Black Box Circle)[span_4](start_span)[span_4](end_span)
-        const imgBoxX = windowX + 750;
-        const imgBoxY = windowY + 100;
-        const imgBoxSize = 320;
+        // SISI KANAN: Dashboard Widget Card
+        const rightX = windowX + 710;
+        const rightY = windowY + 112;
+        const rightW = 390;
+        const rightH = 320;
 
-        // Container Shadow
+        // Shadow Card Kanan
         ctx.fillStyle = '#121212';
         ctx.beginPath();
-        ctx.roundRect(imgBoxX + 10, imgBoxY + 10, imgBoxSize, imgBoxSize, 24);
+        ctx.roundRect(rightX + 8, rightY + 8, rightW, rightH, 20);
         ctx.fill();
 
-        // Container Frame
+        // Body Card Kanan (#FAF7EF)
         ctx.fillStyle = '#FAF7EF';
         ctx.beginPath();
-        ctx.roundRect(imgBoxX, imgBoxY, imgBoxSize, imgBoxSize, 24);
+        ctx.roundRect(rightX, rightY, rightW, rightH, 20);
         ctx.fill();
         ctx.strokeStyle = '#121212';
         ctx.lineWidth = 4;
         ctx.stroke();
 
+        // Image Frame di Atas Card Kanan
+        const imgSize = 130;
+        const imgX = rightX + (rightW - imgSize) / 2;
+        const imgY = rightY + 20;
+
+        ctx.fillStyle = '#FFFDF8';
+        ctx.beginPath();
+        ctx.roundRect(imgX, imgY, imgSize, imgSize, 16);
+        ctx.fill();
+        ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
         try {
-            // Load Gambar dari URL
             const sideImg = await loadImage(customImageUrl);
             ctx.save();
             ctx.beginPath();
-            ctx.roundRect(imgBoxX + 8, imgBoxY + 8, imgBoxSize - 16, imgBoxSize - 16, 18);
+            ctx.roundRect(imgX + 6, imgY + 6, imgSize - 12, imgSize - 12, 12);
             ctx.clip();
-            ctx.drawImage(sideImg, imgBoxX + 8, imgBoxY + 8, imgBoxSize - 16, imgBoxSize - 16);
+            ctx.drawImage(sideImg, imgX + 6, imgY + 6, imgSize - 12, imgSize - 12);
             ctx.restore();
-        } catch (imgErr) {
-            // Fallback apabila gambar URL gagal dimuat
-            drawPetirIcon(imgBoxX + 80, imgBoxY + 80, 7.0, '#121212');
+        } catch (e) {
+            drawPetirIcon(imgX + 30, imgY + 25, 3.5, '#121212');
         }
 
-        // 5. Grid Feature Cards (3 Kartu Neubrutalism)[span_5](start_span)[span_5](end_span)
-        const featureY = windowY + windowH - 108;
-        const miniW = 336;
-        const miniH = 78;
-        const miniGap = 24;
-
-        const miniFeatures = [
-            { type: 'bolt', title: '210+ Endpoints', sub: 'Production Ready' },
-            { type: 'download', title: 'Media Downloader', sub: 'TikTok, IG, YT, FB' },
-            { type: 'maker', title: 'Maker & Tools', sub: 'Canvas, Edit, Meme' } // Diubah menjadi Maker[span_6](start_span)[span_6](end_span)
+        // Mini Stats Info di Bawah Gambar (Mengisi Ruang Kosong)
+        const statBoxes = [
+            { label: 'ACTIVE ENDPOINTS', val: '210+ REST API', bg: '#FDE047' },
+            { label: 'SERVER RESPONSE', val: 'FAST < 120ms', bg: '#BAE6FD' }
         ];
 
-        miniFeatures.forEach((feat, i) => {
-            const mX = contentX + (i * (miniW + miniGap));
+        statBoxes.forEach((s, idx) => {
+            const sbY = rightY + 165 + (idx * 68);
+            const sbX = rightX + 20;
+            const sbW = rightW - 40;
+            const sbH = 56;
 
-            // Card Shadow
-            ctx.fillStyle = '#121212';
+            ctx.fillStyle = s.bg;
             ctx.beginPath();
-            ctx.roundRect(mX + 4, featureY + 4, miniW, miniH, 16);
-            ctx.fill();
-
-            // Card Body
-            ctx.fillStyle = '#FAF7EF';
-            ctx.beginPath();
-            ctx.roundRect(mX, featureY, miniW, miniH, 16);
-            ctx.fill();
-            ctx.strokeStyle = '#121212';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // Circle Icon Container
-            ctx.fillStyle = '#FFFDF8';
-            ctx.beginPath();
-            ctx.arc(mX + 38, featureY + 39, 22, 0, Math.PI * 2);
+            ctx.roundRect(sbX, sbY, sbW, sbH, 12);
             ctx.fill();
             ctx.strokeStyle = '#121212';
             ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            // Icon Vektor
+            ctx.fillStyle = '#121212';
+            ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(s.label, sbX + 16, sbY + 22);
+
+            ctx.font = 'black 17px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(s.val, sbX + 16, sbY + 44);
+        });
+
+        // 5. Grid Feature Cards di Bawah (3 Kartu Berisi)
+        const featureY = windowY + windowH - 105;
+        const miniW = 340;
+        const miniH = 82;
+        const miniGap = 20;
+
+        const miniFeatures = [
+            { type: 'bolt', title: '210+ Endpoints', sub: 'Production Ready API', bg: '#FEF08A' },
+            { type: 'download', title: 'Media Downloader', sub: 'TikTok, IG, YT, FB', bg: '#BAE6FD' },
+            { type: 'maker', title: 'Maker & Tools', sub: 'Canvas, Edit, Meme', bg: '#E9D5FF' }
+        ];
+
+        miniFeatures.forEach((feat, i) => {
+            const mX = contentX + (i * (miniW + miniGap));
+
+            // Shadow Feature Card
+            ctx.fillStyle = '#121212';
+            ctx.beginPath();
+            ctx.roundRect(mX + 5, featureY + 5, miniW, miniH, 16);
+            ctx.fill();
+
+            // Body Feature Card
+            ctx.fillStyle = feat.bg;
+            ctx.beginPath();
+            ctx.roundRect(mX, featureY, miniW, miniH, 16);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 3.5;
+            ctx.stroke();
+
+            // Circle Icon Container
+            ctx.fillStyle = '#FFFDF8';
+            ctx.beginPath();
+            ctx.arc(mX + 40, featureY + 41, 23, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Render Ikon Vektor Native
             if (feat.type === 'bolt') {
-                drawPetirIcon(mX + 27, featureY + 23, 1.2, '#121212');
+                drawPetirIcon(mX + 28, featureY + 24, 1.3, '#121212');
             } else if (feat.type === 'download') {
                 ctx.save();
                 ctx.strokeStyle = '#121212';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(mX + 38, featureY + 26);
-                ctx.lineTo(mX + 38, featureY + 45);
-                ctx.lineTo(mX + 31, featureY + 38);
-                ctx.moveTo(mX + 38, featureY + 45);
-                ctx.lineTo(mX + 45, featureY + 38);
-                ctx.moveTo(mX + 27, featureY + 52);
-                ctx.lineTo(mX + 49, featureY + 52);
+                ctx.moveTo(mX + 40, featureY + 27);
+                ctx.lineTo(mX + 40, featureY + 47);
+                ctx.lineTo(mX + 33, featureY + 40);
+                ctx.moveTo(mX + 40, featureY + 47);
+                ctx.lineTo(mX + 47, featureY + 40);
+                ctx.moveTo(mX + 28, featureY + 54);
+                ctx.lineTo(mX + 52, featureY + 54);
                 ctx.stroke();
                 ctx.restore();
             } else if (feat.type === 'maker') {
                 ctx.save();
                 ctx.strokeStyle = '#121212';
                 ctx.lineWidth = 2.5;
-                // Palette / Brush Icon
                 ctx.beginPath();
-                ctx.arc(mX + 38, featureY + 39, 13, 0, Math.PI * 2);
+                ctx.arc(mX + 40, featureY + 41, 13, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.fillStyle = '#121212';
                 ctx.beginPath();
-                ctx.arc(mX + 33, featureY + 34, 2.5, 0, Math.PI * 2);
-                ctx.arc(mX + 43, featureY + 34, 2.5, 0, Math.PI * 2);
-                ctx.arc(mX + 31, featureY + 42, 2.5, 0, Math.PI * 2);
+                ctx.arc(mX + 35, featureY + 36, 2.5, 0, Math.PI * 2);
+                ctx.arc(mX + 45, featureY + 36, 2.5, 0, Math.PI * 2);
+                ctx.arc(mX + 33, featureY + 44, 2.5, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
 
-            // Text Label & Subtitle
+            // Text Label & Subtitle (Besar & Kontras)
             ctx.fillStyle = '#121212';
-            ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.title, mX + 70, featureY + 34);
+            ctx.font = 'bold 19px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(feat.title, mX + 74, featureY + 36);
 
-            ctx.fillStyle = '#71717A';
-            ctx.font = '14px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(feat.sub, mX + 70, featureY + 56);
+            ctx.fillStyle = '#3F3F46';
+            ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(feat.sub, mX + 74, featureY + 58);
         });
 
-        // Encode PNG Buffer Output
+        // Encode PNG Buffer
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Length', buffer.length);
