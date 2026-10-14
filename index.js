@@ -2268,46 +2268,7 @@ app.delete('/api/user-activity', checkAuthSession, async (req, res) => {
     }
 });
 
-const PAGE_CONFIGS = {
-    pastecode: {
-        title: "ArulzXD API - Pastecode Snippet",
-        desc: "Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi.",
-        badge: "PASTECODE SNIPPET",
-        accent: "#fde047"
-    },
-    feedback: {
-        title: "ArulzXD API - Feedback & Support",
-        desc: "Layanan bantuan REST API resmi untuk dokumentasi, laporan bug, dan request fitur.",
-        badge: "FEEDBACK & LAPORAN",
-        accent: "#fde047"
-    },
-    profile: {
-        title: "ArulzXD API - Profil & Settings",
-        desc: "Kelola informasi pengguna, kredensial API Key, kuota limit, dan riwayat aktivitas.",
-        badge: "USER PROFILE & API KEY",
-        accent: "#fde047"
-    },
-    store: {
-        title: "ArulzXD Store - Marketplace & Layanan Digital",
-        desc: "Penyedia Source Code, Script, & Layanan Digital Premium Terpercaya dengan Akses Super Cepat.",
-        badge: "MARKETPLACE & STORE",
-        accent: "#fde047"
-    },
-    support: {
-        title: "Dukung ArulzXD — Support & Donasi",
-        desc: "Dukungan seikhlasnya dari kamu adalah bahan bakar utama untuk menjaga platform tetap zero-downtime.",
-        badge: "SUPPORT & DONASI",
-        accent: "#fde047"
-    },
-    upgrade: {
-        title: "ArulzXD API - Upgrade Apikey VIP",
-        desc: "Tingkatkan limit request harian dan buka akses fitur VIP / Premium REST API ArulzXD.",
-        badge: "UPGRADE APIKEY VIP",
-        accent: "#fde047"
-    }
-};
-
-// Konfigurasi Metadata Halaman Publik
+// Konfigurasi Metadata Halaman Publik (Gabungan Lengkap)
 const PAGE_CONFIGS = {
     home: {
         title: "ArulzXD API - Core REST Gateway",
