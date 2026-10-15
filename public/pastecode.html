@@ -912,44 +912,47 @@
             }
 
             if (viewId) {
-                const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-                if (idx === -1) {
-                    target.innerHTML = `
-                        <div class="light-card p-6 text-center">
-                            <h2 class="text-base font-black text-zinc-900 mb-4">Data tidak ditemukan!</h2>
-                            <a href="/pastecode" class="btn-brutalism-light inline-flex">Kembali ke Pastebin</a>
-                        </div>`;
-                    return;
-                }
+    const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+    if (idx === -1) {
+        target.innerHTML = `
+            <div class="light-card p-6 text-center">
+                <h2 class="text-base font-black text-zinc-900 mb-4">Data tidak ditemukan!</h2>
+                <a href="/pastecode" class="btn-brutalism-light inline-flex">Kembali ke Pastebin</a>
+            </div>`;
+        return;
+    }
 
-                const current = pastes[idx];
-                const lineCount = current.content ? current.content.split('\n').length : 0;
-                const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
+    const current = pastes[idx];
+    const lineCount = current.content ? current.content.split('\n').length : 0;
+    const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
 
-                // Update Meta Tag secara dinamis di Browser Client
-                const dynamicTitle = `${current.title} - ArulzXD Pastecode`;
-                const dynamicDesc = current.desc || `Potongan kode ${current.language} - ${current.title}`;
-                const dynamicOgImg = `${window.location.origin}/og/pastecode?id=${current.id}`;
+    // Dynamic Meta Updates untuk Browser
+    const dynamicTitle = `${current.title} - ArulzXD Pastecode`;
+    const dynamicDesc = current.desc || `Potongan kode ${current.language} - ${current.title}`;
+    const dynamicOgImg = `${window.location.origin}/og/pastecode?id=${current.id}`;
+    const dynamicPageUrl = `${window.location.origin}/pastecode?id=${current.id}`;
 
-                document.title = dynamicTitle;
+    document.title = dynamicTitle;
 
-                const setMeta = (attr, value, content) => {
-                    let el = document.querySelector(`meta[${attr}="${value}"]`);
-                    if (!el) {
-                        el = document.createElement('meta');
-                        el.setAttribute(attr, value);
-                        document.head.appendChild(el);
-                    }
-                    el.setAttribute('content', content);
-                };
+    const setMeta = (attr, value, content) => {
+        let el = document.querySelector(`meta[${attr}="${value}"]`);
+        if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute(attr, value);
+            document.head.appendChild(el);
+        }
+        el.setAttribute('content', content);
+    };
 
-                setMeta('property', 'og:title', dynamicTitle);
-                setMeta('property', 'og:description', dynamicDesc);
-                setMeta('property', 'og:image', dynamicOgImg);
-                setMeta('property', 'og:image:secure_url', dynamicOgImg);
-                setMeta('name', 'twitter:title', dynamicTitle);
-                setMeta('name', 'twitter:description', dynamicDesc);
-                setMeta('name', 'twitter:image', dynamicOgImg);
+    setMeta('property', 'og:title', dynamicTitle);
+    setMeta('property', 'og:description', dynamicDesc);
+    setMeta('property', 'og:url', dynamicPageUrl);
+    setMeta('property', 'og:image', dynamicOgImg);
+    setMeta('property', 'og:image:secure_url', dynamicOgImg);
+    setMeta('name', 'twitter:title', dynamicTitle);
+    setMeta('name', 'twitter:description', dynamicDesc);
+    setMeta('name', 'twitter:image', dynamicOgImg);
+    setMeta('name', 'twitter:url', dynamicPageUrl);
 
                 target.innerHTML = `
                     <a href="/pastecode" class="btn-brutalism-light inline-flex mb-4">
