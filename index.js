@@ -970,13 +970,11 @@ app.post('/reset-password/:token', async (req, res) => {
 
 // --- USER STATUS & LOGOUT ---
 app.get('/api/user-status', checkAuthSession, async (req, res) => {
-    // 1. Cek sesi login di awal untuk menghindari error null reference
     if (!req.user) {
         return res.json({ loggedIn: false });
     }
 
     try {
-        // 2. Ambil data terbaru dari MongoDB
         const freshUser = await User.findById(req.user.id || req.user._id).select('-password').lean();
         const activeUser = freshUser || req.user;
 
@@ -990,11 +988,11 @@ app.get('/api/user-status', checkAuthSession, async (req, res) => {
                 avatar: activeUser.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
                 apikey: activeUser.apikey,
                 role: activeUser.role,
+                roleExpiresAt: activeUser.roleExpiresAt || null,
                 provider: activeUser.provider || 'local'
             }
         });
     } catch (err) {
-        // 3. Fallback aman menggunakan data dari req.user jika MongoDB error
         return res.json({
             loggedIn: true,
             user: {
@@ -1005,6 +1003,7 @@ app.get('/api/user-status', checkAuthSession, async (req, res) => {
                 avatar: req.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png',
                 apikey: req.user.apikey,
                 role: req.user.role,
+                roleExpiresAt: req.user.roleExpiresAt || null,
                 provider: req.user.provider || 'local'
             }
         });
@@ -2951,14 +2950,20 @@ app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActiv
 
 app.get('/api/user-limit', checkAuthSession, async (req, res) => {
     let userKey = req.query.apikey || req.headers['x-api-key'] || (req.user ? req.user.apikey : null);
-    if (!userKey) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
+    if (!userKey) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free', roleExpiresAt: null });
 
     try {
         const user = await User.findOne({ apikey: userKey });
-        if (!user) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
+        if (!user) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free', roleExpiresAt: null });
 
         const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
-        return res.json({ loggedIn: !!req.user, limitUsed, maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit, type: keyType });
+        return res.json({ 
+            loggedIn: !!req.user, 
+            limitUsed, 
+            maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit, 
+            type: keyType,
+            roleExpiresAt: user.roleExpiresAt || null
+        });
     } catch (err) {
         return res.status(500).json({ status: false, message: "Server Error" });
     }
