@@ -5,10 +5,10 @@
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-     <!-- Primary Meta Tags -->
-   <title>ArulzXD API - Pastecode Snippet</title>
-   <meta name="title" content="ArulzXD API - Pastecode Snippet" />
-   <meta name="description" content="Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
+    <!-- Primary Meta Tags -->
+    <title>ArulzXD API - Pastecode Snippet</title>
+    <meta name="title" content="ArulzXD API - Pastecode Snippet" />
+    <meta name="description" content="Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
@@ -18,11 +18,11 @@
     <meta property="og:image" content="https://api.arulzzxd.my.id/og/pastecode" />
     <meta property="og:image:secure_url" content="https://api.arulzzxd.my.id/og/pastecode" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="600" />
-    <meta property="og:image:height" content="300" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://api.arulzzxd.my.id/pastecode" />
     <meta name="twitter:title" content="ArulzXD API - Pastecode Snippet" />
     <meta name="twitter:description" content="Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
@@ -42,12 +42,16 @@
         :root {
             --bg-cream: #FAF7EF;
             --card-bg: #FFFDF8;
-            --border-dark: #121212;
-            --cyan: #0284c7;
+            --theme-border: #eab308;
+            --theme-accent: #fde047;
+            --theme-text: #121212;
+            --theme-light: #fef9c3;
+            --rgb-angle: 0deg;
         }
 
         * {
             box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
         }
 
         html, body {
@@ -60,7 +64,7 @@
             -webkit-user-select: none;
             user-select: none;
             background-color: var(--bg-cream) !important;
-            color: var(--border-dark) !important;
+            color: #121212 !important;
             background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 1.2px) !important;
             background-size: 16px 16px !important;
             overflow-x: hidden;
@@ -68,6 +72,103 @@
 
         .code-font {
             font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* HEADER: DIAM = 100% SOLID, SCROLLED = 15% TRANSPARAN SANGAT BENING */
+        header.header-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        header.header-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
+        .brutal-border,
+        .light-card,
+        .dropdown-nav-card,
+        .btn-brutalism-light,
+        header,
+        #bioDropdown,
+        #themeMenuDropdown,
+        .cyber-loader-box,
+        .cyber-bar,
+        .btn-filter-light,
+        .paste-card-light,
+        .code-window-light,
+        .raw-modal-content,
+        .alert-modal-content {
+            border-color: var(--theme-border) !important;
+            transition: border-color 0.15s ease;
+        }
+
+        /* Class Aksen Tema */
+        .theme-bg-accent {
+            background-color: var(--theme-accent) !important;
+            color: var(--theme-text) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        .theme-text-accent {
+            color: var(--theme-border) !important;
+            transition: color 0.15s ease;
+        }
+
+        .theme-light-bg {
+            background-color: var(--theme-light) !important;
+            border-color: var(--theme-border) !important;
+            transition: all 0.15s ease;
+        }
+
+        /* MODE RGB DYNAMIC ROTATING BORDER */
+        .rgb-mode-active .light-card,
+        .rgb-mode-active .dropdown-nav-card,
+        .rgb-mode-active .btn-brutalism-light,
+        .rgb-mode-active #themeMenuDropdown,
+        .rgb-mode-active .cyber-loader-box,
+        .rgb-mode-active .cyber-bar,
+        .rgb-mode-active .paste-card-light {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+        }
+
+        .rgb-mode-active .theme-bg-accent {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--theme-accent), var(--theme-accent)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
+            color: var(--theme-text) !important;
+        }
+
+        .rgb-mode-active header.header-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active header.header-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active #bioDropdown {
+            border-color: transparent !important;
+            background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
+                              conic-gradient(from var(--rgb-angle), #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important;
+            background-origin: border-box !important;
+            background-clip: padding-box, border-box !important;
         }
 
         /* Mode Gist RAW (Dark Clean) */
@@ -88,7 +189,7 @@
             background: #0d1117;
         }
 
-        /* Cyber Loader Overlay (Docs Light Style) */
+        /* Cyber Loader Overlay */
         #cyber-loader-overlay {
             position: fixed;
             inset: 0;
@@ -110,7 +211,7 @@
 
         .cyber-loader-box {
             background: var(--card-bg);
-            border: 2.5px solid var(--border-dark);
+            border: 2.5px solid var(--theme-border);
             box-shadow: 6px 6px 0px rgba(18, 18, 18, 0.15);
             border-radius: 24px;
             padding: 32px 28px;
@@ -118,7 +219,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
-            width: 320px;
+            width: min(320px, 90vw);
         }
 
         .cyber-avatar-wrap {
@@ -134,7 +235,7 @@
             position: absolute;
             inset: -6px;
             border: 3.5px solid #e4e4e7;
-            border-top-color: var(--border-dark);
+            border-top-color: var(--theme-border);
             border-right-color: #3b82f6;
             border-radius: 50%;
             animation: spinCyber 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
@@ -146,7 +247,7 @@
         }
 
         .cyber-text-glitch {
-            color: var(--border-dark);
+            color: #121212;
             font-weight: 900;
             font-size: 13px;
             letter-spacing: 2px;
@@ -156,14 +257,14 @@
             width: 100%;
             height: 10px;
             background: #e4e4e7;
-            border: 2px solid var(--border-dark);
+            border: 2px solid var(--theme-border);
             border-radius: 9999px;
             overflow: hidden;
         }
 
         .cyber-bar-fill {
             height: 100%;
-            background: var(--border-dark);
+            background: var(--theme-border);
             width: 0%;
             transition: width 0.15s ease;
             border-radius: 9999px;
@@ -172,7 +273,7 @@
         /* Light Neubrutalism Card */
         .light-card {
             background-color: var(--card-bg) !important;
-            border: 2.5px solid var(--border-dark) !important;
+            border: 2.5px solid var(--theme-border) !important;
             border-radius: 20px !important;
             box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08) !important;
         }
@@ -180,7 +281,7 @@
         /* Menu Navigasi Kartu Dropdown Sidebar */
         .dropdown-nav-card {
             background-color: #FFFDF8 !important;
-            border: 2px solid var(--border-dark) !important;
+            border: 2px solid var(--theme-border) !important;
             border-radius: 14px !important;
             padding: 10px 14px !important;
             font-weight: 800 !important;
@@ -201,8 +302,8 @@
         /* Neubrutalist Filter & Action Buttons */
         .btn-filter-light {
             background-color: #FAF7EF;
-            border: 2px solid var(--border-dark);
-            color: var(--border-dark);
+            border: 2px solid var(--theme-border);
+            color: #121212;
             border-radius: 9999px;
             font-weight: 800;
             font-size: 11px;
@@ -212,14 +313,14 @@
             text-transform: uppercase;
         }
         .btn-filter-light.active, .btn-filter-light:hover {
-            background-color: var(--border-dark);
-            color: #ffffff;
+            background-color: var(--theme-accent);
+            color: var(--theme-text);
         }
 
         .btn-brutalism-light {
             background-color: #FFFDF8;
-            color: var(--border-dark);
-            border: 2px solid var(--border-dark);
+            color: #121212;
+            border: 2px solid var(--theme-border);
             border-radius: 12px;
             padding: 10px 14px;
             font-size: 11px;
@@ -239,17 +340,14 @@
             transform: translateY(-1px);
         }
         .btn-brutalism-light.yellow-accent {
-            background-color: #fde047;
-            color: #121212;
-        }
-        .btn-brutalism-light.yellow-accent:hover {
-            background-color: #facc15;
+            background-color: var(--theme-accent);
+            color: var(--theme-text);
         }
 
         /* Paste Cards Styling */
         .paste-card-light {
             background: var(--card-bg);
-            border: 2.5px solid var(--border-dark);
+            border: 2.5px solid var(--theme-border);
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 4px 4px 0px rgba(18, 18, 18, 0.08);
@@ -267,28 +365,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--border-dark);
+            border-bottom: 2px solid var(--theme-border);
         }
 
+        /* PREVIEW BOX KODE */
         .preview-box-light {
             background: #121212;
             color: #38bdf8;
-            padding: 14px;
-            font-size: 12px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            line-height: 1.5;
             overflow: hidden;
             white-space: pre-wrap;
             font-family: 'JetBrains Mono', monospace;
-            border: 2px solid var(--border-dark);
+            border: 2px solid var(--theme-border);
             border-radius: 10px;
-            height: 75px;
+            height: 88px;
             box-sizing: border-box;
         }
 
         /* Pagination Buttons */
         .page-btn-light {
             background: #FFFDF8;
-            color: var(--border-dark);
-            border: 2px solid var(--border-dark);
+            color: #121212;
+            border: 2px solid var(--theme-border);
             border-radius: 10px;
             padding: 8px 16px;
             font-size: 12px;
@@ -300,8 +400,8 @@
             background: #FAF7EF;
         }
         .page-btn-light.active {
-            background: var(--border-dark);
-            color: #ffffff;
+            background: var(--theme-accent);
+            color: var(--theme-text);
         }
         .page-btn-light:disabled {
             opacity: 0.4;
@@ -324,8 +424,8 @@
 
         .raw-modal-content {
             background: var(--card-bg);
-            border: 2.5px solid var(--border-dark);
-            color: var(--border-dark);
+            border: 2.5px solid var(--theme-border);
+            color: #121212;
             max-width: 650px;
             width: 100%;
             overflow: hidden;
@@ -338,12 +438,12 @@
             height: 280px;
             background: #121212;
             color: #38bdf8;
-            border: 2px solid var(--border-dark);
+            border: 2px solid var(--theme-border);
             border-radius: 10px;
             box-sizing: border-box;
             padding: 14px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 13.5px;
             resize: none;
             outline: none;
             line-height: 1.6;
@@ -351,8 +451,8 @@
 
         .alert-modal-content {
             background: var(--card-bg);
-            color: var(--border-dark);
-            border: 2.5px solid var(--border-dark);
+            color: #121212;
+            border: 2.5px solid var(--theme-border);
             border-radius: 20px;
             max-width: 400px;
             width: 100%;
@@ -363,7 +463,7 @@
 
         .code-window-light {
             background: #121212;
-            border: 2.5px solid var(--border-dark);
+            border: 2.5px solid var(--theme-border);
             border-radius: 16px;
             margin-bottom: 24px;
             overflow: hidden;
@@ -374,8 +474,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2.5px solid var(--border-dark);
-            color: var(--border-dark);
+            border-bottom: 2.5px solid var(--theme-border);
+            color: #121212;
             font-size: 11px;
             font-weight: 800;
         }
@@ -400,7 +500,7 @@
         <div class="cyber-loader-box">
             <div class="cyber-avatar-wrap mb-4">
                 <div class="cyber-ring"></div>
-                <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-900 shadow-sm">
+                <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-14 h-14 rounded-full object-cover brutal-border border-2 shadow-sm">
             </div>
             <div class="text-center">
                 <div id="loader-title-text" class="cyber-text-glitch uppercase mb-0.5">
@@ -422,46 +522,100 @@
         </div>
     </div>
 
-    <!-- Header Top Bar -->
-    <header class="w-full bg-[#FAF7EF] border-b-2 border-zinc-900 sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-black flex items-center justify-center shadow-sm">
-                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
-                </div>
+    <!-- Header Top Bar (Diam = Solid 100%, Scroll = 15% Transparan) -->
+    <header id="mainHeader" class="fixed top-0 left-0 right-0 w-full header-translucent border-b-2 brutal-border z-30">
+        <div class="max-w-4xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <a href="/" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm shrink-0">
+                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover">
+                </a>
                 <div>
-                    <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">PASTECODE SNIPPET</span>
+                    <span class="text-sm sm:text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                    <span class="text-[9px] sm:text-[10px] font-mono font-bold text-zinc-600 uppercase">PASTECODE SNIPPET</span>
                 </div>
             </div>
 
-            <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
-            </button>
+            <!-- Tombol Aksi Kanan -->
+            <div class="flex items-center gap-1.5 sm:gap-2 relative">
+                
+                <!-- Tombol Switcher Style Warna -->
+                <button id="themePickerBtn" title="Ubah Style Warna" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                </button>
+
+                <!-- Tombol Menu Sidebar -->
+                <button id="bioMenuBtn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown Pilihan Tema Warna -->
+                <div id="themeMenuDropdown" class="hidden absolute top-12 right-0 w-44 bg-[#FFFDF8] border-2 brutal-border rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1.5">
+                    <div class="text-[9px] font-black code-font uppercase text-zinc-500 px-2 py-0.5 border-b border-zinc-200">PILIH TEMA STYLE</div>
+                    
+                    <button onclick="setAppTheme('yellow')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-amber-600 bg-yellow-300 text-[11px] font-black text-zinc-900 active:scale-95">
+                        <span>YELLOW</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-amber-700"></span>
+                    </button>
+                    <button onclick="setAppTheme('red')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-red-700 bg-red-500 text-[11px] font-black text-white active:scale-95">
+                        <span>RED</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-red-600 border border-red-800"></span>
+                    </button>
+                    <button onclick="setAppTheme('blue')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-blue-700 bg-blue-500 text-[11px] font-black text-white active:scale-95">
+                        <span>BLUE</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-800"></span>
+                    </button>
+                    <button onclick="setAppTheme('cyan')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-cyan-700 bg-cyan-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                        <span>CYAN</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-cyan-500 border border-cyan-800"></span>
+                    </button>
+                    <button onclick="setAppTheme('purple')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-purple-700 bg-purple-500 text-[11px] font-black text-white active:scale-95">
+                        <span>PURPLE</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-purple-600 border border-purple-800"></span>
+                    </button>
+                    <button onclick="setAppTheme('green')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-emerald-700 bg-emerald-400 text-[11px] font-black text-zinc-900 active:scale-95">
+                        <span>GREEN</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-emerald-800"></span>
+                    </button>
+                    <button onclick="setAppTheme('black')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-zinc-900 bg-zinc-900 text-[11px] font-black text-white active:scale-95">
+                        <span>BLACK</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-black border border-white"></span>
+                    </button>
+                    <button onclick="setAppTheme('rgb')" class="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border-2 border-pink-600 bg-gradient-to-r from-red-400 via-emerald-400 to-blue-400 text-[11px] font-black text-zinc-900 active:scale-95 shadow-sm">
+                        <span>RGB DYNAMIC</span>
+                        <span class="w-3.5 h-3.5 rounded-full bg-white border border-black animate-pulse"></span>
+                    </button>
+                </div>
+
+            </div>
         </div>
     </header>
 
-    <!-- Sidebar Dropdown Nav (bioDropdown) -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 border-zinc-900 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    <!-- Overlay Latar Belakang (z-40) -->
+    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+
+    <!-- Sidebar Dropdown Nav (z-50) -->
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         
         <!-- Header Dropdown -->
-        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-zinc-900">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
             <div class="flex items-center gap-2">
-                <span class="px-2.5 py-1 bg-amber-400 border-2 border-zinc-900 rounded-lg text-[10px] font-black uppercase tracking-wider text-black flex items-center gap-1">
+                <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     ARULZXD API
                 </span>
             </div>
 
-            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
 
         <!-- Banner Video -->
-        <div class="mb-3.5 rounded-xl border-2 border-zinc-900 overflow-hidden bg-black h-44 w-full relative shadow-sm">
+        <div class="mb-3.5 rounded-xl border-2 brutal-border overflow-hidden bg-black h-44 w-full relative shadow-sm">
             <video id="sidebarBannerVideo" autoplay loop muted playsinline preload="auto" class="w-full h-full object-cover">
                 <source src="https://files.catbox.moe/dvlk00.mp4" type="video/mp4">
             </video>
@@ -469,7 +623,7 @@
 
         <!-- Auth / Profile Status Container -->
         <div id="sidebarAuthBtnContainer" class="mb-3">
-            <div class="p-3 bg-amber-100 border-2 border-zinc-900 rounded-xl shadow-xs">
+            <div class="p-3 bg-amber-100 border-2 brutal-border rounded-xl shadow-xs">
                 <div class="flex items-center gap-1.5 text-amber-900 text-xs font-black mb-1">
                     <svg class="w-4 h-4 text-amber-700 fill-current" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -479,7 +633,7 @@
                 <p class="text-[10px] font-semibold text-zinc-700 leading-tight mb-2.5">
                     Anda belum login. Silakan login untuk membuka akses penuh fitur dan endpoint API.
                 </p>
-                <a href="/login" class="w-full bg-zinc-900 text-white border-2 border-zinc-900 rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
+                <a href="/login" class="w-full bg-zinc-900 text-white border-2 brutal-border rounded-xl py-2 px-3 text-[11px] font-black uppercase flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all text-center">
                     <svg class="w-3.5 h-3.5 fill-white shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
                     <span>LOGIN / REGISTER</span>
                 </a>
@@ -538,10 +692,9 @@
             </a>
         </nav>
     </div>
-    <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-30"></div>
 
     <!-- Main Content Container -->
-    <main class="max-w-4xl mx-auto px-4 py-6 relative z-10 flex-1 w-full" id="page-content">
+    <main class="max-w-4xl mx-auto px-3.5 sm:px-6 pt-20 pb-8 relative z-10 flex-1 w-full" id="page-content">
         <div class="text-center py-10 font-bold text-zinc-600 text-sm font-mono" id="loading-text">
             Mengambil data Server...
         </div>
@@ -550,14 +703,14 @@
     <!-- Raw Modal -->
     <div class="modal" id="rawModal">
         <div class="raw-modal-content p-5 relative">
-            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-zinc-900">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 brutal-border">
                 <div class="flex items-center gap-2">
                     <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-4 h-4 text-zinc-900">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                     </svg>
                     <span id="raw-modal-title-text" class="text-xs font-extrabold uppercase text-zinc-900 tracking-wider">RAW - PREVIEW</span>
                 </div>
-                <button onclick="closeRawModal()" class="w-7 h-7 rounded-lg border-2 border-zinc-900 bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 font-bold">✕</button>
+                <button onclick="closeRawModal()" class="w-7 h-7 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 font-bold">✕</button>
             </div>
             
             <textarea id="raw-textarea-display" class="raw-textarea-box mb-4" readonly></textarea>
@@ -577,7 +730,7 @@
     <!-- Alert Modal -->
     <div class="modal" id="alertModal">
         <div class="alert-modal-content">
-            <div class="text-xs font-black uppercase text-blue-600 font-mono mb-2">NOTIFIKASI SYSTEM</div>
+            <div class="text-xs font-black uppercase theme-text-accent font-mono mb-2">NOTIFIKASI SYSTEM</div>
             <div class="text-xs font-bold text-zinc-800 mb-5 leading-relaxed" id="alertModalMessage">Aksi berhasil dilakukan!</div>
             <button class="btn-brutalism-light yellow-accent w-full" onclick="closeAlertModal()">OKE</button>
         </div>
@@ -599,21 +752,65 @@
         const isRawMode = urlParams.get('raw') === 'true';
         let currentFilter = 'ALL';
 
+        // Presets Tema Warna & Border
+        const THEME_PRESETS = {
+            yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+            red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
+            blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
+            cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
+            purple: { border: '#7e22ce', accent: '#a855f7', text: '#ffffff', light: '#f3e8ff' },
+            green:  { border: '#047857', accent: '#10b981', text: '#ffffff', light: '#d1fae5' },
+            black:  { border: '#000000', accent: '#18181b', text: '#ffffff', light: '#e4e4e7' }
+        };
+
+        let rgbInterval = null;
+
+        function setAppTheme(themeName) {
+            const root = document.documentElement;
+            const dropdown = document.getElementById('themeMenuDropdown');
+
+            if (rgbInterval) {
+                clearInterval(rgbInterval);
+                rgbInterval = null;
+            }
+
+            localStorage.setItem('selectedThemeStyle', themeName);
+
+            if (themeName === 'rgb') {
+                document.body.classList.add('rgb-mode-active');
+                let angle = 0;
+
+                rgbInterval = setInterval(() => {
+                    angle = (angle + 3) % 360;
+                    root.style.setProperty('--rgb-angle', angle + 'deg');
+                }, 20);
+            } else {
+                document.body.classList.remove('rgb-mode-active');
+                const t = THEME_PRESETS[themeName] || THEME_PRESETS.yellow;
+                root.style.setProperty('--theme-border', t.border);
+                root.style.setProperty('--theme-accent', t.accent);
+                root.style.setProperty('--theme-text', t.text);
+                root.style.setProperty('--theme-light', t.light);
+            }
+
+            if (dropdown) dropdown.classList.add('hidden');
+        }
+
         function getLanguageStyle(lang) {
             const l = String(lang).toLowerCase().trim();
             switch(l) {
                 case 'javascript': case 'js':
-                    return 'background: #fef08a; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: var(--theme-accent); color: var(--theme-text); border: 1.5px solid var(--theme-border); font-weight: 900;';
                 case 'html':
-                    return 'background: #ffedd5; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: #ffedd5; color: #121212; border: 1.5px solid var(--theme-border); font-weight: 900;';
                 case 'php':
-                    return 'background: #e0e7ff; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: #e0e7ff; color: #121212; border: 1.5px solid var(--theme-border); font-weight: 900;';
                 case 'python':
-                    return 'background: #dbeafe; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: #dbeafe; color: #121212; border: 1.5px solid var(--theme-border); font-weight: 900;';
                 case 'scrape':
-                    return 'background: #ccfbf1; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: #ccfbf1; color: #121212; border: 1.5px solid var(--theme-border); font-weight: 900;';
                 default:
-                    return 'background: #FAF7EF; color: #121212; border: 1.5px solid #121212; font-weight: 900;';
+                    return 'background: #FAF7EF; color: #121212; border: 1.5px solid var(--theme-border); font-weight: 900;';
             }
         }
 
@@ -729,6 +926,31 @@
                 const lineCount = current.content ? current.content.split('\n').length : 0;
                 const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
 
+                // Update Meta Tag secara dinamis di Browser Client
+                const dynamicTitle = `${current.title} - ArulzXD Pastecode`;
+                const dynamicDesc = current.desc || `Potongan kode ${current.language} - ${current.title}`;
+                const dynamicOgImg = `${window.location.origin}/og/pastecode?id=${current.id}`;
+
+                document.title = dynamicTitle;
+
+                const setMeta = (attr, value, content) => {
+                    let el = document.querySelector(`meta[${attr}="${value}"]`);
+                    if (!el) {
+                        el = document.createElement('meta');
+                        el.setAttribute(attr, value);
+                        document.head.appendChild(el);
+                    }
+                    el.setAttribute('content', content);
+                };
+
+                setMeta('property', 'og:title', dynamicTitle);
+                setMeta('property', 'og:description', dynamicDesc);
+                setMeta('property', 'og:image', dynamicOgImg);
+                setMeta('property', 'og:image:secure_url', dynamicOgImg);
+                setMeta('name', 'twitter:title', dynamicTitle);
+                setMeta('name', 'twitter:description', dynamicDesc);
+                setMeta('name', 'twitter:image', dynamicOgImg);
+
                 target.innerHTML = `
                     <a href="/pastecode" class="btn-brutalism-light inline-flex mb-4">
                         <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
@@ -744,14 +966,14 @@
                             <span class="px-3 py-1 text-xs rounded-lg code-font" style="${getLanguageStyle(current.language)}">${current.language}</span>
                         </div>
 
-                        <div class="flex items-center gap-3 text-[10px] font-mono font-extrabold text-zinc-500 pt-2 border-t-2 border-zinc-200">
+                        <div class="flex items-center gap-3 text-[10px] font-mono font-extrabold text-zinc-500 pt-2 border-t-2 brutal-border">
                             <span>📅 ${current.date}</span>
                             <span>•</span>
                             <span>📄 ${lineCount.toLocaleString()} BARIS</span>
                         </div>
                     </div>
 
-                    ${isHeavyCode ? `<div class="p-3 bg-red-100 border-2 border-zinc-900 rounded-xl mb-4 text-xs font-bold text-red-600">⚠️ File besar terdeteksi (${lineCount.toLocaleString()} baris). Syntax highlighting dimatikan demi kelancaran rendering.</div>` : ''}
+                    ${isHeavyCode ? `<div class="p-3 bg-red-100 border-2 brutal-border rounded-xl mb-4 text-xs font-bold text-red-600">⚠️ File besar terdeteksi (${lineCount.toLocaleString()} baris). Syntax highlighting dimatikan demi kelancaran rendering.</div>` : ''}
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                         <button class="btn-brutalism-light yellow-accent" onclick="copyText()">
@@ -770,7 +992,7 @@
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                             RAW URL
                         </button>
-                        <button class="btn-brutalism-light border-2 border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800" onclick="sharePaste()">
+                        <button class="btn-brutalism-light border-2 brutal-border bg-zinc-900 text-white hover:bg-zinc-800" onclick="sharePaste()">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
                             BAGIKAN
                         </button>
@@ -779,7 +1001,7 @@
                     <div class="code-window-light">
                         <div class="window-top-light">
                             <div class="flex gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-400 border border-zinc-900"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-zinc-900"></span></div>
-                            <div class="code-font text-blue-600 font-bold">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
+                            <div class="code-font theme-text-accent font-bold">&lt;/&gt; ${current.language.toUpperCase()} MODE</div>
                         </div>
                         <pre class="${isHeavyCode ? '' : 'line-numbers'} language-${isHeavyCode ? 'plaintext' : current.language}"><code id="code-block"></code></pre>
                     </div>
@@ -804,7 +1026,7 @@
 
                 target.innerHTML = `
                     <div class="light-card p-6 mb-6">
-                        <span class="px-3 py-1 bg-amber-400 border-2 border-zinc-900 text-[10px] font-black uppercase rounded-full inline-block mb-3">Arulz-XD Pastebin</span>
+                        <span class="px-3 py-1 theme-bg-accent border-2 brutal-border text-[10px] font-black uppercase rounded-full inline-block mb-3">Arulz-XD Pastebin</span>
                         <h1 class="text-2xl sm:text-3xl font-black text-zinc-900 mb-2">Snippet &amp; Kode</h1>
                         <p class="text-xs sm:text-sm font-semibold text-zinc-600 leading-relaxed max-w-2xl">Kumpulan kode, script, dan snippet dari tim Arulz-XD. Gratis, siap pakai untuk mendukung projek Anda.</p>
                     </div>
@@ -815,7 +1037,7 @@
                             <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Total Paste</span>
                         </div>
                         <div class="light-card p-4 text-center">
-                            <span class="text-2xl sm:text-3xl font-black text-blue-600 font-mono block mb-1">${totalLanguagesCount}</span>
+                            <span class="text-2xl sm:text-3xl font-black theme-text-accent font-mono block mb-1">${totalLanguagesCount}</span>
                             <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Bahasa</span>
                         </div>
                         <div class="light-card p-4 text-center">
@@ -825,7 +1047,7 @@
                     </div>
 
                     <div class="relative mb-4">
-                        <input type="text" id="search-bar" class="w-full py-3.5 pl-11 pr-4 text-xs font-extrabold rounded-xl border-2 border-zinc-900 bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm" placeholder="Cari paste berdasarkan judul, bahasa, atau deskripsi..." oninput="handleSearch()">
+                        <input type="text" id="search-bar" class="w-full py-3.5 pl-11 pr-4 text-xs font-extrabold rounded-xl border-2 brutal-border bg-[#FFFDF8] text-zinc-900 placeholder-zinc-500 focus:outline-none shadow-sm" placeholder="Cari paste berdasarkan judul, bahasa, atau deskripsi..." oninput="handleSearch()">
                         <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
 
@@ -840,7 +1062,7 @@
                     </div>
 
                     <div class="flex items-center gap-2 mb-4 text-xs font-black uppercase text-zinc-800 tracking-wider">
-                        <span class="text-blue-600">//</span> Semua Paste (<span id="total-paste-text">${pastes.length}</span> Paste)
+                        <span class="theme-text-accent">//</span> Semua Paste (<span id="total-paste-text">${pastes.length}</span> Paste)
                         <div class="flex-1 h-0.5 bg-zinc-300"></div>
                     </div>
 
@@ -851,6 +1073,7 @@
             }
         }
 
+        /* RENDER PASTE CARD DENGAN DESKRIPSI & TEKS KODE DIPERBESAR */
         function renderGridItems(items) {
             const grid = document.getElementById('grid-list');
             if(!grid) return;
@@ -870,7 +1093,7 @@
 
             let htmlCards = '';
             paginatedItems.forEach(p => {
-                const contentPreview = p.content ? p.content.substring(0, 120) : '';
+                const contentPreview = p.content ? p.content.substring(0, 140) : '';
                 htmlCards += `
                     <div class="paste-card-light" onclick="window.location.href='/pastecode?id=${p.id}'">
                         <div class="card-top-light">
@@ -878,10 +1101,13 @@
                             <div class="px-2.5 py-0.5 text-[10px] rounded code-font" style="${getLanguageStyle(p.language)}">${p.language}</div>
                         </div>
                         <div class="p-4 bg-[#FFFDF8]">
-                            <h3 class="font-extrabold text-base text-zinc-900 mb-2 truncate">${p.title}</h3>
+                            <h3 class="font-extrabold text-base text-zinc-900 mb-0.5 truncate">${p.title}</h3>
+                            <p class="text-[11px] font-semibold text-zinc-600 mb-2.5 truncate">${p.desc || 'Tidak ada deskripsi.'}</p>
+                            
+                            <!-- BOX KODE -->
                             <div class="preview-box-light">${escapeHTML(contentPreview)}</div>
                         </div>
-                        <div class="px-4 py-2.5 bg-[#FAF7EF] border-t-2 border-zinc-900 flex justify-between items-center text-xs">
+                        <div class="px-4 py-2.5 bg-[#FAF7EF] border-t-2 brutal-border flex justify-between items-center text-xs">
                             <span class="font-mono text-[10px] font-extrabold text-zinc-500">📅 ${p.date}</span>
                             <a href="/pastecode?id=${p.id}&raw=true" target="_blank" class="px-3 py-1 bg-zinc-900 text-white font-extrabold text-[10px] rounded-md border border-zinc-900 uppercase" onclick="event.stopPropagation();">
                                 RAW
@@ -962,9 +1188,13 @@
                 const current = pastes[idx];
                 const shareUrl = window.location.origin + "/pastecode?id=" + currentViewId;
                 if (navigator.share) {
-                    navigator.share({ title: current.title, text: current.desc || `Lihat kode ${current.title}`, url: shareUrl });
+                    navigator.share({ 
+                        title: current.title, 
+                        text: current.desc || `Lihat snippet kode ${current.title}`, 
+                        url: shareUrl 
+                    });
                 } else {
-                    navigator.clipboard.writeText(shareUrl).then(() => customAlert("Link berhasil disalin ke clipboard!"));
+                    navigator.clipboard.writeText(shareUrl).then(() => customAlert("Link snippet berhasil disalin ke clipboard!"));
                 }
             }
         }
@@ -1002,13 +1232,48 @@
             }
         }
 
-        // Sidebar Drawer Handlers
+        // Memblokir Pinch Zoom & Gesture Zoom
+        document.addEventListener('gesturestart', e => e.preventDefault());
+
+        // Event Transparansi Header saat Di-scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                if (window.scrollY > 10) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            }
+        });
+
+        // Sidebar Drawer & Theme Picker Handlers
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
             const bioDropdown = document.getElementById('bioDropdown');
             const closeMenuBtn = document.getElementById('closeMenuBtn');
             const menuOverlay = document.getElementById('menuOverlay');
             const sidebarBannerVideo = document.getElementById('sidebarBannerVideo');
+
+            const themeBtn = document.getElementById('themePickerBtn');
+            const themeDropdown = document.getElementById('themeMenuDropdown');
+
+            if (themeBtn && themeDropdown) {
+                themeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    themeDropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!themeDropdown.contains(e.target) && e.target !== themeBtn) {
+                        themeDropdown.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Muat Tema Tersimpan
+            const savedTheme = localStorage.getItem('selectedThemeStyle') || 'yellow';
+            setAppTheme(savedTheme);
 
             function playBannerVideo() {
                 if (sidebarBannerVideo) {
@@ -1047,7 +1312,7 @@
                             container.innerHTML = `
                                 <a href="/profile" class="w-full bg-blue-50 border-2 border-blue-600 rounded-xl p-2.5 flex items-center justify-between text-zinc-900 transition-all active:scale-95 shadow-xs">
                                     <div class="flex items-center gap-2.5 truncate">
-                                        <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 border-zinc-900 object-cover">
+                                        <img src="${data.user.avatar || 'https://cdn.arulzzxd.my.id/files/X1F0Cn.png'}" class="w-7 h-7 rounded-lg border-2 brutal-border object-cover">
                                         <div class="truncate text-left leading-tight">
                                             <span class="block text-xs font-black truncate">${data.user.username}</span>
                                             <span class="block text-[9px] text-blue-600 font-bold">AKUN TERHUBUNG</span>
@@ -1100,7 +1365,7 @@
             if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
                 loaderOverlay.classList.add('fade-out');
             }
-        }, 4000);
+        }, 3000);
     </script>
 
     <!-- Prism Syntax Highlighting Scripts -->
