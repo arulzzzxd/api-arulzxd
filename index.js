@@ -1976,7 +1976,7 @@ const apiKeyUserCache = new Map();
 const routeModuleCache = new Map();
 
 const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist' || req.path === '/og' || req.path === '/api/og') return next();
+    if (req.path === '/apilist' || req.path === '/api/apilist' || req.path === '/og' || req.path === '/api/og') return next();
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
     if (!userKey && req.user && req.user.apikey) userKey = req.user.apikey;
@@ -2200,18 +2200,24 @@ if (fs.existsSync(apiPath)) {
         return endpoints;
     }
 
-    router.get('/apilist', (req, res) => {
-        const categories = [];
+    // Tambahkan endpoint /apilist eksplisit di atas atau di bawah loop
+  router.get('/apilist', (req, res) => {
+    const categories = [];
+    if (fs.existsSync(apiPath)) {
+        const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
         for (const category of endpointDirs) {
             const files = fs.readdirSync(path.join(apiPath, category)).filter(f => f.endsWith('.js'));
             const endpoints = [];
             for (const file of files) endpoints.push(...getEndpointsFromRouter(category, file));
             if (endpoints.length) categories.push({ name: `${category.toUpperCase()}`, items: endpoints });
         }
-        categories.push({ name: "OTHER", items: [{ name: "/apilist", path: "/api/apilist", desc: "/apilist", status: "ready", type: "free", params: { apikey: "" }, methods: ["GET"] }] });
-        res.json({ categories });
+    }
+    categories.push({ 
+        name: "OTHER", 
+        items: [{ name: "/apilist", path: "/api/apilist", desc: "/apilist", status: "ready", type: "free", params: { apikey: "" }, methods: ["GET"] }] 
     });
-}
+    res.json({ categories });
+});
 
 // ====================================================
 // INITIALIZATION FONT (NON-BLOCKING & SAFE FALLBACK)
