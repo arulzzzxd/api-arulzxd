@@ -264,6 +264,7 @@ async function fetchSite(homeHtml) {
   };
 }
 
+// Menyimpan Cookie dari Request Homepage
 async function getHomepage() {
   let lastErr;
   for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
@@ -272,13 +273,18 @@ async function getHomepage() {
         timeout: TIMEOUT,
         headers: {
           "User-Agent": USER_AGENT,
-          Accept: "text/html,application/xhtml+xml",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           "Accept-Language": "en-US,en;q=0.9",
         },
         maxRedirects: 5,
         validateStatus: (s) => s >= 200 && s < 400,
       });
-      return res.data;
+
+      const cookies = res.headers["set-cookie"]
+        ? res.headers["set-cookie"].map((c) => c.split(";")[0]).join("; ")
+        : "";
+
+      return { html: res.data, cookies };
     } catch (err) {
       lastErr = err;
       if (attempt < MAX_RETRY) await new Promise((r) => setTimeout(r, 1200 * attempt));
@@ -287,22 +293,28 @@ async function getHomepage() {
   throw lastErr;
 }
 
-async function callApi(mediaUrl) {
+// Mengirimkan Cookie Sesi ke fetch_api.php
+async function callApi(mediaUrl, cookies = "") {
   const body = new URLSearchParams();
   body.append("url", mediaUrl);
+
+  const headers = {
+    "User-Agent": USER_AGENT,
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    Accept: "application/json, text/plain, */*",
+    Referer: TARGET_URL,
+    Origin: new URL(TARGET_URL).origin,
+    "X-Requested-With": "XMLHttpRequest",
+  };
+
+  if (cookies) headers["Cookie"] = cookies;
+
   let lastErr;
   for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
     try {
       const res = await axios.post(API_URL, body.toString(), {
         timeout: TIMEOUT,
-        headers: {
-          "User-Agent": USER_AGENT,
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-          Accept: "application/json, text/plain, */*",
-          Referer: TARGET_URL,
-          Origin: new URL(TARGET_URL).origin,
-          "X-Requested-With": "XMLHttpRequest",
-        },
+        headers,
         maxRedirects: 5,
         validateStatus: (s) => s >= 200 && s < 500,
       });
@@ -372,8 +384,10 @@ async function scrape(inputUrl, opts) {
     site: emptySite(),
   };
 
+  let cookies = "";
   try {
-    const html = await getHomepage();
+    const { html, cookies: setCookies } = await getHomepage();
+    cookies = setCookies;
     result.site = await fetchSite(html);
   } catch (err) {
     result.site = emptySite();
@@ -406,7 +420,7 @@ async function scrape(inputUrl, opts) {
   result.contentType.detected = contentTypeFromUrl(inputUrl, result.platform.name);
 
   try {
-    const res = await callApi(inputUrl);
+    const res = await callApi(inputUrl, cookies);
     const data = typeof res.data === "string" ? safeJson(res.data) : res.data;
     if (opts && opts.raw) result.rawApiResponse = data;
 
@@ -467,7 +481,7 @@ async function scrape(inputUrl, opts) {
   return result;
 }
 
-// ENDPOINT METHOD GET ONLY
+// Router Handler
 router.get("/", async (req, res) => {
   try {
     const inputUrl = req.query.url?.trim() || req.query.link?.trim();
@@ -482,7 +496,8 @@ router.get("/", async (req, res) => {
     const raw = req.query.raw === "true";
     const result = await scrape(inputUrl, { raw });
 
-    return res.status(result.status === "failed" ? 400 : 200).json(result);
+    // HTTP Status Tetap 200 jika request berhasil diproses oleh scraper (walau media tidak ditemukan)
+    return res.status(200).json(result);
   } catch (err) {
     return res.status(500).json({
       status: false,
@@ -493,7 +508,7 @@ router.get("/", async (req, res) => {
 
 router.desc = "Downloader All-In-One (AIO) untuk YouTube, TikTok, Instagram, Facebook, dll.";
 router.paramsConfig = {
-  url: "https://www.youtube.com/watch?v=..."
+  url: "https://www.youtube.com/watch?v=...",
 };
 router.status = "ready";
 router.type = "free";
