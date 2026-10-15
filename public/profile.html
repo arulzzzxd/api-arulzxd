@@ -15,7 +15,7 @@
     <meta property="og:image:width" content="600" />
     <meta property="og:image:height" content="300" />
 
-<!-- Twitter -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:url" content="https://api.arulzzxd.my.id/profile" />
     <meta name="twitter:title" content="ArulzXD API - Profil & Settings" />
@@ -61,6 +61,21 @@
         }
 
         .code-font { font-family: 'JetBrains Mono', monospace !important; }
+
+        /* HEADER: POSISI DIAM = 100% SOLID, KETIKA DI-SCROLL = 15% TRANSPARAN BENING */
+        header.header-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        header.header-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
 
         /* Neubrutalism Borders & Shadows */
         .brutal-border,
@@ -158,7 +173,18 @@
             color: var(--theme-text) !important;
         }
 
-        .rgb-mode-active header,
+        .rgb-mode-active header.header-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active header.header-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
         .rgb-mode-active #bioDropdown {
             border-color: transparent !important;
             background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
@@ -281,8 +307,8 @@
         </div>
     </div>
 
-    <!-- Header Top Bar -->
-    <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+    <!-- Header Top Bar (Header Transparan & Transisi Halus) -->
+    <header id="mainHeader" class="fixed top-0 left-0 right-0 w-full header-translucent border-b-2 brutal-border z-30">
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="/docs" class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm active:scale-95 transition-transform">
@@ -741,6 +767,18 @@
             }
             if (dropdown) dropdown.classList.add('hidden');
         }
+
+        // Event Transparansi Header saat Di-scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                if (window.scrollY > 10) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            }
+        });
 
         // Toggle Tampilkan / Sembunyikan API Key
         function toggleShowApiKey() {

@@ -16,7 +16,7 @@
     <meta property="og:image:width" content="600" />
     <meta property="og:image:height" content="300" />
 
-<!-- Twitter -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:url" content="https://api.arulzzxd.my.id/privacy" />
     <meta name="twitter:title" content="ArulzXD API - Kebijakan Privasi" />
@@ -65,6 +65,21 @@
 
         .code-font {
             font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* HEADER: POSISI DIAM = 100% SOLID, KETIKA DI-SCROLL = TRANSPARAN BENING */
+        header.header-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        header.header-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
@@ -129,7 +144,18 @@
             color: var(--theme-text) !important;
         }
 
-        .rgb-mode-active header,
+        .rgb-mode-active header.header-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active header.header-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
         .rgb-mode-active #bioDropdown {
             border-color: transparent !important;
             background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
@@ -281,8 +307,8 @@
 
 <div id="themeBg" class="fixed inset-0 -z-10"></div>
 
-<!-- Header Top Bar (Fixed Solid Krem z-30) -->
-<header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
+<!-- Header Top Bar (Header Transparan & Transisi Halus) -->
+<header id="mainHeader" class="fixed top-0 left-0 right-0 w-full header-translucent border-b-2 brutal-border z-30">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
@@ -359,7 +385,7 @@
 <!-- Sidebar Dropdown Nav (z-50) -->
 <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
     
-    <!-- Header Dropdown -->
+    <!-- Header Dropdown Dengan Switcher Bahasa -->
     <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
         <div class="flex items-center gap-2">
             <span class="px-2.5 py-1 theme-bg-accent border-2 brutal-border rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
@@ -368,9 +394,16 @@
             </span>
         </div>
 
-        <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
+                <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
+                <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
+            </div>
+
+            <button id="closeMenuBtn" class="w-8 h-8 rounded-lg border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
     </div>
 
     <!-- Banner Video -->
@@ -460,22 +493,6 @@
 
 <!-- Main Container (pt-20 agar tidak tertutup header fixed) -->
 <main class="max-w-3xl mx-auto px-4 pt-20 pb-12 relative z-10 space-y-6">
-    
-    <!-- Tombol Kembali / Header Nav Mini -->
-    <div class="flex items-center justify-between">
-        <a href="/docs" class="dropdown-nav-card inline-flex items-center gap-2 border-2 brutal-border py-2 px-4 shadow-xs active:scale-95">
-            <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span id="lbl-btn-back" class="font-extrabold text-xs">Kembali</span>
-        </a>
-
-        <!-- Switcher Bahasa Singkat (ID / EN) -->
-        <div class="flex items-center gap-1 border-2 brutal-border rounded-xl p-1 bg-[#FFFDF8]">
-            <button id="lang-btn-id" onclick="switchLanguage('id')" class="px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent">ID</button>
-            <button id="lang-btn-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900">EN</button>
-        </div>
-    </div>
 
     <!-- Title Header Halaman -->
     <header class="text-center md:text-left pt-2">
@@ -557,9 +574,20 @@
         if (dropdown) dropdown.classList.add('hidden');
     }
 
+    // Event Transparansi Header saat Di-scroll
+    window.addEventListener('scroll', () => {
+        const header = document.getElementById('mainHeader');
+        if (header) {
+            if (window.scrollY > 10) {
+                header.classList.add('header-scrolled');
+            } else {
+                header.classList.remove('header-scrolled');
+            }
+        }
+    });
+
     const docTranslations = {
         id: {
-            btnBack: "Kembali ke Beranda",
             mainTitle: "Kebijakan Privasi",
             updated: "Terakhir Diperbarui: 29 Juni 2026",
             footerTitle: "Punya pertanyaan atau kendala?",
@@ -574,7 +602,6 @@
             ]
         },
         en: {
-            btnBack: "Back to Home",
             mainTitle: "Privacy Policy",
             updated: "Last Updated: June 29, 2026",
             footerTitle: "Have any questions or concerns?",
@@ -598,12 +625,14 @@
         
         const btnId = document.getElementById('lang-btn-id');
         const btnEn = document.getElementById('lang-btn-en');
-        if (lang === 'id') {
-            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
-        } else {
-            btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
-            btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+        if (btnId && btnEn) {
+            if (lang === 'id') {
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            } else {
+                btnEn.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent';
+                btnId.className = 'px-2.5 py-1 text-[10px] font-black rounded-lg text-zinc-600 hover:text-zinc-900';
+            }
         }
         
         renderPrivacyContent();
@@ -612,7 +641,6 @@
     function renderPrivacyContent() {
         const data = docTranslations[currentLang] || docTranslations['id'];
         
-        document.getElementById('lbl-btn-back').innerText = data.btnBack;
         document.getElementById('lbl-main-title').innerText = data.mainTitle;
         document.getElementById('lbl-updated').innerText = data.updated;
         document.getElementById('lbl-footer-title').innerText = data.footerTitle;

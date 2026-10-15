@@ -67,6 +67,21 @@
             font-family: 'JetBrains Mono', monospace !important;
         }
 
+        /* EFEK NAVBAR SCROLL TRANSPARAN BENING */
+        nav.nav-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        nav.nav-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
         /* OUTLINE TEMA DINAMIS */
         .brutal-border,
         .cyber-loader-box,
@@ -156,7 +171,18 @@
             color: var(--theme-text) !important;
         }
 
-        .rgb-mode-active nav,
+        .rgb-mode-active nav.nav-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active nav.nav-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
         .rgb-mode-active #bioDropdown {
             border-color: transparent !important;
             background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
@@ -306,7 +332,7 @@
     </div>
 
     <!-- TOP NAVBAR LIGHT DENGAN THEME PICKER & BIO MENU DROPDOWN -->
-    <nav class="sticky top-0 z-40 bg-[#FAF7EF]/90 backdrop-blur-md border-b-2 border-zinc-900 shadow-xs">
+    <nav id="mainNavbar" class="sticky top-0 z-40 nav-translucent border-b-2 border-zinc-900">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <a href="/" class="flex-shrink-0 text-xl font-black tracking-tight text-zinc-900">
                 Arulz<span class="theme-text-accent">Store</span>
@@ -1016,6 +1042,18 @@
 
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
         document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+
+        // EVENT LISTENER TRANSPARANSI NAVBAR SAAT SCROLL
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('mainNavbar');
+            if (navbar) {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('nav-scrolled');
+                } else {
+                    navbar.classList.remove('nav-scrolled');
+                }
+            }
+        });
 
         let DATA_PRODUK = [];
         let KATEGORI_AKTIF = 'all';
