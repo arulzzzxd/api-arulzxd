@@ -4057,6 +4057,7 @@ app.get('/docs', async (req, res) => {
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
                 <span>PASTECODE SNIPPET</span>
             </div>
+        </a>
         <a href="/feedback" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.255-3.883c.195-.29.515-.475.865-.501 1.153-.086 2.294-.213 3.423-.379 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
@@ -4442,7 +4443,6 @@ app.get('/docs', async (req, res) => {
         });
     }
 
-    // Fungsi pemutar video otomatis dibuat global agar dapat dipanggil oleh event listener apa pun
     function playBannerVideo() {
         document.querySelectorAll('video').forEach(video => {
             video.muted = true;
@@ -4457,81 +4457,81 @@ app.get('/docs', async (req, res) => {
     }
     
     function fetchAndUpdateUserLimit() {
-    fetch('/api/user-limit')
-        .then(res => res.json())
-        .then(data => {
-            const usedEl = document.getElementById('userLimitUsed');
-            const badgeEl = document.getElementById('userLimitBadge');
-            const barFill = document.getElementById('userLimitBarFill');
-            const subtextEl = document.getElementById('userLimitSubtext');
+        fetch('/api/user-limit')
+            .then(res => res.json())
+            .then(data => {
+                const usedEl = document.getElementById('userLimitUsed');
+                const badgeEl = document.getElementById('userLimitBadge');
+                const barFill = document.getElementById('userLimitBarFill');
+                const subtextEl = document.getElementById('userLimitSubtext');
 
-            if (!data) return;
+                if (!data) return;
 
-            const limitUsed = data.limitUsed || 0;
-            const maxLimit = data.maxLimit;
-            const roleType = (data.type || 'free').toUpperCase();
+                const limitUsed = data.limitUsed || 0;
+                const maxLimit = data.maxLimit;
+                const roleType = (data.type || 'free').toUpperCase();
 
-            if (usedEl) usedEl.innerText = limitUsed.toLocaleString('id-ID');
-            if (badgeEl) badgeEl.innerText = roleType;
+                if (usedEl) usedEl.innerText = limitUsed.toLocaleString('id-ID');
+                if (badgeEl) badgeEl.innerText = roleType;
 
-            if (maxLimit === "Unlimited" || maxLimit === Infinity) {
-                if (barFill) barFill.style.width = '100%';
-                if (subtextEl) subtextEl.innerText = 'Unlimited access';
-            } else {
-                const maxNum = Number(maxLimit) || 100;
-                const percentage = Math.min(100, Math.round((limitUsed / maxNum) * 100));
-                
-                if (barFill) barFill.style.width = percentage + '%';
-                if (subtextEl) subtextEl.innerText = percentage + '% dari limit';
-            }
-        })
-        .catch(err => console.error("Gagal update user limit:", err));
-}
-
-function fetchServerStatsDocs() {
-    fetch('/api/server-status')
-        .then(res => res.json())
-        .then(data => {
-            const userEl = document.getElementById('totalUsersStat');
-            const reqEl = document.getElementById('totalRequestsStat');
-
-            if (userEl && data.totalUsers !== undefined) {
-                userEl.innerText = data.totalUsers.toLocaleString('id-ID');
-            }
-            if (reqEl && data.totalRequests !== undefined) {
-                reqEl.innerText = data.totalRequests.toLocaleString('id-ID');
-            }
-        })
-        .catch(err => console.error("Gagal update server stats:", err));
-}
-
-function startLimitResetCountdown() {
-    function updateCountdown() {
-        const now = new Date();
-        const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        const timeParts = new Intl.DateTimeFormat('en-US', options).format(now).split(':').map(Number);
-        
-        const h = timeParts[0] || 0;
-        const m = timeParts[1] || 0;
-        const s = timeParts[2] || 0;
-
-        const secondsPassed = (h * 3600) + (m * 60) + s;
-        let secondsRemaining = 86400 - secondsPassed;
-        if (secondsRemaining <= 0) secondsRemaining = 86400;
-
-        const hoursLeft = String(Math.floor(secondsRemaining / 3600)).padStart(2, '0');
-        const minsLeft = String(Math.floor((secondsRemaining % 3600) / 60)).padStart(2, '0');
-        const secsLeft = String(secondsRemaining % 60).padStart(2, '0');
-
-        const countdownEl = document.getElementById('resetCountdown');
-        if (countdownEl) {
-            countdownEl.innerText = `${hoursLeft}:${minsLeft}:${secsLeft}`;
-        }
+                if (maxLimit === "Unlimited" || maxLimit === Infinity) {
+                    if (barFill) barFill.style.width = '100%';
+                    if (subtextEl) subtextEl.innerText = 'Unlimited access';
+                } else {
+                    const maxNum = Number(maxLimit) || 100;
+                    const percentage = Math.min(100, Math.round((limitUsed / maxNum) * 100));
+                    
+                    if (barFill) barFill.style.width = percentage + '%';
+                    if (subtextEl) subtextEl.innerText = percentage + '% dari limit';
+                }
+            })
+            .catch(err => console.error("Gagal update user limit:", err));
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-}
+    function fetchServerStatsDocs() {
+        fetch('/api/server-status')
+            .then(res => res.json())
+            .then(data => {
+                const userEl = document.getElementById('totalUsersStat');
+                const reqEl = document.getElementById('totalRequestsStat');
+
+                if (userEl && data.totalUsers !== undefined) {
+                    userEl.innerText = data.totalUsers.toLocaleString('id-ID');
+                }
+                if (reqEl && data.totalRequests !== undefined) {
+                    reqEl.innerText = data.totalRequests.toLocaleString('id-ID');
+                }
+            })
+            .catch(err => console.error("Gagal update server stats:", err));
+    }
+
+    function startLimitResetCountdown() {
+        function updateCountdown() {
+            const now = new Date();
+            const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const timeParts = new Intl.DateTimeFormat('en-US', options).format(now).split(':').map(Number);
+            
+            const h = timeParts[0] || 0;
+            const m = timeParts[1] || 0;
+            const s = timeParts[2] || 0;
+
+            const secondsPassed = (h * 3600) + (m * 60) + s;
+            let secondsRemaining = 86400 - secondsPassed;
+            if (secondsRemaining <= 0) secondsRemaining = 86400;
+
+            const hoursLeft = String(Math.floor(secondsRemaining / 3600)).padStart(2, '0');
+            const minsLeft = String(Math.floor((secondsRemaining % 3600) / 60)).padStart(2, '0');
+            const secsLeft = String(secondsRemaining % 60).padStart(2, '0');
+
+            const countdownEl = document.getElementById('resetCountdown');
+            if (countdownEl) {
+                countdownEl.innerText = hoursLeft + ':' + minsLeft + ':' + secsLeft;
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
