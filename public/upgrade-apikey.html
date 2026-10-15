@@ -433,11 +433,11 @@
 
     <nav class="space-y-2 flex-1 pb-4">
         <a href="/" class="dropdown-nav-card">
-            <div class="flex items-center gap-2.5">
-                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                <span>DASHBOARD</span>
-            </div>
-        </a>
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                    <span>DASHBOARD</span>
+                </div>
+            </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -511,6 +511,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-2">
         
+        <!-- FREE PLAN -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -546,6 +547,7 @@
             </div>
         </div>
 
+        <!-- PREMIUM PLAN -->
         <div class="plan-card theme-light-bg flex flex-col justify-between relative">
             <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 theme-bg-accent border-2 brutal-border text-zinc-900 text-[10px] font-black rounded-full uppercase tracking-wider shadow-xs">
                 PALING POPULER
@@ -556,7 +558,7 @@
                     <span id="lbl-badge-prem" class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-amber-300 text-amber-950">REKOMENDASI</span>
                 </div>
                 <div class="mb-5">
-                    <span class="text-3xl font-black text-zinc-900" id="premium-display-price">Rp 1.000</span>
+                    <span class="text-3xl font-black text-zinc-900" id="premium-display-price">Rp 100</span>
                     <span id="lbl-prem-sub" class="text-amber-900 text-xs font-bold block mt-0.5">Rp 100 / Hari</span>
                 </div>
                 <p id="lbl-prem-desc" class="text-zinc-800 text-xs font-semibold mb-6 leading-relaxed">
@@ -579,21 +581,21 @@
             </div>
             
             <div class="mt-8 space-y-3">
-                <!-- Tombol Shortcut Durasi Paket -->
-                <div class="grid grid-cols-4 gap-1 bg-[#FFFDF8] border-2 brutal-border p-1.5 rounded-xl shadow-xs">
-                    <button onclick="setPlanPreset('premium', 1)" id="btn-prem-1" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Harian</button>
-                    <button onclick="setPlanPreset('premium', 7)" id="btn-prem-7" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Mingguan</button>
-                    <button onclick="setPlanPreset('premium', 30)" id="btn-prem-30" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Bulanan</button>
-                    <button onclick="setPlanPreset('premium', 'custom')" id="btn-prem-custom" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Custom</button>
+                <!-- Pilihan Mode Durasi Premium -->
+                <div class="grid grid-cols-4 gap-1">
+                    <button type="button" onclick="selectDurationMode('premium', 'daily')" id="btn-premium-daily" class="premium-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border theme-bg-accent text-center transition-all">Harian</button>
+                    <button type="button" onclick="selectDurationMode('premium', 'weekly')" id="btn-premium-weekly" class="premium-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FFFDF8] text-zinc-900 text-center transition-all">Mingguan</button>
+                    <button type="button" onclick="selectDurationMode('premium', 'monthly')" id="btn-premium-monthly" class="premium-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FFFDF8] text-zinc-900 text-center transition-all">Bulanan</button>
+                    <button type="button" onclick="selectDurationMode('premium', 'custom')" id="btn-premium-custom" class="premium-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FFFDF8] text-zinc-900 text-center transition-all">Custom</button>
                 </div>
 
-                <!-- Kontrol Hari / Custom Pembelian -->
-                <div id="prem-custom-box" class="flex items-center justify-between bg-[#FFFDF8] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span id="lbl-duration-prem" class="text-xs text-zinc-800 font-black pl-2">Custom Hari</span>
+                <div class="flex items-center justify-between bg-[#FFFDF8] border-2 brutal-border p-2 rounded-xl shadow-xs">
+                    <span id="lbl-duration-prem" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
                     <div class="flex items-center gap-2">
-                        <button onclick="updateDays('premium', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">-</button>
-                        <input type="number" id="premium-days-input" min="1" value="10" oninput="onCustomDaysInput('premium', this.value)" class="w-12 text-center text-xs font-black text-zinc-900 font-mono bg-[#FAF7EF] border-2 brutal-border rounded-md py-0.5 focus:outline-none">
-                        <button onclick="updateDays('premium', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">+</button>
+                        <button id="btn-premium-minus" onclick="updateDays('premium', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95 hidden">-</button>
+                        <span id="premium-days" class="text-xs font-black text-zinc-900 font-mono min-w-[24px] text-center">1</span>
+                        <button id="btn-premium-plus" onclick="updateDays('premium', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95 hidden">+</button>
+                        <span id="lbl-unit-prem" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
 
@@ -603,6 +605,7 @@
             </div>
         </div>
 
+        <!-- VIP PLAN -->
         <div class="plan-card flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
@@ -610,7 +613,7 @@
                     <span id="lbl-badge-vip" class="px-2.5 py-1 rounded-lg text-[10px] font-black border-2 brutal-border bg-purple-200 text-purple-950">ULTIMATE</span>
                 </div>
                 <div class="mb-5">
-                    <span class="text-3xl font-black text-zinc-900" id="vip-display-price">Rp 1.500</span>
+                    <span class="text-3xl font-black text-zinc-900" id="vip-display-price">Rp 500</span>
                     <span id="lbl-vip-sub" class="text-zinc-600 text-xs font-bold block mt-0.5">Rp 500 / Hari</span>
                 </div>
                 <p id="lbl-vip-desc" class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
@@ -633,21 +636,21 @@
             </div>
 
             <div class="mt-8 space-y-3">
-                <!-- Tombol Shortcut Durasi Paket VIP -->
-                <div class="grid grid-cols-4 gap-1 bg-[#FAF7EF] border-2 brutal-border p-1.5 rounded-xl shadow-xs">
-                    <button onclick="setPlanPreset('vip', 1)" id="btn-vip-1" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Harian</button>
-                    <button onclick="setPlanPreset('vip', 7)" id="btn-vip-7" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Mingguan</button>
-                    <button onclick="setPlanPreset('vip', 30)" id="btn-vip-30" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Bulanan</button>
-                    <button onclick="setPlanPreset('vip', 'custom')" id="btn-vip-custom" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Custom</button>
+                <!-- Pilihan Mode Durasi VIP -->
+                <div class="grid grid-cols-4 gap-1">
+                    <button type="button" onclick="selectDurationMode('vip', 'daily')" id="btn-vip-daily" class="vip-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-purple-600 text-white text-center transition-all">Harian</button>
+                    <button type="button" onclick="selectDurationMode('vip', 'weekly')" id="btn-vip-weekly" class="vip-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-900 text-center transition-all">Mingguan</button>
+                    <button type="button" onclick="selectDurationMode('vip', 'monthly')" id="btn-vip-monthly" class="vip-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-900 text-center transition-all">Bulanan</button>
+                    <button type="button" onclick="selectDurationMode('vip', 'custom')" id="btn-vip-custom" class="vip-mode-btn py-1.5 px-1 text-[10px] font-black rounded-lg border-2 brutal-border bg-[#FAF7EF] text-zinc-900 text-center transition-all">Custom</button>
                 </div>
 
-                <!-- Kontrol Hari / Custom Pembelian VIP -->
-                <div id="vip-custom-box" class="flex items-center justify-between bg-[#FAF7EF] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span id="lbl-duration-vip" class="text-xs text-zinc-800 font-black pl-2">Custom Hari</span>
+                <div class="flex items-center justify-between bg-[#FAF7EF] border-2 brutal-border p-2 rounded-xl shadow-xs">
+                    <span id="lbl-duration-vip" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
                     <div class="flex items-center gap-2">
-                        <button onclick="updateDays('vip', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">-</button>
-                        <input type="number" id="vip-days-input" min="1" value="3" oninput="onCustomDaysInput('vip', this.value)" class="w-12 text-center text-xs font-black text-zinc-900 font-mono bg-[#FFFDF8] border-2 brutal-border rounded-md py-0.5 focus:outline-none">
-                        <button onclick="updateDays('vip', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">+</button>
+                        <button id="btn-vip-minus" onclick="updateDays('vip', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95 hidden">-</button>
+                        <span id="vip-days" class="text-xs font-black text-zinc-900 font-mono min-w-[24px] text-center">1</span>
+                        <button id="btn-vip-plus" onclick="updateDays('vip', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95 hidden">+</button>
+                        <span id="lbl-unit-vip" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
 
@@ -826,16 +829,16 @@
             badgePrem: "REKOMENDASI",
             premSub: "Rp 100 / Hari",
             premDesc: "Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.",
-            durationPrem: "Custom Hari",
+            durationPrem: "Durasi Paket",
             unitPrem: "Hari",
-            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Beli Premium (QRIS Dynamic)",
+            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Beli Premium (QRIS)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
             vipSub: "Rp 500 / Hari",
             vipDesc: "Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.",
-            durationVip: "Custom Hari",
+            durationVip: "Durasi Paket",
             unitVip: "Hari",
-            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Beli VIP (QRIS Dynamic)",
+            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Beli VIP (QRIS)",
             modalTitle: "Pembayaran QRIS",
             modalTotal: "Total Pembayaran Paket",
             modalExpire: "Selesaikan Sebelum:",
@@ -865,20 +868,20 @@
             badgePrem: "RECOMMENDED",
             premSub: "Rp 100 / Day",
             premDesc: "The right choice for independent developers needing stable performance and high request quotas.",
-            durationPrem: "Custom Days",
+            durationPrem: "Plan Duration",
             unitPrem: "Days",
-            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Buy Premium (Dynamic QRIS)",
+            btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Buy Premium (QRIS)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
             vipSub: "Rp 500 / Day",
             vipDesc: "Perfect for large production apps, public bots, or unlimited commercial systems.",
-            durationVip: "Custom Days",
+            durationVip: "Plan Duration",
             unitVip: "Days",
-            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Buy VIP (Dynamic QRIS)",
-            modalTitle: "Dynamic QRIS Payment",
+            btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Buy VIP (QRIS)",
+            modalTitle: "QRIS Payment",
             modalTotal: "Total Package Payment",
             modalExpire: "Complete Before:",
-            modalSubtext1: "Scan Dynamic QRIS Code Below",
+            modalSubtext1: "Scan QRIS Code Below",
             modalSubtext2: "Amount automatically filled on GoPay, OVO, DANA, All Banks",
             modalWaiting: "<i class='fa-solid fa-spinner fa-spin'></i> Waiting Proof / Admin Verification...",
             btnCancelTrx: "<i class='fa-solid fa-xmark text-sm'></i> CANCEL TRANSACTION",
@@ -932,6 +935,7 @@
         document.getElementById('lbl-prem-sub').innerText = data.premSub;
         document.getElementById('lbl-prem-desc').innerText = data.premDesc;
         document.getElementById('lbl-duration-prem').innerText = data.durationPrem;
+        document.getElementById('lbl-unit-prem').innerText = data.unitPrem;
         document.getElementById('lbl-btn-prem').innerHTML = data.btnPrem;
 
         document.getElementById('lbl-plan-vip-title').innerText = data.planVipTitle;
@@ -939,6 +943,7 @@
         document.getElementById('lbl-vip-sub').innerText = data.vipSub;
         document.getElementById('lbl-vip-desc').innerText = data.vipDesc;
         document.getElementById('lbl-duration-vip').innerText = data.durationVip;
+        document.getElementById('lbl-unit-vip').innerText = data.unitVip;
         document.getElementById('lbl-btn-vip').innerHTML = data.btnVip;
 
         document.getElementById('lbl-modal-title').innerHTML = `<i class="fa-solid fa-qrcode theme-text-accent"></i> ${data.modalTitle}`;
@@ -960,8 +965,8 @@
     }
 
     const config = {
-        premium: { rate: 100, days: 10, min: 1, displayId: 'premium-display-price', daysInputId: 'premium-days-input', name: 'Premium User', roleName: 'Premium User' },
-        vip: { rate: 500, days: 3, min: 1, displayId: 'vip-display-price', daysInputId: 'vip-days-input', name: 'VIP User', roleName: 'VIP User' }
+        premium: { rate: 100, days: 1, mode: 'daily', displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
+        vip: { rate: 500, days: 1, mode: 'daily', displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
     };
 
     let currentUser = { loggedIn: false, username: "Belum Login", email: "-" };
@@ -978,57 +983,64 @@
         return `UPG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
     }
 
-    function setPlanPreset(type, val) {
-        let plan = config[type];
-        
-        ['1', '7', '30', 'custom'].forEach(d => {
-            const btn = document.getElementById(`btn-${type}-${d}`);
-            if (btn) {
-                btn.className = 'py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-zinc-400 transition-all text-zinc-800';
-            }
+    function selectDurationMode(type, mode) {
+        const plan = config[type];
+        plan.mode = mode;
+
+        const btns = document.querySelectorAll(`.${type}-mode-btn`);
+        btns.forEach(btn => {
+            btn.classList.remove('theme-bg-accent', 'bg-purple-600', 'text-white');
+            btn.classList.add('bg-[#FFFDF8]', 'bg-[#FAF7EF]', 'text-zinc-900');
         });
 
-        const activeBtn = document.getElementById(`btn-${type}-${val}`);
+        const activeBtn = document.getElementById(`btn-${type}-${mode}`);
         if (activeBtn) {
-            activeBtn.className = type === 'vip' 
-                ? 'py-1 text-[10px] font-black rounded-lg bg-purple-500 text-white border border-purple-700 transition-all shadow-xs' 
-                : 'py-1 text-[10px] font-black rounded-lg theme-bg-accent border border-amber-600 transition-all shadow-xs';
+            activeBtn.classList.remove('bg-[#FFFDF8]', 'bg-[#FAF7EF]', 'text-zinc-900');
+            if (type === 'vip') {
+                activeBtn.classList.add('bg-purple-600', 'text-white');
+            } else {
+                activeBtn.classList.add('theme-bg-accent', 'text-zinc-900');
+            }
         }
 
-        if (val !== 'custom') {
-            plan.days = val;
-            const inputEl = document.getElementById(plan.daysInputId);
-            if (inputEl) inputEl.value = plan.days;
-            document.getElementById(plan.displayId).innerText = formatRupiah(plan.days * plan.rate);
+        const minusBtn = document.getElementById(`btn-${type}-minus`);
+        const plusBtn = document.getElementById(`btn-${type}-plus`);
+
+        if (mode === 'daily') {
+            plan.days = 1;
+            if (minusBtn) minusBtn.classList.add('hidden');
+            if (plusBtn) plusBtn.classList.add('hidden');
+        } else if (mode === 'weekly') {
+            plan.days = 7;
+            if (minusBtn) minusBtn.classList.add('hidden');
+            if (plusBtn) plusBtn.classList.add('hidden');
+        } else if (mode === 'monthly') {
+            plan.days = 30;
+            if (minusBtn) minusBtn.classList.add('hidden');
+            if (plusBtn) plusBtn.classList.add('hidden');
+        } else if (mode === 'custom') {
+            if (plan.days < 1) plan.days = 1;
+            if (minusBtn) minusBtn.classList.remove('hidden');
+            if (plusBtn) plusBtn.classList.remove('hidden');
         }
+
+        document.getElementById(plan.daysId).innerText = plan.days;
+        let totalCost = plan.days * plan.rate;
+        document.getElementById(plan.displayId).innerText = formatRupiah(totalCost);
     }
 
     function updateDays(type, change) {
         let plan = config[type];
-        let newDays = plan.days + change;
+        if (plan.mode !== 'custom') return;
         
-        if (newDays >= plan.min) {
+        let newDays = plan.days + change;
+        if (newDays >= 1) {
             plan.days = newDays;
-            const inputEl = document.getElementById(plan.daysInputId);
-            if (inputEl) inputEl.value = plan.days;
+            document.getElementById(plan.daysId).innerText = plan.days;
             
             let totalCost = plan.days * plan.rate;
             document.getElementById(plan.displayId).innerText = formatRupiah(totalCost);
-            
-            // Set ke mode custom otomatis ketika tombol plus/minus ditekan
-            setPlanPreset(type, 'custom');
         }
-    }
-
-    function onCustomDaysInput(type, val) {
-        let plan = config[type];
-        let parsed = parseInt(val);
-        if (isNaN(parsed) || parsed < plan.min) {
-            parsed = plan.min;
-        }
-        plan.days = parsed;
-        document.getElementById(plan.displayId).innerText = formatRupiah(plan.days * plan.rate);
-        setPlanPreset(type, 'custom');
     }
 
     async function fetchUserStatus() {
@@ -1165,7 +1177,7 @@
         Swal.fire({
             ...swalConfig,
             title: currentLang === 'en' ? 'GENERATING QRIS' : 'MEMBUAT QRIS',
-            text: currentLang === 'en' ? 'Generating dynamic QRIS...' : 'Menyiapkan QRIS...',
+            text: currentLang === 'en' ? 'Generating QRIS...' : 'Menyiapkan QRIS...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
@@ -1179,7 +1191,7 @@
                     amount: totalAmount,
                     qty: plan.days,
                     itemDetails: {
-                        nama: `Upgrade Role - ${plan.roleName} (${plan.days} Hari)`,
+                        nama: `Upgrade Role - ${plan.roleName}`,
                         harga: totalAmount,
                         kategori: 'Upgrade API Key',
                         qty: plan.days
@@ -1194,7 +1206,7 @@
 
             document.getElementById('modalQrisAmount').innerText = formatRupiah(totalAmount);
             document.getElementById('modalQrisOrderId').innerText = currentOrderId;
-            document.getElementById('modalQrisTargetRole').innerText = `${plan.roleName} (${plan.days} Hari)`;
+            document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
 
             renderQrisCode(result.data.paymentNumber);
 
@@ -1361,9 +1373,8 @@
         switchLanguage(currentLang);
         fetchUserStatus();
 
-        // Inisialisasi default tombol preset hari
-        setPlanPreset('premium', 10);
-        setPlanPreset('vip', 3);
+        selectDurationMode('premium', 'daily');
+        selectDurationMode('vip', 'daily');
 
         fetch('/api/user-status')
             .then(res => res.json())
