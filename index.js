@@ -256,7 +256,12 @@ app.use((req, res, next) => {
         const desc = req.query.desc || baseConfig.desc;
         const pageKey = PAGE_CONFIGS[pathKey] ? pathKey : 'home';
         
-        const ogImageUrl = `https://api.arulzzxd.my.id/og/${pageKey}`;
+        // Cek jika pengguna sedang membagikan link snippet pastecode yang spesifik
+        const pasteId = req.query.id;
+        const ogImageUrl = pasteId && pageKey === 'pastecode'
+            ? `https://api.arulzzxd.my.id/og/pastecode?id=${pasteId}`
+            : `https://api.arulzzxd.my.id/og/${pageKey}`;
+            
         const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
 
         return res.send(`
@@ -2664,6 +2669,217 @@ app.get('/og/:page?', async (req, res) => {
     } catch (error) {
         console.error('Error generating OG Image:', error);
         res.status(500).send('Error generating OG Image');
+    }
+});
+
+app.get('/og/pastecode', async (req, res) => {
+    try {
+        await initCustomFont();
+
+        let title = req.query.title || "Pastecode Snippet";
+        let desc = req.query.desc || "Layanan paste code snippet REST API resmi.";
+        let language = req.query.lang || "javascript";
+        let codeContent = req.query.code || "const axios = require('axios');\n\nasync function main() {\n  console.log('ArulzXD API Pastecode');\n}";
+        let dateStr = req.query.date || "29 Jun 2026";
+        
+        // Jika ada ID snippet, coba ambil data paste yang cocok dari database / URL
+        const pasteId = req.query.id;
+        if (pasteId) {
+            try {
+                const response = await axios.get(GITHUB_RAW_URL);
+                if (response.ok || response.status === 200) {
+                    let fileContent = response.data;
+                    if (typeof fileContent === 'string') {
+                        let jsonString = fileContent.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
+                        if (jsonString.endsWith(';')) jsonString = jsonString.slice(0, -1);
+                        const pasteList = JSON.parse(jsonString);
+                        const foundPaste = pasteList.find(p => p.id.toString() === pasteId.toString());
+                        if (foundPaste) {
+                            title = foundPaste.title || title;
+                            desc = foundPaste.desc || desc;
+                            language = foundPaste.language || language;
+                            codeContent = foundPaste.content || codeContent;
+                            dateStr = foundPaste.date || dateStr;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal mengambil data paste untuk OG Canvas:", e.message);
+            }
+        }
+
+        // Ukuran Canvas Standard Open Graph (1200 x 630 px)
+        const width = 1200;
+        const height = 630;
+        const canvas = createCanvas(width, height);
+        const ctx = canvas.getContext('2d');
+
+        // 1. Background Luar Neubrutalism Cream (#FAF7EF)
+        ctx.fillStyle = '#FAF7EF';
+        ctx.fillRect(0, 0, width, height);
+
+        // Pattern Grid Dot Padat
+        ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
+        for (let x = 0; x < width; x += 24) {
+            for (let y = 0; y < height; y += 24) {
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 2. Outer Card Frame (Kartu Utama)
+        const cardX = 40;
+        const cardY = 35;
+        const cardW = 1120;
+        const cardH = 560;
+
+        // Shadow Solid Hitam 14px
+        ctx.fillStyle = '#121212';
+        ctx.beginPath();
+        ctx.roundRect(cardX + 14, cardY + 14, cardW, cardH, 32);
+        ctx.fill();
+
+        // Body Utama Kartu (#FFFDF8)
+        ctx.fillStyle = '#FFFDF8';
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardW, cardH, 32);
+        ctx.fill();
+        ctx.strokeStyle = '#EAB308'; // Tema Kuning/Gold
+        ctx.lineWidth = 6;
+        ctx.stroke();
+
+        // 3. Top Window Bar (Lingkaran Merah, Kuning, Hijau & Badge Bahasa)
+        const headerH = 75;
+        ctx.beginPath();
+        ctx.moveTo(cardX, cardY + headerH);
+        ctx.lineTo(cardX + cardW, cardY + headerH);
+        ctx.strokeStyle = '#EAB308';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Window Control Dots
+        const dots = ['#EF4444', '#F59E0B', '#10B981'];
+        dots.forEach((color, i) => {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(cardX + 45 + (i * 32), cardY + (headerH / 2), 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#121212';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        });
+
+        // Pill Badge Language Kanan Atas
+        const langText = language.toUpperCase();
+        ctx.font = 'bold 20px "JetBrains Mono", monospace';
+        const langMetrics = ctx.measureText(langText);
+        const langPillW = langMetrics.width + 44;
+        const langPillH = 42;
+        const langPillX = cardX + cardW - langPillW - 35;
+        const langPillY = cardY + (headerH - langPillH) / 2;
+
+        ctx.fillStyle = '#DCFCE7'; // Hijau soft
+        ctx.beginPath();
+        ctx.roundRect(langPillX, langPillY, langPillW, langPillH, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#16A34A';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = '#15803D';
+        ctx.fillText(langText, langPillX + 22, langPillY + 28);
+
+        // 4. Info Snippet (Judul & Deskripsi / Author)
+        const contentX = cardX + 45;
+        let currentY = cardY + headerH + 50;
+
+        // Judul Snippet (Sangat Tebal & Jelas)
+        ctx.fillStyle = '#121212';
+        ctx.font = 'bold 40px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(title, contentX, currentY);
+
+        currentY += 34;
+
+        // Deskripsi / By Subtitle
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
+        const authorText = desc ? desc : "By arulzxd";
+        ctx.fillText(authorText, contentX, currentY);
+
+        currentY += 30;
+
+        // 5. Code Preview Window (Box Hitam Berisi Kode)
+        const codeBoxX = contentX;
+        const codeBoxY = currentY;
+        const codeBoxW = cardW - 90;
+        const codeBoxH = 210;
+
+        // Body Preview Box Kode (Hitam Solid)
+        ctx.fillStyle = '#121212';
+        ctx.beginPath();
+        ctx.roundRect(codeBoxX, codeBoxY, codeBoxW, codeBoxH, 20);
+        ctx.fill();
+        ctx.strokeStyle = '#EAB308';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Render Teks Kode di Dalam Box Hitam
+        ctx.fillStyle = '#38BDF8'; // Cyan terang
+        ctx.font = '22px "JetBrains Mono", monospace';
+
+        const lines = codeContent.split('\n');
+        const maxLines = 5;
+        let lineY = codeBoxY + 45;
+
+        for (let i = 0; i < Math.min(lines.length, maxLines); i++) {
+            let lineStr = lines[i];
+            if (lineStr.length > 60) lineStr = lineStr.substring(0, 57) + '...';
+            ctx.fillText(lineStr, codeBoxX + 28, lineY);
+            lineY += 34;
+        }
+
+        // 6. Footer Snippet (Tanggal & Pill RAW)
+        const footerY = cardY + cardH - 65;
+
+        // Garis Pemisah Footer
+        ctx.beginPath();
+        ctx.moveTo(cardX, cardY + cardH - 80);
+        ctx.lineTo(cardX + cardW, cardY + cardH - 80);
+        ctx.strokeStyle = '#EAB308';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Tanggal Snippet
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 20px "JetBrains Mono", monospace';
+        ctx.fillText(`📅  ${dateStr}`, contentX, footerY + 12);
+
+        // Badge RAW di Kanan Bawah
+        const rawW = 100;
+        const rawH = 44;
+        const rawX = cardX + cardW - rawW - 35;
+        const rawY = footerY - 14;
+
+        ctx.fillStyle = '#121212';
+        ctx.beginPath();
+        ctx.roundRect(rawX, rawY, rawW, rawH, 12);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 18px "JetBrains Mono", monospace';
+        ctx.fillText("RAW", rawX + 31, rawY + 28);
+
+        // Encode PNG Buffer & Kirim Response
+        const buffer = await canvas.encode('png');
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Length', buffer.length);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.status(200).send(buffer);
+
+    } catch (error) {
+        console.error('Error generating Pastecode OG Canvas:', error);
+        res.status(500).send('Error generating Pastecode OG Canvas');
     }
 });
 
