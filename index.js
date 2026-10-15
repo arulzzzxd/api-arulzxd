@@ -2213,14 +2213,18 @@ if (fs.existsSync(apiPath)) {
     });
 }
 
+// ====================================================
+// INITIALIZATION FONT (NON-BLOCKING & SAFE FALLBACK)
+// ====================================================
 let isFontLoaded = false;
 
 async function initCustomFont() {
     if (isFontLoaded) return true;
     try {
+        // Naikkan timeout ke 10000ms dan tambahkan penanganan fallback
         const response = await axios.get('https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf', { 
             responseType: 'arraybuffer',
-            timeout: 5000 
+            timeout: 10000 
         });
         
         GlobalFonts.register(Buffer.from(response.data), 'Plus Jakarta Sans');
@@ -2228,13 +2232,14 @@ async function initCustomFont() {
         console.log('✅ Font "Plus Jakarta Sans" berhasil dimuat!');
         return true;
     } catch (e) {
-        console.error('⚠️ Gagal memuat font kustom, fallback ke sans-serif:', e.message);
+        console.warn('⚠️ Gagal memuat font kustom (timeout/network), menggunakan fallback ke sans-serif bawaan sistem.');
+        isFontLoaded = false;
         return false;
     }
 }
 
-// Panggil di awal startup server
-initCustomFont();
+// Panggil secara asinkron tanpa menahan eksekusi skrip utama
+initCustomFont().catch(err => console.error("Font init non-critical error:", err.message));
 
 // Konfigurasi Metadata Halaman Publik (Gabungan Lengkap)
 const PAGE_CONFIGS = {
