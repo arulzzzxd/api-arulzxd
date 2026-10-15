@@ -492,10 +492,15 @@
             </div>
 
             <!-- Sub-Box Detail Profil -->
-            <div class="light-card-box p-4 mb-4 space-y-3 bg-[#FFFDF8]">
-                <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
+            <div class="light-card-box p-4 space-y-3 bg-[#FFFDF8]">
+                <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5 gap-2">
                     <span class="text-zinc-500 uppercase code-font text-[11px]">Username:</span>
-                    <span id="detailUsername" class="text-zinc-900 font-extrabold truncate">loading...</span>
+                    <div class="flex items-center gap-2 truncate max-w-[70%] justify-end">
+                        <span id="detailUsername" class="text-zinc-900 font-extrabold truncate">loading...</span>
+                        <button onclick="toggleEditUsernameModal()" title="Edit Username" class="p-1.5 rounded-lg border-2 border-zinc-900 theme-bg-accent hover:opacity-80 active:scale-95 transition-all text-[11px] leading-none flex-shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
@@ -510,20 +515,19 @@
                     <span id="detailRoleExpire" class="text-zinc-900 font-extrabold truncate">Selamanya (Free)</span>
                 </div>
 
-                <div class="flex items-center justify-between text-xs font-bold">
+                <div class="flex items-center justify-between text-xs font-bold gap-2">
                     <span id="providerLabel" class="text-zinc-500 uppercase code-font text-[11px]">Email:</span>
                     <div class="flex items-center gap-2 truncate max-w-[70%] justify-end">
                         <span id="providerIcon" class="flex-shrink-0 flex items-center">
                             <i class="fa-solid fa-envelope text-amber-600"></i>
                         </span>
                         <span id="detailEmail" class="text-zinc-900 font-extrabold truncate">loading_email@gmail.com</span>
+                        <button onclick="toggleEditEmailModal()" title="Edit Email" class="p-1.5 rounded-lg border-2 border-zinc-900 theme-bg-accent hover:opacity-80 active:scale-95 transition-all text-[11px] leading-none flex-shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <button onclick="toggleEditProfileModal()" class="w-full theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
-                <i class="fa-solid fa-user-pen text-sm"></i> EDIT PROFIL (NAMA &amp; EMAIL)
-            </button>
         </div>
 
         <!-- KARTU 2: KREDENSIAL API KEY -->
@@ -543,13 +547,13 @@
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <button onclick="toggleShowApiKey()" id="btnToggleKey" class="bg-[#FFFDF8] hover:bg-zinc-100 text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                <button onclick="toggleShowApiKey()" id="btnToggleKey" class="bg-[#FFFDF8] hover:bg-zinc-100 text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
                     <i class="fa-solid fa-eye"></i> TAMPILKAN
                 </button>
-                <button onclick="copyApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                <button onclick="copyApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
                     <i class="fa-regular fa-copy"></i> SALIN KEY
                 </button>
-                <button onclick="toggleCustomKeyInput()" class="bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold active:scale-95 transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 shadow-xs">
+                <button onclick="toggleCustomKeyInput()" id="btnCustomKey" class="bg-zinc-900 hover:bg-zinc-800 text-white border-2 border-zinc-900 text-xs py-2 px-3 rounded-xl uppercase font-extrabold transition-all flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1 shadow-xs opacity-40 cursor-not-allowed">
                     <i class="fa-solid fa-sliders"></i> CUSTOM KEY
                 </button>
             </div>
@@ -558,7 +562,7 @@
                 <p class="text-[10px] font-bold text-zinc-600 mb-2">Ubah API Key kustom Anda (Khusus VIP User):</p>
                 <div class="flex gap-2">
                     <input type="text" id="customApiKeyInput" placeholder="Ketik Custom Key..." class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-1.5 text-xs text-zinc-900 focus:outline-none font-bold">
-                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs px-4 rounded-xl uppercase font-extrabold shadow-xs active:scale-95">SIMPAN</button>
+                    <button onclick="saveCustomApiKey()" class="theme-bg-accent text-zinc-900 border-2 border-zinc-900 text-xs px-4 rounded-xl uppercase font-extrabold shadow-xs active:scale-95 cursor-pointer">SIMPAN</button>
                 </div>
             </div>
 
@@ -632,7 +636,7 @@
             </div>
         </div>
 
-        <!-- KARTU 5: AKTIVITAS & RIWAYAT REQUEST (DESIGN LIGHT THEME SESUAI GAMBAR) -->
+        <!-- KARTU 5: AKTIVITAS & RIWAYAT REQUEST -->
         <div class="w-full light-card p-5">
             <div class="border-b-2 border-zinc-200 pb-3 mb-3">
                 <div class="flex items-center justify-between mb-1">
@@ -688,38 +692,65 @@
                 Tindakan ini bersifat permanen. Seluruh data akun, API Key, kuota, riwayat log, dan sesi login akan dihapus 100% dari database server dan tidak dapat dikembalikan.
             </p>
 
-            <button onclick="handleDeleteAccount()" class="w-full bg-red-600 hover:bg-red-700 text-white border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs">
+            <button onclick="handleDeleteAccount()" class="w-full bg-red-600 hover:bg-red-700 text-white border-2 border-zinc-900 font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-all shadow-xs cursor-pointer">
                 <i class="fa-solid fa-trash-can"></i> HAPUS AKUN PERMANEN
             </button>
         </div>
 
     </main>
 
-    <!-- MODAL EDIT PROFIL -->
-    <div id="editProfileModal" class="fixed inset-0 bg-black/70 backdrop-blur-xs hidden z-[999] flex items-center justify-center p-4">
+    <!-- MODAL EDIT USERNAME -->
+    <div id="editUsernameModal" class="fixed inset-0 bg-black/70 backdrop-blur-xs hidden z-[999] flex items-center justify-center p-4">
         <div class="light-card p-6 w-full max-w-md relative bg-[#FFFDF8]">
             <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-zinc-900">
-                <h3 class="text-sm font-black uppercase tracking-wider code-font">EDIT PROFIL PENGGUNA</h3>
-                <button onclick="toggleEditProfileModal()" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-zinc-200 flex items-center justify-center text-zinc-900 font-bold">✕</button>
+                <h3 class="text-sm font-black uppercase tracking-wider code-font">EDIT USERNAME</h3>
+                <button onclick="toggleEditUsernameModal()" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-zinc-200 flex items-center justify-center text-zinc-900 font-bold cursor-pointer">✕</button>
             </div>
 
-            <form id="formEditProfile" onsubmit="handleSaveProfile(event)" class="space-y-4">
+            <form id="formEditUsername" onsubmit="handleSaveUsername(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Nama / Username Baru:</label>
-                    <input type="text" id="editUsernameInput" required class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Email Baru:</label>
-                    <input type="email" id="editEmailInput" required class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
+                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Username Baru:</label>
+                    <input type="text" id="editUsernameOnlyInput" minlength="4" required placeholder="Masukkan min. 4 karakter" class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
+                    <p class="text-[10px] font-bold text-zinc-500 mt-2 leading-relaxed bg-amber-100/70 p-2 rounded-lg border border-amber-300">
+                        <i class="fa-solid fa-circle-info text-amber-700 mr-1"></i> <strong>Keterangan:</strong> Username digunakan sebagai nama identitas unik akun Anda di sistem. Panjang minimal harus <strong>4 karakter</strong>.
+                    </p>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="toggleEditProfileModal()" class="flex-1 border-2 border-zinc-900 bg-zinc-200 text-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider">
+                    <button type="button" onclick="toggleEditUsernameModal()" class="flex-1 border-2 border-zinc-900 bg-zinc-200 text-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider cursor-pointer">
                         BATAL
                     </button>
-                    <button type="submit" class="flex-1 theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider shadow-xs active:scale-95">
-                        SIMPAN PERUBAHAN
+                    <button type="submit" class="flex-1 theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider shadow-xs active:scale-95 cursor-pointer">
+                        SIMPAN USERNAME
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT EMAIL -->
+    <div id="editEmailModal" class="fixed inset-0 bg-black/70 backdrop-blur-xs hidden z-[999] flex items-center justify-center p-4">
+        <div class="light-card p-6 w-full max-w-md relative bg-[#FFFDF8]">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-zinc-900">
+                <h3 class="text-sm font-black uppercase tracking-wider code-font">EDIT EMAIL PENGGUNA</h3>
+                <button onclick="toggleEditEmailModal()" class="w-8 h-8 rounded-lg border-2 border-zinc-900 bg-zinc-200 flex items-center justify-center text-zinc-900 font-bold cursor-pointer">✕</button>
+            </div>
+
+            <form id="formEditEmail" onsubmit="handleSaveEmail(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black uppercase code-font mb-1 text-zinc-800">Email Baru:</label>
+                    <input type="email" id="editEmailOnlyInput" required placeholder="contoh@gmail.com" class="w-full bg-[#FFFDF8] border-2 border-zinc-900 rounded-xl px-3 py-2 text-xs text-zinc-900 font-bold focus:outline-none">
+                    <p class="text-[10px] font-bold text-zinc-500 mt-2 leading-relaxed bg-amber-100/70 p-2 rounded-lg border border-amber-300">
+                        <i class="fa-solid fa-circle-info text-amber-700 mr-1"></i> <strong>Keterangan:</strong> Email digunakan untuk verifikasi akun, menerima pemberitahuan sistem, serta pemulihan kata sandi jika lupa akses login.
+                    </p>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="toggleEditEmailModal()" class="flex-1 border-2 border-zinc-900 bg-zinc-200 text-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider cursor-pointer">
+                        BATAL
+                    </button>
+                    <button type="submit" class="flex-1 theme-bg-accent text-zinc-900 border-2 border-zinc-900 font-black text-xs py-2.5 rounded-xl uppercase tracking-wider shadow-xs active:scale-95 cursor-pointer">
+                        SIMPAN EMAIL
                     </button>
                 </div>
             </form>
@@ -734,6 +765,7 @@
     <script>
         let currentRawApiKey = '';
         let isApiKeyVisible = false;
+        let isVipUser = false;
 
         // Presets Tema Warna & Border
         const THEME_PRESETS = {
@@ -819,16 +851,39 @@
         }
 
         function toggleCustomKeyInput() {
+            if (!isVipUser) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'KHUSUS VIP USER',
+                    text: 'Fitur Custom API Key hanya dapat digunakan oleh akun VIP USER!',
+                    confirmButtonText: 'UPGRADE VIP',
+                    showCancelButton: true,
+                    cancelButtonText: 'TUTUP',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'px-4 py-2 bg-yellow-400 text-zinc-900 font-black rounded-xl border-2 border-black m-1 text-xs uppercase',
+                        cancelButton: 'px-4 py-2 bg-zinc-200 text-zinc-900 font-black rounded-xl border-2 border-black m-1 text-xs uppercase'
+                    }
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        window.location.href = '/upgrade-apikey';
+                    }
+                });
+                return;
+            }
+
             const box = document.getElementById('vipCustomKeyBox');
-            box.classList.toggle('hidden');
+            if (box) box.classList.toggle('hidden');
         }
 
         function setRoleTheme(roleName) {
             const badge = document.getElementById('roleBadge');
             const detailPlanBadge = document.getElementById('detailPlanBadge');
+            const btnCustomKey = document.getElementById('btnCustomKey');
             const role = (roleName || '').toLowerCase();
 
             if (role.includes('vip')) {
+                isVipUser = true;
                 if (badge) {
                     badge.innerText = 'VIP USER';
                     badge.className = 'text-[10px] font-black bg-yellow-400 text-zinc-900 border-2 border-zinc-900 px-2.5 py-0.5 rounded-full uppercase shadow-xs';
@@ -837,7 +892,12 @@
                     detailPlanBadge.innerText = 'VIP USER';
                     detailPlanBadge.className = 'text-[10px] font-black bg-yellow-400 text-zinc-900 border-2 border-zinc-900 px-3 py-0.5 rounded-full uppercase shadow-xs';
                 }
+                if (btnCustomKey) {
+                    btnCustomKey.classList.remove('opacity-40', 'cursor-not-allowed');
+                    btnCustomKey.classList.add('opacity-100', 'cursor-pointer', 'active:scale-95');
+                }
             } else if (role.includes('premium')) {
+                isVipUser = false;
                 if (badge) {
                     badge.innerText = 'PREMIUM';
                     badge.className = 'text-[10px] font-black bg-amber-500 text-white border-2 border-zinc-900 px-2.5 py-0.5 rounded-full uppercase shadow-xs';
@@ -846,7 +906,12 @@
                     detailPlanBadge.innerText = 'PREMIUM USER';
                     detailPlanBadge.className = 'text-[10px] font-black bg-amber-500 text-white border-2 border-zinc-900 px-3 py-0.5 rounded-full uppercase shadow-xs';
                 }
+                if (btnCustomKey) {
+                    btnCustomKey.classList.remove('opacity-100', 'cursor-pointer', 'active:scale-95');
+                    btnCustomKey.classList.add('opacity-40', 'cursor-not-allowed');
+                }
             } else {
+                isVipUser = false;
                 if (badge) {
                     badge.innerText = 'FREE';
                     badge.className = 'text-[10px] font-black bg-zinc-200 text-zinc-800 border-2 border-zinc-900 px-2.5 py-0.5 rounded-full uppercase shadow-xs';
@@ -854,6 +919,10 @@
                 if (detailPlanBadge) {
                     detailPlanBadge.innerText = 'FREE USER';
                     detailPlanBadge.className = 'text-[10px] font-black bg-zinc-200 text-zinc-800 border-2 border-zinc-900 px-3 py-0.5 rounded-full uppercase shadow-xs';
+                }
+                if (btnCustomKey) {
+                    btnCustomKey.classList.remove('opacity-100', 'cursor-pointer', 'active:scale-95');
+                    btnCustomKey.classList.add('opacity-40', 'cursor-not-allowed');
                 }
             }
         }
@@ -916,25 +985,51 @@
             }
         }
 
-        // Toggle Modal Edit Profil
-        function toggleEditProfileModal() {
-            const modal = document.getElementById('editProfileModal');
+        // Toggle Modal Edit Username
+        function toggleEditUsernameModal() {
+            const modal = document.getElementById('editUsernameModal');
+            if (!modal) return;
             modal.classList.toggle('hidden');
 
             if (!modal.classList.contains('hidden')) {
-                document.getElementById('editUsernameInput').value = document.getElementById('userName').innerText !== 'Loading...' ? document.getElementById('userName').innerText : '';
-                document.getElementById('editEmailInput').value = document.getElementById('userEmail').innerText !== 'loading_email@gmail.com' ? document.getElementById('userEmail').innerText : '';
+                const usernameInput = document.getElementById('editUsernameOnlyInput');
+                if (usernameInput) {
+                    const currentUsername = document.getElementById('userName').innerText;
+                    usernameInput.value = currentUsername !== 'Loading...' ? currentUsername : '';
+                    setTimeout(() => usernameInput.focus(), 100);
+                }
             }
         }
 
-        // Simpan Perubahan Profil
-        async function handleSaveProfile(e) {
-            e.preventDefault();
-            const newUsername = document.getElementById('editUsernameInput').value.trim();
-            const newEmail = document.getElementById('editEmailInput').value.trim();
+        // Toggle Modal Edit Email
+        function toggleEditEmailModal() {
+            const modal = document.getElementById('editEmailModal');
+            if (!modal) return;
+            modal.classList.toggle('hidden');
 
-            if (!newUsername || !newEmail) {
-                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Nama & Email wajib diisi!' });
+            if (!modal.classList.contains('hidden')) {
+                const emailInput = document.getElementById('editEmailOnlyInput');
+                if (emailInput) {
+                    const currentEmail = document.getElementById('userEmail').innerText;
+                    emailInput.value = currentEmail !== 'loading_email@gmail.com' ? currentEmail : '';
+                    setTimeout(() => emailInput.focus(), 100);
+                }
+            }
+        }
+
+        // Simpan Username Baru (Minimal 4 Karakter)
+        async function handleSaveUsername(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('editUsernameOnlyInput').value.trim();
+            const currentEmail = document.getElementById('userEmail').innerText;
+
+            if (!newUsername) {
+                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Username wajib diisi!' });
+                return;
+            }
+
+            if (newUsername.length < 4) {
+                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Username minimal harus terdiri dari 4 karakter!' });
                 return;
             }
 
@@ -942,16 +1037,47 @@
                 const response = await fetch('/api/user/update-profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: newUsername, email: newEmail })
+                    body: JSON.stringify({ username: newUsername, email: currentEmail })
                 });
 
                 const resData = await response.json();
                 if (resData.status) {
-                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: resData.message || 'Profil berhasil diperbarui!' });
-                    toggleEditProfileModal();
+                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: resData.message || 'Username berhasil diperbarui!' });
+                    toggleEditUsernameModal();
                     fetchUserProfile();
                 } else {
-                    Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal memperbarui profil.' });
+                    Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal memperbarui username.' });
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'ERROR', text: 'Terjadi kesalahan koneksi server.' });
+            }
+        }
+
+        // Simpan Email Baru
+        async function handleSaveEmail(e) {
+            e.preventDefault();
+            const newEmail = document.getElementById('editEmailOnlyInput').value.trim();
+            const currentUsername = document.getElementById('userName').innerText;
+
+            if (!newEmail) {
+                Swal.fire({ icon: 'warning', title: 'PERINGATAN', text: 'Email wajib diisi!' });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUsername, email: newEmail })
+                });
+
+                const resData = await response.json();
+                if (resData.status) {
+                    Swal.fire({ icon: 'success', title: 'BERHASIL', text: resData.message || 'Email berhasil diperbarui!' });
+                    toggleEditEmailModal();
+                    fetchUserProfile();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'GAGAL', text: resData.message || 'Gagal memperbarui email.' });
                 }
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'ERROR', text: 'Terjadi kesalahan koneksi server.' });
