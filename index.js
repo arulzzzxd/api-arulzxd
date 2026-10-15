@@ -258,7 +258,7 @@ app.use(async (req, res, next) => {
 
         // Khusus untuk link Pastecode dengan parameter ID
         if (req.path === '/pastecode' && req.query.id) {
-            ogImageUrl = `https://api.arulzzxd.my.id/og/pastecode?id=${req.query.id}`;
+            ogImageUrl = `https://api.arulzzxd.my.id/og/snippet?id=${req.query.id}`;
             try {
                 const dbRes = await axios.get("https://raw.githubusercontent.com/arulzzzxd/api-arulzxd/main/database/data.js", { timeout: 3000 });
                 let jsonString = dbRes.data.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
@@ -2313,7 +2313,7 @@ const PAGE_CONFIGS = {
 };
 
 // Endpoint OpenGraph Khusus Snippet Pastecode
-app.get('/og/pastecode', async (req, res) => {
+app.get('/og/snippet', async (req, res) => {
     try {
         await initCustomFont();
 
