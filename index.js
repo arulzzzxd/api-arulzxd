@@ -2200,8 +2200,7 @@ if (fs.existsSync(apiPath)) {
         return endpoints;
     }
 
-    // Tambahkan endpoint /apilist eksplisit di atas atau di bawah loop
-  router.get('/apilist', (req, res) => {
+router.get('/apilist', (req, res) => {
     const categories = [];
     if (fs.existsSync(apiPath)) {
         const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
@@ -2218,7 +2217,7 @@ if (fs.existsSync(apiPath)) {
     });
     res.json({ categories });
 });
-
+}
 // ====================================================
 // INITIALIZATION FONT (NON-BLOCKING & SAFE FALLBACK)
 // ====================================================
