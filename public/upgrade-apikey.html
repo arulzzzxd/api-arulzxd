@@ -433,11 +433,11 @@
 
     <nav class="space-y-2 flex-1 pb-4">
         <a href="/" class="dropdown-nav-card">
-                <div class="flex items-center gap-2.5">
-                    <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                    <span>DASHBOARD</span>
-                </div>
-            </a>
+            <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                <span>DASHBOARD</span>
+            </div>
+        </a>
         <a href="/docs" class="dropdown-nav-card">
             <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-zinc-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -557,7 +557,7 @@
                 </div>
                 <div class="mb-5">
                     <span class="text-3xl font-black text-zinc-900" id="premium-display-price">Rp 1.000</span>
-                    <span id="lbl-prem-sub" class="text-amber-900 text-xs font-bold block mt-0.5">Rp 100 / Hari (Min. 10 Hari)</span>
+                    <span id="lbl-prem-sub" class="text-amber-900 text-xs font-bold block mt-0.5">Rp 100 / Hari</span>
                 </div>
                 <p id="lbl-prem-desc" class="text-zinc-800 text-xs font-semibold mb-6 leading-relaxed">
                     Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.
@@ -579,15 +579,24 @@
             </div>
             
             <div class="mt-8 space-y-3">
-                <div class="flex items-center justify-between bg-[#FFFDF8] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span id="lbl-duration-prem" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
-                    <div class="flex items-center gap-3">
+                <!-- Tombol Shortcut Durasi Paket -->
+                <div class="grid grid-cols-4 gap-1 bg-[#FFFDF8] border-2 brutal-border p-1.5 rounded-xl shadow-xs">
+                    <button onclick="setPlanPreset('premium', 1)" id="btn-prem-1" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Harian</button>
+                    <button onclick="setPlanPreset('premium', 7)" id="btn-prem-7" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Mingguan</button>
+                    <button onclick="setPlanPreset('premium', 30)" id="btn-prem-30" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Bulanan</button>
+                    <button onclick="setPlanPreset('premium', 'custom')" id="btn-prem-custom" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-amber-600 transition-all text-zinc-800">Custom</button>
+                </div>
+
+                <!-- Kontrol Hari / Custom Pembelian -->
+                <div id="prem-custom-box" class="flex items-center justify-between bg-[#FFFDF8] border-2 brutal-border p-2 rounded-xl shadow-xs">
+                    <span id="lbl-duration-prem" class="text-xs text-zinc-800 font-black pl-2">Custom Hari</span>
+                    <div class="flex items-center gap-2">
                         <button onclick="updateDays('premium', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">-</button>
-                        <span id="premium-days" class="text-xs font-black text-zinc-900 font-mono w-6 text-center">10</span>
+                        <input type="number" id="premium-days-input" min="1" value="10" oninput="onCustomDaysInput('premium', this.value)" class="w-12 text-center text-xs font-black text-zinc-900 font-mono bg-[#FAF7EF] border-2 brutal-border rounded-md py-0.5 focus:outline-none">
                         <button onclick="updateDays('premium', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border theme-bg-accent text-zinc-900 font-black text-sm flex items-center justify-center active:scale-95">+</button>
-                        <span id="lbl-unit-prem" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
+
                 <button onclick="processQrisPayment('premium')" id="lbl-btn-prem" class="block w-full text-center theme-bg-accent text-zinc-900 border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
                     <i class="fa-solid fa-qrcode mr-1"></i> Beli Premium (QRIS)
                 </button>
@@ -602,7 +611,7 @@
                 </div>
                 <div class="mb-5">
                     <span class="text-3xl font-black text-zinc-900" id="vip-display-price">Rp 1.500</span>
-                    <span id="lbl-vip-sub" class="text-zinc-600 text-xs font-bold block mt-0.5">Rp 500 / Hari (Min. 3 Hari)</span>
+                    <span id="lbl-vip-sub" class="text-zinc-600 text-xs font-bold block mt-0.5">Rp 500 / Hari</span>
                 </div>
                 <p id="lbl-vip-desc" class="text-zinc-700 text-xs font-semibold mb-6 leading-relaxed">
                     Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.
@@ -624,15 +633,24 @@
             </div>
 
             <div class="mt-8 space-y-3">
-                <div class="flex items-center justify-between bg-[#FAF7EF] border-2 brutal-border p-2 rounded-xl shadow-xs">
-                    <span id="lbl-duration-vip" class="text-xs text-zinc-800 font-black pl-2">Durasi Paket</span>
-                    <div class="flex items-center gap-3">
+                <!-- Tombol Shortcut Durasi Paket VIP -->
+                <div class="grid grid-cols-4 gap-1 bg-[#FAF7EF] border-2 brutal-border p-1.5 rounded-xl shadow-xs">
+                    <button onclick="setPlanPreset('vip', 1)" id="btn-vip-1" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Harian</button>
+                    <button onclick="setPlanPreset('vip', 7)" id="btn-vip-7" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Mingguan</button>
+                    <button onclick="setPlanPreset('vip', 30)" id="btn-vip-30" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Bulanan</button>
+                    <button onclick="setPlanPreset('vip', 'custom')" id="btn-vip-custom" class="py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-purple-600 transition-all text-zinc-800">Custom</button>
+                </div>
+
+                <!-- Kontrol Hari / Custom Pembelian VIP -->
+                <div id="vip-custom-box" class="flex items-center justify-between bg-[#FAF7EF] border-2 brutal-border p-2 rounded-xl shadow-xs">
+                    <span id="lbl-duration-vip" class="text-xs text-zinc-800 font-black pl-2">Custom Hari</span>
+                    <div class="flex items-center gap-2">
                         <button onclick="updateDays('vip', -1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">-</button>
-                        <span id="vip-days" class="text-xs font-black text-zinc-900 font-mono w-6 text-center">3</span>
+                        <input type="number" id="vip-days-input" min="1" value="3" oninput="onCustomDaysInput('vip', this.value)" class="w-12 text-center text-xs font-black text-zinc-900 font-mono bg-[#FFFDF8] border-2 brutal-border rounded-md py-0.5 focus:outline-none">
                         <button onclick="updateDays('vip', 1)" class="w-7 h-7 rounded-lg border-2 brutal-border bg-purple-500 text-white font-black text-sm flex items-center justify-center active:scale-95">+</button>
-                        <span id="lbl-unit-vip" class="text-xs text-zinc-700 font-bold pr-2">Hari</span>
                     </div>
                 </div>
+
                 <button onclick="processQrisPayment('vip')" id="lbl-btn-vip" class="block w-full text-center bg-purple-600 text-white border-2 brutal-border text-xs font-black py-3 px-4 rounded-xl transition-transform active:scale-95 uppercase tracking-wider shadow-xs">
                     <i class="fa-solid fa-qrcode mr-1"></i> Beli VIP (QRIS)
                 </button>
@@ -752,7 +770,7 @@
     document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
     const THEME_PRESETS = {
-        yellow: { border: '#a16207', accent: '#fde047', text: '#121212', light: '#fef9c3' },
+        yellow: { border: '#eab308', accent: '#fde047', text: '#121212', light: '#fef9c3' },
         red:    { border: '#b91c1c', accent: '#ef4444', text: '#ffffff', light: '#fee2e2' },
         blue:   { border: '#1d4ed8', accent: '#3b82f6', text: '#ffffff', light: '#dbeafe' },
         cyan:   { border: '#0e7490', accent: '#06b6d4', text: '#ffffff', light: '#cff4fc' },
@@ -806,16 +824,16 @@
             btnFree: "Coba Fitur",
             planPremTitle: "Premium Plan",
             badgePrem: "REKOMENDASI",
-            premSub: "Rp 100 / Hari (Min. 10 Hari)",
+            premSub: "Rp 100 / Hari",
             premDesc: "Pilihan tepat untuk developer aplikasi mandiri yang membutuhkan performa stabil dan kuota request besar.",
-            durationPrem: "Durasi Paket",
+            durationPrem: "Custom Hari",
             unitPrem: "Hari",
             btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Beli Premium (QRIS Dynamic)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
-            vipSub: "Rp 500 / Hari (Min. 3 Hari)",
+            vipSub: "Rp 500 / Hari",
             vipDesc: "Sempurna untuk aplikasi skala produksi besar, bot publik masif, atau sistem komersial tanpa batas.",
-            durationVip: "Durasi Paket",
+            durationVip: "Custom Hari",
             unitVip: "Hari",
             btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Beli VIP (QRIS Dynamic)",
             modalTitle: "Pembayaran QRIS",
@@ -845,16 +863,16 @@
             btnFree: "Try Features",
             planPremTitle: "Premium Plan",
             badgePrem: "RECOMMENDED",
-            premSub: "Rp 100 / Day (Min. 10 Days)",
+            premSub: "Rp 100 / Day",
             premDesc: "The right choice for independent developers needing stable performance and high request quotas.",
-            durationPrem: "Plan Duration",
+            durationPrem: "Custom Days",
             unitPrem: "Days",
             btnPrem: "<i class='fa-solid fa-qrcode mr-1'></i> Buy Premium (Dynamic QRIS)",
             planVipTitle: "VIP Plan",
             badgeVip: "ULTIMATE",
-            vipSub: "Rp 500 / Day (Min. 3 Days)",
+            vipSub: "Rp 500 / Day",
             vipDesc: "Perfect for large production apps, public bots, or unlimited commercial systems.",
-            durationVip: "Plan Duration",
+            durationVip: "Custom Days",
             unitVip: "Days",
             btnVip: "<i class='fa-solid fa-qrcode mr-1'></i> Buy VIP (Dynamic QRIS)",
             modalTitle: "Dynamic QRIS Payment",
@@ -914,7 +932,6 @@
         document.getElementById('lbl-prem-sub').innerText = data.premSub;
         document.getElementById('lbl-prem-desc').innerText = data.premDesc;
         document.getElementById('lbl-duration-prem').innerText = data.durationPrem;
-        document.getElementById('lbl-unit-prem').innerText = data.unitPrem;
         document.getElementById('lbl-btn-prem').innerHTML = data.btnPrem;
 
         document.getElementById('lbl-plan-vip-title').innerText = data.planVipTitle;
@@ -922,7 +939,6 @@
         document.getElementById('lbl-vip-sub').innerText = data.vipSub;
         document.getElementById('lbl-vip-desc').innerText = data.vipDesc;
         document.getElementById('lbl-duration-vip').innerText = data.durationVip;
-        document.getElementById('lbl-unit-vip').innerText = data.unitVip;
         document.getElementById('lbl-btn-vip').innerHTML = data.btnVip;
 
         document.getElementById('lbl-modal-title').innerHTML = `<i class="fa-solid fa-qrcode theme-text-accent"></i> ${data.modalTitle}`;
@@ -944,8 +960,8 @@
     }
 
     const config = {
-        premium: { rate: 100, days: 10, min: 10, displayId: 'premium-display-price', daysId: 'premium-days', name: 'Premium User', roleName: 'Premium User' },
-        vip: { rate: 500, days: 3, min: 3, displayId: 'vip-display-price', daysId: 'vip-days', name: 'VIP User', roleName: 'VIP User' }
+        premium: { rate: 100, days: 10, min: 1, displayId: 'premium-display-price', daysInputId: 'premium-days-input', name: 'Premium User', roleName: 'Premium User' },
+        vip: { rate: 500, days: 3, min: 1, displayId: 'vip-display-price', daysInputId: 'vip-days-input', name: 'VIP User', roleName: 'VIP User' }
     };
 
     let currentUser = { loggedIn: false, username: "Belum Login", email: "-" };
@@ -962,17 +978,57 @@
         return `UPG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
     }
 
+    function setPlanPreset(type, val) {
+        let plan = config[type];
+        
+        ['1', '7', '30', 'custom'].forEach(d => {
+            const btn = document.getElementById(`btn-${type}-${d}`);
+            if (btn) {
+                btn.className = 'py-1 text-[10px] font-black rounded-lg border border-transparent hover:border-zinc-400 transition-all text-zinc-800';
+            }
+        });
+
+        const activeBtn = document.getElementById(`btn-${type}-${val}`);
+        if (activeBtn) {
+            activeBtn.className = type === 'vip' 
+                ? 'py-1 text-[10px] font-black rounded-lg bg-purple-500 text-white border border-purple-700 transition-all shadow-xs' 
+                : 'py-1 text-[10px] font-black rounded-lg theme-bg-accent border border-amber-600 transition-all shadow-xs';
+        }
+
+        if (val !== 'custom') {
+            plan.days = val;
+            const inputEl = document.getElementById(plan.daysInputId);
+            if (inputEl) inputEl.value = plan.days;
+            document.getElementById(plan.displayId).innerText = formatRupiah(plan.days * plan.rate);
+        }
+    }
+
     function updateDays(type, change) {
         let plan = config[type];
         let newDays = plan.days + change;
         
         if (newDays >= plan.min) {
             plan.days = newDays;
-            document.getElementById(plan.daysId).innerText = plan.days;
+            const inputEl = document.getElementById(plan.daysInputId);
+            if (inputEl) inputEl.value = plan.days;
             
             let totalCost = plan.days * plan.rate;
             document.getElementById(plan.displayId).innerText = formatRupiah(totalCost);
+            
+            // Set ke mode custom otomatis ketika tombol plus/minus ditekan
+            setPlanPreset(type, 'custom');
         }
+    }
+
+    function onCustomDaysInput(type, val) {
+        let plan = config[type];
+        let parsed = parseInt(val);
+        if (isNaN(parsed) || parsed < plan.min) {
+            parsed = plan.min;
+        }
+        plan.days = parsed;
+        document.getElementById(plan.displayId).innerText = formatRupiah(plan.days * plan.rate);
+        setPlanPreset(type, 'custom');
     }
 
     async function fetchUserStatus() {
@@ -996,30 +1052,28 @@
     }
 
     function renderQrisCode(qrisString) {
-    const qrContainer = document.getElementById('qrcodeContainer');
-    if (!qrContainer) return;
-    qrContainer.innerHTML = '';
+        const qrContainer = document.getElementById('qrcodeContainer');
+        if (!qrContainer) return;
+        qrContainer.innerHTML = '';
 
-    if (!qrisString) return;
+        if (!qrisString) return;
 
-    // Jika string berupa Data URL Base64 atau Link Gambar
-    if (qrisString.startsWith('data:image') || qrisString.startsWith('http://') || qrisString.startsWith('https://')) {
-        const img = document.createElement('img');
-        img.src = qrisString;
-        img.className = 'max-w-full h-auto rounded-xl mx-auto block';
-        qrContainer.appendChild(img);
-    } else {
-        // Jika berupa teks payload QRIS EMVCo murni
-        new QRCode(qrContainer, {
-            text: qrisString,
-            width: 220,
-            height: 220,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.L
-        });
+        if (qrisString.startsWith('data:image') || qrisString.startsWith('http://') || qrisString.startsWith('https://')) {
+            const img = document.createElement('img');
+            img.src = qrisString;
+            img.className = 'max-w-full h-auto rounded-xl mx-auto block';
+            qrContainer.appendChild(img);
+        } else {
+            new QRCode(qrContainer, {
+                text: qrisString,
+                width: 220,
+                height: 220,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
     }
-}
 
     const swalConfig = {
         customClass: {
@@ -1118,20 +1172,20 @@
 
         try {
             const res = await fetch('/transactions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        orderId: currentOrderId,
-        amount: totalAmount,
-        qty: plan.days,
-        itemDetails: {
-            nama: `Upgrade Role - ${plan.roleName}`,
-            harga: totalAmount,
-            kategori: 'Upgrade API Key',
-            qty: plan.days
-        }
-    })
-});
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: currentOrderId,
+                    amount: totalAmount,
+                    qty: plan.days,
+                    itemDetails: {
+                        nama: `Upgrade Role - ${plan.roleName} (${plan.days} Hari)`,
+                        harga: totalAmount,
+                        kategori: 'Upgrade API Key',
+                        qty: plan.days
+                    }
+                })
+            });
 
             const result = await res.json();
             if (!result.status) throw new Error(result.message || "Gagal membuat transaksi QRIS");
@@ -1140,7 +1194,7 @@
 
             document.getElementById('modalQrisAmount').innerText = formatRupiah(totalAmount);
             document.getElementById('modalQrisOrderId').innerText = currentOrderId;
-            document.getElementById('modalQrisTargetRole').innerText = plan.roleName;
+            document.getElementById('modalQrisTargetRole').innerText = `${plan.roleName} (${plan.days} Hari)`;
 
             renderQrisCode(result.data.paymentNumber);
 
@@ -1306,6 +1360,10 @@
         playBannerVideo();
         switchLanguage(currentLang);
         fetchUserStatus();
+
+        // Inisialisasi default tombol preset hari
+        setPlanPreset('premium', 10);
+        setPlanPreset('vip', 3);
 
         fetch('/api/user-status')
             .then(res => res.json())
