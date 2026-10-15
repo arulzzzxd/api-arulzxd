@@ -1947,6 +1947,17 @@ function getUserMaxLimit(keyType) {
 async function getOrResetUserLimit(user) {
     if (!user) return { limitUsed: 0, maxLimit: 100, keyType: 'free' };
 
+    // Cek apakah user memiliki batas waktu expired role
+    if (user.role && user.role !== 'Free User' && user.roleExpiresAt) {
+        if (new Date() > new Date(user.roleExpiresAt)) {
+            // Jika sudah lewat masa aktif, otomatis downgrade ke Free
+            user.role = 'Free User';
+            user.roleExpiresAt = null;
+            user.apikey = generateFreeApiKey();
+            await user.save();
+        }
+    }
+
     const keyType = getApiKeyType(user);
     const maxLimit = getUserMaxLimit(keyType);
     if (keyType === 'vip') return { limitUsed: 0, maxLimit: "Unlimited", keyType };
@@ -2938,6 +2949,21 @@ app.get('/og/:page?', async (req, res) => {
 
 app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
+app.get('/api/user-limit', checkAuthSession, async (req, res) => {
+    let userKey = req.query.apikey || req.headers['x-api-key'] || (req.user ? req.user.apikey : null);
+    if (!userKey) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
+
+    try {
+        const user = await User.findOne({ apikey: userKey });
+        if (!user) return res.json({ loggedIn: false, limitUsed: 0, maxLimit: 100, type: 'free' });
+
+        const { limitUsed, maxLimit, keyType } = await getOrResetUserLimit(user);
+        return res.json({ loggedIn: !!req.user, limitUsed, maxLimit: maxLimit === Infinity ? "Unlimited" : maxLimit, type: keyType });
+    } catch (err) {
+        return res.status(500).json({ status: false, message: "Server Error" });
+    }
+});
+
 // Endpoint Ambil Riwayat Request Pengguna
 app.get('/api/user-activity', async (req, res) => {
     try {
@@ -3146,16 +3172,21 @@ app.get('/api/server-status', (req, res) => {
 // ====================================================
 cron.schedule('0 * * * *', async () => {
     try {
-        const expiredUsers = await User.find({ role: { $ne: 'Free User' }, roleExpiresAt: {$lte: new Date() } });
+        const now = new Date();
+        const expiredUsers = await User.find({ 
+            role: { $ne: 'Free User' }, 
+            roleExpiresAt: { $lte: now } 
+        });
+
         for (const user of expiredUsers) {
             user.role = 'Free User';
             user.roleExpiresAt = null;
-            user.apikey = generateFreeApiKey();
+            user.apikey = generateFreeApiKey(); // Otomatis generate ulang API Key free
             await user.save();
-            console.log(`📉 [EXPIRED] Role ${user.username} dikembalikan ke Free User.`);
+            console.log(`📉 [EXPIRED] Role & API Key untuk ${user.username} dikembalikan ke Free User.`);
         }
     } catch (err) {
-        console.error('❌ [CRON] Error:', err.message);
+        console.error('❌ [CRON] Error saat reset role expired:', err.message);
     }
 }, { scheduled: true, timezone: "Asia/Jakarta" });
 
