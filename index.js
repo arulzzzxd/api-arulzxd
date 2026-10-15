@@ -1939,7 +1939,7 @@ function getApiKeyType(user) {
 
 function getUserMaxLimit(keyType) {
     if (keyType === 'vip') return Infinity;
-    if (keyType === 'premium') return 1000;
+    if (keyType === 'premium') return 800;
     return 100;
 }
 
@@ -2097,10 +2097,10 @@ const apiKeyLimiter = rateLimit({
         const systemEndpoints = ['/apilist', '/user-limit', '/user-activity', '/user-status', '/server-status'];
         return systemEndpoints.some(endpoint => req.path.startsWith(endpoint));
     },
-    max: (req) => getApiKeyType(req.user) === 'premium' ? 1000 : 100,
+    max: (req) => getApiKeyType(req.user) === 'premium' ? 800 : 100,
     handler: (req, res) => {
         const keyType = getApiKeyType(req.user);
-        res.status(429).json({ status: false, creator: "ArulzXD", message: getLimitMessage(keyType, keyType === 'premium' ? 1000 : 100) });
+        res.status(429).json({ status: false, creator: "ArulzXD", message: getLimitMessage(keyType, keyType === 'premium' ? 800 : 100) });
     },
     standardHeaders: true, legacyHeaders: false
 });
@@ -3156,19 +3156,39 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
-app.get('/api/server-status', (req, res) => {
+app.get('/api/server-status', async (req, res) => {
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
 
+    let totalUsers = 0;
+    let totalRequests = 0;
+
+    try {
+        totalUsers = await User.countDocuments();
+        const reqAggregate = await ApiLog.aggregate([
+            { $project: { count: { $size: "$log" } } },
+            { $group: { _id: null, total: { $sum: "$count" } } }
+        ]);
+        totalRequests = reqAggregate[0]?.total || 0;
+    } catch (err) {
+        console.error("Gagal memuat statistik server:", err.message);
+    }
+
     res.json({
-        platform: os.platform(), architecture: os.arch(), uptime: os.uptime(),
+        totalUsers,
+        totalRequests,
+        platform: os.platform(),
+        architecture: os.arch(),
+        uptime: os.uptime(),
         totalMemory: (totalMem / (1024 ** 3)).toFixed(2) + " GB",
         usedMemory: (usedMem / (1024 ** 3)).toFixed(2) + " GB",
         freeMemory: (freeMem / (1024 ** 3)).toFixed(2) + " GB",
         memoryUsagePercent: ((usedMem / totalMem) * 100).toFixed(2),
-        cpuModel: os.cpus()[0].model, cpuSpeed: os.cpus()[0].speed + " MHz",
-        cpuCores: os.cpus().length, loadAverage: os.loadavg()
+        cpuModel: os.cpus()[0].model,
+        cpuSpeed: os.cpus()[0].speed + " MHz",
+        cpuCores: os.cpus().length,
+        loadAverage: os.loadavg()
     });
 });
 
