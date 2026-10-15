@@ -256,9 +256,9 @@ app.use((req, res, next) => {
         const desc = req.query.desc || baseConfig.desc;
         const pageKey = PAGE_CONFIGS[pathKey] ? pathKey : 'home';
         
-        // Cek jika pengguna sedang membagikan link snippet pastecode yang spesifik
+        // Pengecekan ID Snippet untuk Open Graph khusus Pastecode
         const pasteId = req.query.id;
-        const ogImageUrl = pasteId && pageKey === 'pastecode'
+        const ogImageUrl = (pasteId && pageKey === 'pastecode')
             ? `https://api.arulzzxd.my.id/og/pastecode?id=${pasteId}`
             : `https://api.arulzzxd.my.id/og/${pageKey}`;
             
@@ -2684,7 +2684,7 @@ app.get('/og/pastecode', async (req, res) => {
         let codeContent = req.query.code || "const axios = require('axios');\n\nasync function main() {\n  console.log('ArulzXD API Pastecode');\n}";
         let dateStr = req.query.date || "29 Jun 2026";
         
-        // Cek ID Snippet dari Query Parameter
+        // Ambil Data Snippet secara dinamis dari database GitHub
         const pasteId = req.query.id;
         if (pasteId) {
             try {
@@ -2710,17 +2710,17 @@ app.get('/og/pastecode', async (req, res) => {
             }
         }
 
-        // Resolution Standard Open Graph (1200 x 630 px)
+        // Resolusi Open Graph (1200 x 630 px)
         const width = 1200;
         const height = 630;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
-        // Background Luar Neubrutalism Cream
+        // Background Cream Neubrutalism
         ctx.fillStyle = '#FAF7EF';
         ctx.fillRect(0, 0, width, height);
 
-        // Grid Pattern
+        // Pattern Dots
         ctx.fillStyle = 'rgba(18, 18, 18, 0.08)';
         for (let x = 0; x < width; x += 24) {
             for (let y = 0; y < height; y += 24) {
@@ -2730,19 +2730,17 @@ app.get('/og/pastecode', async (req, res) => {
             }
         }
 
-        // Frame Kartu Utama
+        // Card Frame
         const cardX = 40;
         const cardY = 35;
         const cardW = 1120;
         const cardH = 560;
 
-        // Shadow Hitam
         ctx.fillStyle = '#121212';
         ctx.beginPath();
         ctx.roundRect(cardX + 14, cardY + 14, cardW, cardH, 32);
         ctx.fill();
 
-        // Body Kartu (#FFFDF8)
         ctx.fillStyle = '#FFFDF8';
         ctx.beginPath();
         ctx.roundRect(cardX, cardY, cardW, cardH, 32);
@@ -2772,7 +2770,7 @@ app.get('/og/pastecode', async (req, res) => {
             ctx.stroke();
         });
 
-        // Language Badge Pill
+        // Language Badge
         const langText = language.toUpperCase();
         ctx.font = 'bold 20px "JetBrains Mono", monospace';
         const langMetrics = ctx.measureText(langText);
@@ -2792,14 +2790,13 @@ app.get('/og/pastecode', async (req, res) => {
         ctx.fillStyle = '#15803D';
         ctx.fillText(langText, langPillX + 22, langPillY + 28);
 
-        // Judul & Subtitle
+        // Title & Description
         const contentX = cardX + 45;
         let currentY = cardY + headerH + 50;
 
         ctx.fillStyle = '#121212';
         ctx.font = 'bold 38px "Plus Jakarta Sans", sans-serif';
         
-        // Pemotongan Judul Panjang
         let displayTitle = title;
         if (ctx.measureText(displayTitle).width > cardW - 100) {
             displayTitle = displayTitle.substring(0, 45) + '...';
@@ -2815,7 +2812,7 @@ app.get('/og/pastecode', async (req, res) => {
 
         currentY += 30;
 
-        // Code Preview Box
+        // Code Preview Container
         const codeBoxX = contentX;
         const codeBoxY = currentY;
         const codeBoxW = cardW - 90;
