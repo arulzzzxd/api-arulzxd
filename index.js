@@ -2134,10 +2134,67 @@ const logApiActivity = async (req, res, next) => {
     next();
 };
 
-// AUTO LOAD API ENDPOINTS
+// ====================================================
+// AUTO LOAD API ENDPOINTS (FIXED)
+// ====================================================
 const router = express.Router();
 const apiPath = path.join(__dirname, 'api');
 router.use(validateApiKey);
+
+function formatEndpointTitle(filename) {
+    return filename.replace(/\.js$/, "").replace(/[-_]/g, " ")
+        .split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function getEndpointsFromRouter(category, file) {
+    const endpoints = [];
+    const routePath = path.join(apiPath, category, file);
+    let route;
+    try { 
+        route = require(routePath); 
+    } catch (e) { 
+        console.error(`❌ Gagal require file route [${category}/${file}]:`, e.message);
+        return endpoints; 
+    }
+
+    const subRouter = route.stack ? route : route.router || route;
+    if (!subRouter || !subRouter.stack) return endpoints;
+
+    const endpointTitle = route.title || (route.name && route.name !== 'router' ? route.name : formatEndpointTitle(file));
+    const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
+
+    subRouter.stack.forEach(layer => {
+        if (layer.route) {
+            const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
+            let params = { apikey: "" }; 
+
+            if (route.paramsConfig) params = { apikey: "", ...route.paramsConfig };
+            else if (layer.route.stack && layer.route.stack.length) {
+                layer.route.stack.forEach(mw => {
+                    if (!mw.handle) return;
+                    const fnString = mw.handle.toString();
+                    [...fnString.matchAll(/req\.query\.([a-zA-Z0-9_]+)/g)].forEach(m => { params[m[1]] = ""; });
+                    [...fnString.matchAll(/req\.body\.([a-zA-Z0-9_]+)/g)].forEach(m => { params[m[1]] = ""; });
+                });
+            }
+
+            if (methods.some(m => ["POST", "PUT", "PATCH"].includes(m)) && Object.keys(params).length <= 1) {
+                params.fileToUpload = "file";
+            }
+
+            endpoints.push({
+                name: endpointTitle, 
+                path: `/api/${category}/${file.replace(/\.js$/, "")}`,
+                desc: routeDesc, 
+                status: route.status || "ready", 
+                type: route.type || "free", 
+                params, 
+                methods
+            });
+        }
+    });
+    return endpoints;
+}
 
 if (fs.existsSync(apiPath)) {
     const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
@@ -2148,57 +2205,16 @@ if (fs.existsSync(apiPath)) {
         for (const file of files) {
             const routeName = path.basename(file, '.js');
             const routeFilePath = path.join(categoryPath, file);
-            const route = require(routeFilePath);
-
-            routeModuleCache.set(`${category}/${routeName}`, route);
-            router.use(`/${category}/${routeName}`, route);
+            try {
+                const route = require(routeFilePath);
+                routeModuleCache.set(`${category}/${routeName}`, route);
+                router.use(`/${category}/${routeName}`, route);
+            } catch (err) {
+                console.error(`❌ Gagal memuat router ${category}/${routeName}:`, err.message);
+            }
         }
     }
-
-    function formatEndpointTitle(filename) {
-        return filename.replace(/\.js$/, "").replace(/[-_]/g, " ")
-            .split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-    }
-
-    function getEndpointsFromRouter(category, file) {
-        const endpoints = [];
-        const routePath = path.join(apiPath, category, file);
-        let route;
-        try { route = require(routePath); } catch (e) { return endpoints; }
-
-        const subRouter = route.stack ? route : route.router || route;
-        if (!subRouter || !subRouter.stack) return endpoints;
-
-        const endpointTitle = route.title || (route.name && route.name !== 'router' ? route.name : formatEndpointTitle(file));
-        const routeDesc = route.desc || subRouter.desc || `/${category}/${file.replace(/\.js$/, "")}`;
-
-        subRouter.stack.forEach(layer => {
-            if (layer.route) {
-                const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
-                let params = { apikey: "" }; 
-
-                if (route.paramsConfig) params = { apikey: "", ...route.paramsConfig };
-                else if (layer.route.stack && layer.route.stack.length) {
-                    layer.route.stack.forEach(mw => {
-                        if (!mw.handle) return;
-                        const fnString = mw.handle.toString();
-                        [...fnString.matchAll(/req\.query\.([a-zA-Z0-9_]+)/g)].forEach(m => { params[m[1]] = ""; });
-                        [...fnString.matchAll(/req\.body\.([a-zA-Z0-9_]+)/g)].forEach(m => { params[m[1]] = ""; });
-                    });
-                }
-
-                if (methods.some(m => ["POST", "PUT", "PATCH"].includes(m)) && Object.keys(params).length <= 1) {
-                    params.fileToUpload = "file";
-                }
-
-                endpoints.push({
-                    name: endpointTitle, path: `/api/${category}/${file.replace(/\.js$/, "")}`,
-                    desc: routeDesc, status: route.status || "ready", type: route.type || "free", params, methods
-                });
-            }
-        });
-        return endpoints;
-    }
+}
 
 router.get('/apilist', (req, res) => {
     try {
@@ -2215,7 +2231,6 @@ router.get('/apilist', (req, res) => {
 
                 for (const file of files) {
                     try {
-                        // Memuat endpoint dari router dengan aman
                         const parsedEndpoints = getEndpointsFromRouter(category, file);
                         if (Array.isArray(parsedEndpoints)) {
                             endpoints.push(...parsedEndpoints);
@@ -2248,13 +2263,14 @@ router.get('/apilist', (req, res) => {
             }] 
         });
 
-        res.json({ categories });
+        return res.json({ categories });
     } catch (err) {
         console.error("❌ Error pada /apilist route:", err.message);
-        res.status(500).json({ error: "Failed to load API list", details: err.message });
+        return res.status(500).json({ error: "Failed to load API list", details: err.message });
     }
 });
-}
+
+
 // ====================================================
 // INITIALIZATION FONT (NON-BLOCKING & SAFE FALLBACK)
 // ====================================================
@@ -2919,6 +2935,8 @@ app.get('/og/:page?', async (req, res) => {
         res.status(500).send('Error generating OG Image');
     }
 });
+
+app.use('/api', validateApiKey, trackAndEnforceLimit, apiKeyLimiter, logApiActivity, router);
 
 // Endpoint Ambil Riwayat Request Pengguna
 app.get('/api/user-activity', async (req, res) => {
