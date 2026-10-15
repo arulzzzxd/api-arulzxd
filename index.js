@@ -1986,7 +1986,20 @@ const apiKeyUserCache = new Map();
 const routeModuleCache = new Map();
 
 const validateApiKey = async (req, res, next) => {
-    if (req.path === '/apilist' || req.path === '/api/apilist' || req.path === '/og' || req.path === '/api/og') return next();
+    // Daftar endpoint sistem yang dikecualikan dari pengecekan API Key
+    const systemExemptions = [
+        '/apilist', '/api/apilist',
+        '/og', '/api/og',
+        '/server-status', '/api/server-status',
+        '/status-server', '/api/status-server',
+        '/user-limit', '/api/user-limit',
+        '/user-activity', '/api/user-activity',
+        '/user-status', '/api/user-status'
+    ];
+
+    if (systemExemptions.some(endpoint => req.path === endpoint || req.path.startsWith(endpoint))) {
+        return next();
+    }
 
     let userKey = req.query.apikey || req.body?.apikey || req.files?.apikey || req.file?.apikey || req.headers['x-api-key'];
     if (!userKey && req.user && req.user.apikey) userKey = req.user.apikey;
@@ -2018,7 +2031,6 @@ const validateApiKey = async (req, res, next) => {
     const isWebUI = req.headers.referer && req.headers.referer.includes('/docs');
 
     if (isPremiumOrVipKey && isWebUI) {
-        // Cek apakah request dari Web UI dipanggil oleh pemilik sah API Key tersebut
         const reqUserId = req.user ? (req.user._id || req.user.id).toString() : null;
         const ownerId = (callerUser._id || callerUser.id).toString();
 
@@ -2110,32 +2122,42 @@ const logApiActivity = async (req, res, next) => {
         const userKey = req.activeApiKey || req.query?.apikey || req.body?.apikey || req.headers['x-api-key'] || (req.user ? req.user.apikey : null);
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
+        // Daftar endpoint sistem yang tidak akan dicatat ke riwayat/log MongoDB
+        const excludedEndpoints = [
+            '/api/user-activity',
+            '/api/user-limit',
+            '/api/apilist',
+            '/api/server-status',
+            '/api/status-server',
+            '/api/user-status'
+        ];
+
         if (
             userKey && 
             fullEndpoint.startsWith('/api/') && 
-            !['/api/user-activity', '/api/user-limit', '/api/apilist'].includes(fullEndpoint)
+            !excludedEndpoints.includes(fullEndpoint)
         ) {
             try {
                 let targetUser = req.user || await User.findOne({ apikey: userKey.trim() }).lean();
                 if (!targetUser) return;
 
                 await ApiLog.findOneAndUpdate(
-    { userId: targetUser._id || targetUser.id },
-    { 
-        $set: { 
-            apikey: userKey.trim(), 
-            username: targetUser.username || 'User', 
-            email: targetUser.email || '' 
-        },
-        $push: { 
-            log: { 
-                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
-                $position: 0 
-            } 
-        }
-    },
-    { upsert: true, new: true }
-);
+                    { userId: targetUser._id || targetUser.id },
+                    { 
+                        $set: { 
+                            apikey: userKey.trim(), 
+                            username: targetUser.username || 'User', 
+                            email: targetUser.email || '' 
+                        },
+                        $push: { 
+                            log: { 
+                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
+                                $position: 0 
+                            } 
+                        }
+                    },
+                    { upsert: true, new: true }
+                );
             } catch (err) {
                 console.error("❌ Gagal simpan log ke MongoDB:", err.message);
             }
@@ -2988,8 +3010,18 @@ app.get('/api/user-activity', async (req, res) => {
             return res.json({ status: true, data: [], logs: [] });
         }
 
+        // Daftar endpoint sistem/internal yang dikecualikan dari riwayat aktivitas
+        const excludedEndpoints = [
+            '/api/apilist',
+            '/api/server-status',
+            '/api/status-server',
+            '/api/user-activity',
+            '/api/user-limit',
+            '/api/user-status'
+        ];
+
         const filteredLogs = userLogDoc.log
-             .filter(item => item.endpoint !== '/api/apilist')
+             .filter(item => item.endpoint && !excludedEndpoints.includes(item.endpoint))
              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const formattedLogs = filteredLogs.map(item => {
@@ -3156,7 +3188,8 @@ app.post('/api/feedback', async (req, res) => {
     }
 });
 
-app.get('/api/server-status', async (req, res) => {
+// 4. Alias Route Server Status (Mendukung /api/server-status dan /api/status-server)
+app.get(['/api/server-status', '/api/status-server'], async (req, res) => {
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
@@ -4061,47 +4094,62 @@ app.get('/docs', async (req, res) => {
         </video>
     </div>
 
-    <!-- 2. Grid Statistik Real-time -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-    <!-- Stat Total User -->
+    <!-- Grid Statistik Real-time & Limit (6 Kolom Responsive) -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <!-- 1. Stat Total User -->
     <div class="stat-box">
         <span class="stat-label">TOTAL USER</span>
         <span id="totalUsersStat" class="stat-value">0</span>
         <div class="stat-sub">REGISTERED USERS</div>
     </div>
 
-    <!-- Stat Total Request -->
+    <!-- 2. Stat Total Request -->
     <div class="stat-box">
         <span class="stat-label">TOTAL REQUEST</span>
         <span id="totalRequestsStat" class="stat-value">0</span>
         <div class="stat-sub">GLOBAL HITS</div>
     </div>
 
-    <!-- Stat Limit Used (Gaya Sesuai Gambar) -->
+    <!-- 3. Stat Limit Used (Khusus Penggunaan Limit) -->
     <div class="stat-box">
         <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-1.5">
-                <i class="fa-solid fa-gauge-high text-xs text-pink-500"></i>
+                <i class="fa-solid fa-gauge-high text-xs text-zinc-900"></i>
                 <span class="stat-label">USED</span>
             </div>
             <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">FREE</span>
         </div>
-        <span id="userLimitUsed" class="text-2xl font-black text-pink-500 code-font my-0.5 leading-none">0</span>
-        <!-- Progress Bar Fill -->
+        <span id="userLimitUsed" class="text-2xl font-black text-zinc-900 code-font my-0.5 leading-none">0</span>
+        
+        <!-- Progress Bar Fill Theme -->
         <div class="w-full h-2.5 bg-white border-2 border-zinc-900 rounded-full overflow-hidden p-[1px] my-1">
-            <div id="userLimitBarFill" class="h-full bg-pink-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+            <div id="userLimitBarFill" class="h-full theme-bg-accent rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
+        
         <div id="userLimitSubtext" class="stat-sub font-mono font-bold text-zinc-600">0% dari limit</div>
     </div>
 
-    <!-- Stat Total Endpoint -->
+    <!-- 4. Stat Hitung Mundur Reset Limit (Kartu Mandiri) -->
+    <div class="stat-box">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-1.5">
+                <i class="fa-regular fa-clock text-xs text-zinc-900"></i>
+                <span class="stat-label">RESET LIMIT</span>
+            </div>
+            <span class="text-[9px] font-black text-zinc-900 bg-emerald-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">DAILY</span>
+        </div>
+        <span id="resetCountdown" class="text-xl sm:text-2xl font-black text-zinc-900 code-font my-0.5 leading-none">--:--:--</span>
+        <div class="stat-sub font-mono font-bold text-zinc-600">RESET PUKUL 00:00 WIB</div>
+    </div>
+
+    <!-- 5. Stat Total Endpoint -->
     <div class="stat-box">
         <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
         <span id="totalEndpoints" class="stat-value">0</span>
         <div class="stat-sub">ACTIVE ENDPOINTS</div>
     </div>
 
-    <!-- Stat Total Kategori -->
+    <!-- 6. Stat Total Kategori -->
     <div class="stat-box">
         <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
         <span id="totalCategories" class="stat-value">0</span>
@@ -4457,6 +4505,34 @@ function fetchServerStatsDocs() {
         .catch(err => console.error("Gagal update server stats:", err));
 }
 
+function startLimitResetCountdown() {
+    function updateCountdown() {
+        const now = new Date();
+        const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const timeParts = new Intl.DateTimeFormat('en-US', options).format(now).split(':').map(Number);
+        
+        const h = timeParts[0] || 0;
+        const m = timeParts[1] || 0;
+        const s = timeParts[2] || 0;
+
+        const secondsPassed = (h * 3600) + (m * 60) + s;
+        let secondsRemaining = 86400 - secondsPassed;
+        if (secondsRemaining <= 0) secondsRemaining = 86400;
+
+        const hoursLeft = String(Math.floor(secondsRemaining / 3600)).padStart(2, '0');
+        const minsLeft = String(Math.floor((secondsRemaining % 3600) / 60)).padStart(2, '0');
+        const secsLeft = String(secondsRemaining % 60).padStart(2, '0');
+
+        const countdownEl = document.getElementById('resetCountdown');
+        if (countdownEl) {
+            countdownEl.innerText = `${hoursLeft}:${minsLeft}:${secsLeft}`;
+        }
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
         const bioDropdown = document.getElementById('bioDropdown');
@@ -4505,6 +4581,7 @@ function fetchServerStatsDocs() {
         playBannerVideo();
         fetchAndUpdateUserLimit();
         fetchServerStatsDocs();
+        startLimitResetCountdown();
     });
 
     let currentProgress = 0;
