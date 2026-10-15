@@ -2201,21 +2201,58 @@ if (fs.existsSync(apiPath)) {
     }
 
 router.get('/apilist', (req, res) => {
-    const categories = [];
-    if (fs.existsSync(apiPath)) {
-        const endpointDirs = fs.readdirSync(apiPath).filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
-        for (const category of endpointDirs) {
-            const files = fs.readdirSync(path.join(apiPath, category)).filter(f => f.endsWith('.js'));
-            const endpoints = [];
-            for (const file of files) endpoints.push(...getEndpointsFromRouter(category, file));
-            if (endpoints.length) categories.push({ name: `${category.toUpperCase()}`, items: endpoints });
+    try {
+        const categories = [];
+
+        if (fs.existsSync(apiPath)) {
+            const endpointDirs = fs.readdirSync(apiPath)
+                .filter(f => fs.statSync(path.join(apiPath, f)).isDirectory());
+
+            for (const category of endpointDirs) {
+                const categoryPath = path.join(apiPath, category);
+                const files = fs.readdirSync(categoryPath).filter(f => f.endsWith('.js'));
+                const endpoints = [];
+
+                for (const file of files) {
+                    try {
+                        // Memuat endpoint dari router dengan aman
+                        const parsedEndpoints = getEndpointsFromRouter(category, file);
+                        if (Array.isArray(parsedEndpoints)) {
+                            endpoints.push(...parsedEndpoints);
+                        }
+                    } catch (fileErr) {
+                        console.error(`❌ Gagal memuat API file [${category}/${file}]:`, fileErr.message);
+                    }
+                }
+
+                if (endpoints.length > 0) {
+                    categories.push({ 
+                        name: category.toUpperCase(), 
+                        items: endpoints 
+                    });
+                }
+            }
         }
+
+        // Tambahkan kategori OTHER
+        categories.push({ 
+            name: "OTHER", 
+            items: [{ 
+                name: "/apilist", 
+                path: "/api/apilist", 
+                desc: "/apilist", 
+                status: "ready", 
+                type: "free", 
+                params: { apikey: "" }, 
+                methods: ["GET"] 
+            }] 
+        });
+
+        res.json({ categories });
+    } catch (err) {
+        console.error("❌ Error pada /apilist route:", err.message);
+        res.status(500).json({ error: "Failed to load API list", details: err.message });
     }
-    categories.push({ 
-        name: "OTHER", 
-        items: [{ name: "/apilist", path: "/api/apilist", desc: "/apilist", status: "ready", type: "free", params: { apikey: "" }, methods: ["GET"] }] 
-    });
-    res.json({ categories });
 });
 }
 // ====================================================
