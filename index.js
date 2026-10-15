@@ -4062,35 +4062,52 @@ app.get('/docs', async (req, res) => {
     </div>
 
     <!-- 2. Grid Statistik Real-time -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="stat-box">
-            <span class="stat-label">REAL-TIME CLOCK</span>
-            <div id="liveClock" class="stat-value">00:00:00</div>
-            <div id="liveDate" class="stat-sub uppercase truncate">Loading...</div>
-        </div>
-        <div class="stat-box">
-            <div class="flex items-center justify-between w-full">
-                <span class="stat-label">LIMIT USED</span>
-                <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">FREE</span>
-            </div>
-            <div class="flex items-baseline gap-1 mt-1">
-                <span id="userLimitUsed" class="stat-value">0</span>
-                <span class="text-zinc-600 text-sm font-black">/</span>
-                <span id="userLimitMax" class="text-xs font-black text-zinc-600">100</span>
-            </div>
-            <div class="stat-sub">DAILY ACCESS</div>
-        </div>
-        <div class="stat-box">
-            <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
-            <span id="totalEndpoints" class="stat-value">0</span>
-            <div class="stat-sub">ACTIVE ENDPOINTS</div>
-        </div>
-        <div class="stat-box">
-            <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
-            <span id="totalCategories" class="stat-value">0</span>
-            <div class="stat-sub">MODULE CATEGORIES</div>
-        </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+    <!-- Stat Total User -->
+    <div class="stat-box">
+        <span class="stat-label">TOTAL USER</span>
+        <span id="totalUsersStat" class="stat-value">0</span>
+        <div class="stat-sub">REGISTERED USERS</div>
     </div>
+
+    <!-- Stat Total Request -->
+    <div class="stat-box">
+        <span class="stat-label">TOTAL REQUEST</span>
+        <span id="totalRequestsStat" class="stat-value">0</span>
+        <div class="stat-sub">GLOBAL HITS</div>
+    </div>
+
+    <!-- Stat Limit Used (Gaya Sesuai Gambar) -->
+    <div class="stat-box">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-gauge-high text-xs text-pink-500"></i>
+                <span class="stat-label">USED</span>
+            </div>
+            <span id="userLimitBadge" class="text-[9px] font-black text-zinc-900 bg-zinc-200 px-1.5 py-0.5 rounded border border-zinc-900 uppercase">FREE</span>
+        </div>
+        <span id="userLimitUsed" class="text-2xl font-black text-pink-500 code-font my-0.5 leading-none">0</span>
+        <!-- Progress Bar Fill -->
+        <div class="w-full h-2.5 bg-white border-2 border-zinc-900 rounded-full overflow-hidden p-[1px] my-1">
+            <div id="userLimitBarFill" class="h-full bg-pink-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div id="userLimitSubtext" class="stat-sub font-mono font-bold text-zinc-600">0% dari limit</div>
+    </div>
+
+    <!-- Stat Total Endpoint -->
+    <div class="stat-box">
+        <span id="stat-endpoints-title" class="stat-label">TOTAL ENDPOINT</span>
+        <span id="totalEndpoints" class="stat-value">0</span>
+        <div class="stat-sub">ACTIVE ENDPOINTS</div>
+    </div>
+
+    <!-- Stat Total Kategori -->
+    <div class="stat-box">
+        <span id="stat-categories-title" class="stat-label">TOTAL KATEGORI</span>
+        <span id="totalCategories" class="stat-value">0</span>
+        <div class="stat-sub">MODULE CATEGORIES</div>
+    </div>
+</div>
 
     <!-- 3. Search Bar -->
     <div class="pt-1">
@@ -4390,6 +4407,55 @@ app.get('/docs', async (req, res) => {
             }
         });
     }
+    
+    function fetchAndUpdateUserLimit() {
+    fetch('/api/user-limit')
+        .then(res => res.json())
+        .then(data => {
+            const usedEl = document.getElementById('userLimitUsed');
+            const badgeEl = document.getElementById('userLimitBadge');
+            const barFill = document.getElementById('userLimitBarFill');
+            const subtextEl = document.getElementById('userLimitSubtext');
+
+            if (!data) return;
+
+            const limitUsed = data.limitUsed || 0;
+            const maxLimit = data.maxLimit;
+            const roleType = (data.type || 'free').toUpperCase();
+
+            if (usedEl) usedEl.innerText = limitUsed.toLocaleString('id-ID');
+            if (badgeEl) badgeEl.innerText = roleType;
+
+            if (maxLimit === "Unlimited" || maxLimit === Infinity) {
+                if (barFill) barFill.style.width = '100%';
+                if (subtextEl) subtextEl.innerText = 'Unlimited access';
+            } else {
+                const maxNum = Number(maxLimit) || 100;
+                const percentage = Math.min(100, Math.round((limitUsed / maxNum) * 100));
+                
+                if (barFill) barFill.style.width = percentage + '%';
+                if (subtextEl) subtextEl.innerText = percentage + '% dari limit';
+            }
+        })
+        .catch(err => console.error("Gagal update user limit:", err));
+}
+
+function fetchServerStatsDocs() {
+    fetch('/api/server-status')
+        .then(res => res.json())
+        .then(data => {
+            const userEl = document.getElementById('totalUsersStat');
+            const reqEl = document.getElementById('totalRequestsStat');
+
+            if (userEl && data.totalUsers !== undefined) {
+                userEl.innerText = data.totalUsers.toLocaleString('id-ID');
+            }
+            if (reqEl && data.totalRequests !== undefined) {
+                reqEl.innerText = data.totalRequests.toLocaleString('id-ID');
+            }
+        })
+        .catch(err => console.error("Gagal update server stats:", err));
+}
 
     document.addEventListener('DOMContentLoaded', () => {
         const bioMenuBtn = document.getElementById('bioMenuBtn');
@@ -4437,6 +4503,8 @@ app.get('/docs', async (req, res) => {
 
         fetchUserProfile();
         playBannerVideo();
+        fetchAndUpdateUserLimit();
+        fetchServerStatsDocs();
     });
 
     let currentProgress = 0;
