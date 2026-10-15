@@ -18,11 +18,11 @@
     <meta property="og:image" content="https://api.arulzzxd.my.id/og/pastecode" />
     <meta property="og:image:secure_url" content="https://api.arulzzxd.my.id/og/pastecode" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="300" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:url" content="https://api.arulzzxd.my.id/pastecode" />
     <meta name="twitter:title" content="ArulzXD API - Pastecode Snippet" />
     <meta name="twitter:description" content="Layanan paste code snippet REST API resmi untuk dokumentasi dan integrasi pengembang aplikasi." />
@@ -368,19 +368,19 @@
             border-bottom: 2px solid var(--theme-border);
         }
 
-        /* PREVIEW BOX KODE */
+        /* PREVIEW BOX KODE - Teks Diperbesar Sesuai Permintaan */
         .preview-box-light {
             background: #121212;
             color: #38bdf8;
             padding: 12px 14px;
-            font-size: 13.5px;
+            font-size: 13.5px; /* Diperbesar sedikit agar lebih jelas */
             line-height: 1.5;
             overflow: hidden;
             white-space: pre-wrap;
             font-family: 'JetBrains Mono', monospace;
             border: 2px solid var(--theme-border);
             border-radius: 10px;
-            height: 88px;
+            height: 88px; /* Disesuaikan tinggi box nya */
             box-sizing: border-box;
         }
 
@@ -912,47 +912,19 @@
             }
 
             if (viewId) {
-    const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
-    if (idx === -1) {
-        target.innerHTML = `
-            <div class="light-card p-6 text-center">
-                <h2 class="text-base font-black text-zinc-900 mb-4">Data tidak ditemukan!</h2>
-                <a href="/pastecode" class="btn-brutalism-light inline-flex">Kembali ke Pastebin</a>
-            </div>`;
-        return;
-    }
+                const idx = pastes.findIndex(p => p.id.toString() === viewId.toString());
+                if (idx === -1) {
+                    target.innerHTML = `
+                        <div class="light-card p-6 text-center">
+                            <h2 class="text-base font-black text-zinc-900 mb-4">Data tidak ditemukan!</h2>
+                            <a href="/pastecode" class="btn-brutalism-light inline-flex">Kembali ke Pastebin</a>
+                        </div>`;
+                    return;
+                }
 
-    const current = pastes[idx];
-    const lineCount = current.content ? current.content.split('\n').length : 0;
-    const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
-
-    // Dynamic Meta Updates untuk Browser
-    const dynamicTitle = `${current.title} - ArulzXD Pastecode`;
-    const dynamicDesc = current.desc || `Potongan kode ${current.language} - ${current.title}`;
-    const dynamicOgImg = `${window.location.origin}/og/pastecode?id=${current.id}`;
-    const dynamicPageUrl = `${window.location.origin}/pastecode?id=${current.id}`;
-
-    document.title = dynamicTitle;
-
-    const setMeta = (attr, value, content) => {
-        let el = document.querySelector(`meta[${attr}="${value}"]`);
-        if (!el) {
-            el = document.createElement('meta');
-            el.setAttribute(attr, value);
-            document.head.appendChild(el);
-        }
-        el.setAttribute('content', content);
-    };
-
-    setMeta('property', 'og:title', dynamicTitle);
-    setMeta('property', 'og:description', dynamicDesc);
-    setMeta('property', 'og:url', dynamicPageUrl);
-    setMeta('property', 'og:image', dynamicOgImg);
-    setMeta('property', 'og:image:secure_url', dynamicOgImg);
-    setMeta('name', 'twitter:title', dynamicTitle);
-    setMeta('name', 'twitter:description', dynamicDesc);
-    setMeta('name', 'twitter:image', dynamicOgImg);
-    setMeta('name', 'twitter:url', dynamicPageUrl);
+                const current = pastes[idx];
+                const lineCount = current.content ? current.content.split('\n').length : 0;
+                const isHeavyCode = lineCount > 3000 || (current.content && current.content.length > 150000);
 
                 target.innerHTML = `
                     <a href="/pastecode" class="btn-brutalism-light inline-flex mb-4">
@@ -1107,7 +1079,7 @@
                             <h3 class="font-extrabold text-base text-zinc-900 mb-0.5 truncate">${p.title}</h3>
                             <p class="text-[11px] font-semibold text-zinc-600 mb-2.5 truncate">${p.desc || 'Tidak ada deskripsi.'}</p>
                             
-                            <!-- BOX KODE -->
+                            <!-- BOX KODE - TEKS SUDAH DIPERBESAR JADI 13.5px -->
                             <div class="preview-box-light">${escapeHTML(contentPreview)}</div>
                         </div>
                         <div class="px-4 py-2.5 bg-[#FAF7EF] border-t-2 brutal-border flex justify-between items-center text-xs">
@@ -1191,13 +1163,9 @@
                 const current = pastes[idx];
                 const shareUrl = window.location.origin + "/pastecode?id=" + currentViewId;
                 if (navigator.share) {
-                    navigator.share({ 
-                        title: current.title, 
-                        text: current.desc || `Lihat snippet kode ${current.title}`, 
-                        url: shareUrl 
-                    });
+                    navigator.share({ title: current.title, text: current.desc || `Lihat kode ${current.title}`, url: shareUrl });
                 } else {
-                    navigator.clipboard.writeText(shareUrl).then(() => customAlert("Link snippet berhasil disalin ke clipboard!"));
+                    navigator.clipboard.writeText(shareUrl).then(() => customAlert("Link berhasil disalin ke clipboard!"));
                 }
             }
         }
