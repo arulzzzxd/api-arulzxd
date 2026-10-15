@@ -44,6 +44,7 @@
 
         * {
             box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
         }
 
         html, body {
@@ -64,6 +65,21 @@
 
         .code-font {
             font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* HEADER: DIAM = 100% SOLID, SCROLLED = 15% TRANSPARAN SANGAT BENING */
+        header.header-translucent {
+            background-color: rgba(250, 247, 239, 1) !important;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        header.header-scrolled {
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         /* Penerapan Outline / Border Dinamis Sesuai Warna Tema */
@@ -124,7 +140,18 @@
             color: var(--theme-text) !important;
         }
 
-        .rgb-mode-active header,
+        .rgb-mode-active header.header-translucent {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 1) !important;
+            background-image: none !important;
+        }
+
+        .rgb-mode-active header.header-scrolled {
+            border-color: var(--theme-border) !important;
+            background-color: rgba(250, 247, 239, 0.15) !important;
+            background-image: none !important;
+        }
+
         .rgb-mode-active #bioDropdown {
             border-color: transparent !important;
             background-image: linear-gradient(var(--bg-cream), var(--bg-cream)), 
@@ -163,7 +190,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
-            width: 320px;
+            width: min(320px, 90vw);
         }
 
         .cyber-avatar-wrap {
@@ -276,32 +303,32 @@
         </div>
     </div>
 
-    <!-- Header Top Bar (Fixed Solid Krem z-30) -->
-    <header class="fixed top-0 left-0 right-0 w-full bg-[#FAF7EF] border-b-2 brutal-border z-30 shadow-xs">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm">
-                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover">
+    <!-- Header Top Bar (Diam = Solid 100%, Scroll = 15% Transparan) -->
+    <header id="mainHeader" class="fixed top-0 left-0 right-0 w-full header-translucent border-b-2 brutal-border z-30">
+        <div class="max-w-2xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-black flex items-center justify-center shadow-sm shrink-0">
+                    <img src="https://cdn.arulzzxd.my.id/files/1wh5do.png" alt="Logo" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover">
                 </div>
                 <div>
-                    <span class="text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
-                    <span class="text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
+                    <span class="text-sm sm:text-base font-black text-zinc-900 tracking-tight block leading-none">Arulzxd API</span>
+                    <span class="text-[9px] sm:text-[10px] font-mono font-bold text-zinc-600 uppercase">GATEWAY REST V2</span>
                 </div>
             </div>
 
             <!-- Tombol Aksi Kanan -->
-            <div class="flex items-center gap-2 relative">
+            <div class="flex items-center gap-1.5 sm:gap-2 relative">
                 
                 <!-- Tombol Switcher Style Warna -->
-                <button id="themePickerBtn" title="Ubah Style Warna" class="w-10 h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <button id="themePickerBtn" title="Ubah Style Warna" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 theme-bg-accent flex items-center justify-center active:scale-95 shadow-sm transition-all">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.97-4.03-9-9-9zm-6.5 9c-.83 0-1.5-.67-1.5-1.5S4.67 9 5.5 9s1.5.67 1.5 1.5S6.33 12 5.5 12zm3-4C7.67 8 7 7.33 7 6.5S7.67 5 8.5 5s1.5.67 1.5 1.5S9.33 8 8.5 8zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 5 15.5 5s1.5.67 1.5 1.5S16.33 8 15.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                     </svg>
                 </button>
 
                 <!-- Tombol Menu Sidebar -->
-                <button id="bioMenuBtn" class="w-10 h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <button id="bioMenuBtn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 brutal-border bg-[#FAF7EF] flex items-center justify-center text-zinc-900 active:scale-95 shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
@@ -352,7 +379,7 @@
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 hidden z-40"></div>
 
     <!-- Sidebar Dropdown Nav (z-50) -->
-    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
+    <div id="bioDropdown" class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-[#FAF7EF] border-l-2 brutal-border transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl flex flex-col p-4 text-zinc-900 overflow-y-auto scrollbar-hide">
         
         <!-- Header Dropdown -->
         <div class="flex items-center justify-between pb-3 mb-3 border-b-2 brutal-border">
@@ -448,7 +475,7 @@
     </div>
 
     <!-- Main Content Container -->
-    <main class="w-full max-w-2xl mx-auto px-4 pt-20 pb-6 relative z-10 flex-1 flex flex-col items-center">
+    <main class="w-full max-w-2xl mx-auto px-3.5 sm:px-6 pt-20 pb-8 relative z-10 flex-1 flex flex-col items-center">
 
         <!-- Status Pill Badge -->
         <div class="status-pill-badge inline-flex items-center gap-2 theme-bg-accent border-2 brutal-border px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-6 shadow-xs">
@@ -502,8 +529,30 @@
             </div>
 
             <!-- List Card Statistik -->
-            <div class="space-y-3">
-                <!-- Stat 1 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Stat Total User -->
+                <div class="light-card p-4 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-zinc-600 font-mono font-bold tracking-wide uppercase block mb-0.5">Total User</span>
+                        <span id="totalUsersStat" class="text-2xl font-black text-zinc-900 font-mono tracking-tight">0 <span class="text-xs text-zinc-600 font-bold">User</span></span>
+                    </div>
+                    <span class="text-[10px] font-black code-font bg-blue-400 text-zinc-900 border-2 brutal-border px-2.5 py-1 rounded-lg uppercase shadow-xs">
+                        Registered
+                    </span>
+                </div>
+
+                <!-- Stat Total Request -->
+                <div class="light-card p-4 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-zinc-600 font-mono font-bold tracking-wide uppercase block mb-0.5">Total Request</span>
+                        <span id="totalRequestsStat" class="text-2xl font-black text-zinc-900 font-mono tracking-tight">0 <span class="text-xs text-zinc-600 font-bold">Hits</span></span>
+                    </div>
+                    <span class="text-[10px] font-black code-font bg-amber-400 text-zinc-900 border-2 brutal-border px-2.5 py-1 rounded-lg uppercase shadow-xs">
+                        Traffic
+                    </span>
+                </div>
+
+                <!-- Stat Gate State -->
                 <div class="light-card p-4 flex items-center justify-between">
                     <div>
                         <span class="text-[10px] text-zinc-600 font-mono font-bold tracking-wide uppercase block mb-0.5">Gate state</span>
@@ -514,7 +563,7 @@
                     </span>
                 </div>
 
-                <!-- Stat 2 -->
+                <!-- Stat Core Engine -->
                 <div class="light-card p-4 flex items-center justify-between">
                     <div>
                         <span class="text-[10px] text-zinc-600 font-mono font-bold tracking-wide uppercase block mb-0.5">Core engine</span>
@@ -522,17 +571,6 @@
                     </div>
                     <span class="text-[10px] font-black code-font theme-bg-accent text-zinc-900 border-2 brutal-border px-2.5 py-1 rounded-lg uppercase shadow-xs">
                         Active
-                    </span>
-                </div>
-
-                <!-- Stat 3 -->
-                <div class="light-card p-4 flex items-center justify-between">
-                    <div>
-                        <span class="text-[10px] text-zinc-600 font-mono font-bold tracking-wide uppercase block mb-0.5">Storage architecture</span>
-                        <span class="text-2xl font-black text-zinc-900 font-mono tracking-tight">MongoDB <span class="text-xs text-zinc-600 font-bold">Cluster</span></span>
-                    </div>
-                    <span class="text-[10px] font-black code-font bg-purple-400 text-zinc-900 border-2 brutal-border px-2.5 py-1 rounded-lg uppercase shadow-xs">
-                        Secure
                     </span>
                 </div>
             </div>
@@ -585,6 +623,18 @@
             if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) e.preventDefault();
         });
         document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+        // Event Transparansi Header saat Di-scroll
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (header) {
+                if (window.scrollY > 10) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            }
+        });
 
         // Presets Tema Warna & Border
         const THEME_PRESETS = {
@@ -645,6 +695,23 @@
             });
         }
 
+        // Ambil Data Statistik Realtime (Total User & Total Request)
+        function fetchServerStats() {
+            fetch('/api/server-status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.totalUsers !== undefined) {
+                        const userEl = document.getElementById('totalUsersStat');
+                        if (userEl) userEl.innerHTML = `${data.totalUsers.toLocaleString('id-ID')} <span class="text-xs text-zinc-600 font-bold">User</span>`;
+                    }
+                    if (data.totalRequests !== undefined) {
+                        const reqEl = document.getElementById('totalRequestsStat');
+                        if (reqEl) reqEl.innerHTML = `${data.totalRequests.toLocaleString('id-ID')} <span class="text-xs text-zinc-600 font-bold">Hits</span>`;
+                    }
+                })
+                .catch(err => console.error("Gagal memuat statistik server:", err));
+        }
+
         // Inisialisasi Handler & Event Sidebar + Theme Picker
         document.addEventListener('DOMContentLoaded', () => {
             const bioMenuBtn = document.getElementById('bioMenuBtn');
@@ -692,6 +759,7 @@
             }
 
             playBannerVideo();
+            fetchServerStats();
 
             // Fetch User Status untuk Tombol Profil di Sidebar
             fetch('/api/user-status')
@@ -760,7 +828,7 @@
             if (loaderOverlay && !loaderOverlay.classList.contains('fade-out')) {
                 loaderOverlay.classList.add('fade-out');
             }
-        }, 4000);
+        }, 3000);
     </script>
 </body>
 </html>
