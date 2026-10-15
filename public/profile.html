@@ -505,6 +505,11 @@
                     </span>
                 </div>
 
+                <div class="flex items-center justify-between text-xs font-bold border-b border-zinc-200/80 pb-2.5">
+                    <span class="text-zinc-500 uppercase code-font text-[11px]">Masa Aktif Role:</span>
+                    <span id="detailRoleExpire" class="text-zinc-900 font-extrabold truncate">Selamanya (Free)</span>
+                </div>
+
                 <div class="flex items-center justify-between text-xs font-bold">
                     <span id="providerLabel" class="text-zinc-500 uppercase code-font text-[11px]">Email:</span>
                     <div class="flex items-center gap-2 truncate max-w-[70%] justify-end">
@@ -585,7 +590,7 @@
                     <div id="limitProgressBar" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
                 </div>
                 <p class="text-[10px] font-bold text-zinc-500 mt-2 flex items-center justify-between">
-                    <span>Masa Aktif: Selamanya (Tanpa Batas Waktu)</span>
+                    <span>Masa Aktif: <strong id="quotaRoleExpireText" class="text-zinc-800">Selamanya (Free)</strong></span>
                     <span>Reset: 00:00 WIB</span>
                 </p>
             </div>
@@ -853,6 +858,42 @@
             }
         }
 
+        function formatRoleExpiry(role, roleExpiresAt) {
+            const roleLower = (role || '').toLowerCase();
+            if (!roleExpiresAt || roleLower.includes('free')) {
+                return 'Selamanya (Free)';
+            }
+
+            const expireDate = new Date(roleExpiresAt);
+            if (isNaN(expireDate.getTime())) return 'Selamanya (Free)';
+
+            const now = new Date();
+            if (expireDate <= now) {
+                return 'Kedaluwarsa (Expired)';
+            }
+
+            const diffDays = Math.ceil((expireDate - now) / (1000 * 60 * 60 * 24));
+            const formattedDate = expireDate.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Jakarta'
+            });
+
+            return `${formattedDate} WIB (${diffDays} Hari Lagi)`;
+        }
+
+        function updateRoleExpiryUI(role, roleExpiresAt) {
+            const expireText = formatRoleExpiry(role, roleExpiresAt);
+            const detailEl = document.getElementById('detailRoleExpire');
+            const quotaEl = document.getElementById('quotaRoleExpireText');
+
+            if (detailEl) detailEl.innerText = expireText;
+            if (quotaEl) quotaEl.innerText = expireText;
+        }
+
         // TAMPILAN PROVIDER LOGIN (Local, Google, GitHub)
         function updateProviderUI(provider, email) {
             const providerLabel = document.getElementById('providerLabel');
@@ -1029,6 +1070,7 @@
 
                         setRoleTheme(data.user.role || 'Free User');
                         updateProviderUI(data.user.provider || 'local', data.user.email);
+                        updateRoleExpiryUI(data.user.role, data.user.roleExpiresAt);
 
                         fetchUserLimit(data.user.apikey);
                         fetchUserActivityLogs();
