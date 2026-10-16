@@ -313,7 +313,6 @@ async function resolveContent(client, targetUrl, session, opts, sessionRef) {
 /* 4. Probe ukuran file (HEAD + Range, opsional)                       */
 /* ------------------------------------------------------------------ */
 
-/* Tipe yang bukan file media nyata (playlist HLS/DASH atau halaman error) */
 const NON_MEDIA_TYPE =
   /mpegurl|application\/x-mpegurl|text\/|application\/json|application\/xml|image\/svg/i;
 
@@ -336,7 +335,6 @@ async function probeMedia(client, url) {
   const out = { file_size_bytes: null, content_type: null };
   if (!url) return out;
 
-  /* coba HEAD dulu */
   try {
     const res = await client.head(url, {
       timeout: 8000,
@@ -354,7 +352,6 @@ async function probeMedia(client, url) {
     /* lanjut ke fallback */
   }
 
-  /* fallback: GET Range bytes=0-0 -> total ada di Content-Range */
   try {
     const res = await client.get(url, {
       timeout: 8000,
@@ -407,8 +404,6 @@ function normalizeAuthor(author) {
   };
 }
 
-/* Fallback ukuran: kadang GetDL menyisipkan ukuran di label, mis.
-   "Original (Best) - 0.04MB" atau "MP3 (3.5 MB)" */
 function sizeFromLabel(label) {
   if (typeof label !== 'string') return null;
   const m = /(?:^|[\s\-–(])\s*(\d+(?:\.\d+)?)\s*(KB|MB|GB|TB|B)\s*\)?\s*$/i.exec(label);
@@ -446,28 +441,29 @@ function buildMedia(downloads, probes) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Endpoint GET Utama Express Router                                   */
+/* Endpoint GET Utama (Hanya Parameter `url`)                          */
 /* ------------------------------------------------------------------ */
 
 router.get('/', async (req, res) => {
   const targetUrl = req.query.url;
   if (!targetUrl) {
-    return res.status(400).json({ status: 'error', error: "Missing 'url' parameter" });
+    return res.status(400).json({ error: "Missing 'url' parameter" });
   }
 
   try {
     const u = new URL(targetUrl);
     if (!/^https?:$/.test(u.protocol)) throw new Error('protokol');
   } catch {
-    return res.status(400).json({ status: 'error', error: `URL tidak valid: ${targetUrl}` });
+    return res.status(400).json({ error: `URL tidak valid: ${targetUrl}` });
   }
 
+  // Opsi di-hardcode di dalam agar tidak membebani parameter request
   const opts = {
     url: targetUrl,
-    size: req.query.no_size !== 'true' && req.query.size !== 'false',
-    site: req.query.no_site !== 'true' && req.query.site !== 'false',
-    timeout: parseInt(req.query.timeout, 10) || 60000,
-    retries: Math.max(0, parseInt(req.query.retries, 10) || 3),
+    size: true,
+    site: false,
+    timeout: 60000,
+    retries: 3,
   };
 
   const client = makeClient();
@@ -475,84 +471,54 @@ router.get('/', async (req, res) => {
 
   const output = {
     scraped_at: startedAt,
-    source: {
-      site_url: SITE,
-      resolve_endpoint: API_DOWNLOAD,
-      session_endpoint: API_SESSION,
-      method: 'axios -> internal API (halaman adalah SPA Next.js, data tidak ada di HTML)',
-    },
-    site: null,
-    query: {
-      input_url: opts.url,
-      detected_platform_client: detectPlatform(opts.url),
-    },
     status: 'success',
     error: null,
     warning: null,
     content: null,
-    metadata: null,
   };
 
   try {
-    /* (1) halaman utama -> nama + daftar platform didukung */
-    if (opts.site) {
-      output.site = await scrapeSite(client);
-      if (output.site._warning) {
-        output.warning = output.site._warning;
-        delete output.site._warning;
-      }
-    }
-
-    /* (2) session */
+    /* (1) Session */
     let session;
     try {
       session = await createSession(client);
     } catch (err) {
-      output.status = 'error';
-      output.error = { code: err.code || 'SESSION_FAILED', message: errMessage(err) };
-      return res.status(500).json(output);
+      return res.status(500).json({
+        status: 'error',
+        error: { code: err.code || 'SESSION_FAILED', message: errMessage(err) },
+      });
     }
 
-    /* (3) resolve */
+    /* (2) Resolve */
     const sessionRef = { session, refreshed: 0 };
     const result = await resolveContent(client, opts.url, session, opts, sessionRef);
 
     if (result.fatal || !result.body || !result.body.success || !result.body.data) {
-      output.status = 'error';
-      output.error =
-        result.fatal || {
+      return res.status(400).json({
+        status: 'error',
+        error: result.fatal || {
           code: (result.body && result.body.code) || 'UNKNOWN',
           message: (result.body && result.body.error) || 'Tidak ada data yang dikembalikan',
-        };
-      output.content = null;
-      return res.status(400).json(output);
+        },
+      });
     }
 
     const data = result.body.data;
     const downloads = Array.isArray(data.downloads) ? data.downloads : [];
 
-    /* (4) ukuran file + content type */
+    /* (3) Probe Ukuran File */
     let probes = null;
     if (opts.size && downloads.length) {
       probes = await enrichMedia(client, downloads);
     }
 
     const media = buildMedia(downloads, probes);
-    if (media.length && !media.some((m) => m.file_size_bytes)) {
-      output.warning = 'file_sizes_unavailable';
-    }
     const formats = [...new Set(media.map((m) => m.format).filter(Boolean))];
-    const byQuality = {};
-    for (const m of media) {
-      const key = m.format || 'unknown';
-      byQuality[key] = (byQuality[key] || 0) + 1;
-    }
 
     output.content = {
       platform: data.platform || detectPlatform(opts.url) || null,
       type: data.type || null,
       title: data.title || null,
-      description: null,
       creator: normalizeAuthor(data.author),
       thumbnail: data.thumbnail || null,
       duration_seconds: Number.isFinite(data.duration) ? data.duration : null,
@@ -564,36 +530,12 @@ router.get('/', async (req, res) => {
       media,
     };
 
-    if (media.length === 0) output.warning = 'no_media_found';
-
-    output.metadata = {
-      api_success: true,
-      api_platform: data.platform || null,
-      content_type: data.type || null,
-      detected_platform_client: detectPlatform(opts.url),
-      platform_from_client_matches_api:
-        detectPlatform(opts.url) === null
-          ? null
-          : detectPlatform(opts.url) === (data.platform || null),
-      download_counts_by_format: byQuality,
-      pagination: {
-        applied: false,
-        reason: 'Satu URL konten = satu request resolusi (tidak ada pagination pada API GetDL)',
-      },
-      notes: [
-        'field description tidak pernah dikembalikan oleh API GetDL -> null',
-        'ukuran file: HEAD/Range Content-Length pada URL media, fallback dari ukuran yang tercantum di label; null jika keduanya tidak tersedia',
-        'URL media bersifat sementara (signed/expiring) dan biasanya kedaluwarsa dalam hitungan menit-jam',
-      ],
-    };
-
     return res.json(output);
   } catch (err) {
     return res.status(500).json({
       scraped_at: new Date().toISOString(),
       status: 'error',
       error: { code: err.code || 'UNCAUGHT', message: errMessage(err) },
-      content: null,
     });
   }
 });
