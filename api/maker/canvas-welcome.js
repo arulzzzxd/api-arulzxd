@@ -20,7 +20,7 @@ async function loadFont() {
             responseType: "arraybuffer",
             headers: { "User-Agent": "Mozilla/5.0" }
         });
-        GlobalFonts.register(Buffer.from(data), "JakartaSans");
+        GlobalFonts.register(Buffer.from(data), "CyberFont");
         fontLoaded = true;
     } catch (e) {
         console.error("Gagal memuat font:", e.message);
@@ -66,114 +66,167 @@ router.post('/', cpUpload, async (req, res) => {
         const height = 450;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
-        const fontFamily = fontLoaded ? "JakartaSans" : "sans-serif";
+        const fontFamily = fontLoaded ? "CyberFont" : "sans-serif";
 
-        // 1. Render Background Utama
+        // 1. Render Background Gambar (Dimmed)
         if (bgImg) {
             ctx.drawImage(bgImg, 0, 0, width, height);
+            ctx.fillStyle = "rgba(5, 8, 15, 0.65)";
+            ctx.fillRect(0, 0, width, height);
         } else {
             const grad = ctx.createLinearGradient(0, 0, width, height);
-            grad.addColorStop(0, '#0a0e17');
-            grad.addColorStop(1, '#161f33');
+            grad.addColorStop(0, '#05070d');
+            grad.addColorStop(1, '#0e1524');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, width, height);
         }
 
-        // Overlay Gelap Gradasi Sisi Kanan (Agar Teks & Gambar Tidak Bentrok/Bertumpuk)
-        const rightGrad = ctx.createLinearGradient(350, 0, width, 0);
-        rightGrad.addColorStop(0, 'rgba(10, 14, 23, 0.2)');
-        rightGrad.addColorStop(0.6, 'rgba(10, 14, 23, 0.85)');
-        rightGrad.addColorStop(1, 'rgba(10, 14, 23, 0.95)');
-        ctx.fillStyle = rightGrad;
-        ctx.fillRect(350, 0, width - 350, height);
+        // 2. Cyberpunk Grid Lines Background
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
 
-        // 2. Render Spanduk Gelap Miring Sisi Kiri
+        // 3. Panel Kiri Solid Dark Cyberpunk
+        const topCutX = 420;
+        const botCutX = 220;
+
         ctx.save();
-        ctx.fillStyle = "#0d111a";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-        ctx.shadowBlur = 30;
+        ctx.fillStyle = "#070a10";
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(400, 0);
-        ctx.lineTo(220, height);
+        ctx.lineTo(topCutX, 0);
+        ctx.lineTo(botCutX, height);
         ctx.lineTo(0, height);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
 
-        // Garis Pembatas Cyberpunk (Aksen Cyan Glow)
+        // 4. Garis Pembatas Miring Neon Stripe
+        const stripeWidth = 50;
         ctx.save();
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "#1a2332";
+        ctx.fillStyle = "#0f172a";
         ctx.beginPath();
-        ctx.moveTo(400, 0);
-        ctx.lineTo(220, height);
-        ctx.stroke();
+        ctx.moveTo(topCutX, 0);
+        ctx.lineTo(topCutX + stripeWidth, 0);
+        ctx.lineTo(botCutX + stripeWidth, height);
+        ctx.lineTo(botCutX, height);
+        ctx.closePath();
+        ctx.fill();
 
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
         ctx.strokeStyle = "#00f0ff";
+        ctx.lineWidth = 3;
+
         ctx.beginPath();
-        ctx.moveTo(398, 0);
-        ctx.lineTo(218, height);
+        ctx.moveTo(topCutX + stripeWidth, 0);
+        ctx.lineTo(botCutX + stripeWidth, height);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#00f0ff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(topCutX, 0);
+        ctx.lineTo(botCutX, height);
         ctx.stroke();
         ctx.restore();
 
-        // 3. Render Teks "WELCOME TO" Miring Sejajar Garis Spanduk
+        // 5. Teks Miring "WELCOME TO" (Sudut Disesuaikan Agar Tidak Terbalik)
         ctx.save();
-        const angle = Math.atan2(height, -180);
-        ctx.translate(325, 190);
-        ctx.rotate(angle);
+        const dx = topCutX - botCutX;
+        const dy = -height;
+        const slope = Math.atan2(dy, dx);
+
+        const midStripeX = (topCutX + botCutX + stripeWidth) / 2;
+        const midStripeY = height / 2;
+
+        ctx.translate(midStripeX, midStripeY);
+        ctx.rotate(slope);
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 32px "${fontFamily}"`;
+        ctx.font = `bold 26px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 10;
         ctx.fillText("WELCOME TO", 0, 0);
         ctx.restore();
 
-        // 4. Render Foto Profil User (Tepat Di Tengah Spanduk Kiri)
-        const userX = 145;
-        const userY = 225;
-        const userRadius = 85;
+        // 6. Foto Profil User
+        const avatarX = 140;
+        const avatarY = 225;
+        const avatarRadius = 85;
 
-        // Outer Glow Ring Cyan Avatar User
+        // Outer HUD Tech Rings
         ctx.save();
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 25;
-        ctx.beginPath();
-        ctx.arc(userX, userY, userRadius + 4, 0, Math.PI * 2);
+        ctx.shadowBlur = 20;
         ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarRadius + 6, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarRadius + 14, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Clip & Draw Foto Profil User
+        // Clip User Image
         ctx.save();
         ctx.beginPath();
-        ctx.arc(userX, userY, userRadius, 0, Math.PI * 2);
+        ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(userImg, userX - userRadius, userY - userRadius, userRadius * 2, userRadius * 2);
+        ctx.drawImage(userImg, avatarX - avatarRadius, avatarY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
         ctx.restore();
 
-        // 5. Render Sisi Kanan (Badge Member & Teks Informasi)
+        // 7. Panel Informasi Kanan
+        const infoX = 490;
+        const infoY = 180;
+        const infoW = 490;
+        const infoH = 220;
 
-        // Badge "MEMBER #9999" di Kanan Atas
-        const pillText = `MEMBER #${memberCount}`;
-        ctx.font = `bold 18px "${fontFamily}"`;
-        const pillWidth = ctx.measureText(pillText).width + 30;
-        const pillHeight = 36;
-        const pillX = width - pillWidth - 40;
-        const pillY = 35;
-
-        ctx.fillStyle = "rgba(13, 17, 26, 0.9)";
+        ctx.save();
+        ctx.fillStyle = "rgba(7, 10, 16, 0.85)";
         ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 8);
+        ctx.roundRect(infoX, infoY, infoW, infoH, 12);
         ctx.fill();
 
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.3)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // 8. Member Pill Badge
+        const pillText = `MEMBER #${memberCount}`;
+        ctx.font = `bold 16px "${fontFamily}"`;
+        const pillW = ctx.measureText(pillText).width + 30;
+        const pillH = 36;
+        const pillX = width - pillW - 40;
+        const pillY = 35;
+
+        ctx.save();
+        ctx.fillStyle = "#070a10";
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, 6);
+        ctx.fill();
+
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 10;
         ctx.strokeStyle = "#00f0ff";
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -181,48 +234,40 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(pillText, pillX + (pillWidth / 2), pillY + (pillHeight / 2));
+        ctx.fillText(pillText, pillX + (pillW / 2), pillY + (pillH / 2));
+        ctx.restore();
 
-        // Teks Nama User
-        const textX = 450;
-        const nameY = 290;
+        // 9. Teks Username & Group Name
+        const textLeftMargin = infoX + 30;
 
-        ctx.save();
-        ctx.shadowColor = "rgba(0,0,0,0.9)";
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 44px "${fontFamily}"`;
+        ctx.fillStyle = "#00f0ff";
+        ctx.font = `bold 13px "${fontFamily}"`;
         ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
+        ctx.textBaseline = "top";
+        ctx.fillText("● SYSTEM ONLINE // USER DETECTED", textLeftMargin, infoY + 25);
 
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold 40px "${fontFamily}"`;
         let displayUser = username;
-        if (ctx.measureText(displayUser).width > 500) {
-            while (ctx.measureText(displayUser + "...").width > 500 && displayUser.length > 0) {
+        if (ctx.measureText(displayUser).width > (infoW - 60)) {
+            while (ctx.measureText(displayUser + "...").width > (infoW - 60) && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
         }
-        ctx.fillText(displayUser, textX, nameY);
+        ctx.fillText(displayUser, textLeftMargin, infoY + 55);
 
-        // Teks Nama Grup
-        const groupY = 340;
         ctx.fillStyle = "#00f0ff";
-        ctx.font = `bold 22px "${fontFamily}"`;
-        ctx.fillText(`GROUP: ${groupName.toUpperCase()}`, textX, groupY);
+        ctx.font = `bold 20px "${fontFamily}"`;
+        ctx.fillText(`GROUP: ${groupName.toUpperCase()}`, textLeftMargin, infoY + 115);
 
-        // Aksen Garis Futuristik Bawah
-        const lineY = 365;
-        ctx.beginPath();
-        ctx.moveTo(textX, lineY);
-        ctx.lineTo(textX + 340, lineY);
-        ctx.lineTo(textX + 310, lineY + 16);
-        ctx.lineTo(textX, lineY + 16);
-        ctx.closePath();
-        ctx.fillStyle = "rgba(13, 17, 26, 0.85)";
-        ctx.fill();
-        ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        const barY = infoY + 155;
+        ctx.save();
+        ctx.fillStyle = "#00f0ff";
+        ctx.fillRect(textLeftMargin, barY, 180, 4);
+
+        ctx.fillStyle = "rgba(0, 240, 255, 0.3)";
+        ctx.fillRect(textLeftMargin + 190, barY, 210, 4);
         ctx.restore();
 
         const buffer = await canvas.encode('png');
@@ -235,7 +280,7 @@ router.post('/', cpUpload, async (req, res) => {
         return res.status(500).json({
             status: false,
             creator: "Arulzxd",
-            message: "Internal Server Error saat membuat Welcome Canvas",
+            message: "Internal Server Error saat membuat Cyberpunk Welcome Canvas",
             error: err.message
         });
     }
@@ -263,11 +308,11 @@ router.paramsConfig = {
     memberCount: {
         type: "text",
         desc: "Urutan / jumlah member",
-        default: "999"
+        default: "9999"
     }
 };
 
-router.desc = "Maker Welcome Card Bot Futuristik Presisi via Unggah File (Tanpa Avatar Group).";
+router.desc = "Maker Welcome Card Bot Cyberpunk Ultra Presisi via Unggah File.";
 router.status = "ready";
 router.type = "free";
 
