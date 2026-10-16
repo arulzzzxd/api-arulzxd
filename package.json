@@ -9,6 +9,7 @@
   "dependencies": {
     "@google/genai": "^2.16.0",
     "@napi-rs/canvas": "^1.0.5",
+    "@sparticuz/chromium": "^123.0.0",
     "@supabase/supabase-js": "^2.110.8",
     "axios": "^1.19.0",
     "axios-cookiejar-support": "^7.0.0",
@@ -44,7 +45,7 @@
     "nodemailer": "^9.0.3",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "puppeteer": "^22.0.0",
+    "puppeteer-core": "^22.0.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "sharp": "^0.34.1",
