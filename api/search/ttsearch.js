@@ -1,5 +1,7 @@
 const express = require("express");
+const axios = require("axios");
 const crypto = require("crypto");
+
 const router = express.Router();
 
 const BASE_URL = "https://www.tikwm.com";
@@ -15,12 +17,9 @@ function fullUrl(url) {
   return BASE_URL + url;
 }
 
-// Endpoint GET Utama
 router.get("/", async (req, res) => {
-  // Menggunakan parameter 'query' sebagai kata kunci pencarian
   const searchQuery = req.query.query;
 
-  // Validasi input parameter query wajib ada
   if (!searchQuery) {
     return res.status(400).json({ 
       status: false, 
@@ -28,7 +27,6 @@ router.get("/", async (req, res) => {
     });
   }
 
-  // Pengaturan default opsional untuk pagination & kualitas video
   const count = req.query.count || "12";
   const cursor = req.query.cursor || "0";
   const hd = req.query.hd || "1";
@@ -42,49 +40,48 @@ router.get("/", async (req, res) => {
     cursor: String(cursor),
     web: "1",
     hd: String(hd),
-    keywords: searchQuery, // Dipasangkan ke payload internal TikWM
+    keywords: searchQuery,
     url: "" 
   });
 
-  const headers = {
-    Accept: "application/json, text/javascript, */*; q=0.01",
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
-    "X-Requested-With": "XMLHttpRequest",
-    Origin: BASE_URL,
-    Referer: `${BASE_URL}/`
-  };
-
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers,
-      body: params
+    const response = await axios.post(API_URL, params.toString(), {
+      headers: {
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "accept-language": "en-US,en;q=0.9,id;q=0.8",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "origin": BASE_URL,
+        "priority": "u=1, i",
+        "referer": `${BASE_URL}/`,
+        "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "x-requested-with": "XMLHttpRequest"
+      },
+      timeout: 10000,
+      validateStatus: () => true // Mencegah axios throw error jika status != 200
     });
 
-    const text = await response.text();
+    const json = response.data;
 
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch {
-      json = null;
-    }
-
-    if (!json) {
-      return res.status(response.status || 502).json({
+    // Jika response berupa HTML (Cloudflare challenge) atau bukan JSON
+    if (typeof json !== "object" || json === null) {
+      return res.status(503).json({
         status: false,
         code: response.status,
         input: { query: searchQuery, count, cursor, hd },
         result: [],
-        error: "Response dari server penampung bukan format JSON",
-        preview: text.slice(0, 300),
+        error: "Terdeteksi proteksi Cloudflare (Challenge Page)",
         time_ms: Date.now() - started
       });
     }
 
     const videos = Array.isArray(json?.data?.videos) ? json.data.videos : [];
-    const isOk = response.ok && json.code === 0;
+    const isOk = response.status === 200 && json.code === 0;
 
     return res.status(isOk ? 200 : 400).json({
       status: isOk,
