@@ -3,13 +3,13 @@ const axios = require("axios");
 
 const router = express.Router();
 
-const BASE_URL = "https://www.tikwm.com";
-const API_URL = `${BASE_URL}/api/feed/search`;
+// Gunakan URL tanpa 'www' untuk mengurangi pemicu Cloudflare Challenge
+const API_URL = "https://tikwm.com/api/feed/search";
 
 function fullUrl(url) {
   if (!url) return null;
   if (/^https?:\/\//i.test(url)) return url;
-  return BASE_URL + url;
+  return `https://tikwm.com${url}`;
 }
 
 function formatCount(num) {
@@ -32,10 +32,17 @@ async function tikwmSearch(keywords) {
     headers: {
       "Accept": "application/json, text/javascript, */*; q=0.01",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
       "X-Requested-With": "XMLHttpRequest",
-      "Origin": BASE_URL,
-      "Referer": `${BASE_URL}/`
+      "Origin": "https://tikwm.com",
+      "Referer": "https://tikwm.com/",
+      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Sec-Ch-Ua": '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
+      "Sec-Ch-Ua-Mobile": "?0",
+      "Sec-Ch-Ua-Platform": '"Windows"',
+      "Sec-Fetch-Dest": "empty",
+      "Sec-Fetch-Mode": "cors",
+      "Sec-Fetch-Site": "same-origin"
     },
     timeout: 10000
   });
@@ -43,7 +50,7 @@ async function tikwmSearch(keywords) {
   const json = response.data;
 
   if (typeof json !== "object" || json === null) {
-    throw new Error("Response dari TikWM bukan format JSON yang valid");
+    throw new Error("Layanan TikWM sedang terproteksi Cloudflare. Coba lagi nanti.");
   }
 
   if (json.code !== 0) {
@@ -78,7 +85,7 @@ router.get('/', async (req, res) => {
       return res.status(400).json({
         status: false,
         creator: 'ArulzXD',
-        message: 'Masukkan parameter keyboards (contoh: ?keyboards=resep masakan)'
+        message: 'Masukkan parameter keyboards (contoh: ?keyboards=resep mendoan)'
       });
     }
 
@@ -99,18 +106,21 @@ router.get('/', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({
+    console.error("TikTok Search Error:", err.message);
+    const isCloudflare = err.response?.status === 403;
+    return res.status(isCloudflare ? 503 : 500).json({
       status: false,
       creator: 'ArulzXD',
-      message: err.message || 'Terjadi kesalahan pada server saat memproses pencarian.'
+      message: isCloudflare 
+        ? 'Akses ke TikWM diblokir oleh Cloudflare WAF Vercel. Silakan coba beberapa saat lagi.' 
+        : (err.message || 'Terjadi kesalahan pada server saat memproses pencarian.')
     });
   }
 });
 
 router.desc = "Pencarian video TikTok via TikWM API";
 router.paramsConfig = {
-  keyboards: "keyboards: resep masakan"
+  keyboards: "keyboards: resep mendoan"
 };
 router.status = "ready";
 router.type = "free";
