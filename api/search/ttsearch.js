@@ -1,122 +1,135 @@
 const express = require("express");
-const axios = require("axios");
-
+const crypto = require("crypto");
 const router = express.Router();
 
 const BASE_URL = "https://www.tikwm.com";
 const API_URL = `${BASE_URL}/api/feed/search`;
 
+function randomUniqueId() {
+  return `user_${crypto.randomBytes(6).toString("hex")}`;
+}
+
 function fullUrl(url) {
   if (!url) return null;
-  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return BASE_URL + url;
 }
 
-async function tikwmSearch(keywords) {
-  if (!keywords) throw new Error("Kata kunci pencarian kosong");
+// Endpoint GET Utama
+router.get("/", async (req, res) => {
+  // Menggunakan parameter 'query' sebagai kata kunci pencarian
+  const searchQuery = req.query.query;
+
+  // Validasi input parameter query wajib ada
+  if (!searchQuery) {
+    return res.status(400).json({ 
+      status: false, 
+      error: "Missing required 'query' parameter" 
+    });
+  }
+
+  // Pengaturan default opsional untuk pagination & kualitas video
+  const count = req.query.count || "12";
+  const cursor = req.query.cursor || "0";
+  const hd = req.query.hd || "1";
 
   const started = Date.now();
+  const uniqueId = randomUniqueId();
 
-  const body = new URLSearchParams({
-    keywords,
-    count: "12",
-    cursor: "0",
+  const params = new URLSearchParams({
+    unique_id: uniqueId,
+    count: String(count),
+    cursor: String(cursor),
     web: "1",
-    hd: "1"
+    hd: String(hd),
+    keywords: searchQuery, // Dipasangkan ke payload internal TikWM
+    url: "" 
   });
 
-  const response = await axios.post(API_URL, body.toString(), {
-    headers: {
-      "Accept": "application/json, text/javascript, */*; q=0.01",
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:152.0) Gecko/20100101 Firefox/152.0",
-      "X-Requested-With": "XMLHttpRequest",
-      "Origin": BASE_URL,
-      "Referer": `${BASE_URL}/`
-    },
-    timeout: 15000
-  });
-
-  const json = response.data;
-  if (typeof json !== "object" || json === null) {
-    throw new Error("Response dari TikWM bukan format JSON yang valid");
-  }
-
-  if (json.code !== 0) {
-    throw new Error(json.msg || `Gagal mengambil data (Code: ${json.code})`);
-  }
-
-  const videos = Array.isArray(json?.data?.videos) ? json.data.videos : [];
-
-  return {
-    input: keywords,
-    total: videos.length,
-    cursor: json?.data?.cursor ?? null,
-    hasMore: json?.data?.hasMore ?? false,
-    videos: videos.map((item) => ({
-      id: item.video_id || item.id || null,
-      title: item.title || null,
-      author: item.author?.nickname || item.author?.unique_id || null,
-      duration: item.duration || 0,
-      play: fullUrl(item.play),
-      wmplay: fullUrl(item.wmplay),
-      music: fullUrl(item.music),
-      cover: fullUrl(item.cover),
-      stats: {
-        play: item.play_count || 0,
-        like: item.digg_count || 0,
-        comment: item.comment_count || 0,
-        share: item.share_count || 0,
-        download: item.download_count || 0
-      }
-    })),
-    timeMs: Date.now() - started
+  const headers = {
+    Accept: "application/json, text/javascript, */*; q=0.01",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest",
+    Origin: BASE_URL,
+    Referer: `${BASE_URL}/`
   };
-}
 
-router.get('/', async (req, res) => {
   try {
-    const keywords = (req.query.keyboards || req.query.keywords)?.trim();
-
-    if (!keywords) {
-      return res.status(400).json({
-        status: false,
-        creator: 'ArulzXD',
-        message: 'Masukkan parameter keyboards (contoh: ?keyboards=lamborghini)'
-      });
-    }
-
-    const data = await tikwmSearch(keywords);
-
-    if (!data || data.videos.length === 0) {
-      return res.status(404).json({
-        status: false,
-        creator: 'ArulzXD',
-        message: 'Tidak ada video yang ditemukan untuk kata kunci tersebut.'
-      });
-    }
-
-    return res.json({
-      status: true,
-      creator: 'ArulzXD',
-      result: data
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers,
+      body: params
     });
 
-  } catch (err) {
-    console.error(err);
+    const text = await response.text();
+
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = null;
+    }
+
+    if (!json) {
+      return res.status(response.status || 502).json({
+        status: false,
+        code: response.status,
+        input: { query: searchQuery, count, cursor, hd },
+        result: [],
+        error: "Response dari server penampung bukan format JSON",
+        preview: text.slice(0, 300),
+        time_ms: Date.now() - started
+      });
+    }
+
+    const videos = Array.isArray(json?.data?.videos) ? json.data.videos : [];
+    const isOk = response.ok && json.code === 0;
+
+    return res.status(isOk ? 200 : 400).json({
+      status: isOk,
+      code: isOk ? 200 : json.code || response.status,
+      input: {
+        query: searchQuery,
+        count: parseInt(count),
+        cursor: parseInt(cursor),
+        hd: parseInt(hd)
+      },
+      total: videos.length,
+      cursor: json?.data?.cursor ?? null,
+      has_more: json?.data?.hasMore ?? false,
+      result: videos.map((item) => ({
+        id: item.video_id || item.id || null,
+        title: item.title || null,
+        author: item.author?.nickname || item.author?.unique_id || null,
+        duration: item.duration || 0,
+        play: fullUrl(item.play),
+        wmplay: fullUrl(item.wmplay),
+        music: fullUrl(item.music),
+        cover: fullUrl(item.cover),
+        stats: {
+          play: item.play_count || 0,
+          like: item.digg_count || 0,
+          comment: item.comment_count || 0,
+          share: item.share_count || 0,
+          download: item.download_count || 0
+        }
+      })),
+      time_ms: Date.now() - started
+    });
+
+  } catch (error) {
     return res.status(500).json({
       status: false,
-      creator: 'ArulzXD',
-      message: err.message || 'Terjadi kesalahan pada server saat memproses pencarian.'
+      code: 500,
+      input: { query: searchQuery, count, cursor, hd },
+      result: [],
+      error: error.message,
+      time_ms: Date.now() - started
     });
   }
 });
 
-router.desc = "Pencarian video TikTok";
-router.paramsConfig = {
-  keyboards: "keyboards: lamborghini"
-};
 router.status = "ready";
 router.type = "free";
-
 module.exports = router;
