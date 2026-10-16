@@ -34,7 +34,7 @@ async function getImageFromFile(file) {
     return null;
 }
 
-// Helper: Membuat Kotak dengan Sudut Tumpul (Rounded Rect)
+// Helper: Kotak Sudut Tumpul (Rounded Rect)
 function drawRoundedRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -49,7 +49,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
     ctx.closePath();
 }
 
-// Helper: Membuat Bentuk Heksagon (Path Avatar V2)
+// Helper: Heksagon Avatar
 function drawHexagonPath(ctx, x, y, radius) {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -98,11 +98,12 @@ router.post('/', cpUpload, async (req, res) => {
         const fontFamily = fontLoaded ? "VipFont" : "sans-serif";
 
         // ==========================================
-        // 1. LATAR BELAKANG AMBIENT & LIGHTING
+        // 1. LATAR BELAKANG (OVERLAY TIPIS AGAR BACKGROUND JELAS)
         // ==========================================
         if (bgImg) {
             ctx.drawImage(bgImg, 0, 0, width, height);
-            ctx.fillStyle = "rgba(11, 14, 28, 0.82)";
+            // Tipiskan efek kegelapan dari 0.82 menjadi 0.40 agar gambar asli terlihat jelas
+            ctx.fillStyle = "rgba(6, 9, 20, 0.40)";
             ctx.fillRect(0, 0, width, height);
         } else {
             const grad = ctx.createLinearGradient(0, 0, width, height);
@@ -113,83 +114,76 @@ router.post('/', cpUpload, async (req, res) => {
             ctx.fillRect(0, 0, width, height);
         }
 
-        // Ambient Orb Light (Ungu & Cyan Spotlights)
-        const orbLeft = ctx.createRadialGradient(250, 200, 20, 250, 200, 350);
-        orbLeft.addColorStop(0, "rgba(147, 51, 234, 0.28)");
+        // Ambient Spotlight (Aksen Cahaya Sisi)
+        const orbLeft = ctx.createRadialGradient(250, 200, 20, 250, 200, 400);
+        orbLeft.addColorStop(0, "rgba(147, 51, 234, 0.35)");
         orbLeft.addColorStop(1, "transparent");
         ctx.fillStyle = orbLeft;
         ctx.fillRect(0, 0, width, height);
 
-        const orbRight = ctx.createRadialGradient(1030, 520, 20, 1030, 520, 350);
-        orbRight.addColorStop(0, "rgba(6, 182, 212, 0.28)");
+        const orbRight = ctx.createRadialGradient(1030, 520, 20, 1030, 520, 400);
+        orbRight.addColorStop(0, "rgba(6, 182, 212, 0.35)");
         orbRight.addColorStop(1, "transparent");
         ctx.fillStyle = orbRight;
         ctx.fillRect(0, 0, width, height);
 
-        // Grid Dot Pattern Background
-        ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-        for (let x = 30; x < width; x += 40) {
-            for (let y = 30; y < height; y += 40) {
-                ctx.beginPath();
-                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
         // ==========================================
-        // 2. MAIN CENTER FLOATING GLASS CARD
+        // 2. MAIN CENTER FLOATING GLASS CARD (TRANSPARAN)
         // ==========================================
-        const cardW = 1040;
-        const cardH = 560;
+        const cardW = 1080;
+        const cardH = 580;
         const cardX = (width - cardW) / 2;
         const cardY = (height - cardH) / 2;
 
         ctx.save();
-        ctx.fillStyle = "rgba(18, 22, 42, 0.82)";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
-        ctx.shadowBlur = 35;
-        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 32);
+        // Dibuat lebih transparan (0.60) agar gambar background menembus ke dalam card
+        ctx.fillStyle = "rgba(10, 14, 28, 0.60)";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+        ctx.shadowBlur = 40;
+        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 36);
         ctx.fill();
 
-        // Border Gradasi Neon (Purple-Magenta-Cyan)
+        // Border Neon Mencolok
         const borderGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-        borderGrad.addColorStop(0, "rgba(168, 85, 247, 0.8)");
-        borderGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.4)");
-        borderGrad.addColorStop(1, "rgba(6, 182, 212, 0.8)");
+        borderGrad.addColorStop(0, "rgba(168, 85, 247, 0.95)");
+        borderGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.6)");
+        borderGrad.addColorStop(1, "rgba(6, 182, 212, 0.95)");
         ctx.strokeStyle = borderGrad;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
         ctx.restore();
 
         // ==========================================
-        // 3. TOP BANNER HEADER & MEMBER BADGE
+        // 3. TOP BANNER HEADER (WELCOME BIG) & MEMBER
         // ==========================================
-        // Top Center Badge: "WELCOME TO THE COMMUNITY"
+        // Header Teks "WELCOME" Dibuat Jauh Lebih Besar (32px)
         const headerText = "WELCOME TO THE COMMUNITY";
-        ctx.font = `bold 14px "${fontFamily}"`;
-        const headerW = ctx.measureText(headerText).width + 40;
-        const headerH = 34;
+        ctx.font = `bold 28px "${fontFamily}"`;
+        const headerW = ctx.measureText(headerText).width + 56;
+        const headerH = 52;
         const headerX = width / 2 - headerW / 2;
         const headerY = cardY + 28;
 
         ctx.save();
-        ctx.fillStyle = "rgba(147, 51, 234, 0.18)";
-        drawRoundedRect(ctx, headerX, headerY, headerW, headerH, 17);
+        ctx.fillStyle = "rgba(147, 51, 234, 0.30)";
+        drawRoundedRect(ctx, headerX, headerY, headerW, headerH, 26);
         ctx.fill();
-        ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
-        ctx.lineWidth = 1.2;
+        ctx.shadowColor = "#a855f7";
+        ctx.shadowBlur = 15;
+        ctx.strokeStyle = "rgba(168, 85, 247, 0.9)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "#e9d5ff";
+        ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(headerText, width / 2, headerY + headerH / 2);
         ctx.restore();
 
-        // Member Count Badge (Truncated)
+        // Member Badge Dibuat Lebih Besar & Jelas (20px)
         let displayMember = memberCount;
-        ctx.font = `bold 14px "${fontFamily}"`;
-        const maxMemberTextWidth = 180;
+        ctx.font = `bold 20px "${fontFamily}"`;
+        const maxMemberTextWidth = 200;
         if (ctx.measureText(`MEMBER #${displayMember}`).width > maxMemberTextWidth) {
             while (ctx.measureText(`MEMBER #${displayMember}...`).width > maxMemberTextWidth && displayMember.length > 0) {
                 displayMember = displayMember.slice(0, -1);
@@ -197,49 +191,51 @@ router.post('/', cpUpload, async (req, res) => {
             displayMember += "...";
         }
         const memberText = `MEMBER #${displayMember}`;
-        const memberW = ctx.measureText(memberText).width + 32;
-        const memberH = 36;
-        const memberX = cardX + cardW - memberW - 28;
-        const memberY = cardY + 28;
+        const memberW = ctx.measureText(memberText).width + 38;
+        const memberH = 46;
+        const memberX = cardX + cardW - memberW - 30;
+        const memberY = cardY + 30;
 
         ctx.save();
-        ctx.fillStyle = "rgba(6, 182, 212, 0.15)";
-        drawRoundedRect(ctx, memberX, memberY, memberW, memberH, 10);
+        ctx.fillStyle = "rgba(6, 182, 212, 0.25)";
+        drawRoundedRect(ctx, memberX, memberY, memberW, memberH, 14);
         ctx.fill();
-        ctx.strokeStyle = "rgba(6, 182, 212, 0.7)";
-        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "#06b6d4";
+        ctx.shadowBlur = 12;
+        ctx.strokeStyle = "rgba(6, 182, 212, 0.9)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "#cff4fc";
+        ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(memberText, memberX + memberW / 2, memberY + memberH / 2);
         ctx.restore();
 
         // ==========================================
-        // 4. CENTER HEXAGON AVATAR WITH NEON RINGS
+        // 4. CENTER HEXAGON AVATAR (LEBIH BESAR)
         // ==========================================
         const avatarX = width / 2;
-        const avatarY = cardY + 200;
-        const avatarR = 105;
+        const avatarY = cardY + 225;
+        const avatarR = 110;
 
-        // Outer Glowing Hexagon Ring (Cyan)
+        // Outer Glow Hexagon Ring
         ctx.save();
         ctx.shadowColor = "#06b6d4";
-        ctx.shadowBlur = 25;
+        ctx.shadowBlur = 30;
         ctx.strokeStyle = "#06b6d4";
-        ctx.lineWidth = 4;
-        drawHexagonPath(ctx, avatarX, avatarY, avatarR + 12);
+        ctx.lineWidth = 5;
+        drawHexagonPath(ctx, avatarX, avatarY, avatarR + 14);
         ctx.stroke();
         ctx.restore();
 
-        // Inner Glowing Hexagon Ring (Purple)
+        // Inner Glow Hexagon Ring
         ctx.save();
         ctx.shadowColor = "#a855f7";
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 20;
         ctx.strokeStyle = "#a855f7";
-        ctx.lineWidth = 3;
-        drawHexagonPath(ctx, avatarX, avatarY, avatarR + 4);
+        ctx.lineWidth = 3.5;
+        drawHexagonPath(ctx, avatarX, avatarY, avatarR + 5);
         ctx.stroke();
         ctx.restore();
 
@@ -250,17 +246,19 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.drawImage(userImg, avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
         ctx.restore();
 
-        // Status Indicator Pill (Online Active)
+        // Status Tag
         const statusText = "● USER ACTIVE";
-        ctx.font = `bold 12px "${fontFamily}"`;
-        const statusW = ctx.measureText(statusText).width + 20;
-        const statusH = 24;
-        const statusY = avatarY + avatarR + 8;
+        ctx.font = `bold 14px "${fontFamily}"`;
+        const statusW = ctx.measureText(statusText).width + 24;
+        const statusH = 28;
+        const statusY = avatarY + avatarR + 10;
 
         ctx.save();
-        ctx.fillStyle = "#09131d";
-        drawRoundedRect(ctx, avatarX - statusW / 2, statusY, statusW, statusH, 12);
+        ctx.fillStyle = "#050c14";
+        drawRoundedRect(ctx, avatarX - statusW / 2, statusY, statusW, statusH, 14);
         ctx.fill();
+        ctx.shadowColor = "#10b981";
+        ctx.shadowBlur = 10;
         ctx.strokeStyle = "#10b981";
         ctx.lineWidth = 1.5;
         ctx.stroke();
@@ -272,32 +270,32 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.restore();
 
         // ==========================================
-        // 5. CENTER USERNAME & GROUP NAME (AUTO-TRUNCATE)
+        // 5. USERNAME & GROUP NAME (SUPER BIG & MENCOLOK)
         // ==========================================
-        // Username Text (Center & Auto-Truncate)
+        // Username Text (Ditingkatkan ke 58px)
         ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+        ctx.shadowBlur = 18;
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 48px "${fontFamily}"`;
+        ctx.font = `bold 58px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
 
         let displayUser = username;
-        const maxUserWidth = cardW - 120; // Batas lebar username
+        const maxUserWidth = cardW - 100;
         if (ctx.measureText(displayUser).width > maxUserWidth) {
             while (ctx.measureText(displayUser + "...").width > maxUserWidth && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
         }
-        ctx.fillText(displayUser, avatarX, avatarY + avatarR + 48);
+        ctx.fillText(displayUser, avatarX, avatarY + avatarR + 52);
         ctx.restore();
 
-        // Group Name Badge (Center & Auto-Truncate)
+        // Group Name Badge (Ditingkatkan ke 26px)
         let displayGroup = groupName.toUpperCase();
-        const maxGroupWidth = cardW - 160; // Batas lebar nama grup
-        ctx.font = `bold 20px "${fontFamily}"`;
+        const maxGroupWidth = cardW - 140;
+        ctx.font = `bold 26px "${fontFamily}"`;
 
         if (ctx.measureText(`GROUP // ${displayGroup}`).width > maxGroupWidth) {
             while (ctx.measureText(`GROUP // ${displayGroup}...`).width > maxGroupWidth && displayGroup.length > 0) {
@@ -307,31 +305,33 @@ router.post('/', cpUpload, async (req, res) => {
         }
 
         const groupText = `GROUP // ${displayGroup}`;
-        const groupW = ctx.measureText(groupText).width + 38;
-        const groupH = 44;
+        const groupW = ctx.measureText(groupText).width + 46;
+        const groupH = 52;
         const groupX = avatarX - groupW / 2;
-        const groupY = avatarY + avatarR + 118;
+        const groupY = avatarY + avatarR + 128;
 
         ctx.save();
-        ctx.fillStyle = "rgba(168, 85, 247, 0.14)";
-        drawRoundedRect(ctx, groupX, groupY, groupW, groupH, 12);
+        ctx.fillStyle = "rgba(168, 85, 247, 0.22)";
+        drawRoundedRect(ctx, groupX, groupY, groupW, groupH, 16);
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
-        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "#a855f7";
+        ctx.shadowBlur = 14;
+        ctx.strokeStyle = "rgba(168, 85, 247, 0.85)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = "#c084fc";
+        ctx.fillStyle = "#e9d5ff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(groupText, avatarX, groupY + groupH / 2);
         ctx.restore();
 
         // Bottom Decorative Accent Bar
-        const barW = 240;
-        const barH = 4;
+        const barW = 320;
+        const barH = 5;
         const barX = avatarX - barW / 2;
-        const barY = cardY + cardH - 35;
+        const barY = cardY + cardH - 32;
 
         ctx.save();
         const barGrad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
@@ -387,7 +387,7 @@ router.paramsConfig = {
     }
 };
 
-router.desc = "Maker Welcome Card Bot Versi 2 (Centered VIP Glassmorphism Hexagon Widescreen 16:9).";
+router.desc = "Maker Welcome Card Bot Versi 2 Big Text & Clear BG (Centered VIP Glassmorphism 16:9).";
 router.status = "ready";
 router.type = "free";
 
