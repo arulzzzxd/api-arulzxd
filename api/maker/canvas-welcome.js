@@ -36,8 +36,7 @@ async function getImageFromFile(file) {
 
 const cpUpload = upload.fields([
     { name: 'bgFile', maxCount: 1 },
-    { name: 'userAvatarFile', maxCount: 1 },
-    { name: 'groupAvatarFile', maxCount: 1 }
+    { name: 'userAvatarFile', maxCount: 1 }
 ]);
 
 router.post('/', cpUpload, async (req, res) => {
@@ -45,9 +44,9 @@ router.post('/', cpUpload, async (req, res) => {
         const files = req.files || {};
         const body = req.body || {};
 
-        const username = body.username?.trim() || body.name?.trim() || "KYUU";
-        const groupName = body.groupName?.trim() || body.gcName?.trim() || "KYZZ COMMUNITY";
-        const memberCount = body.memberCount?.trim() || body.member?.trim() || "1,234";
+        const username = body.username?.trim() || body.name?.trim() || "Arulzxd";
+        const groupName = body.groupName?.trim() || body.gcName?.trim() || "ARUL INFORMASI";
+        const memberCount = body.memberCount?.trim() || body.member?.trim() || "9999";
 
         const userImg = await getImageFromFile(files.userAvatarFile?.[0]);
 
@@ -60,7 +59,6 @@ router.post('/', cpUpload, async (req, res) => {
         }
 
         const bgImg = await getImageFromFile(files.bgFile?.[0]);
-        const groupImg = await getImageFromFile(files.groupAvatarFile?.[0]);
 
         await loadFont();
 
@@ -70,90 +68,83 @@ router.post('/', cpUpload, async (req, res) => {
         const ctx = canvas.getContext('2d');
         const fontFamily = fontLoaded ? "JakartaSans" : "sans-serif";
 
-        // 1. Render Background (Gunakan file jika ada, atau fallback ke gradient)
+        // 1. Render Background Utama
         if (bgImg) {
             ctx.drawImage(bgImg, 0, 0, width, height);
         } else {
             const grad = ctx.createLinearGradient(0, 0, width, height);
-            grad.addColorStop(0, '#0a0d14');
-            grad.addColorStop(1, '#161b26');
+            grad.addColorStop(0, '#0a0e17');
+            grad.addColorStop(1, '#161f33');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, width, height);
         }
 
-        // 2. Render Spanduk Gelap Miring di Sisi Kiri
+        // Overlay Gelap Gradasi Sisi Kanan (Agar Teks & Gambar Tidak Bentrok/Bertumpuk)
+        const rightGrad = ctx.createLinearGradient(350, 0, width, 0);
+        rightGrad.addColorStop(0, 'rgba(10, 14, 23, 0.2)');
+        rightGrad.addColorStop(0.6, 'rgba(10, 14, 23, 0.85)');
+        rightGrad.addColorStop(1, 'rgba(10, 14, 23, 0.95)');
+        ctx.fillStyle = rightGrad;
+        ctx.fillRect(350, 0, width - 350, height);
+
+        // 2. Render Spanduk Gelap Miring Sisi Kiri
         ctx.save();
-        ctx.fillStyle = "#12151b";
-        ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
-        ctx.shadowBlur = 25;
+        ctx.fillStyle = "#0d111a";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowBlur = 30;
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(540, 0);
-        ctx.lineTo(310, height);
+        ctx.lineTo(400, 0);
+        ctx.lineTo(220, height);
         ctx.lineTo(0, height);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
 
-        // Garis Pembatas Miring Bergaya Cyberpunk (Aksen Gelap & Cyan)
+        // Garis Pembatas Cyberpunk (Aksen Cyan Glow)
         ctx.save();
-        ctx.lineWidth = 8;
-        ctx.strokeStyle = "#202531";
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = "#1a2332";
         ctx.beginPath();
-        ctx.moveTo(540, 0);
-        ctx.lineTo(310, height);
+        ctx.moveTo(400, 0);
+        ctx.lineTo(220, height);
         ctx.stroke();
 
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 12;
         ctx.lineWidth = 3;
         ctx.strokeStyle = "#00f0ff";
         ctx.beginPath();
-        ctx.moveTo(538, 0);
-        ctx.lineTo(308, height);
+        ctx.moveTo(398, 0);
+        ctx.lineTo(218, height);
         ctx.stroke();
         ctx.restore();
 
-        // 3. Render Teks Diagon "WELCOME TO" di Spanduk Kiri
+        // 3. Render Teks "WELCOME TO" Miring Sejajar Garis Spanduk
         ctx.save();
-        ctx.translate(415, 120);
-        ctx.rotate(Math.atan2(height, -230));
+        const angle = Math.atan2(height, -180);
+        ctx.translate(325, 190);
+        ctx.rotate(angle);
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 38px "${fontFamily}"`;
+        ctx.font = `bold 32px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+        ctx.shadowBlur = 8;
         ctx.fillText("WELCOME TO", 0, 0);
         ctx.restore();
 
-        // 4. Render Foto Profil User (Spanduk Kiri)
-        const userX = 220;
-        const userY = 270;
+        // 4. Render Foto Profil User (Tepat Di Tengah Spanduk Kiri)
+        const userX = 145;
+        const userY = 225;
         const userRadius = 85;
 
-        // Ikon Profil Grup Kecil di Atas Avatar (Jika File Diunggah)
-        if (groupImg) {
-            const iconX = 100;
-            const iconY = 80;
-            const iconR = 30;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(iconX, iconY, iconR, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(groupImg, iconX - iconR, iconY - iconR, iconR * 2, iconR * 2);
-            ctx.restore();
-
-            ctx.beginPath();
-            ctx.arc(iconX, iconY, iconR + 2, 0, Math.PI * 2);
-            ctx.strokeStyle = "#00f0ff";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        // Lingkaran Glow Cyan Avatar User
+        // Outer Glow Ring Cyan Avatar User
         ctx.save();
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 25;
         ctx.beginPath();
-        ctx.arc(userX, userY, userRadius + 5, 0, Math.PI * 2);
+        ctx.arc(userX, userY, userRadius + 4, 0, Math.PI * 2);
         ctx.strokeStyle = "#00f0ff";
         ctx.lineWidth = 5;
         ctx.stroke();
@@ -169,18 +160,18 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.restore();
 
         // 5. Render Sisi Kanan (Badge Member & Teks Informasi)
-        
-        // Badge "MEMBER #1,234" di Kanan Atas
+
+        // Badge "MEMBER #9999" di Kanan Atas
         const pillText = `MEMBER #${memberCount}`;
         ctx.font = `bold 18px "${fontFamily}"`;
         const pillWidth = ctx.measureText(pillText).width + 30;
         const pillHeight = 36;
-        const pillX = width - pillWidth - 50;
+        const pillX = width - pillWidth - 40;
         const pillY = 35;
 
-        ctx.fillStyle = "rgba(18, 21, 27, 0.85)";
+        ctx.fillStyle = "rgba(13, 17, 26, 0.9)";
         ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 10);
+        ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 8);
         ctx.fill();
 
         ctx.strokeStyle = "#00f0ff";
@@ -193,17 +184,20 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillText(pillText, pillX + (pillWidth / 2), pillY + (pillHeight / 2));
 
         // Teks Nama User
-        const textX = 520;
-        const nameY = 310;
+        const textX = 450;
+        const nameY = 290;
 
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.9)";
+        ctx.shadowBlur = 10;
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 42px "${fontFamily}"`;
+        ctx.font = `bold 44px "${fontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";
 
         let displayUser = username;
-        if (ctx.measureText(displayUser).width > 450) {
-            while (ctx.measureText(displayUser + "...").width > 450 && displayUser.length > 0) {
+        if (ctx.measureText(displayUser).width > 500) {
+            while (ctx.measureText(displayUser + "...").width > 500 && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
@@ -211,24 +205,23 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillText(displayUser, textX, nameY);
 
         // Teks Nama Grup
-        const groupY = 355;
+        const groupY = 340;
         ctx.fillStyle = "#00f0ff";
         ctx.font = `bold 22px "${fontFamily}"`;
         ctx.fillText(`GROUP: ${groupName.toUpperCase()}`, textX, groupY);
 
-        // Garis Bingkai Futuristik Bawah
-        const lineY = 380;
-        ctx.save();
+        // Aksen Garis Futuristik Bawah
+        const lineY = 365;
         ctx.beginPath();
         ctx.moveTo(textX, lineY);
-        ctx.lineTo(textX + 320, lineY);
-        ctx.lineTo(textX + 290, lineY + 18);
-        ctx.lineTo(textX, lineY + 18);
+        ctx.lineTo(textX + 340, lineY);
+        ctx.lineTo(textX + 310, lineY + 16);
+        ctx.lineTo(textX, lineY + 16);
         ctx.closePath();
-        ctx.fillStyle = "rgba(18, 21, 27, 0.8)";
+        ctx.fillStyle = "rgba(13, 17, 26, 0.85)";
         ctx.fill();
-        ctx.strokeStyle = "#556070";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#00f0ff";
+        ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.restore();
 
@@ -257,28 +250,24 @@ router.paramsConfig = {
         type: "file",
         desc: "Berkas latar belakang card (Opsional)"
     },
-    groupAvatarFile: {
-        type: "file",
-        desc: "Berkas foto/ikon grup (Opsional)"
-    },
     username: {
         type: "text",
         desc: "Nama user/member",
-        default: "KYUU"
+        default: "Arulzxd"
     },
     groupName: {
         type: "text",
         desc: "Nama grup",
-        default: "KYZZ COMMUNITY"
+        default: "ARUL INFORMASI"
     },
     memberCount: {
         type: "text",
         desc: "Urutan / jumlah member",
-        default: "1,234"
+        default: "999"
     }
 };
 
-router.desc = "Maker Welcome Card Bot Futuristik via Unggah File (Spanduk & Foto Profil di Kiri).";
+router.desc = "Maker Welcome Card Bot Futuristik Presisi via Unggah File (Tanpa Avatar Group).";
 router.status = "ready";
 router.type = "free";
 
