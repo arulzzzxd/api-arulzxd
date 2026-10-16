@@ -3,8 +3,9 @@ const axios = require("axios");
 
 const router = express.Router();
 
-// Gunakan URL tanpa 'www' untuk mengurangi pemicu Cloudflare Challenge
-const API_URL = "https://tikwm.com/api/feed/search";
+const TARGET_URL = "https://tikwm.com/api/feed/search";
+// Menggunakan proxy gateway untuk melewati Cloudflare Vercel Block
+const PROXY_URL = `https://corsproxy.io/?${encodeURIComponent(TARGET_URL)}`;
 
 function fullUrl(url) {
   if (!url) return null;
@@ -28,29 +29,21 @@ async function tikwmSearch(keywords) {
     hd: "1"
   });
 
-  const response = await axios.post(API_URL, body.toString(), {
+  // Kirim request via Proxy
+  const response = await axios.post(PROXY_URL, body.toString(), {
     headers: {
       "Accept": "application/json, text/javascript, */*; q=0.01",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-      "X-Requested-With": "XMLHttpRequest",
-      "Origin": "https://tikwm.com",
-      "Referer": "https://tikwm.com/",
-      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-      "Sec-Ch-Ua": '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
-      "Sec-Ch-Ua-Mobile": "?0",
-      "Sec-Ch-Ua-Platform": '"Windows"',
-      "Sec-Fetch-Dest": "empty",
-      "Sec-Fetch-Mode": "cors",
-      "Sec-Fetch-Site": "same-origin"
+      "X-Requested-With": "XMLHttpRequest"
     },
-    timeout: 10000
+    timeout: 12000
   });
 
   const json = response.data;
 
   if (typeof json !== "object" || json === null) {
-    throw new Error("Layanan TikWM sedang terproteksi Cloudflare. Coba lagi nanti.");
+    throw new Error("Gagal melewati verifikasi Cloudflare");
   }
 
   if (json.code !== 0) {
@@ -107,18 +100,15 @@ router.get('/', async (req, res) => {
 
   } catch (err) {
     console.error("TikTok Search Error:", err.message);
-    const isCloudflare = err.response?.status === 403;
-    return res.status(isCloudflare ? 503 : 500).json({
+    return res.status(500).json({
       status: false,
       creator: 'ArulzXD',
-      message: isCloudflare 
-        ? 'Akses ke TikWM diblokir oleh Cloudflare WAF Vercel. Silakan coba beberapa saat lagi.' 
-        : (err.message || 'Terjadi kesalahan pada server saat memproses pencarian.')
+      message: err.message || 'Terjadi kesalahan pada server saat memproses pencarian.'
     });
   }
 });
 
-router.desc = "Pencarian video TikTok via TikWM API";
+router.desc = "Pencarian video TikTok via TikWM API (Bypass Cloudflare)";
 router.paramsConfig = {
   keyboards: "keyboards: resep mendoan"
 };
