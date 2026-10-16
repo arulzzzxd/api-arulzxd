@@ -4,8 +4,7 @@ const axios = require("axios");
 const router = express.Router();
 
 const TARGET_URL = "https://tikwm.com/api/feed/search";
-// Menggunakan proxy gateway untuk melewati Cloudflare Vercel Block
-const PROXY_URL = `https://corsproxy.io/?${encodeURIComponent(TARGET_URL)}`;
+const CORS_KEY = "509fdaae";
 
 function fullUrl(url) {
   if (!url) return null;
@@ -21,6 +20,14 @@ function formatCount(num) {
 async function tikwmSearch(keywords) {
   if (!keywords) throw new Error("Kata kunci pencarian kosong");
 
+  // Format URL CorsProxy dengan API key
+  const proxyParams = new URLSearchParams({
+    key: CORS_KEY,
+    url: TARGET_URL
+  });
+  const proxyUrl = `https://corsproxy.io/?${proxyParams.toString()}`;
+
+  // Body payload untuk TikWM
   const body = new URLSearchParams({
     keywords,
     count: "12",
@@ -29,21 +36,20 @@ async function tikwmSearch(keywords) {
     hd: "1"
   });
 
-  // Kirim request via Proxy
-  const response = await axios.post(PROXY_URL, body.toString(), {
+  const response = await axios.post(proxyUrl, body.toString(), {
     headers: {
       "Accept": "application/json, text/javascript, */*; q=0.01",
       "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
       "X-Requested-With": "XMLHttpRequest"
     },
-    timeout: 12000
+    timeout: 15000
   });
 
   const json = response.data;
 
   if (typeof json !== "object" || json === null) {
-    throw new Error("Gagal melewati verifikasi Cloudflare");
+    throw new Error("Response dari proxy bukan format JSON yang valid");
   }
 
   if (json.code !== 0) {
@@ -108,7 +114,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Pencarian video TikTok via TikWM API (Bypass Cloudflare)";
+router.desc = "Pencarian video TikTok via CorsProxy Key & TikWM API";
 router.paramsConfig = {
   keyboards: "keyboards: resep mendoan"
 };
