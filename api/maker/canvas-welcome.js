@@ -34,7 +34,7 @@ async function getImageFromFile(file) {
     return null;
 }
 
-// Fungsi pembantu membuat polygon dengan sudut terpotong (Cut-Corners HUD)
+// Helper: Membuat Rectangle Sudut Terpotong (Sci-Fi Cut-Corner)
 function drawCutCornerRect(ctx, x, y, width, height, cutSize) {
     ctx.beginPath();
     ctx.moveTo(x + cutSize, y);
@@ -44,6 +44,42 @@ function drawCutCornerRect(ctx, x, y, width, height, cutSize) {
     ctx.lineTo(x, y + height);
     ctx.lineTo(x, y + cutSize);
     ctx.closePath();
+}
+
+// Helper: Frame Siku HUD (Bracket Accent)
+function drawHUDCorners(ctx, x, y, width, height, len, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+
+    // Top-Left
+    ctx.beginPath(); ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
+    // Top-Right
+    ctx.beginPath(); ctx.moveTo(x + width - len, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + len); ctx.stroke();
+    // Bottom-Left
+    ctx.beginPath(); ctx.moveTo(x, y + height - len); ctx.lineTo(x, y + height); ctx.lineTo(x + len, y + height); ctx.stroke();
+    // Bottom-Right
+    ctx.beginPath(); ctx.moveTo(x + width - len, y + height); ctx.lineTo(x + width, y + height); ctx.lineTo(x + width, y + height - len); ctx.stroke();
+
+    ctx.restore();
+}
+
+// Helper: Barcode Digital
+function drawBarcode(ctx, x, y, width, height, color) {
+    ctx.save();
+    ctx.fillStyle = color;
+    let currX = x;
+    while (currX < x + width) {
+        const w = Math.random() > 0.5 ? 4 : 2;
+        const gap = Math.random() * 3 + 2;
+        if (currX + w <= x + width) {
+            ctx.fillRect(currX, y, w, height);
+        }
+        currX += w + gap;
+    }
+    ctx.restore();
 }
 
 const cpUpload = upload.fields([
@@ -74,52 +110,55 @@ router.post('/', cpUpload, async (req, res) => {
 
         await loadFont();
 
-        const width = 1024;
-        const height = 450;
+        // RASI 16:9 STANDAR HD (1280 x 720)
+        const width = 1280;
+        const height = 720;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
         const fontFamily = fontLoaded ? "CyberFont" : "sans-serif";
 
         // ==========================================
-        // 1. BACKGROUND & OVERLAY
+        // 1. BACKGROUND & MULTI-LAYER GRID
         // ==========================================
         if (bgImg) {
             ctx.drawImage(bgImg, 0, 0, width, height);
-            ctx.fillStyle = "rgba(4, 6, 12, 0.70)";
+            ctx.fillStyle = "rgba(2, 4, 10, 0.78)";
             ctx.fillRect(0, 0, width, height);
         } else {
             const grad = ctx.createLinearGradient(0, 0, width, height);
-            grad.addColorStop(0, '#04060c');
-            grad.addColorStop(1, '#0c1424');
+            grad.addColorStop(0, '#020409');
+            grad.addColorStop(0.5, '#080d1a');
+            grad.addColorStop(1, '#03050d');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, width, height);
         }
 
-        // Cyberpunk Matrix Grid Pattern
-        ctx.strokeStyle = "rgba(0, 240, 255, 0.06)";
+        // Cyber Grid Lines Pattern
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.05)";
         ctx.lineWidth = 1;
-        for (let x = 0; x < width; x += 35) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
+        for (let x = 0; x < width; x += 40) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
         }
-        for (let y = 0; y < height; y += 35) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
+        for (let y = 0; y < height; y += 40) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
         }
 
-        // ==========================================
-        // 2. PANEL KIRI SOLID CYBERPUNK SLANT
-        // ==========================================
-        const topCutX = 430;
-        const botCutX = 230;
+        // Ambient Glowing Center
+        const ambientGlow = ctx.createRadialGradient(950, 360, 50, 950, 360, 500);
+        ambientGlow.addColorStop(0, "rgba(0, 240, 255, 0.15)");
+        ambientGlow.addColorStop(0.6, "rgba(255, 0, 85, 0.1)");
+        ambientGlow.addColorStop(1, "transparent");
+        ctx.fillStyle = ambientGlow;
+        ctx.fillRect(0, 0, width, height);
 
-        // Base Solid Left Panel
+        // ==========================================
+        // 2. PANEL KIRI SOLID CYBER SLANT
+        // ==========================================
+        const topCutX = 540;
+        const botCutX = 280;
+
         ctx.save();
-        ctx.fillStyle = "#070a12";
+        ctx.fillStyle = "#050812";
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(topCutX, 0);
@@ -129,10 +168,10 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fill();
         ctx.restore();
 
-        // Neon Border Stripe 1 (Pink/Magenta Accent Line)
-        const stripeWidth = 45;
+        // Neon Border Stripe (Dual Color: Magenta & Cyan)
+        const stripeWidth = 55;
         ctx.save();
-        ctx.fillStyle = "#0f172a";
+        ctx.fillStyle = "#0a1122";
         ctx.beginPath();
         ctx.moveTo(topCutX, 0);
         ctx.lineTo(topCutX + stripeWidth, 0);
@@ -141,28 +180,27 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.closePath();
         ctx.fill();
 
-        // Cyber Neon Glow Border
+        // Cyan Line
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 20;
         ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(topCutX + stripeWidth, 0);
-        ctx.lineTo(botCutX + stripeWidth, height);
+        ctx.moveTo(topCutX + stripeWidth, 0); ctx.lineTo(botCutX + stripeWidth, height);
         ctx.stroke();
 
+        // Magenta Line
         ctx.shadowColor = "#ff0055";
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 15;
         ctx.strokeStyle = "#ff0055";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(topCutX, 0);
-        ctx.lineTo(botCutX, height);
+        ctx.moveTo(topCutX, 0); ctx.lineTo(botCutX, height);
         ctx.stroke();
         ctx.restore();
 
         // ==========================================
-        // 3. TEKS ROTASI "WELCOME TO"
+        // 3. TEKS "WELCOME TO" ROTASI SEJAJAR PEMBATAS
         // ==========================================
         ctx.save();
         const dx = topCutX - botCutX;
@@ -174,59 +212,88 @@ router.post('/', cpUpload, async (req, res) => {
 
         ctx.translate(midStripeX, midStripeY);
         ctx.rotate(slope);
+
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 14;
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 24px "${fontFamily}"`;
+        ctx.font = `bold 32px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 12;
         ctx.fillText("WELCOME TO", 0, 0);
         ctx.restore();
 
         // ==========================================
-        // 4. AVATAR USER DENGAN HUD TECH RING
+        // 4. AREA AVATAR USER RADAR HUD SUPER RICH
         // ==========================================
-        const avatarX = 145;
-        const avatarY = 225;
-        const avatarRadius = 85;
+        const avatarX = 200;
+        const avatarY = 360;
+        const avatarRadius = 125;
 
-        // Outer Dashed HUD Ring (Pink Neon)
+        // Ambient Radial Glow
+        ctx.save();
+        const avGlow = ctx.createRadialGradient(avatarX, avatarY, 30, avatarX, avatarY, avatarRadius + 50);
+        avGlow.addColorStop(0, "rgba(0, 240, 255, 0.35)");
+        avGlow.addColorStop(0.7, "rgba(255, 0, 85, 0.2)");
+        avGlow.addColorStop(1, "transparent");
+        ctx.fillStyle = avGlow;
+        ctx.beginPath(); ctx.arc(avatarX, avatarY, avatarRadius + 50, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        // Sci-Fi Polygon Octagon Frame
+        ctx.save();
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.5)";
+        ctx.lineWidth = 2.5;
+        const octR = avatarRadius + 32;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI) / 4;
+            const ox = avatarX + octR * Math.cos(angle);
+            const oy = avatarY + octR * Math.sin(angle);
+            if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+
+        // Dashed Ring (Magenta)
         ctx.save();
         ctx.shadowColor = "#ff0055";
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 18;
         ctx.strokeStyle = "#ff0055";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([10, 8]);
+        ctx.lineWidth = 3;
+        ctx.setLineDash([16, 8]);
         ctx.beginPath();
-        ctx.arc(avatarX, avatarY, avatarRadius + 15, 0, Math.PI * 2);
+        ctx.arc(avatarX, avatarY, avatarRadius + 20, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Inner Solid HUD Ring (Cyan Neon)
+        // Inner Solid Ring (Cyan Glow)
         ctx.save();
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 22;
+        ctx.shadowBlur = 25;
         ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 4.5;
+        ctx.lineWidth = 6;
         ctx.beginPath();
-        ctx.arc(avatarX, avatarY, avatarRadius + 6, 0, Math.PI * 2);
+        ctx.arc(avatarX, avatarY, avatarRadius + 8, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Tech Tick Marks pada Avatar
+        // Crosshair Ticks (+)
         ctx.save();
         ctx.fillStyle = "#00f0ff";
-        const tickAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
-        for (const angle of tickAngles) {
-            const tx = avatarX + Math.cos(angle) * (avatarRadius + 6);
-            const ty = avatarY + Math.sin(angle) * (avatarRadius + 6);
-            ctx.beginPath();
-            ctx.arc(tx, ty, 4, 0, Math.PI * 2);
-            ctx.fill();
+        const ticks = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+        for (const angle of ticks) {
+            const tx = avatarX + Math.cos(angle) * (avatarRadius + 8);
+            const ty = avatarY + Math.sin(angle) * (avatarRadius + 8);
+            ctx.beginPath(); ctx.arc(tx, ty, 6, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
 
-        // Render Circular User Avatar
+        // HUD Corners pada Avatar
+        const bracketBoxSize = (avatarRadius + 38) * 2;
+        drawHUDCorners(ctx, avatarX - bracketBoxSize / 2, avatarY - bracketBoxSize / 2, bracketBoxSize, bracketBoxSize, 20, "rgba(0, 240, 255, 0.85)");
+
+        // Render Avatar Image
         ctx.save();
         ctx.beginPath();
         ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2);
@@ -235,25 +302,53 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.drawImage(userImg, avatarX - avatarRadius, avatarY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
         ctx.restore();
 
+        // Tag Badge Top & Bottom
+        ctx.save();
+        const topBadgeText = "[ TARGET LOCKED ]";
+        ctx.font = `bold 13px "${fontFamily}"`;
+        const topBW = ctx.measureText(topBadgeText).width + 24;
+        ctx.fillStyle = "#ff0055";
+        drawCutCornerRect(ctx, avatarX - topBW / 2, avatarY - avatarRadius - 52, topBW, 26, 6);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(topBadgeText, avatarX, avatarY - avatarRadius - 38);
+
+        ctx.fillStyle = "#00f0ff";
+        ctx.font = `bold 13px "${fontFamily}"`;
+        ctx.fillText("SYS.LOC // 0x7F9A-CYBER", avatarX, avatarY + avatarRadius + 45);
+        ctx.restore();
+
+        // Telemetry Status Kiri Atas
+        ctx.save();
+        ctx.fillStyle = "rgba(0, 240, 255, 0.75)";
+        ctx.font = `12px "${fontFamily}"`;
+        ctx.textAlign = "left";
+        ctx.fillText("SYNC : 99.9%", 25, 40);
+        ctx.fillText("SIG  : OPTIMAL", 25, 60);
+        ctx.fillText("CORE : RUNNING", 25, 80);
+        ctx.restore();
+
         // ==========================================
-        // 5. MEMBER BADGE (TOP RIGHT HUD)
+        // 5. MEMBER BADGE (KANAN ATAS)
         // ==========================================
         const pillText = `MEMBER #${memberCount}`;
-        ctx.font = `bold 16px "${fontFamily}"`;
-        const pillW = ctx.measureText(pillText).width + 36;
-        const pillH = 38;
-        const pillX = width - pillW - 40;
-        const pillY = 35;
+        ctx.font = `bold 18px "${fontFamily}"`;
+        const pillW = ctx.measureText(pillText).width + 42;
+        const pillH = 46;
+        const pillX = width - pillW - 45;
+        const pillY = 40;
 
         ctx.save();
-        ctx.fillStyle = "#090d16";
-        drawCutCornerRect(ctx, pillX, pillY, pillW, pillH, 8);
+        ctx.fillStyle = "#060a14";
+        drawCutCornerRect(ctx, pillX, pillY, pillW, pillH, 10);
         ctx.fill();
 
         ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 16;
         ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         ctx.fillStyle = "#ffffff";
@@ -263,88 +358,104 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.restore();
 
         // ==========================================
-        // 6. KOTAK INFORMASI GLASSMORPHISM HUD (KANAN)
+        // 6. PANEL INFORMASI HUD GLASSMORPHISM (KANAN)
         // ==========================================
-        const infoX = 500;
-        const infoY = 160;
-        const infoW = 480;
-        const infoH = 240;
+        const infoX = 620;
+        const infoY = 190;
+        const infoW = 610;
+        const infoH = 440;
 
+        // Glass Panel
         ctx.save();
-        // Container Cut-Corner Box
-        ctx.fillStyle = "rgba(9, 13, 22, 0.88)";
-        drawCutCornerRect(ctx, infoX, infoY, infoW, infoH, 16);
+        ctx.fillStyle = "rgba(6, 10, 20, 0.94)";
+        drawCutCornerRect(ctx, infoX, infoY, infoW, infoH, 22);
         ctx.fill();
 
-        ctx.strokeStyle = "rgba(0, 240, 255, 0.35)";
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+        ctx.lineWidth = 2;
         ctx.stroke();
         ctx.restore();
 
-        const textLeft = infoX + 30;
+        // HUD Corners di Dalam Info Panel
+        drawHUDCorners(ctx, infoX, infoY, infoW, infoH, 24, "#00f0ff");
 
-        // Header Status Dot & Line
+        const textLeft = infoX + 40;
+
+        // Header Status Dot & Bar
+        ctx.save();
         ctx.fillStyle = "#00f0ff";
-        ctx.font = `bold 12px "${fontFamily}"`;
+        ctx.beginPath(); ctx.arc(textLeft + 5, infoY + 40, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowColor = "#00f0ff"; ctx.shadowBlur = 12; ctx.fill();
+
+        ctx.fillStyle = "#00f0ff";
+        ctx.font = `bold 14px "${fontFamily}"`;
         ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText("● SYSTEM ONLINE // USER VERIFIED", textLeft, infoY + 22);
+        ctx.textBaseline = "middle";
+        ctx.fillText("SYSTEM ONLINE // USER AUTHENTICATED", textLeft + 22, infoY + 40);
+        ctx.restore();
 
         // Username Text
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 12;
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 38px "${fontFamily}"`;
+        ctx.font = `bold 52px "${fontFamily}"`;
+        ctx.textBaseline = "top";
 
         let displayUser = username;
-        if (ctx.measureText(displayUser).width > (infoW - 60)) {
-            while (ctx.measureText(displayUser + "...").width > (infoW - 60) && displayUser.length > 0) {
+        if (ctx.measureText(displayUser).width > (infoW - 80)) {
+            while (ctx.measureText(displayUser + "...").width > (infoW - 80) && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
         }
-        ctx.fillText(displayUser, textLeft, infoY + 52);
+        ctx.fillText(displayUser, textLeft, infoY + 80);
         ctx.restore();
 
-        // Group Badge Box
-        const groupLabel = `GROUP: ${groupName.toUpperCase()}`;
-        ctx.font = `bold 18px "${fontFamily}"`;
-        const groupW = ctx.measureText(groupLabel).width + 24;
-        const groupH = 34;
-        const groupY = infoY + 112;
+        // Group Name Badge Box
+        const groupLabel = `GROUP // ${groupName.toUpperCase()}`;
+        ctx.font = `bold 22px "${fontFamily}"`;
+        const groupW = Math.min(ctx.measureText(groupLabel).width + 36, infoW - 80);
+        const groupH = 46;
+        const groupY = infoY + 185;
 
         ctx.save();
-        ctx.fillStyle = "rgba(0, 240, 255, 0.12)";
-        drawCutCornerRect(ctx, textLeft, groupY, Math.min(groupW, infoW - 60), groupH, 6);
+        ctx.fillStyle = "rgba(0, 240, 255, 0.14)";
+        drawCutCornerRect(ctx, textLeft, groupY, groupW, groupH, 8);
         ctx.fill();
 
         ctx.strokeStyle = "#00f0ff";
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
         ctx.fillStyle = "#00f0ff";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(groupLabel, textLeft + 12, groupY + (groupH / 2));
+        ctx.fillText(groupLabel, textLeft + 18, groupY + (groupH / 2));
         ctx.restore();
 
-        // Cyberpunk Equalizer & HUD Bar Decor
-        const barY = infoY + 175;
+        // Digital Barcode & Equalizer Progress Bar
+        const botUIY = infoY + 295;
+
+        // Equalizer Bars
         ctx.save();
         ctx.fillStyle = "#00f0ff";
-        ctx.fillRect(textLeft, barY, 140, 4);
+        ctx.fillRect(textLeft, botUIY, 180, 6);
 
         ctx.fillStyle = "#ff0055";
-        ctx.fillRect(textLeft + 148, barY, 35, 4);
+        ctx.fillRect(textLeft + 192, botUIY, 55, 6);
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.fillRect(textLeft + 190, barY, 180, 4);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+        ctx.fillRect(textLeft + 255, botUIY, 220, 6);
 
-        // Decorative Tech Crosshairs (+)
-        ctx.fillStyle = "rgba(0, 240, 255, 0.5)";
+        // Barcode Hiasan Digital
+        drawBarcode(ctx, infoX + infoW - 170, botUIY - 10, 130, 32, "rgba(0, 240, 255, 0.8)");
+
+        // Text Specs Bottom
+        ctx.fillStyle = "rgba(0, 240, 255, 0.7)";
         ctx.font = `12px "${fontFamily}"`;
-        ctx.fillText("+ + + HUD-v2.0", textLeft, barY + 18);
+        ctx.textBaseline = "top";
+        ctx.fillText("+ + + CYBER_WELCOME_HUD // ACCESS LEVEL: MAXIMUM (16:9 HD)", textLeft, botUIY + 25);
         ctx.restore();
 
         // ==========================================
@@ -392,7 +503,7 @@ router.paramsConfig = {
     }
 };
 
-router.desc = "Maker Welcome Card Bot Cyberpunk Ultra Presisi & Variatif via Unggah File.";
+router.desc = "Maker Welcome Card Bot Cyberpunk 16:9 HD Widescreen (1280x720).";
 router.status = "ready";
 router.type = "free";
 
