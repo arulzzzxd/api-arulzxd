@@ -1,516 +1,603 @@
-const express = require("express");
-const axios = require("axios");
-const cheerio = require("cheerio");
+/**
+ * NAMA SCRAPE  :: GETDL SPACE DOWNLOADER
+ * [•] BASIS        :: getdl.space
+ */
 
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+const cheerio = require('cheerio');
+const express = require('express');
 const router = express.Router();
 
-const TARGET_URL = "https://www.videodownloadertools.com/";
-const API_URL = new URL("fetch_api.php", TARGET_URL).toString();
+const SITE = 'https://getdl.space';
+const HOME = `${SITE}/en`;
+const API_SESSION = `${SITE}/api/session`;
+const API_DOWNLOAD = `${SITE}/api/download`;
+const UA =
+  'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
 
-const USER_AGENT =
-  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
+/* ------------------------------------------------------------------ */
+/* Utilitas                                                            */
+/* ------------------------------------------------------------------ */
 
-const TIMEOUT = 45000;
-const MAX_RETRY = 2;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const PLATFORM_MAP = {
-  "youtube.com": "YouTube",
-  "youtu.be": "YouTube",
-  "m.youtube.com": "YouTube",
-  "instagram.com": "Instagram",
-  "tiktok.com": "TikTok",
-  "vt.tiktok.com": "TikTok",
-  "facebook.com": "Facebook",
-  "fb.watch": "Facebook",
-  "m.facebook.com": "Facebook",
-  "twitter.com": "Twitter/X",
-  "x.com": "Twitter/X",
-  "vimeo.com": "Vimeo",
-  "dailymotion.com": "Dailymotion",
-  "dai.ly": "Dailymotion",
-  "pinterest.com": "Pinterest",
-  "pin.it": "Pinterest",
-  "reddit.com": "Reddit",
-  "redd.it": "Reddit",
-  "snapchat.com": "Snapchat",
-  "linkedin.com": "LinkedIn",
-  "tumblr.com": "Tumblr",
-  "twitch.tv": "Twitch",
-  "soundcloud.com": "SoundCloud",
-  "deezer.com": "Deezer",
-  "bilibili.com": "Bilibili",
-  "b23.tv": "Bilibili",
-  "imgur.com": "Imgur",
-  "threads.net": "Threads",
-  "threads.com": "Threads",
-  "likee.video": "Likee",
-  "likee.com": "Likee",
-  "kwai.com": "Kwai",
-  "kwai-video.com": "Kwai",
-  "sharechat.com": "ShareChat",
-  "moj.com": "Moj",
-  "ted.com": "TED",
-  "vk.com": "VK",
-  "ok.ru": "Odnoklassniki",
-  "weibo.com": "Weibo",
-};
-
-const AUDIO_EXT = ["mp3", "m4a", "aac", "opus", "ogg", "wav", "flac"];
-const IMAGE_EXT = ["jpg", "jpeg", "png", "webp", "bmp", "heic", "avif"];
-const VIDEO_EXT = ["mp4", "mov", "webm", "mkv", "avi", "flv", "3gp", "m4v"];
-const GIF_EXT = ["gif"];
-
-const ALL_CONTENT_TYPES = ["video", "audio", "photo", "reels", "shorts", "gif"];
-
-const PLATFORM_CONTENT = {
-  Instagram: ["video", "audio", "reels", "photo"],
-  YouTube: ["video", "audio", "shorts"],
-  TikTok: ["video", "audio", "shorts"],
-  Facebook: ["video", "audio", "reels"],
-  "Twitter/X": ["video", "audio", "gif", "photo"],
-  Snapchat: ["video", "audio"],
-  Threads: ["video", "photo"],
-  Imgur: ["video", "photo", "gif"],
-  Pinterest: ["video", "photo", "gif"],
-  Tumblr: ["video", "photo", "gif"],
-  Reddit: ["video", "audio", "gif"],
-  Likee: ["video", "audio", "shorts"],
-  Kwai: ["video", "audio"],
-  Moj: ["video", "audio"],
-  ShareChat: ["video", "audio"],
-  Vimeo: ["video", "audio"],
-  Dailymotion: ["video", "audio"],
-  Bilibili: ["video", "audio"],
-  Twitch: ["video", "audio"],
-  SoundCloud: ["audio"],
-  Deezer: ["audio"],
-  TED: ["video", "audio"],
-};
-
-function findKey(obj, keys) {
-  if (!obj || typeof obj !== "object") return undefined;
-  for (const k of Object.keys(obj)) {
-    if (keys.includes(k.toLowerCase())) return obj[k];
+function humanSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return null;
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  let n = bytes;
+  while (n >= 1024 && i < units.length - 1) {
+    n /= 1024;
+    i++;
   }
-  return undefined;
+  return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
-function extFromUrl(url) {
-  try {
-    const p = new URL(url).pathname;
-    const m = p.match(/\.([a-z0-9]{2,5})(?:$|\?)/i);
-    return m ? m[1].toLowerCase() : null;
-  } catch {
-    return null;
-  }
+/* Beberapa platform (mis. Facebook) mengembalikan URL dengan escape berlebih
+   ("https:\/\/..." atau \u002F) sehingga harus dinormalisasi dulu. */
+function normalizeUrl(u) {
+  if (typeof u !== 'string' || !u) return u;
+  let s = u.replace(/\\u002f/gi, '/').replace(/\\\//g, '/');
+  if (s !== u) s = s.trim();
+  return s;
 }
 
-function detectPlatform(rawUrl) {
-  let host = "";
-  try {
-    host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, "");
-  } catch {
-    return { name: null, host: null, detected: false };
+/* Deteksi platform di sisi klien - regex identik dengan bundle GetDL */
+const PLATFORM_PATTERNS = {
+  tiktok: /tiktok\.com/i,
+  douyin: /(?:^|\/\/)(?:[\w-]+\.)*douyin\.com(?:\/|$)/i,
+  instagram: /instagram\.com/i,
+  facebook: /facebook\.com|fb\.watch/i,
+  youtube: /youtube\.com|youtu\.be/i,
+  twitter: /twitter\.com|x\.com/i,
+  threads: /threads\.net/i,
+  capcut: /capcut\.com/i,
+  spotify: /spotify\.com/i,
+  soundcloud: /soundcloud\.com/i,
+  pinterest: /(?:www\.)?pinterest\.(?:com|co\.uk|ca|de|fr|jp)/i,
+  bilibili: /(?:www\.)?bilibili\.(?:tv|com)/i,
+  snapchat: /snapchat\.com/i,
+  pixiv: /pixiv\.net/i,
+};
+
+function detectPlatform(url) {
+  for (const [id, re] of Object.entries(PLATFORM_PATTERNS)) {
+    if (re.test(url)) return id;
   }
-  let name = PLATFORM_MAP[host] || null;
-  if (!name) {
-    for (const domain of Object.keys(PLATFORM_MAP)) {
-      if (host === domain || host.endsWith("." + domain)) {
-        name = PLATFORM_MAP[domain];
-        break;
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/* HTTP client                                                         */
+/* ------------------------------------------------------------------ */
+
+function makeClient() {
+  return axios.create({
+    timeout: 25000,
+    maxRedirects: 5,
+    headers: {
+      'User-Agent': UA,
+      Accept: 'text/html,application/json;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+    },
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* 1. Scrape halaman utama (daftar platform, meta, FAQ)                */
+/* ------------------------------------------------------------------ */
+
+async function scrapeSite(client) {
+  const empty = {
+    site_name: 'GetDL',
+    site_url: SITE,
+    site_description: null,
+    supported_platforms: [],
+    supported_features_jsonld: [],
+    faq: [],
+  };
+  try {
+    const { data: html } = await client.get(HOME, { timeout: 20000 });
+    const $ = cheerio.load(html);
+
+    const siteName =
+      ($('header a span.font-display').first().text() || '').trim() ||
+      ($('header a').first().text() || '').trim() ||
+      'GetDL';
+    const siteDescription =
+      $('meta[name="description"]').attr('content') ||
+      $('meta[property="og:description"]').attr('content') ||
+      null;
+
+    /* Daftar platform dari chip "Works with" (di-render server-side) */
+    const platforms = [];
+    $('section').each((_, sec) => {
+      const label = $(sec).find('p').first().text().trim().toLowerCase();
+      if (label !== 'works with') return;
+      $(sec)
+        .find('div')
+        .each((__, div) => {
+          const $d =$(div);
+          const name = $d.find('span.text-sm.font-medium').first().text().trim();
+          if (name && !platforms.some((p) => p.name === name)) {
+            platforms.push({ name });
+          }
+        });
+    });
+
+    /* JSON-LD: featureList + FAQ */
+    const features = [];
+    const faq = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      let j;
+      try {
+        j = JSON.parse($(el).text());
+      } catch {
+        return;
       }
-    }
-  }
-  return { name: name || "Unknown/Generic", host, detected: Boolean(name) };
-}
+      if (!j || typeof j !== 'object') return;
+      if (j['@type'] === 'WebApplication' && Array.isArray(j.featureList)) {
+        features.push(...j.featureList);
+      }
+      if (j['@type'] === 'FAQPage' && Array.isArray(j.mainEntity)) {
+        for (const q of j.mainEntity) {
+          if (q && q.name) {
+            faq.push({
+              question: q.name,
+              answer: (q.acceptedAnswer && q.acceptedAnswer.text) || null,
+            });
+          }
+        }
+      }
+    });
 
-function contentTypeFromUrl(rawUrl, platformName) {
-  const u = String(rawUrl).toLowerCase();
-  if (/\/reel\/|\/reels\//.test(u) || (platformName === "Instagram" && /\/p\//.test(u)))
-    return "reels";
-  if (/\/shorts\//.test(u)) return "shorts";
-  if (/\.gif(\?|$)/.test(u)) return "gif";
-  if (/\.(jpg|jpeg|png|webp)(\?|$)/.test(u)) return "photo";
-  if (/\.(mp3|m4a|aac|opus|ogg)(\?|$)/.test(u)) return "audio";
-  return "video";
-}
-
-function normalizeMediaOptions(medias) {
-  if (!Array.isArray(medias)) return [];
-  return medias.map((m, i) => {
-    const url = m.url || m.link || m.download_url || "";
-    let extension = (m.extension || m.ext || m.format || "").toString().toLowerCase();
-    if (!extension) extension = extFromUrl(url) || "mp4";
-
-    const rawType = (m.type || m.mediaType || "").toString().toLowerCase();
-    let mediaType = rawType;
-    if (AUDIO_EXT.includes(extension) || rawType.includes("audio")) mediaType = "audio";
-    else if (IMAGE_EXT.includes(extension)) mediaType = "image";
-    else if (GIF_EXT.includes(extension)) mediaType = "gif";
-    else if (VIDEO_EXT.includes(extension) || rawType.includes("video")) mediaType = "video";
-
-    const audioOnly = mediaType === "audio";
-    const rawQuality = m.quality || m.label || m.resolution || m.height;
-    const quality = rawQuality ? String(rawQuality) : "unknown";
-    const hasAudio = m.hasAudio !== undefined ? Boolean(m.hasAudio) : !["image", "gif"].includes(mediaType);
-    const hasVideo = m.hasVideo !== undefined ? Boolean(m.hasVideo) : ["video"].includes(mediaType);
+    /* fallback: kalau chip tidak terbaca, ambil dari featureList JSON-LD */
+    const finalPlatforms =
+      platforms.length > 0
+        ? platforms
+        : features.map((f) => ({ name: String(f).replace(/\s*downloader\s*$/i, '') }));
 
     return {
-      index: i + 1,
-      quality,
-      resolution: m.height ? `${m.height}p` : m.resolution || quality,
-      format: extension.toUpperCase(),
-      extension,
-      mediaType,
-      audioOnly,
-      hasVideo,
-      hasAudio,
-      size: m.size || m.filesize || m.fileSize || null,
-      url,
+      site_name: siteName,
+      site_url: SITE,
+      site_description: siteDescription,
+      supported_platforms: finalPlatforms,
+      supported_features_jsonld: features,
+      faq,
+      _warning: finalPlatforms.length ? undefined : 'platform_list_empty',
+    };
+  } catch (err) {
+    return { ...empty, _warning: `site_scrape_failed: ${errMessage(err)}` };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Session (cookie getdl_sid + sessionId)                           */
+/* ------------------------------------------------------------------ */
+
+async function createSession(client) {
+  const res = await client.get(API_SESSION, {
+    timeout: 15000,
+    headers: { Referer: `${HOME}`, Origin: SITE },
+  });
+  const body = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+  if (!body || !body.success || !body.sessionId) {
+    const e = new Error('Gagal membuat sesi di getdl.space');
+    e.code = 'SESSION_CREATE_FAILED';
+    throw e;
+  }
+  const setCookie = res.headers['set-cookie'] || [];
+  const raw = setCookie.find((c) => /^getdl_sid=/i.test(c)) || '';
+  const cookie = raw.split(';')[0];
+  if (!cookie) {
+    const e = new Error('Cookie getdl_sid tidak diterima dari server');
+    e.code = 'NO_COOKIE';
+    throw e;
+  }
+  return { sessionId: body.sessionId, cookie };
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Resolve konten                                                   */
+/* ------------------------------------------------------------------ */
+
+function errMessage(err) {
+  if (!err) return 'unknown error';
+  if (err.response && err.response.data && err.response.data.error) return err.response.data.error;
+  if (err.code === 'ECONNABORTED') return 'Request timeout';
+  return err.message || String(err);
+}
+
+async function resolveContent(client, targetUrl, session, opts, sessionRef) {
+  const delays = [8000, 15000, 25000];
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= opts.retries; attempt++) {
+    try {
+      const res = await client.post(
+        API_DOWNLOAD,
+        { url: targetUrl, sessionId: session.sessionId },
+        {
+          timeout: opts.timeout,
+          /* API membalas error dengan HTTP 429/502, jangan lempar exception */
+          validateStatus: () => true,
+          headers: {
+            'Content-Type': 'application/json',
+            Origin: SITE,
+            Referer: `${HOME}`,
+            Cookie: session.cookie,
+          },
+        }
+      );
+      let body = res.data;
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch {
+          body = null;
+        }
+      }
+
+      if (body && body.success && body.data) return { body, session };
+
+      const code = (body && body.code) || `HTTP_${res.status}`;
+
+      /* sesi tidak valid -> buat sesi baru lalu coba lagi (tanpa menghabiskan retry) */
+      if (code === 'SESSION_REQUIRED' && sessionRef.refreshed < 2) {
+        sessionRef.refreshed++;
+        session = await createSession(client);
+        sessionRef.session = session;
+        attempt--;
+        continue;
+      }
+
+      /* rate limit -> tunggu lalu coba lagi */
+      if (code === 'RATE_LIMITED' && attempt < opts.retries) {
+        const wait = delays[Math.min(attempt, delays.length - 1)];
+        lastError = {
+          code,
+          message: (body && body.error) || 'Rate limited',
+          http_status: res.status,
+        };
+        await sleep(wait);
+        continue;
+      }
+
+      /* error sementara dari upstream (502/503) -> retry singkat */
+      if (
+        (code === 'RESOLVE_FAILED' || res.status >= 500) &&
+        attempt < opts.retries &&
+        attempt < 1
+      ) {
+        lastError = {
+          code,
+          message: (body && body.error) || 'Resolve failed',
+          http_status: res.status,
+        };
+        await sleep(4000);
+        continue;
+      }
+
+      return {
+        body,
+        session,
+        fatal: {
+          code,
+          message: (body && body.error) || `Permintaan gagal (HTTP ${res.status})`,
+          http_status: res.status,
+        },
+      };
+    } catch (err) {
+      const transient = [
+        'ECONNRESET',
+        'ECONNABORTED',
+        'ETIMEDOUT',
+        'EAI_AGAIN',
+        'ENOTFOUND',
+        'EPIPE',
+      ].includes(err.code);
+      lastError = { code: err.code || 'NETWORK_ERROR', message: errMessage(err) };
+      if (attempt < opts.retries && transient) {
+        await sleep([2000, 5000, 10000][Math.min(attempt, 2)]);
+        continue;
+      }
+      return { fatal: { code: lastError.code, message: lastError.message } };
+    }
+  }
+  return { fatal: lastError || { code: 'UNKNOWN', message: 'Gagal total' } };
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Probe ukuran file (HEAD + Range, opsional)                       */
+/* ------------------------------------------------------------------ */
+
+/* Tipe yang bukan file media nyata (playlist HLS/DASH atau halaman error) */
+const NON_MEDIA_TYPE =
+  /mpegurl|application\/x-mpegurl|text\/|application\/json|application\/xml|image\/svg/i;
+
+function headInfo(headers) {
+  const len = parseInt(headers['content-length'], 10);
+  return {
+    content_type: String(headers['content-type'] || '').split(';')[0].trim() || null,
+    bytes: Number.isFinite(len) && len > 0 ? len : null,
+    content_range: String(headers['content-range'] || ''),
+  };
+}
+
+function usableSize(info) {
+  if (!info || !info.bytes || info.bytes <= 0) return false;
+  if (info.content_type && NON_MEDIA_TYPE.test(info.content_type)) return false;
+  return true;
+}
+
+async function probeMedia(client, url) {
+  const out = { file_size_bytes: null, content_type: null };
+  if (!url) return out;
+
+  /* coba HEAD dulu */
+  try {
+    const res = await client.head(url, {
+      timeout: 8000,
+      maxRedirects: 5,
+      headers: { Referer: `${HOME}`, Origin: SITE, Accept: '*/*' },
+      validateStatus: (s) => s >= 200 && s < 400,
+    });
+    const info = headInfo(res.headers);
+    out.content_type = info.content_type;
+    if (usableSize(info)) {
+      out.file_size_bytes = info.bytes;
+      return out;
+    }
+  } catch {
+    /* lanjut ke fallback */
+  }
+
+  /* fallback: GET Range bytes=0-0 -> total ada di Content-Range */
+  try {
+    const res = await client.get(url, {
+      timeout: 8000,
+      maxRedirects: 5,
+      responseType: 'stream',
+      headers: { Referer: `${HOME}`, Origin: SITE, Range: 'bytes=0-0', Accept: '*/*' },
+      validateStatus: (s) => s >= 200 && s < 400,
+    });
+    if (res.data && typeof res.data.destroy === 'function') res.data.destroy();
+    const info = headInfo(res.headers);
+    if (!out.content_type) out.content_type = info.content_type;
+
+    const m = /\/(\d+)\s*$/.exec(info.content_range);
+    if (m && !NON_MEDIA_TYPE.test(info.content_type || '')) {
+      const total = parseInt(m[1], 10);
+      if (Number.isFinite(total) && total > 1) out.file_size_bytes = total;
+    } else if (usableSize(info) && !/^bytes 0-0\//.test(info.content_range)) {
+      out.file_size_bytes = info.bytes;
+    }
+  } catch {
+    /* abaikan */
+  }
+  return out;
+}
+
+async function enrichMedia(client, downloads, concurrency = 5) {
+  const results = new Array(downloads.length).fill(null);
+  let idx = 0;
+  const worker = async () => {
+    while (idx < downloads.length) {
+      const i = idx++;
+      results[i] = await probeMedia(client, normalizeUrl(downloads[i].url));
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, downloads.length) }, worker));
+  return results;
+}
+
+/* ------------------------------------------------------------------ */
+/* 5. Susun output                                                     */
+/* ------------------------------------------------------------------ */
+
+function normalizeAuthor(author) {
+  if (!author) return null;
+  if (typeof author === 'string') return { name: author, username: null, avatar: null };
+  return {
+    name: author.name || author.username || null,
+    username: author.username || null,
+    avatar: normalizeUrl(author.avatar || author.image || author.profile_pic) || null,
+  };
+}
+
+/* Fallback ukuran: kadang GetDL menyisipkan ukuran di label, mis.
+   "Original (Best) - 0.04MB" atau "MP3 (3.5 MB)" */
+function sizeFromLabel(label) {
+  if (typeof label !== 'string') return null;
+  const m = /(?:^|[\s\-–(])\s*(\d+(?:\.\d+)?)\s*(KB|MB|GB|TB|B)\s*\)?\s*$/i.exec(label);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const mult = { b: 1, kb: 1024, mb: 1048576, gb: 1073741824, tb: 1099511627776 }[
+    m[2].toLowerCase()
+  ];
+  const bytes = Math.round(n * mult);
+  return bytes > 0 ? bytes : null;
+}
+
+function buildMedia(downloads, probes) {
+  if (!Array.isArray(downloads)) return [];
+  return downloads.map((d, i) => {
+    const probe = (probes && probes[i]) || {};
+    let bytes = probe.file_size_bytes || null;
+    let source = bytes ? 'head' : null;
+    if (!bytes) {
+      bytes = sizeFromLabel(d.label);
+      if (bytes) source = 'label';
+    }
+    return {
+      label: d.label || null,
+      quality: d.quality || null,
+      format: d.ext || null,
+      content_type: probe.content_type || null,
+      file_size_bytes: bytes,
+      file_size_human: humanSize(bytes),
+      file_size_source: source,
+      url: normalizeUrl(d.url) || null,
     };
   });
 }
 
-function extractSubtitles(raw, options) {
-  const subRaw =
-    findKey(raw, ["subtitles", "subtitle", "captions", "caption"]) || null;
-  const formats = [];
-  let available = false;
+/* ------------------------------------------------------------------ */
+/* Endpoint GET Utama Express Router                                   */
+/* ------------------------------------------------------------------ */
 
-  const collect = (v) => {
-    if (!v) return;
-    if (Array.isArray(v)) {
-      available = available || v.length > 0;
-      for (const item of v) {
-        if (typeof item === "string") formats.push(extFromUrl(item) || item);
-        else if (item && typeof item === "object") {
-          const f = item.lang || item.language || item.format || item.ext ||
-            item.label || item.name;
-          if (f) formats.push(String(f));
-        }
-      }
-    } else if (typeof v === "object") {
-      const keys = Object.keys(v);
-      available = available || keys.length > 0;
-      formats.push(...keys);
-    } else if (typeof v === "string") {
-      available = true;
-      formats.push(v);
-    }
-  };
-  collect(subRaw);
-  for (const o of options) {
-    const s = o.subtitles || o.subtitle;
-    if (s) collect(s);
+router.get('/', async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) {
+    return res.status(400).json({ status: 'error', error: "Missing 'url' parameter" });
   }
 
-  return { available, formats: [...new Set(formats.filter(Boolean))] };
-}
-
-async function fetchSite(homeHtml) {
-  const $ = cheerio.load(homeHtml);
-  const platforms = [];
-  $(".slider-item").each((_, el) => {
-    const slug = $(el).attr("href") || "";
-    const name = ($(el).find("img").attr("alt") || "").trim();
-    if (!slug || platforms.find((p) => p.slug === slug)) return;
-    platforms.push({
-      name: name || slug.replace(/[/-]/g, " ").trim(),
-      slug,
-      url: new URL(slug, TARGET_URL).toString(),
-    });
-  });
-
-  const text = $("body").text().replace(/\s+/g, " ").trim();
-
-  const supportedFormats = [];
-  for (const f of ["MP4", "MOV", "WEBM", "MP3"]) {
-    if (new RegExp("\\b" + f + "\\b", "i").test(text)) supportedFormats.push(f);
-  }
-
-  const advertisedResolutions = [];
-  for (const r of ["360p", "480p", "720p", "1080p", "1440p", "2K", "4K", "8K"]) {
-    if (new RegExp("\\b" + r + "\\b", "i").test(text)) advertisedResolutions.push(r);
-  }
-
-  const descriptions = [];
-  $("li").each((_, el) => {
-    const t = $(el).text().replace(/\s+/g, " ").trim();
-    if (t.length > 20 && t.length < 240 && !/http|jackpot|news|promo|code/i.test(t)) {
-      descriptions.push(t);
-    }
-  });
-
-  const contentSet = new Set(["video", "audio"]);
-  for (const p of platforms) {
-    const key = Object.keys(PLATFORM_CONTENT).find(
-      (k) => k.toLowerCase() === p.name.toLowerCase()
-    );
-    const caps = PLATFORM_CONTENT[key] || PLATFORM_CONTENT[p.name];
-    if (caps) caps.forEach((c) => contentSet.add(c));
-  }
-  const supportedContentTypes = ALL_CONTENT_TYPES.filter((t) => contentSet.has(t));
-
-  return {
-    title: $("title").text().trim(),
-    description: ($('meta[name="description"]').attr("content") || "").trim(),
-    supportedPlatforms: platforms,
-    platformCount: platforms.length,
-    supportedFormats,
-    advertisedResolutions,
-    supportedContentTypes,
-    contentTypeSource: "inferensi dari platform yang terdaftar + teks halaman",
-    featureHighlights: descriptions.slice(0, 8),
-  };
-}
-
-// Menyimpan Cookie dari Request Homepage
-async function getHomepage() {
-  let lastErr;
-  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
-    try {
-      const res = await axios.get(TARGET_URL, {
-        timeout: TIMEOUT,
-        headers: {
-          "User-Agent": USER_AGENT,
-          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
-        maxRedirects: 5,
-        validateStatus: (s) => s >= 200 && s < 400,
-      });
-
-      const cookies = res.headers["set-cookie"]
-        ? res.headers["set-cookie"].map((c) => c.split(";")[0]).join("; ")
-        : "";
-
-      return { html: res.data, cookies };
-    } catch (err) {
-      lastErr = err;
-      if (attempt < MAX_RETRY) await new Promise((r) => setTimeout(r, 1200 * attempt));
-    }
-  }
-  throw lastErr;
-}
-
-// Mengirimkan Cookie Sesi ke fetch_api.php
-async function callApi(mediaUrl, cookies = "") {
-  const body = new URLSearchParams();
-  body.append("url", mediaUrl);
-
-  const headers = {
-    "User-Agent": USER_AGENT,
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    Accept: "application/json, text/plain, */*",
-    Referer: TARGET_URL,
-    Origin: new URL(TARGET_URL).origin,
-    "X-Requested-With": "XMLHttpRequest",
-  };
-
-  if (cookies) headers["Cookie"] = cookies;
-
-  let lastErr;
-  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
-    try {
-      const res = await axios.post(API_URL, body.toString(), {
-        timeout: TIMEOUT,
-        headers,
-        maxRedirects: 5,
-        validateStatus: (s) => s >= 200 && s < 500,
-      });
-      return res;
-    } catch (err) {
-      lastErr = err;
-      if (attempt < MAX_RETRY) await new Promise((r) => setTimeout(r, 1200 * attempt));
-    }
-  }
-  throw lastErr;
-}
-
-function emptySite() {
-  return {
-    title: null,
-    description: "",
-    supportedPlatforms: [],
-    platformCount: 0,
-    supportedFormats: [],
-    advertisedResolutions: [],
-    supportedContentTypes: ALL_CONTENT_TYPES,
-    featureHighlights: [],
-  };
-}
-
-function safeJson(str) {
   try {
-    return JSON.parse(str);
+    const u = new URL(targetUrl);
+    if (!/^https?:$/.test(u.protocol)) throw new Error('protokol');
   } catch {
-    const m = str.match(/\{[\s\S]*\}/);
-    if (m) {
-      try {
-        return JSON.parse(m[0]);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    return res.status(400).json({ status: 'error', error: `URL tidak valid: ${targetUrl}` });
   }
-}
 
-async function scrape(inputUrl, opts) {
-  const started = Date.now();
-  const result = {
-    meta: {
-      target: TARGET_URL,
-      apiEndpoint: API_URL,
-      inputUrl: inputUrl || null,
-      scrapedAt: new Date().toISOString(),
-      method: "Cheerio (HTML statis) + POST fetch_api.php (JSON)",
-      durationMs: 0,
+  const opts = {
+    url: targetUrl,
+    size: req.query.no_size !== 'true' && req.query.size !== 'false',
+    site: req.query.no_site !== 'true' && req.query.site !== 'false',
+    timeout: parseInt(req.query.timeout, 10) || 60000,
+    retries: Math.max(0, parseInt(req.query.retries, 10) || 3),
+  };
+
+  const client = makeClient();
+  const startedAt = new Date().toISOString();
+
+  const output = {
+    scraped_at: startedAt,
+    source: {
+      site_url: SITE,
+      resolve_endpoint: API_DOWNLOAD,
+      session_endpoint: API_SESSION,
+      method: 'axios -> internal API (halaman adalah SPA Next.js, data tidak ada di HTML)',
     },
-    status: "info",
-    progress: 0,
+    site: null,
+    query: {
+      input_url: opts.url,
+      detected_platform_client: detectPlatform(opts.url),
+    },
+    status: 'success',
     error: null,
-    platform: { name: null, host: null, detected: false },
-    contentType: { detected: null, allSiteSupported: ALL_CONTENT_TYPES },
-    title: null,
-    source: null,
-    thumbnail: null,
-    mediaUrl: inputUrl || null,
-    formats: { available: [], extensions: [] },
-    resolutions: [],
-    options: [],
-    availability: { video: false, audioOnly: false, image: false, gif: false },
-    subtitle: { available: false, formats: [] },
-    site: emptySite(),
+    warning: null,
+    content: null,
+    metadata: null,
   };
 
-  let cookies = "";
   try {
-    const { html, cookies: setCookies } = await getHomepage();
-    cookies = setCookies;
-    result.site = await fetchSite(html);
-  } catch (err) {
-    result.site = emptySite();
-  }
-
-  if (!inputUrl) {
-    result.status = result.site.supportedPlatforms.length ? "info" : "failed";
-    if (result.status === "failed") result.error = "Target tidak mengembalikan data platform.";
-    result.meta.durationMs = Date.now() - started;
-    return result;
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(inputUrl);
-  } catch {
-    result.status = "failed";
-    result.error = `URL tidak valid: ${inputUrl}`;
-    result.meta.durationMs = Date.now() - started;
-    return result;
-  }
-  if (!/^https?:$/.test(parsed.protocol)) {
-    result.status = "failed";
-    result.error = "Hanya URL http/https yang didukung.";
-    result.meta.durationMs = Date.now() - started;
-    return result;
-  }
-
-  result.platform = detectPlatform(inputUrl);
-  result.contentType.detected = contentTypeFromUrl(inputUrl, result.platform.name);
-
-  try {
-    const res = await callApi(inputUrl, cookies);
-    const data = typeof res.data === "string" ? safeJson(res.data) : res.data;
-    if (opts && opts.raw) result.rawApiResponse = data;
-
-    if (!data || typeof data !== "object") {
-      result.status = "failed";
-      result.error = "Respons API tidak valid (bukan JSON).";
-    } else {
-      const apiMsg = data.message || data.error || null;
-      const rawMedias = data.medias || data.links || data.data || [];
-      const options = normalizeMediaOptions(rawMedias);
-
-      if (data.title) result.title = data.title;
-      if (data.source) result.source = data.source;
-      else result.source = result.platform.name;
-      if (data.thumbnail || data.picture || data.cover) {
-        result.thumbnail = data.thumbnail || data.picture || data.cover;
-      } else if (data.title === undefined && findKey(data, ["thumbnail", "picture"])) {
-        result.thumbnail = findKey(data, ["thumbnail", "picture"]);
-      }
-      result.options = options;
-
-      const exts = [...new Set(options.map((o) => o.extension))];
-      result.formats = { available: exts.map((e) => e.toUpperCase()), extensions: exts };
-      result.resolutions = [
-        ...new Set(options.map((o) => o.resolution).filter((r) => r && r !== "unknown")),
-      ];
-      result.availability = {
-        video: options.some((o) => o.mediaType === "video"),
-        audioOnly: options.some((o) => o.audioOnly),
-        image: options.some((o) => o.mediaType === "image"),
-        gif: options.some((o) => o.mediaType === "gif"),
-      };
-      result.subtitle = extractSubtitles(data, options);
-
-      if (options.length > 0) {
-        result.status = "success";
-        result.progress = 100;
-        result.error = null;
-      } else {
-        result.status = "failed";
-        result.progress = 0;
-        result.error = apiMsg || "Tidak ada media yang ditemukan untuk URL ini.";
+    /* (1) halaman utama -> nama + daftar platform didukung */
+    if (opts.site) {
+      output.site = await scrapeSite(client);
+      if (output.site._warning) {
+        output.warning = output.site._warning;
+        delete output.site._warning;
       }
     }
-  } catch (err) {
-    result.status = "failed";
-    result.progress = 0;
-    if (err.code === "ECONNABORTED" || /timeout/i.test(err.message)) {
-      result.error = `Timeout setelah ${TIMEOUT}ms pada endpoint fetch_api.php.`;
-    } else if (err.response) {
-      result.error = `HTTP ${err.response.status}: ${err.response.statusText || "error"}`;
-    } else {
-      result.error = `Gagal menghubungi API: ${err.message}`;
-    }
-  }
 
-  result.meta.durationMs = Date.now() - started;
-  return result;
-}
-
-// Router Handler
-router.get("/", async (req, res) => {
-  try {
-    const inputUrl = req.query.url?.trim() || req.query.link?.trim();
-
-    if (!inputUrl) {
-      return res.status(400).json({
-        status: false,
-        message: "Parameter 'url' wajib diisi (contoh: ?url=https://www.youtube.com/watch?v=...)",
-      });
+    /* (2) session */
+    let session;
+    try {
+      session = await createSession(client);
+    } catch (err) {
+      output.status = 'error';
+      output.error = { code: err.code || 'SESSION_FAILED', message: errMessage(err) };
+      return res.status(500).json(output);
     }
 
-    const raw = req.query.raw === "true";
-    const result = await scrape(inputUrl, { raw });
+    /* (3) resolve */
+    const sessionRef = { session, refreshed: 0 };
+    const result = await resolveContent(client, opts.url, session, opts, sessionRef);
 
-    // HTTP Status Tetap 200 jika request berhasil diproses oleh scraper (walau media tidak ditemukan)
-    return res.status(200).json(result);
+    if (result.fatal || !result.body || !result.body.success || !result.body.data) {
+      output.status = 'error';
+      output.error =
+        result.fatal || {
+          code: (result.body && result.body.code) || 'UNKNOWN',
+          message: (result.body && result.body.error) || 'Tidak ada data yang dikembalikan',
+        };
+      output.content = null;
+      return res.status(400).json(output);
+    }
+
+    const data = result.body.data;
+    const downloads = Array.isArray(data.downloads) ? data.downloads : [];
+
+    /* (4) ukuran file + content type */
+    let probes = null;
+    if (opts.size && downloads.length) {
+      probes = await enrichMedia(client, downloads);
+    }
+
+    const media = buildMedia(downloads, probes);
+    if (media.length && !media.some((m) => m.file_size_bytes)) {
+      output.warning = 'file_sizes_unavailable';
+    }
+    const formats = [...new Set(media.map((m) => m.format).filter(Boolean))];
+    const byQuality = {};
+    for (const m of media) {
+      const key = m.format || 'unknown';
+      byQuality[key] = (byQuality[key] || 0) + 1;
+    }
+
+    output.content = {
+      platform: data.platform || detectPlatform(opts.url) || null,
+      type: data.type || null,
+      title: data.title || null,
+      description: null,
+      creator: normalizeAuthor(data.author),
+      thumbnail: data.thumbnail || null,
+      duration_seconds: Number.isFinite(data.duration) ? data.duration : null,
+      duration_human: Number.isFinite(data.duration)
+        ? new Date(data.duration * 1000).toISOString().substr(11, 8)
+        : null,
+      available_formats: formats,
+      media_count: media.length,
+      media,
+    };
+
+    if (media.length === 0) output.warning = 'no_media_found';
+
+    output.metadata = {
+      api_success: true,
+      api_platform: data.platform || null,
+      content_type: data.type || null,
+      detected_platform_client: detectPlatform(opts.url),
+      platform_from_client_matches_api:
+        detectPlatform(opts.url) === null
+          ? null
+          : detectPlatform(opts.url) === (data.platform || null),
+      download_counts_by_format: byQuality,
+      pagination: {
+        applied: false,
+        reason: 'Satu URL konten = satu request resolusi (tidak ada pagination pada API GetDL)',
+      },
+      notes: [
+        'field description tidak pernah dikembalikan oleh API GetDL -> null',
+        'ukuran file: HEAD/Range Content-Length pada URL media, fallback dari ukuran yang tercantum di label; null jika keduanya tidak tersedia',
+        'URL media bersifat sementara (signed/expiring) dan biasanya kedaluwarsa dalam hitungan menit-jam',
+      ],
+    };
+
+    return res.json(output);
   } catch (err) {
     return res.status(500).json({
-      status: false,
-      message: err.message,
+      scraped_at: new Date().toISOString(),
+      status: 'error',
+      error: { code: err.code || 'UNCAUGHT', message: errMessage(err) },
+      content: null,
     });
   }
 });
 
-router.desc = "Downloader All-In-One (AIO) untuk YouTube, TikTok, Instagram, Facebook, dll.";
-router.paramsConfig = {
-  url: "https://www.youtube.com/watch?v=...",
-};
-router.status = "ready";
-router.type = "free";
-
+router.status = 'ready';
+router.type = 'free';
 module.exports = router;
