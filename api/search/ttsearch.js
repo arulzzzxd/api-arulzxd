@@ -1,98 +1,73 @@
 const express = require("express");
-const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const chromium = require("@sparticuz/chromium"); // 1. Tambahkan di bagian atas
-
-puppeteer.use(StealthPlugin());
+const axios = require("axios");
 
 const router = express.Router();
 
-async function scrapeTikTokSearch(keyword) {
-  if (!keyword) throw new Error("Kata kunci pencarian kosong");
+const BASE_URL = "https://www.tikwm.com";
+const API_URL = `${BASE_URL}/api/feed/search`;
 
-  let browser;
-  try {
-    // 2. Ganti puppeteer.launch lama dengan konfigurasi chromium ini:
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless
-    });
+function fullUrl(url) {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  return BASE_URL + url;
+}
 
-    const page = await browser.newPage();
+function formatCount(num) {
+  if (!num || isNaN(num)) return "0";
+  return Number(num).toLocaleString("id-ID");
+}
 
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    );
+async function tikwmSearch(keywords) {
+  if (!keywords) throw new Error("Kata kunci pencarian kosong");
 
-    const searchUrl = `https://www.tiktok.com/search?q=${encodeURIComponent(keyword)}`;
-    
-    await page.goto(searchUrl, { waitUntil: "networkidle2", timeout: 60000 });
+  const body = new URLSearchParams({
+    keywords,
+    count: "12",
+    cursor: "0",
+    web: "1",
+    hd: "1"
+  });
 
-    // Tunggu elemen daftar video muncul
-    await page.waitForSelector('[data-e2e="search_top-item"]', { timeout: 15000 });
+  const response = await axios.post(API_URL, body.toString(), {
+    headers: {
+      "Accept": "application/json, text/javascript, */*; q=0.01",
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": BASE_URL,
+      "Referer": `${BASE_URL}/`
+    },
+    timeout: 10000
+  });
 
-    // Gulir halaman ke bawah untuk memuat lebih banyak hasil
-    await page.evaluate(async () => {
-      await new Promise((resolve) => {
-        let totalHeight = 0;
-        const distance = 300;
-        const timer = setInterval(() => {
-          const scrollHeight = document.body.scrollHeight;
-          window.scrollBy(0, distance);
-          totalHeight += distance;
+  const json = response.data;
 
-          if (totalHeight >= scrollHeight || totalHeight > 3000) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, 300);
-      });
-    });
-
-    // Ekstrak informasi detail video
-    const results = await page.evaluate(() => {
-      const items = document.querySelectorAll('[data-e2e="search_top-item"]');
-      const videoData = [];
-
-      items.forEach((item) => {
-        const linkElement = item.querySelector('a[href*="/video/"]');
-        const descElement = item.querySelector('[data-e2e="search-card-desc"]') || 
-                            item.querySelector('[data-e2e="search-card-video-caption"]');
-        const authorElement = item.querySelector('[data-e2e="search-card-user-unique-id"]') ||
-                              item.querySelector('[data-e2e="search-card-user-name"]');
-        
-        const viewsElement = item.querySelector('[data-e2e="video-views"]') || 
-                             item.querySelector('[data-e2e="search-card-play-count"]') ||
-                             item.querySelector('.video-count');
-
-        const likesElement = item.querySelector('[data-e2e="search-card-like-count"]') ||
-                             item.querySelector('[data-e2e="like-count"]');
-
-        if (linkElement) {
-          const descText = descElement ? descElement.innerText.trim() : "Tidak ada deskripsi";
-
-          videoData.push({
-            title: descText,
-            description: descText,
-            url: linkElement.href,
-            author: authorElement ? authorElement.innerText.trim() : "Tidak diketahui",
-            views: viewsElement ? viewsElement.innerText.trim() : "0",
-            likes: likesElement ? likesElement.innerText.trim() : "0"
-          });
-        }
-      });
-
-      return videoData;
-    });
-
-    return results;
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
+  if (typeof json !== "object" || json === null) {
+    throw new Error("Response dari TikWM bukan format JSON yang valid");
   }
+
+  if (json.code !== 0) {
+    throw new Error(json.msg || `Gagal mengambil data (Code: ${json.code})`);
+  }
+
+  const videos = Array.isArray(json?.data?.videos) ? json.data.videos : [];
+
+  return videos.map((item) => {
+    const titleText = item.title || "Tidak ada deskripsi";
+    return {
+      title: titleText,
+      description: titleText,
+      url: fullUrl(item.play),
+      wmplay: fullUrl(item.wmplay),
+      music: fullUrl(item.music),
+      cover: fullUrl(item.cover),
+      author: item.author?.nickname || item.author?.unique_id || "Tidak diketahui",
+      views: formatCount(item.play_count),
+      likes: formatCount(item.digg_count),
+      comments: formatCount(item.comment_count),
+      shares: formatCount(item.share_count)
+    };
+  });
 }
 
 router.get('/', async (req, res) => {
@@ -107,7 +82,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const data = await scrapeTikTokSearch(keyboards);
+    const data = await tikwmSearch(keyboards);
 
     if (!data || data.length === 0) {
       return res.status(404).json({
@@ -128,12 +103,12 @@ router.get('/', async (req, res) => {
     return res.status(500).json({
       status: false,
       creator: 'ArulzXD',
-      message: err.message || 'Terjadi kesalahan pada server saat memproses scraping.'
+      message: err.message || 'Terjadi kesalahan pada server saat memproses pencarian.'
     });
   }
 });
 
-router.desc = "Scraper pencarian TikTok via Puppeteer Serverless";
+router.desc = "Pencarian video TikTok via TikWM API";
 router.paramsConfig = {
   keyboards: "keyboards: resep masakan"
 };
