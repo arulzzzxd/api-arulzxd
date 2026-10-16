@@ -12,7 +12,8 @@
           "public/**",
           "*.html",
           "*.css",
-          "*.js"
+          "*.js",
+          "node_modules/puppeteer-extra-plugin-stealth/**"
         ]
       }
     }
