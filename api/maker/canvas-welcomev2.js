@@ -34,22 +34,17 @@ async function getImageFromFile(file) {
     return null;
 }
 
-// Helper: Kotak Sudut Tumpul (Rounded Rect)
-function drawRoundedRect(ctx, x, y, width, height, radius) {
+// Helper: Slanted/Angled Rect (Khas Esports/VIP Badge)
+function drawSlantedRect(ctx, x, y, width, height, skew) {
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(x + skew, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width - skew, y + height);
+    ctx.lineTo(x, y + height);
     ctx.closePath();
 }
 
-// Helper: Heksagon Avatar
+// Helper: Heksagon Avatar VIP
 function drawHexagonPath(ctx, x, y, radius) {
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -60,6 +55,22 @@ function drawHexagonPath(ctx, x, y, radius) {
         else ctx.lineTo(hx, hy);
     }
     ctx.closePath();
+}
+
+// Helper: Teks Berjarak (Spaced Text) agar Elegan/Gaming
+function drawSpacedTextCenter(ctx, text, x, y, spacing) {
+    const chars = text.split('');
+    let totalWidth = 0;
+    for (const c of chars) {
+        totalWidth += ctx.measureText(c).width + spacing;
+    }
+    totalWidth -= spacing;
+
+    let currentX = x - (totalWidth / 2);
+    for (const c of chars) {
+        ctx.fillText(c, currentX, y);
+        currentX += ctx.measureText(c).width + spacing;
+    }
 }
 
 const cpUpload = upload.fields([
@@ -98,12 +109,11 @@ router.post('/', cpUpload, async (req, res) => {
         const fontFamily = fontLoaded ? "VipFont" : "sans-serif";
 
         // ==========================================
-        // 1. LATAR BELAKANG (OVERLAY TIPIS AGAR BACKGROUND JELAS)
+        // 1. LATAR BELAKANG TRANSPARAN & LIGHTING
         // ==========================================
         if (bgImg) {
             ctx.drawImage(bgImg, 0, 0, width, height);
-            // Tipiskan efek kegelapan dari 0.82 menjadi 0.40 agar gambar asli terlihat jelas
-            ctx.fillStyle = "rgba(6, 9, 20, 0.40)";
+            ctx.fillStyle = "rgba(6, 9, 20, 0.38)";
             ctx.fillRect(0, 0, width, height);
         } else {
             const grad = ctx.createLinearGradient(0, 0, width, height);
@@ -114,21 +124,16 @@ router.post('/', cpUpload, async (req, res) => {
             ctx.fillRect(0, 0, width, height);
         }
 
-        // Ambient Spotlight (Aksen Cahaya Sisi)
-        const orbLeft = ctx.createRadialGradient(250, 200, 20, 250, 200, 400);
-        orbLeft.addColorStop(0, "rgba(147, 51, 234, 0.35)");
-        orbLeft.addColorStop(1, "transparent");
-        ctx.fillStyle = orbLeft;
-        ctx.fillRect(0, 0, width, height);
-
-        const orbRight = ctx.createRadialGradient(1030, 520, 20, 1030, 520, 400);
-        orbRight.addColorStop(0, "rgba(6, 182, 212, 0.35)");
-        orbRight.addColorStop(1, "transparent");
-        ctx.fillStyle = orbRight;
+        // Ambient Glow Center
+        const orbCenter = ctx.createRadialGradient(640, 360, 40, 640, 360, 450);
+        orbCenter.addColorStop(0, "rgba(147, 51, 234, 0.35)");
+        orbCenter.addColorStop(0.6, "rgba(6, 182, 212, 0.18)");
+        orbCenter.addColorStop(1, "transparent");
+        ctx.fillStyle = orbCenter;
         ctx.fillRect(0, 0, width, height);
 
         // ==========================================
-        // 2. MAIN CENTER FLOATING GLASS CARD (TRANSPARAN)
+        // 2. MAIN CENTER GLASS CARD (SLANTED VIP CARD)
         // ==========================================
         const cardW = 1080;
         const cardH = 580;
@@ -136,54 +141,53 @@ router.post('/', cpUpload, async (req, res) => {
         const cardY = (height - cardH) / 2;
 
         ctx.save();
-        // Dibuat lebih transparan (0.60) agar gambar background menembus ke dalam card
-        ctx.fillStyle = "rgba(10, 14, 28, 0.60)";
+        ctx.fillStyle = "rgba(11, 15, 30, 0.65)";
         ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
         ctx.shadowBlur = 40;
-        drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 36);
+        drawSlantedRect(ctx, cardX, cardY, cardW, cardH, 20);
         ctx.fill();
 
-        // Border Neon Mencolok
+        // Border Neon Slanted
         const borderGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-        borderGrad.addColorStop(0, "rgba(168, 85, 247, 0.95)");
-        borderGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.6)");
-        borderGrad.addColorStop(1, "rgba(6, 182, 212, 0.95)");
+        borderGrad.addColorStop(0, "#c084fc");
+        borderGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.5)");
+        borderGrad.addColorStop(1, "#22d3ee");
         ctx.strokeStyle = borderGrad;
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.restore();
 
         // ==========================================
-        // 3. TOP BANNER HEADER (WELCOME BIG) & MEMBER
+        // 3. TOP BANNER "WELCOME TO" (ESPORTS STYLE)
         // ==========================================
-        // Header Teks "WELCOME" Dibuat Jauh Lebih Besar (32px)
-        const headerText = "WELCOME TO THE COMMUNITY";
-        ctx.font = `bold 28px "${fontFamily}"`;
-        const headerW = ctx.measureText(headerText).width + 56;
-        const headerH = 52;
-        const headerX = width / 2 - headerW / 2;
-        const headerY = cardY + 28;
+        const welcomeText = "W E L C O M E  T O  T H E  G R O U P";
+        ctx.font = `bold 22px "${fontFamily}"`;
+        const welcomeW = ctx.measureText(welcomeText).width + 60;
+        const welcomeH = 48;
+        const welcomeX = width / 2 - welcomeW / 2;
+        const welcomeY = cardY + 28;
 
         ctx.save();
-        ctx.fillStyle = "rgba(147, 51, 234, 0.30)";
-        drawRoundedRect(ctx, headerX, headerY, headerW, headerH, 26);
+        ctx.fillStyle = "rgba(168, 85, 247, 0.25)";
+        drawSlantedRect(ctx, welcomeX, welcomeY, welcomeW, welcomeH, 12);
         ctx.fill();
+
         ctx.shadowColor = "#a855f7";
         ctx.shadowBlur = 15;
-        ctx.strokeStyle = "rgba(168, 85, 247, 0.9)";
+        ctx.strokeStyle = "rgba(192, 132, 252, 0.85)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(headerText, width / 2, headerY + headerH / 2);
+        ctx.fillText(welcomeText, width / 2, welcomeY + welcomeH / 2);
         ctx.restore();
 
-        // Member Badge Dibuat Lebih Besar & Jelas (20px)
+        // Member Count Badge Slanted (Kanan Atas)
         let displayMember = memberCount;
-        ctx.font = `bold 20px "${fontFamily}"`;
-        const maxMemberTextWidth = 200;
+        ctx.font = `bold 16px "${fontFamily}"`;
+        const maxMemberTextWidth = 180;
         if (ctx.measureText(`MEMBER #${displayMember}`).width > maxMemberTextWidth) {
             while (ctx.measureText(`MEMBER #${displayMember}...`).width > maxMemberTextWidth && displayMember.length > 0) {
                 displayMember = displayMember.slice(0, -1);
@@ -191,19 +195,20 @@ router.post('/', cpUpload, async (req, res) => {
             displayMember += "...";
         }
         const memberText = `MEMBER #${displayMember}`;
-        const memberW = ctx.measureText(memberText).width + 38;
-        const memberH = 46;
-        const memberX = cardX + cardW - memberW - 30;
+        const memberW = ctx.measureText(memberText).width + 36;
+        const memberH = 42;
+        const memberX = cardX + cardW - memberW - 25;
         const memberY = cardY + 30;
 
         ctx.save();
         ctx.fillStyle = "rgba(6, 182, 212, 0.25)";
-        drawRoundedRect(ctx, memberX, memberY, memberW, memberH, 14);
+        drawSlantedRect(ctx, memberX, memberY, memberW, memberH, 10);
         ctx.fill();
-        ctx.shadowColor = "#06b6d4";
+
+        ctx.shadowColor = "#22d3ee";
         ctx.shadowBlur = 12;
-        ctx.strokeStyle = "rgba(6, 182, 212, 0.9)";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(34, 211, 238, 0.85)";
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
         ctx.fillStyle = "#ffffff";
@@ -213,28 +218,28 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.restore();
 
         // ==========================================
-        // 4. CENTER HEXAGON AVATAR (LEBIH BESAR)
+        // 4. CENTER HEXAGON AVATAR
         // ==========================================
         const avatarX = width / 2;
-        const avatarY = cardY + 225;
-        const avatarR = 110;
+        const avatarY = cardY + 220;
+        const avatarR = 108;
 
-        // Outer Glow Hexagon Ring
+        // Outer Glow Ring 1
         ctx.save();
-        ctx.shadowColor = "#06b6d4";
+        ctx.shadowColor = "#22d3ee";
         ctx.shadowBlur = 30;
-        ctx.strokeStyle = "#06b6d4";
-        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#22d3ee";
+        ctx.lineWidth = 4.5;
         drawHexagonPath(ctx, avatarX, avatarY, avatarR + 14);
         ctx.stroke();
         ctx.restore();
 
-        // Inner Glow Hexagon Ring
+        // Inner Glow Ring 2
         ctx.save();
-        ctx.shadowColor = "#a855f7";
+        ctx.shadowColor = "#c084fc";
         ctx.shadowBlur = 20;
-        ctx.strokeStyle = "#a855f7";
-        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = "#c084fc";
+        ctx.lineWidth = 3;
         drawHexagonPath(ctx, avatarX, avatarY, avatarR + 5);
         ctx.stroke();
         ctx.restore();
@@ -246,98 +251,123 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.drawImage(userImg, avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
         ctx.restore();
 
-        // Status Tag
-        const statusText = "● USER ACTIVE";
-        ctx.font = `bold 14px "${fontFamily}"`;
+        // Status Sub-Badge Below Avatar
+        const statusText = "● NEW MEMBER DETECTED";
+        ctx.font = `bold 12px "${fontFamily}"`;
         const statusW = ctx.measureText(statusText).width + 24;
-        const statusH = 28;
+        const statusH = 26;
         const statusY = avatarY + avatarR + 10;
 
         ctx.save();
-        ctx.fillStyle = "#050c14";
-        drawRoundedRect(ctx, avatarX - statusW / 2, statusY, statusW, statusH, 14);
+        ctx.fillStyle = "#080d1a";
+        drawSlantedRect(ctx, avatarX - statusW / 2, statusY, statusW, statusH, 8);
         ctx.fill();
-        ctx.shadowColor = "#10b981";
+
+        ctx.shadowColor = "#22d3ee";
         ctx.shadowBlur = 10;
-        ctx.strokeStyle = "#10b981";
+        ctx.strokeStyle = "#22d3ee";
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        ctx.fillStyle = "#34d399";
+        ctx.fillStyle = "#22d3ee";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(statusText, avatarX, statusY + statusH / 2);
         ctx.restore();
 
         // ==========================================
-        // 5. USERNAME & GROUP NAME (SUPER BIG & MENCOLOK)
+        // 5. USERNAME & GROUP (METALLIC GLOW TYPOGRAPHY)
         // ==========================================
-        // Username Text (Ditingkatkan ke 58px)
+        // Sub-title label
         ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
-        ctx.shadowBlur = 18;
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `bold 58px "${fontFamily}"`;
+        ctx.fillStyle = "rgba(192, 132, 252, 0.85)";
+        ctx.font = `bold 13px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
+        drawSpacedTextCenter(ctx, "U S E R N A M E", avatarX, avatarY + avatarR + 48, 4);
+        ctx.restore();
 
+        // Username Text (Metallic Gradient + Dual Glow)
+        ctx.save();
         let displayUser = username;
-        const maxUserWidth = cardW - 100;
+        const maxUserWidth = cardW - 120;
+        ctx.font = `bold 54px "${fontFamily}"`;
         if (ctx.measureText(displayUser).width > maxUserWidth) {
             while (ctx.measureText(displayUser + "...").width > maxUserWidth && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
         }
-        ctx.fillText(displayUser, avatarX, avatarY + avatarR + 52);
+
+        const userY = avatarY + avatarR + 68;
+        
+        // Drop Shadow Outer
+        ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+        ctx.shadowBlur = 16;
+        
+        // Gradient Fill
+        const userGrad = ctx.createLinearGradient(0, userY, 0, userY + 54);
+        userGrad.addColorStop(0, "#ffffff");
+        userGrad.addColorStop(0.6, "#f3e8ff");
+        userGrad.addColorStop(1, "#c084fc");
+        
+        ctx.fillStyle = userGrad;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(displayUser, avatarX, userY);
+
+        // Thin Stroke Outline
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.lineWidth = 1;
+        ctx.strokeText(displayUser, avatarX, userY);
         ctx.restore();
 
-        // Group Name Badge (Ditingkatkan ke 26px)
+        // Group Name Badge (Slanted Slit Box)
         let displayGroup = groupName.toUpperCase();
-        const maxGroupWidth = cardW - 140;
-        ctx.font = `bold 26px "${fontFamily}"`;
+        const maxGroupWidth = cardW - 160;
+        ctx.font = `bold 22px "${fontFamily}"`;
 
-        if (ctx.measureText(`GROUP // ${displayGroup}`).width > maxGroupWidth) {
-            while (ctx.measureText(`GROUP // ${displayGroup}...`).width > maxGroupWidth && displayGroup.length > 0) {
+        if (ctx.measureText(`GROUP : ${displayGroup}`).width > maxGroupWidth) {
+            while (ctx.measureText(`GROUP : ${displayGroup}...`).width > maxGroupWidth && displayGroup.length > 0) {
                 displayGroup = displayGroup.slice(0, -1);
             }
             displayGroup += "...";
         }
 
-        const groupText = `GROUP // ${displayGroup}`;
-        const groupW = ctx.measureText(groupText).width + 46;
-        const groupH = 52;
+        const groupText = `G R O U P :  ${displayGroup}`;
+        const groupW = ctx.measureText(groupText).width + 50;
+        const groupH = 48;
         const groupX = avatarX - groupW / 2;
-        const groupY = avatarY + avatarR + 128;
+        const groupY = avatarY + avatarR + 140;
 
         ctx.save();
-        ctx.fillStyle = "rgba(168, 85, 247, 0.22)";
-        drawRoundedRect(ctx, groupX, groupY, groupW, groupH, 16);
+        ctx.fillStyle = "rgba(6, 182, 212, 0.18)";
+        drawSlantedRect(ctx, groupX, groupY, groupW, groupH, 12);
         ctx.fill();
 
-        ctx.shadowColor = "#a855f7";
+        ctx.shadowColor = "#22d3ee";
         ctx.shadowBlur = 14;
-        ctx.strokeStyle = "rgba(168, 85, 247, 0.85)";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(34, 211, 238, 0.85)";
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
-        ctx.fillStyle = "#e9d5ff";
+        ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(groupText, avatarX, groupY + groupH / 2);
         ctx.restore();
 
-        // Bottom Decorative Accent Bar
-        const barW = 320;
-        const barH = 5;
+        // Bottom Accent Divider Line
+        const barW = 340;
+        const barH = 4;
         const barX = avatarX - barW / 2;
-        const barY = cardY + cardH - 32;
+        const barY = cardY + cardH - 28;
 
         ctx.save();
         const barGrad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
-        barGrad.addColorStop(0, "rgba(168, 85, 247, 0.2)");
-        barGrad.addColorStop(0.5, "#06b6d4");
-        barGrad.addColorStop(1, "rgba(168, 85, 247, 0.2)");
+        barGrad.addColorStop(0, "rgba(192, 132, 252, 0.1)");
+        barGrad.addColorStop(0.5, "#22d3ee");
+        barGrad.addColorStop(1, "rgba(192, 132, 252, 0.1)");
         ctx.fillStyle = barGrad;
         ctx.fillRect(barX, barY, barW, barH);
         ctx.restore();
@@ -387,7 +417,7 @@ router.paramsConfig = {
     }
 };
 
-router.desc = "Maker Welcome Card Bot Versi 2 Big Text & Clear BG (Centered VIP Glassmorphism 16:9).";
+router.desc = "Maker Welcome Card Bot Versi 2 Gaming/Esports VIP Typography (Centered Slanted Glassmorphism 16:9).";
 router.status = "ready";
 router.type = "free";
 
