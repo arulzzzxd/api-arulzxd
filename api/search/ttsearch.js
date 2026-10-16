@@ -118,7 +118,7 @@ router.desc = "Pencarian video TikTok via CorsProxy Key & TikWM API";
 router.paramsConfig = {
   keyboards: "keyboards: resep mendoan"
 };
-router.status = "ready";
+router.status = "error";
 router.type = "free";
 
 module.exports = router;
