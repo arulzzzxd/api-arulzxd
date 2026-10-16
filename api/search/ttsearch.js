@@ -1,6 +1,7 @@
 const express = require("express");
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const chromium = require("@sparticuz/chromium"); // 1. Tambahkan di bagian atas
 
 puppeteer.use(StealthPlugin());
 
@@ -11,14 +12,12 @@ async function scrapeTikTokSearch(keyword) {
 
   let browser;
   try {
+    // 2. Ganti puppeteer.launch lama dengan konfigurasi chromium ini:
     browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--window-size=1280,800"
-      ]
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless
     });
 
     const page = await browser.newPage();
@@ -26,7 +25,6 @@ async function scrapeTikTokSearch(keyword) {
     await page.setUserAgent(
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     );
-    await page.setViewport({ width: 1280, height: 800 });
 
     const searchUrl = `https://www.tiktok.com/search?q=${encodeURIComponent(keyword)}`;
     
@@ -65,12 +63,10 @@ async function scrapeTikTokSearch(keyword) {
         const authorElement = item.querySelector('[data-e2e="search-card-user-unique-id"]') ||
                               item.querySelector('[data-e2e="search-card-user-name"]');
         
-        // Selector untuk penonton / views
         const viewsElement = item.querySelector('[data-e2e="video-views"]') || 
                              item.querySelector('[data-e2e="search-card-play-count"]') ||
                              item.querySelector('.video-count');
 
-        // Selector untuk suka / likes
         const likesElement = item.querySelector('[data-e2e="search-card-like-count"]') ||
                              item.querySelector('[data-e2e="like-count"]');
 
@@ -137,7 +133,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.desc = "Scraper pencarian TikTok via Puppeteer Stealth";
+router.desc = "Scraper pencarian TikTok via Puppeteer Serverless";
 router.paramsConfig = {
   keyboards: "keyboards: resep masakan"
 };
