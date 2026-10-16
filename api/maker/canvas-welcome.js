@@ -57,7 +57,7 @@ function drawHUDCorners(ctx, x, y, width, height, len, color) {
     // Top-Left
     ctx.beginPath(); ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
     // Top-Right
-    ctx.beginPath(); ctx.moveTo(x + width - len, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + len); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + width - len, y); ctx.lineTo(x + width); ctx.lineTo(x + width, y + len); ctx.stroke();
     // Bottom-Left
     ctx.beginPath(); ctx.moveTo(x, y + height - len); ctx.lineTo(x, y + height); ctx.lineTo(x + len, y + height); ctx.stroke();
     // Bottom-Right
@@ -110,7 +110,7 @@ router.post('/', cpUpload, async (req, res) => {
 
         await loadFont();
 
-        // RASI 16:9 STANDAR HD (1280 x 720)
+        // RASIO 16:9 STANDAR HD (1280 x 720)
         const width = 1280;
         const height = 720;
         const canvas = createCanvas(width, height);
@@ -331,10 +331,18 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.restore();
 
         // ==========================================
-        // 5. MEMBER BADGE (KANAN ATAS)
+        // 5. MEMBER PILL BADGE (KANAN ATAS TRUNCATION)
         // ==========================================
-        const pillText = `MEMBER #${memberCount}`;
+        let displayMember = memberCount;
         ctx.font = `bold 18px "${fontFamily}"`;
+        const maxMemberTextWidth = 220; // Batas maksimum lebar teks member
+        if (ctx.measureText(`MEMBER #${displayMember}`).width > maxMemberTextWidth) {
+            while (ctx.measureText(`MEMBER #${displayMember}...`).width > maxMemberTextWidth && displayMember.length > 0) {
+                displayMember = displayMember.slice(0, -1);
+            }
+            displayMember += "...";
+        }
+        const pillText = `MEMBER #${displayMember}`;
         const pillW = ctx.measureText(pillText).width + 42;
         const pillH = 46;
         const pillX = width - pillW - 45;
@@ -381,7 +389,7 @@ router.post('/', cpUpload, async (req, res) => {
 
         const textLeft = infoX + 40;
 
-        // Header Status Dot & Bar
+        // A. Header Status Dot & Bar
         ctx.save();
         ctx.fillStyle = "#00f0ff";
         ctx.beginPath(); ctx.arc(textLeft + 5, infoY + 40, 6, 0, Math.PI * 2); ctx.fill();
@@ -394,7 +402,7 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillText("SYSTEM ONLINE // USER AUTHENTICATED", textLeft + 22, infoY + 40);
         ctx.restore();
 
-        // Username Text
+        // B. Username Text (Auto Truncate / Menyuut)
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
         ctx.shadowBlur = 12;
@@ -403,8 +411,9 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.textBaseline = "top";
 
         let displayUser = username;
-        if (ctx.measureText(displayUser).width > (infoW - 80)) {
-            while (ctx.measureText(displayUser + "...").width > (infoW - 80) && displayUser.length > 0) {
+        const maxUserWidth = infoW - 80;
+        if (ctx.measureText(displayUser).width > maxUserWidth) {
+            while (ctx.measureText(displayUser + "...").width > maxUserWidth && displayUser.length > 0) {
                 displayUser = displayUser.slice(0, -1);
             }
             displayUser += "...";
@@ -412,10 +421,20 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillText(displayUser, textLeft, infoY + 80);
         ctx.restore();
 
-        // Group Name Badge Box
-        const groupLabel = `GROUP // ${groupName.toUpperCase()}`;
+        // C. Group Name Badge Box (Auto Truncate / Menyuut)
+        let displayGroup = groupName.toUpperCase();
+        const maxGroupTextWidth = infoW - 120; // Batas lebar teks grup di dalam box
         ctx.font = `bold 22px "${fontFamily}"`;
-        const groupW = Math.min(ctx.measureText(groupLabel).width + 36, infoW - 80);
+
+        if (ctx.measureText(`GROUP // ${displayGroup}`).width > maxGroupTextWidth) {
+            while (ctx.measureText(`GROUP // ${displayGroup}...`).width > maxGroupTextWidth && displayGroup.length > 0) {
+                displayGroup = displayGroup.slice(0, -1);
+            }
+            displayGroup += "...";
+        }
+
+        const groupLabel = `GROUP // ${displayGroup}`;
+        const groupW = ctx.measureText(groupLabel).width + 36;
         const groupH = 46;
         const groupY = infoY + 185;
 
@@ -434,7 +453,7 @@ router.post('/', cpUpload, async (req, res) => {
         ctx.fillText(groupLabel, textLeft + 18, groupY + (groupH / 2));
         ctx.restore();
 
-        // Digital Barcode & Equalizer Progress Bar
+        // D. Digital Barcode & Equalizer Progress Bar
         const botUIY = infoY + 295;
 
         // Equalizer Bars
@@ -494,7 +513,7 @@ router.paramsConfig = {
     groupName: {
         type: "text",
         desc: "Nama grup",
-        default: "ARUL INFORMASI"
+        default: "Arulzzxd || channel information system"
     },
     memberCount: {
         type: "text",
