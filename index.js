@@ -467,7 +467,7 @@ function getUserIdentifier(req) {
 
 async function setCache(key, data) {
     try {
-        await CacheModel.findOneAndUpdate({ key }, { data, createdAt: new Date() }, { upsert: true, new: true });
+        await CacheModel.findOneAndUpdate({ key }, { data, createdAt: new Date() }, { upsert: true, returnDocument: 'after' });
     } catch (e) {
         console.error("Gagal simpan cache MongoDB:", e.message);
     }
@@ -1330,7 +1330,7 @@ app.post('/api/admin/subscribe-push', checkAdminAccess, async (req, res) => {
         await PushSub.findOneAndUpdate(
             { endpoint: subscription.endpoint },
             { endpoint: subscription.endpoint, keys: subscription.keys, email: req.user ? req.user.email : 'haqqi.official13@gmail.com', updatedAt: new Date() },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         return res.status(201).json({ status: true, message: 'Push subscription berhasil tersimpan di MongoDB.' });
@@ -2202,7 +2202,7 @@ const logApiActivity = async (req, res, next) => {
                             } 
                         }
                     },
-                    { upsert: true, new: true }
+                    { upsert: true, returnDocument: 'after' }
                 );
             } catch (err) {
                 console.error("❌ Gagal simpan log ke MongoDB:", err.message);
@@ -3350,8 +3350,8 @@ app.get('/store/:productId', async (req, res) => {
     }
 });
 
-app.get('/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
-app.get('/styles.css', (req, res) => res.sendFile(path.join(__dirname, 'styles.css')));
+app.get('/api/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
+app.get('/api/styles.css', (req, res) => res.sendFile(path.join(__dirname, 'styles.css')));
 
 app.get('/api', async (req, res) => {
     let activeUser = req.user;
