@@ -1992,10 +1992,8 @@ function getUserMaxLimit(keyType) {
 async function getOrResetUserLimit(user) {
     if (!user) return { limitUsed: 0, maxLimit: 100, keyType: 'free' };
 
-    // Cek apakah user memiliki batas waktu expired role
     if (user.role && user.role !== 'Free User' && user.roleExpiresAt) {
         if (new Date() > new Date(user.roleExpiresAt)) {
-            // Jika sudah lewat masa aktif, otomatis downgrade ke Free
             user.role = 'Free User';
             user.roleExpiresAt = null;
             user.apikey = generateFreeApiKey();
@@ -2032,8 +2030,8 @@ const apiKeyUserCache = new Map();
 const routeModuleCache = new Map();
 
 const validateApiKey = async (req, res, next) => {
-    // Daftar endpoint sistem yang dikecualikan dari pengecekan API Key
     const systemExemptions = [
+        '/', '/api', '/api/',
         '/apilist', '/api/apilist',
         '/og', '/api/og',
         '/server-status', '/api/server-status',
@@ -2043,7 +2041,8 @@ const validateApiKey = async (req, res, next) => {
         '/user-status', '/api/user-status'
     ];
 
-    if (systemExemptions.some(endpoint => req.path === endpoint || req.path.startsWith(endpoint))) {
+    const fullPath = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
+    if (systemExemptions.some(endpoint => req.path === endpoint || fullPath === endpoint || fullPath.startsWith(endpoint))) {
         return next();
     }
 
@@ -2071,7 +2070,6 @@ const validateApiKey = async (req, res, next) => {
         return res.status(403).json({ status: false, creator: "Arulz-XD", message: "API Key salah atau tidak terdaftar!" });
     }
 
-    // --- PROTEKSI API KEY PREMIUM & VIP KHUSUS WEB UI ---
     const keyRole = (callerUser.role || '').toLowerCase();
     const isPremiumOrVipKey = keyRole.includes('premium') || keyRole.includes('vip');
     const isWebUI = req.headers.referer && req.headers.referer.includes('/api');
@@ -2112,16 +2110,18 @@ const validateApiKey = async (req, res, next) => {
 };
 
 const trackAndEnforceLimit = async (req, res, next) => {
-    // Exclude endpoint sistem/internal agar tidak memotong limit saat refresh atau cek status
     const systemEndpoints = [
-        '/apilist',
-        '/user-limit',
-        '/user-activity',
-        '/user-status',
-        '/server-status'
+        '/', '/api', '/api/',
+        '/apilist', '/api/apilist',
+        '/user-limit', '/api/user-limit',
+        '/user-activity', '/api/user-activity',
+        '/user-status', '/api/user-status',
+        '/server-status', '/api/server-status',
+        '/status-server', '/api/status-server'
     ];
 
-    if (systemEndpoints.some(endpoint => req.path.startsWith(endpoint))) {
+    const fullPath = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
+    if (systemEndpoints.some(endpoint => req.path === endpoint || fullPath === endpoint || fullPath.startsWith(endpoint))) {
         return next();
     }
 
@@ -2152,8 +2152,9 @@ const apiKeyLimiter = rateLimit({
     validate: { keyGeneratorIpFallback: false },
     skip: (req) => {
         if (getApiKeyType(req.user) === 'vip') return true;
-        const systemEndpoints = ['/apilist', '/user-limit', '/user-activity', '/user-status', '/server-status'];
-        return systemEndpoints.some(endpoint => req.path.startsWith(endpoint));
+        const systemEndpoints = ['/', '/api', '/api/', '/apilist', '/api/apilist', '/user-limit', '/api/user-limit', '/user-activity', '/api/user-activity', '/user-status', '/api/user-status', '/server-status', '/api/server-status', '/status-server', '/api/status-server'];
+        const fullPath = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
+        return systemEndpoints.some(endpoint => req.path === endpoint || fullPath === endpoint || fullPath.startsWith(endpoint));
     },
     max: (req) => getApiKeyType(req.user) === 'premium' ? 800 : 100,
     handler: (req, res) => {
@@ -2168,11 +2169,14 @@ const logApiActivity = async (req, res, next) => {
         const userKey = req.activeApiKey || req.query?.apikey || req.body?.apikey || req.headers['x-api-key'] || (req.user ? req.user.apikey : null);
         const fullEndpoint = req.originalUrl ? req.originalUrl.split('?')[0] : req.path;
 
-        // Daftar endpoint sistem yang tidak akan dicatat ke riwayat/log MongoDB
         const excludedEndpoints = [
+            '/',
+            '/api',
+            '/api/',
+            '/apilist',
+            '/api/apilist',
             '/api/user-activity',
             '/api/user-limit',
-            '/api/apilist',
             '/api/server-status',
             '/api/status-server',
             '/api/user-status'
@@ -2180,7 +2184,7 @@ const logApiActivity = async (req, res, next) => {
 
         if (
             userKey && 
-            fullEndpoint.startsWith('/api/') && 
+            fullEndpoint.startsWith('/api') && 
             !excludedEndpoints.includes(fullEndpoint)
         ) {
             try {
@@ -2190,15 +2194,9 @@ const logApiActivity = async (req, res, next) => {
                 await ApiLog.findOneAndUpdate(
                     { userId: targetUser._id || targetUser.id },
                     { 
-                        $set: { 
-                            apikey: userKey.trim(), 
-                            username: targetUser.username || 'User', 
-                            email: targetUser.email || '' 
-                        },
-                        $push: { 
+                        $set: { apikey: userKey.trim(), username: targetUser.username \vert{}\vert{} 'User', email: targetUser.email \vert{}\vert{} '' },$push: { 
                             log: { 
-                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],
-                                $position: 0 
+                                $each: [{ method: req.method, endpoint: fullEndpoint, status_code: res.statusCode, createdAt: new Date() }],$position: 0 
                             } 
                         }
                     },
@@ -3056,8 +3054,11 @@ app.get('/api/user-activity', async (req, res) => {
             return res.json({ status: true, data: [], logs: [] });
         }
 
-        // Daftar endpoint sistem/internal yang dikecualikan dari riwayat aktivitas
         const excludedEndpoints = [
+            '/',
+            '/api',
+            '/api/',
+            '/apilist',
             '/api/apilist',
             '/api/server-status',
             '/api/status-server',
@@ -3076,7 +3077,6 @@ app.get('/api/user-activity', async (req, res) => {
             return `[${timeStr}] [${statusStr}] [${item.method}] : ${item.endpoint}`;
         });
 
-        // Format terstruktur lengkap dengan tanggal, bulan, tahun, dan jam (WIB)
         const structuredLogs = filteredLogs.map(item => {
             const dateObj = new Date(item.createdAt || Date.now());
             const dateStr = dateObj.toLocaleDateString('id-ID', {
@@ -3353,10 +3353,9 @@ app.get('/store/:productId', async (req, res) => {
 app.get('/api/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
 app.get('/api/styles.css', (req, res) => res.sendFile(path.join(__dirname, 'styles.css')));
 
-app.get('/api', async (req, res) => {
+app.get(['/api', '/api/'], async (req, res) => {
     let activeUser = req.user;
 
-    // Ambil data user paling baru dari MongoDB
     if (req.user) {
         try {
             const freshUser = await User.findById(req.user.id || req.user._id).lean();
