@@ -61,9 +61,45 @@ const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "https://api.arul
 // ====================================================
 // 2. MONGOOSE DATABASE CONNECTION & SCHEMAS
 // ====================================================
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('📦 Berhasil terhubung ke MongoDB!'))
-    .catch(err => console.error('❌ Gagal koneksi ke MongoDB:', err));
+mongoose.set('bufferCommands', false);
+
+let isConnecting = false;
+
+async function connectToDatabase() {
+    // Jika sudah terhubung, langsung return
+    if (mongoose.connection.readyState === 1) {
+        return mongoose.connection;
+    }
+    
+    // Jika sedang dalam proses menghubungkan, tunggu sebentar
+    if (isConnecting) {
+        let attempts = 0;
+        while (isConnecting && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+            if (mongoose.connection.readyState === 1) return mongoose.connection;
+        }
+    }
+
+    try {
+        isConnecting = true;
+        await mongoose.connect(MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout pemilihan server 5 detik
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10
+        });
+        console.log('📦 Berhasil terhubung ke MongoDB!');
+        return mongoose.connection;
+    } catch (err) {
+        console.error('❌ Gagal koneksi ke MongoDB:', err.message);
+        throw err;
+    } finally {
+        isConnecting = false;
+    }
+}
+
+// Inisialisasi koneksi awal
+connectToDatabase().catch(err => console.error("Initial DB connect error:", err.message));
 
 // Mongoose Schemas
 const userSchema = new mongoose.Schema({
@@ -238,82 +274,92 @@ app.use(session({
 }));
 
 app.use(async (req, res, next) => {
-    if (req.path.startsWith('/og')) {
-        return next();
-    }
+    // 1. Handling Meta Crawler (OpenGraph / Bot)
+    if (!req.path.startsWith('/og')) {
+        const userAgent = req.headers['user-agent'] || '';
+        const isMetaCrawler = userAgent.includes('facebookexternalhit') || 
+                              userAgent.includes('WhatsApp') || 
+                              userAgent.includes('Twitterbot') || 
+                              userAgent.includes('LinkedInBot');
 
-    const userAgent = req.headers['user-agent'] || '';
-    const isMetaCrawler = userAgent.includes('facebookexternalhit') || 
-                          userAgent.includes('WhatsApp') || 
-                          userAgent.includes('Twitterbot') || 
-                          userAgent.includes('LinkedInBot');
+        if (isMetaCrawler) {
+            let pathKey = req.path.replace(/^\//, '').toLowerCase() || 'home';
+            let baseConfig = PAGE_CONFIGS[pathKey] || PAGE_CONFIGS.home;
 
-    if (isMetaCrawler) {
-        let pathKey = req.path.replace(/^\//, '').toLowerCase() || 'home';
-        let baseConfig = PAGE_CONFIGS[pathKey] || PAGE_CONFIGS.home;
+            let title = req.query.title || baseConfig.title;
+            let desc = req.query.desc || baseConfig.desc;
+            let ogImageUrl = `https://api.arulzzxd.my.id/og/${pathKey}`;
 
-        let title = req.query.title || baseConfig.title;
-        let desc = req.query.desc || baseConfig.desc;
-        let ogImageUrl = `https://api.arulzzxd.my.id/og/${pathKey}`;
-
-        // Khusus untuk link Pastecode dengan parameter ID
-        if (req.path === '/pastecode' && req.query.id) {
-            ogImageUrl = `https://api.arulzzxd.my.id/og/snippet?id=${req.query.id}`;
-            try {
-                const dbRes = await axios.get("https://raw.githubusercontent.com/arulzzzxd/api-arulzxd/main/database/data.js", { timeout: 3000 });
-                let jsonString = dbRes.data.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
-                if (jsonString.endsWith(';')) jsonString = jsonString.slice(0, -1);
-                const pastes = JSON.parse(jsonString);
-                const snippet = pastes.find(p => String(p.id) === String(req.query.id));
-                
-                if (snippet) {
-                    title = `${snippet.title} - Pastecode Snippet`;
-                    desc = snippet.desc || `Snippet kode ${snippet.language || 'JS'} oleh ${snippet.author || 'arulzxd'}`;
+            // Khusus untuk link Pastecode dengan parameter ID
+            if (req.path === '/pastecode' && req.query.id) {
+                ogImageUrl = `https://api.arulzzxd.my.id/og/snippet?id=${req.query.id}`;
+                try {
+                    const dbRes = await axios.get("https://raw.githubusercontent.com/arulzzzxd/api-arulzxd/main/database/data.js", { timeout: 3000 });
+                    let jsonString = dbRes.data.replace(/^(let|const|var|window)\s+\w+\s*=\s*/, '').trim();
+                    if (jsonString.endsWith(';')) jsonString = jsonString.slice(0, -1);
+                    const pastes = JSON.parse(jsonString);
+                    const snippet = pastes.find(p => String(p.id) === String(req.query.id));
+                    
+                    if (snippet) {
+                        title = `${snippet.title} - Pastecode Snippet`;
+                        desc = snippet.desc || `Snippet kode ${snippet.language || 'JS'} oleh ${snippet.author || 'arulzxd'}`;
+                    }
+                } catch (e) {
+                    title = "Pastecode Snippet | ArulzXD API";
                 }
-            } catch (e) {
-                title = "Pastecode Snippet | ArulzXD API";
             }
+
+            const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
+
+            return res.send(`
+                <!DOCTYPE html>
+                <html lang="id">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${title} | ArulzXD API</title>
+                    <meta name="title" content="${title} | ArulzXD API" />
+                    <meta name="description" content="${desc}" />
+
+                    <!-- Open Graph / Facebook / WhatsApp (1200x630) -->
+                    <meta property="og:type" content="website" />
+                    <meta property="og:url" content="${fullUrl}" />
+                    <meta property="og:site_name" content="ArulzXD API Gateway" />
+                    <meta property="og:title" content="${title}" />
+                    <meta property="og:description" content="${desc}" />
+                    <meta property="og:image" content="${ogImageUrl}" />
+                    <meta property="og:image:secure_url" content="${ogImageUrl}" />
+                    <meta property="og:image:type" content="image/png" />
+                    <meta property="og:image:width" content="1200" />
+                    <meta property="og:image:height" content="630" />
+
+                    <!-- Twitter Card Standard -->
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:url" content="${fullUrl}" />
+                    <meta name="twitter:title" content="${title}" />
+                    <meta name="twitter:description" content="${desc}" />
+                    <meta name="twitter:image" content="${ogImageUrl}" />
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <p>${desc}</p>
+                </body>
+                </html>
+            `);
         }
-
-        const fullUrl = `https://api.arulzzxd.my.id${req.originalUrl}`;
-
-        return res.send(`
-            <!DOCTYPE html>
-            <html lang="id">
-            <head>
-                <meta charset="UTF-8">
-                <title>${title} | ArulzXD API</title>
-                <meta name="title" content="${title} | ArulzXD API" />
-                <meta name="description" content="${desc}" />
-
-                <!-- Open Graph / Facebook / WhatsApp (1200x630) -->
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="${fullUrl}" />
-                <meta property="og:site_name" content="ArulzXD API Gateway" />
-                <meta property="og:title" content="${title}" />
-                <meta property="og:description" content="${desc}" />
-                <meta property="og:image" content="${ogImageUrl}" />
-                <meta property="og:image:secure_url" content="${ogImageUrl}" />
-                <meta property="og:image:type" content="image/png" />
-                <meta property="og:image:width" content="1200" />
-                <meta property="og:image:height" content="630" />
-
-                <!-- Twitter Card Standard -->
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:url" content="${fullUrl}" />
-                <meta name="twitter:title" content="${title}" />
-                <meta name="twitter:description" content="${desc}" />
-                <meta name="twitter:image" content="${ogImageUrl}" />
-            </head>
-            <body>
-                <h1>${title}</h1>
-                <p>${desc}</p>
-            </body>
-            </html>
-        `);
     }
 
-    next();
+    // 2. Handling Penjamin Connection Database
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectToDatabase();
+        }
+        next();
+    } catch (err) {
+        return res.status(500).json({ 
+            status: false, 
+            message: 'Gagal terhubung ke database server. Silakan coba lagi.' 
+        });
+    }
 });
 
 app.use(passport.initialize());
