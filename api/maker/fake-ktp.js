@@ -10,7 +10,7 @@ const {
 const router = express.Router();
 const upload = multer();
 
-const TEMPLATE_URL = "https://cdn.arulzzxd.my.id/files/vQ90.jpg";
+const TEMPLATE_URL = "https://cdn.arulzzxd.my.id/files/IWczV0EHAQ.jpg";
 const FONT_NIK_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/ocraextended.ttf";
 const FONT_BODY_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/ARIAL.TTF";
 
