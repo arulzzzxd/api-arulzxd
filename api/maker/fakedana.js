@@ -80,8 +80,8 @@ router.get("/", async (req, res) => {
         const valX = 138;           // Posisi tepat setelah teks "Rp" bawaan gambar
         const valY = 48;           // Posisi Y sejajar dengan teks "Rp" bawaan gambar
         const maxFontSize = 35;     // Ukuran font yang pas dengan "Rp" bawaan
-        const eyeGap = 8;           // Jarak antara angka dan ikon mata
-        const eyeScale = 0.85;      // Skala proporsional ikon mata
+        const eyeGap = 8;           // Jarak presisi antara angka dan ikon mata
+        const eyeScale = 0.45;      // Skala ikon mata yang pas & kecil seperti aplikasi asli
 
         let currentFontSize = maxFontSize;
         const maxAllowedWidth = canvas.width - valX - 100;
@@ -101,11 +101,11 @@ router.get("/", async (req, res) => {
         ctx.textBaseline = "top";
         ctx.fillText(saldo, valX, valY);
 
-        // Render Ikon Mata (Presisi Sejajar Teks)
+        // Render Ikon Mata (Presisi Tegak Lurus & Sejajar di Tengah Angka)
         const eyeHeight = currentFontSize * eyeScale;
         const eyeWidth = (eyeImg.width / eyeImg.height) * eyeHeight;
         const eyeX = valX + textWidth + eyeGap;
-        const eyeY = valY + (currentFontSize - eyeHeight) / 2 + 2;
+        const eyeY = valY + (currentFontSize * 0.20);
 
         ctx.drawImage(eyeImg, eyeX, eyeY, eyeWidth, eyeHeight);
 
