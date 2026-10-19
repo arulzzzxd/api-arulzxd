@@ -70,7 +70,7 @@ async function getImageFromFile(file) {
     return null;
 }
 
-// Fungsi pembuat tanda tangan acak (prosedural lebih besar & tebal)
+// Fungsi pembuat tanda tangan acak (Ukuran diperbesar, tebal, & lebat)
 function drawRandomSignature(ctx, cx, cy, seedText) {
     let hash = 0;
     for (let i = 0; i < seedText.length; i++) {
@@ -84,46 +84,46 @@ function drawRandomSignature(ctx, cx, cy, seedText) {
 
     ctx.save();
     ctx.strokeStyle = "#081124"; // Warna tinta pulpen pekat
-    ctx.lineWidth = 3.6; // Dipertebal dari 2.6
+    ctx.lineWidth = 4.2; // Ketebalan tinta diperbesar
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
     ctx.beginPath();
-    let startX = cx - 55 + random() * 10;
-    let startY = cy + 2 - random() * 8;
+    let startX = cx - 70 + random() * 12; // Bentangan disebarkan dari -70
+    let startY = cy + 2 - random() * 10;
     ctx.moveTo(startX, startY);
 
-    // Tarikan awal / Inisial (Dilebarkan & ditinggikan)
+    // Tarikan awal / Inisial (Ukuran diperbesar)
     ctx.bezierCurveTo(
-        startX - 28, startY - 32,
-        startX + 40, startY - 42,
-        startX + 25, startY + 8
+        startX - 35, startY - 40,
+        startX + 50, startY - 50,
+        startX + 32, startY + 12
     );
 
-    // Gelombang coretan acak (Skala dilebarkan)
-    let currX = startX + 25;
-    let currY = startY + 8;
+    // Gelombang coretan acak (Rentang gelombang diperlebar)
+    let currX = startX + 32;
+    let currY = startY + 12;
     const loopCount = 3 + Math.floor(random() * 3);
     for (let i = 0; i < loopCount; i++) {
-        let nextX = currX + 18 + random() * 10;
-        let nextY = cy + (random() - 0.5) * 24;
-        ctx.quadraticCurveTo(currX + 6, currY - 16 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
+        let nextX = currX + 22 + random() * 12;
+        let nextY = cy + (random() - 0.5) * 30;
+        ctx.quadraticCurveTo(currX + 8, currY - 20 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
         currX = nextX;
         currY = nextY;
     }
 
     // Garis bawah / Aksen tanda tangan
-    ctx.moveTo(startX - 15, cy + 20);
+    ctx.moveTo(startX - 20, cy + 25);
     ctx.bezierCurveTo(
-        cx - 10, cy + 28 + random() * 6,
-        cx + 35, cy + 12,
-        currX + 18, cy + 20
+        cx - 15, cy + 35 + random() * 8,
+        cx + 45, cy + 15,
+        currX + 22, cy + 25
     );
 
     // Garis silang / titik hiasan acak
     if (random() > 0.3) {
-        ctx.moveTo(currX + 5, cy - 10);
-        ctx.lineTo(currX + 15, cy + 10);
+        ctx.moveTo(currX + 8, cy - 12);
+        ctx.lineTo(currX + 20, cy + 12);
     }
 
     ctx.stroke();
@@ -210,23 +210,23 @@ router.post('/', ktpUpload, async (req, res) => {
         ctx.fillText(kota, width * 0.495, height * 0.088);
         ctx.restore();
 
-        // 4. VALUE NIK (DIGESER KE KANAN SUPAYA TIDAK MENABRAK TITIK DUA)
+        // 4. VALUE NIK (Tepat di samping titik dua NIK)
         ctx.save();
         ctx.fillStyle = "#000000";
         ctx.font = `bold ${Math.round(height * 0.052)}px "${nikFontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(nik, width * 0.232, height * 0.202);
+        ctx.fillText(nik, width * 0.202, height * 0.202);
         ctx.restore();
 
-        // 5. ISIAN BIODATA KTP (VALX DIGESER KE KANAN DARI 0.308 KE 0.320)
+        // 5. ISIAN BIODATA KTP (Tepat di samping titik dua :)
         ctx.save();
         ctx.fillStyle = "#050505";
         ctx.font = `bold ${Math.round(height * 0.028)}px "${fontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
 
-        const valX = width * 0.320;
+        const valX = width * 0.302; // Digeser rapat ke titik dua
         const rows = [
             { y: height * 0.278, val: nama },
             { y: height * 0.330, val: ttl },
@@ -246,41 +246,40 @@ router.post('/', ktpUpload, async (req, res) => {
             ctx.fillText(row.val, valX, row.y);
         }
 
-        // Value Golongan Darah
-        ctx.fillText(golDarah, width * 0.665, height * 0.382);
+        // Value Golongan Darah (Pas di samping titik dua Gol. Darah)
+        ctx.fillText(golDarah, width * 0.675, height * 0.382);
         ctx.restore();
 
         // 6. RENDER PAS FOTO USER
         const photoX = width * 0.710;
         const photoY = height * 0.170;
         const photoW = width * 0.245;
-        const photoH = height * 0.465;
+        const photoH = height * 0.455; // Mengurangi tinggi agar tidak menabrak teks kota
 
         ctx.save();
         ctx.drawImage(userPhoto, photoX, photoY, photoW, photoH);
         ctx.restore();
 
-        // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN (POSISI DITURUNKAN)
+        // 7. KOTA & TANGGAL TERBIT (Berada di bawah foto dengan jarak aman)
         const ttdCenterX = photoX + (photoW / 2);
 
         ctx.save();
         ctx.fillStyle = "#000000";
         ctx.font = `bold ${Math.round(height * 0.026)}px "${fontFamily}"`;
         ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        ctx.textBaseline = "top";
 
         const kotaOnly = kota.replace("KOTA", "").replace("KABUPATEN", "").trim();
         const tglOnly = tglBuat.includes(',') ? tglBuat.split(',')[1].trim() : tglBuat;
 
-        // Diturunkan koordinat Y agar tidak menempel pada pas foto
-        ctx.fillText(kotaOnly, ttdCenterX, height * 0.675);
-        ctx.fillText(tglOnly, ttdCenterX, height * 0.715);
+        ctx.fillText(kotaOnly, ttdCenterX, height * 0.650);
+        ctx.fillText(tglOnly, ttdCenterX, height * 0.688);
         ctx.restore();
 
-        // Tanda tangan diperbesar dan diletakkan di koordinat Y 0.825
-        drawRandomSignature(ctx, ttdCenterX, height * 0.825, nama + nik);
+        // 8. TANDA TANGAN (Diperbesar dan diposisikan proporsional)
+        drawRandomSignature(ctx, ttdCenterX, height * 0.800, nama + nik);
 
-        // 8. EXPORT BUFFER PNG
+        // EXPORT BUFFER PNG
         const buffer = await canvas.encode('png');
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Content-Disposition', `inline; filename="ktp-${Date.now()}.png"`);
