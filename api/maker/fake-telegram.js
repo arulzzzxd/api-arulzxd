@@ -89,13 +89,31 @@ router.post('/', upload.single('fileupload'), async (req, res) => {
             username: { x: 83, y: 1143, size: 38 }
         };
 
-        // Render Foto Profil Lingkaran
+        // Render Foto Profil Lingkaran (Center Crop agar tidak gepeng)
         ctx.save();
         ctx.beginPath();
         ctx.arc(config.pp.x, config.pp.y, config.pp.r, 0, Math.PI * 2, true);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(ppImg, config.pp.x - config.pp.r, config.pp.y - config.pp.r, config.pp.r * 2, config.pp.r * 2);
+
+        // Hitung potong tengah (Center Crop) sesuai aspek rasio
+        let sx = 0, sy = 0, sWidth = ppImg.width, sHeight = ppImg.height;
+        if (ppImg.width > ppImg.height) {
+            sWidth = ppImg.height;
+            sx = (ppImg.width - ppImg.height) / 2;
+        } else {
+            sHeight = ppImg.width;
+            sy = (ppImg.height - ppImg.width) / 2;
+        }
+
+        const diam = config.pp.r * 2;
+        ctx.drawImage(
+            ppImg,
+            sx, sy, sWidth, sHeight,
+            config.pp.x - config.pp.r,
+            config.pp.y - config.pp.r,
+            diam, diam
+        );
         ctx.restore();
 
         // Render Nama Tampilan
