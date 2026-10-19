@@ -84,46 +84,46 @@ function drawRandomSignature(ctx, cx, cy, seedText) {
 
     ctx.save();
     ctx.strokeStyle = "#0d1b3e"; // Warna tinta pulpen biru tua
-    ctx.lineWidth = 2.8;
+    ctx.lineWidth = 2.6;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
     ctx.beginPath();
-    let startX = cx - 45 + random() * 10;
-    let startY = cy + 5 - random() * 10;
+    let startX = cx - 40 + random() * 10;
+    let startY = cy + 2 - random() * 8;
     ctx.moveTo(startX, startY);
 
     // Tarikan awal / Inisial
     ctx.bezierCurveTo(
-        startX - 25, startY - 30,
-        startX + 35, startY - 40,
-        startX + 22, startY + 8
+        startX - 20, startY - 25,
+        startX + 30, startY - 32,
+        startX + 20, startY + 6
     );
 
     // Gelombang coretan acak
-    let currX = startX + 22;
-    let currY = startY + 8;
+    let currX = startX + 20;
+    let currY = startY + 6;
     const loopCount = 3 + Math.floor(random() * 3);
     for (let i = 0; i < loopCount; i++) {
-        let nextX = currX + 14 + random() * 10;
-        let nextY = cy + (random() - 0.5) * 22;
-        ctx.quadraticCurveTo(currX + 6, currY - 14 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
+        let nextX = currX + 12 + random() * 8;
+        let nextY = cy + (random() - 0.5) * 18;
+        ctx.quadraticCurveTo(currX + 5, currY - 12 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
         currX = nextX;
         currY = nextY;
     }
 
     // Garis bawah / Aksen tanda tangan
-    ctx.moveTo(startX - 12, cy + 18);
+    ctx.moveTo(startX - 10, cy + 15);
     ctx.bezierCurveTo(
-        cx - 10, cy + 26 + random() * 6,
-        cx + 35, cy + 12,
-        currX + 18, cy + 20
+        cx - 8, cy + 22 + random() * 5,
+        cx + 30, cy + 10,
+        currX + 15, cy + 16
     );
 
     // Garis silang / titik hiasan acak
     if (random() > 0.4) {
-        ctx.moveTo(currX + 5, cy - 10);
-        ctx.lineTo(currX + 15, cy + 10);
+        ctx.moveTo(currX + 4, cy - 8);
+        ctx.lineTo(currX + 12, cy + 8);
     }
 
     ctx.stroke();
@@ -139,7 +139,6 @@ const ktpUpload = upload.fields([
 router.post('/', ktpUpload, async (req, res) => {
     try {
         const files = req.files || {};
-        // Menggabungkan req.query dan req.body agar bisa menerima dari URL maupun FormData
         const body = { ...req.query, ...req.body };
 
         const photoFile = files.pasFotoFile?.[0] || files.pasFoto?.[0] || files.userAvatarFile?.[0];
@@ -171,7 +170,7 @@ router.post('/', ktpUpload, async (req, res) => {
         const fontFamily = bodyFontLoaded ? "KtpFont" : "sans-serif";
         const nikFontFamily = nikFontLoaded ? "NikFont" : "monospace";
 
-        // 1. DOKUMENTASI MENTAHAN KTP TEMPLATE
+        // 1. RENDER MENTAHAN KTP TEMPLATE
         ctx.drawImage(templateImg, 0, 0, width, height);
 
         // 2. DATA VALUES INPUT & FORMATTING
@@ -201,33 +200,33 @@ router.post('/', ktpUpload, async (req, res) => {
         const berlakuHingga = (body.berlakuHingga || "SEUMUR HIDUP").toUpperCase();
         const tglBuat = (body.tglBuat || "BANDUNG, 01-01-2021").toUpperCase();
 
-        // 3. HEADER PROVINSI & KOTA (DENGAN KOORDINAT PRESISI)
+        // 3. HEADER PROVINSI & KOTA
         ctx.save();
         ctx.fillStyle = "#000000";
-        ctx.font = `bold ${Math.round(height * 0.042)}px "${fontFamily}"`;
+        ctx.font = `bold ${Math.round(height * 0.038)}px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(provinsi, width * 0.5, height * 0.050);
-        ctx.fillText(kota, width * 0.5, height * 0.095);
+        ctx.fillText(provinsi, width * 0.5, height * 0.052);
+        ctx.fillText(kota, width * 0.5, height * 0.092);
         ctx.restore();
 
-        // 4. VALUE NIK (MENGGUNAKAN OCR-A EXTENDED FONT)
+        // 4. VALUE NIK (FONT OCR-A EXTENDED)
         ctx.save();
         ctx.fillStyle = "#000000";
-        ctx.font = `bold ${Math.round(height * 0.056)}px "${nikFontFamily}"`;
+        ctx.font = `bold ${Math.round(height * 0.054)}px "${nikFontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(nik, width * 0.205, height * 0.208);
+        ctx.fillText(nik, width * 0.210, height * 0.208);
         ctx.restore();
 
-        // 5. ISIAN BIODATA KTP (MENGGUNAKAN ARIAL FONT)
+        // 5. ISIAN BIODATA KTP (FONT ARIAL)
         ctx.save();
         ctx.fillStyle = "#050505";
-        ctx.font = `bold ${Math.round(height * 0.033)}px "${fontFamily}"`;
+        ctx.font = `bold ${Math.round(height * 0.029)}px "${fontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
 
-        const valX = width * 0.308;
+        const valX = width * 0.312;
         const rows = [
             { y: height * 0.280, val: nama },
             { y: height * 0.332, val: ttl },
@@ -248,37 +247,38 @@ router.post('/', ktpUpload, async (req, res) => {
         }
 
         // Value Golongan Darah
-        ctx.fillText(golDarah, width * 0.655, height * 0.384);
+        ctx.fillText(golDarah, width * 0.665, height * 0.384);
         ctx.restore();
 
-        // 6. RENDER PAS FOTO USER
-        const photoX = width * 0.725;
-        const photoY = height * 0.200;
-        const photoW = width * 0.228;
-        const photoH = height * 0.448;
+        // 6. RENDER PAS FOTO USER (MENUTUPI BINGKAI MERAH MENTAHAN)
+        const photoX = width * 0.718;
+        const photoY = height * 0.190;
+        const photoW = width * 0.240;
+        const photoH = height * 0.468;
 
         ctx.save();
         ctx.drawImage(userPhoto, photoX, photoY, photoW, photoH);
         ctx.restore();
 
-        // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN ACAK
+        // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN (PRESISI DI BAWAH FOTO)
         const ttdCenterX = photoX + (photoW / 2);
 
         ctx.save();
         ctx.fillStyle = "#000000";
-        ctx.font = `bold ${Math.round(height * 0.029)}px "${fontFamily}"`;
+        ctx.font = `bold ${Math.round(height * 0.027)}px "${fontFamily}"`;
         ctx.textAlign = "center";
-        ctx.textBaseline = "top";
+        ctx.textBaseline = "middle";
 
         const kotaOnly = kota.replace("KOTA", "").replace("KABUPATEN", "").trim();
         const tglOnly = tglBuat.includes(',') ? tglBuat.split(',')[1].trim() : tglBuat;
 
-        ctx.fillText(kotaOnly, ttdCenterX, height * 0.670);
-        ctx.fillText(tglOnly, ttdCenterX, height * 0.708);
+        // Diturunkan koordinat Y agar tidak menabrak batas bawah foto
+        ctx.fillText(kotaOnly, ttdCenterX, height * 0.685);
+        ctx.fillText(tglOnly, ttdCenterX, height * 0.722);
         ctx.restore();
 
-        // Menggambar Tanda Tangan Acak Berdasarkan Nama
-        drawRandomSignature(ctx, ttdCenterX, height * 0.800, nama + nik);
+        // Menggambar Tanda Tangan Acak tepat di bawah tanggal
+        drawRandomSignature(ctx, ttdCenterX, height * 0.815, nama + nik);
 
         // 8. EXPORT BUFFER PNG
         const buffer = await canvas.encode('png');
