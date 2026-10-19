@@ -200,13 +200,29 @@ router.post('/', upload.single('fileupload'), async (req, res) => {
         const durasiY = 130;
         const durasiSize = 30;
 
-        // Render Avatar Lingkaran
+        // Render Avatar Lingkaran (Center Crop agar rasio gambar tetap terjaga)
         ctx.save();
         ctx.beginPath();
         ctx.arc(ppX, ppY, ppRadius, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(avImg, ppX - ppRadius, ppY - ppRadius, ppRadius * 2, ppRadius * 2);
+
+        // Hitung pemotongan gambar tepat di tengah (Aspect Ratio 1:1)
+        let sx = 0, sy = 0, sWidth = avImg.width, sHeight = avImg.height;
+        if (avImg.width > avImg.height) {
+            sWidth = avImg.height;
+            sx = (avImg.width - avImg.height) / 2;
+        } else {
+            sHeight = avImg.width;
+            sy = (avImg.height - avImg.width) / 2;
+        }
+
+        const diameter = ppRadius * 2;
+        ctx.drawImage(
+            avImg,
+            sx, sy, sWidth, sHeight,
+            ppX - ppRadius, ppY - ppRadius, diameter, diameter
+        );
         ctx.restore();
 
         // Render Nama & Emoji
