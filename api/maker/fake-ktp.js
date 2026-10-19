@@ -11,23 +11,41 @@ const router = express.Router();
 const upload = multer();
 
 const TEMPLATE_URL = "https://cdn.arulzzxd.my.id/files/vQ90.jpg";
-const FONT_URL = "https://cdn.jsdelivr.net/fontsource/fonts/plus-jakarta-sans@latest/latin-700-normal.ttf";
+const FONT_NIK_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/ocraextended.ttf";
+const FONT_BODY_URL = "https://raw.githubusercontent.com/arulzzzxd/database/main/font/ARIAL.TTF";
 
-let fontLoaded = false;
+let nikFontLoaded = false;
+let bodyFontLoaded = false;
 let cachedTemplate = null;
 
-async function loadFont() {
-    if (fontLoaded) return;
-    try {
-        const { data } = await axios.get(FONT_URL, {
-            responseType: "arraybuffer",
-            headers: { "User-Agent": "Mozilla/5.0" }
-        });
-        GlobalFonts.register(Buffer.from(data), "KtpFont");
-        fontLoaded = true;
-    } catch (e) {
-        console.error("Gagal memuat font:", e.message);
+async function loadFonts() {
+    const promises = [];
+
+    if (!nikFontLoaded) {
+        promises.push(
+            axios.get(FONT_NIK_URL, {
+                responseType: "arraybuffer",
+                headers: { "User-Agent": "Mozilla/5.0" }
+            }).then(({ data }) => {
+                GlobalFonts.register(Buffer.from(data), "NikFont");
+                nikFontLoaded = true;
+            }).catch(e => console.error("Gagal memuat font NIK:", e.message))
+        );
     }
+
+    if (!bodyFontLoaded) {
+        promises.push(
+            axios.get(FONT_BODY_URL, {
+                responseType: "arraybuffer",
+                headers: { "User-Agent": "Mozilla/5.0" }
+            }).then(({ data }) => {
+                GlobalFonts.register(Buffer.from(data), "KtpFont");
+                bodyFontLoaded = true;
+            }).catch(e => console.error("Gagal memuat font Body:", e.message))
+        );
+    }
+
+    await Promise.all(promises);
 }
 
 async function getTemplateImage() {
@@ -58,7 +76,7 @@ function drawRandomSignature(ctx, cx, cy, seedText) {
     for (let i = 0; i < seedText.length; i++) {
         hash = seedText.charCodeAt(i) + ((hash << 5) - hash);
     }
-    
+
     const random = () => {
         const x = Math.sin(hash++) * 10000;
         return x - Math.floor(x);
@@ -121,7 +139,8 @@ const ktpUpload = upload.fields([
 router.post('/', ktpUpload, async (req, res) => {
     try {
         const files = req.files || {};
-        const body = req.body || {};
+        // Menggabungkan req.query dan req.body agar bisa menerima dari URL maupun FormData
+        const body = { ...req.query, ...req.body };
 
         const photoFile = files.pasFotoFile?.[0] || files.pasFoto?.[0] || files.userAvatarFile?.[0];
         const userPhoto = await getImageFromFile(photoFile);
@@ -143,20 +162,29 @@ router.post('/', ktpUpload, async (req, res) => {
             });
         }
 
-        await loadFont();
+        await loadFonts();
 
         const width = templateImg.width;
         const height = templateImg.height;
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
-        const fontFamily = fontLoaded ? "KtpFont" : "sans-serif";
+        const fontFamily = bodyFontLoaded ? "KtpFont" : "sans-serif";
+        const nikFontFamily = nikFontLoaded ? "NikFont" : "monospace";
 
         // 1. DOKUMENTASI MENTAHAN KTP TEMPLATE
         ctx.drawImage(templateImg, 0, 0, width, height);
 
-        // 2. DATA VALUES INPUT
-        const provinsi = (body.provinsi || "PROVINSI JAWA BARAT").toUpperCase();
-        const kota = (body.kota || body.kabupaten || "KOTA BANDUNG").toUpperCase();
+        // 2. DATA VALUES INPUT & FORMATTING
+        let provinsi = (body.provinsi || "PROVINSI JAWA BARAT").trim().toUpperCase();
+        if (!provinsi.startsWith("PROVINSI")) {
+            provinsi = "PROVINSI " + provinsi;
+        }
+
+        let kota = (body.kota || body.kabupaten || "KOTA BANDUNG").trim().toUpperCase();
+        if (!kota.startsWith("KOTA") && !kota.startsWith("KABUPATEN")) {
+            kota = "KOTA " + kota;
+        }
+
         const nik = body.nik?.trim() || "3273010101000001";
         const nama = (body.nama || body.name || "JOHN DOE").toUpperCase();
         const ttl = (body.ttl || body.tempatTglLahir || "BANDUNG, 01-01-2000").toUpperCase();
@@ -173,26 +201,26 @@ router.post('/', ktpUpload, async (req, res) => {
         const berlakuHingga = (body.berlakuHingga || "SEUMUR HIDUP").toUpperCase();
         const tglBuat = (body.tglBuat || "BANDUNG, 01-01-2021").toUpperCase();
 
-        // 3. HEADER PROVINSI & KOTA
-        ctx.save();
-        ctx.fillStyle = "#0a0a0a";
-        ctx.font = `bold ${Math.round(height * 0.042)}px "${fontFamily}"`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(provinsi, width * 0.5, height * 0.035);
-        ctx.fillText(kota, width * 0.5, height * 0.085);
-        ctx.restore();
-
-        // 4. VALUE NIK (PRESISI DI SAMPING TITIK DUA NIK)
+        // 3. HEADER PROVINSI & KOTA (DENGAN KOORDINAT PRESISI)
         ctx.save();
         ctx.fillStyle = "#000000";
-        ctx.font = `bold ${Math.round(height * 0.056)}px "${fontFamily}"`;
+        ctx.font = `bold ${Math.round(height * 0.042)}px "${fontFamily}"`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(provinsi, width * 0.5, height * 0.050);
+        ctx.fillText(kota, width * 0.5, height * 0.095);
+        ctx.restore();
+
+        // 4. VALUE NIK (MENGGUNAKAN OCR-A EXTENDED FONT)
+        ctx.save();
+        ctx.fillStyle = "#000000";
+        ctx.font = `bold ${Math.round(height * 0.056)}px "${nikFontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.fillText(nik, width * 0.205, height * 0.208);
         ctx.restore();
 
-        // 5. ISIAN BIODATA KTP
+        // 5. ISIAN BIODATA KTP (MENGGUNAKAN ARIAL FONT)
         ctx.save();
         ctx.fillStyle = "#050505";
         ctx.font = `bold ${Math.round(height * 0.033)}px "${fontFamily}"`;
@@ -223,7 +251,7 @@ router.post('/', ktpUpload, async (req, res) => {
         ctx.fillText(golDarah, width * 0.655, height * 0.384);
         ctx.restore();
 
-        // 6. RENDER PAS FOTO USER (MENUTUPI AREA KOTAK MERAH "PHOTO")
+        // 6. RENDER PAS FOTO USER
         const photoX = width * 0.725;
         const photoY = height * 0.200;
         const photoW = width * 0.228;
@@ -235,7 +263,7 @@ router.post('/', ktpUpload, async (req, res) => {
 
         // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN ACAK
         const ttdCenterX = photoX + (photoW / 2);
-        
+
         ctx.save();
         ctx.fillStyle = "#000000";
         ctx.font = `bold ${Math.round(height * 0.029)}px "${fontFamily}"`;
@@ -273,6 +301,16 @@ router.paramsConfig = {
     pasFotoFile: {
         type: "file",
         desc: "Berkas pas foto user (Wajib)"
+    },
+    provinsi: {
+        type: "text",
+        desc: "Provinsi KTP",
+        default: "PROVINSI JAWA BARAT"
+    },
+    kota: {
+        type: "text",
+        desc: "Kota / Kabupaten KTP",
+        default: "KOTA BANDUNG"
     },
     nik: {
         type: "text",
@@ -343,6 +381,11 @@ router.paramsConfig = {
         type: "text",
         desc: "Masa Berlaku",
         default: "SEUMUR HIDUP"
+    },
+    tglBuat: {
+        type: "text",
+        desc: "Kota dan Tanggal Pembuatan",
+        default: "BANDUNG, 01-01-2021"
     }
 };
 
