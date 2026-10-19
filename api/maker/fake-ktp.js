@@ -70,7 +70,7 @@ async function getImageFromFile(file) {
     return null;
 }
 
-// Fungsi pembuat tanda tangan acak (prosedural tinta biru/hitam realistis)
+// Fungsi pembuat tanda tangan acak (prosedural lebih besar & tebal)
 function drawRandomSignature(ctx, cx, cy, seedText) {
     let hash = 0;
     for (let i = 0; i < seedText.length; i++) {
@@ -83,47 +83,47 @@ function drawRandomSignature(ctx, cx, cy, seedText) {
     };
 
     ctx.save();
-    ctx.strokeStyle = "#0b152c"; // Warna tinta pulpen biru tua pekat
-    ctx.lineWidth = 2.4;
+    ctx.strokeStyle = "#081124"; // Warna tinta pulpen pekat
+    ctx.lineWidth = 3.6; // Dipertebal dari 2.6
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
     ctx.beginPath();
-    let startX = cx - 38 + random() * 8;
-    let startY = cy + 2 - random() * 6;
+    let startX = cx - 55 + random() * 10;
+    let startY = cy + 2 - random() * 8;
     ctx.moveTo(startX, startY);
 
-    // Tarikan awal / Inisial
+    // Tarikan awal / Inisial (Dilebarkan & ditinggikan)
     ctx.bezierCurveTo(
-        startX - 18, startY - 22,
-        startX + 28, startY - 28,
-        startX + 18, startY + 5
+        startX - 28, startY - 32,
+        startX + 40, startY - 42,
+        startX + 25, startY + 8
     );
 
-    // Gelombang coretan acak
-    let currX = startX + 18;
-    let currY = startY + 5;
+    // Gelombang coretan acak (Skala dilebarkan)
+    let currX = startX + 25;
+    let currY = startY + 8;
     const loopCount = 3 + Math.floor(random() * 3);
     for (let i = 0; i < loopCount; i++) {
-        let nextX = currX + 11 + random() * 7;
-        let nextY = cy + (random() - 0.5) * 16;
-        ctx.quadraticCurveTo(currX + 4, currY - 10 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
+        let nextX = currX + 18 + random() * 10;
+        let nextY = cy + (random() - 0.5) * 24;
+        ctx.quadraticCurveTo(currX + 6, currY - 16 * (i % 2 === 0 ? 1 : -1), nextX, nextY);
         currX = nextX;
         currY = nextY;
     }
 
     // Garis bawah / Aksen tanda tangan
-    ctx.moveTo(startX - 8, cy + 14);
+    ctx.moveTo(startX - 15, cy + 20);
     ctx.bezierCurveTo(
-        cx - 6, cy + 20 + random() * 4,
-        cx + 25, cy + 8,
-        currX + 12, cy + 14
+        cx - 10, cy + 28 + random() * 6,
+        cx + 35, cy + 12,
+        currX + 18, cy + 20
     );
 
     // Garis silang / titik hiasan acak
-    if (random() > 0.4) {
-        ctx.moveTo(currX + 3, cy - 6);
-        ctx.lineTo(currX + 10, cy + 6);
+    if (random() > 0.3) {
+        ctx.moveTo(currX + 5, cy - 10);
+        ctx.lineTo(currX + 15, cy + 10);
     }
 
     ctx.stroke();
@@ -202,7 +202,7 @@ router.post('/', ktpUpload, async (req, res) => {
 
         // 3. HEADER PROVINSI & KOTA
         ctx.save();
-        ctx.fillStyle = "#0a0a0a";
+        ctx.fillStyle = "#000000";
         ctx.font = `bold ${Math.round(height * 0.038)}px "${fontFamily}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -210,23 +210,23 @@ router.post('/', ktpUpload, async (req, res) => {
         ctx.fillText(kota, width * 0.495, height * 0.088);
         ctx.restore();
 
-        // 4. VALUE NIK (PRESISI PAS DI SAMPING TITIK DUA NIK)
+        // 4. VALUE NIK (DIGESER KE KANAN SUPAYA TIDAK MENABRAK TITIK DUA)
         ctx.save();
         ctx.fillStyle = "#000000";
         ctx.font = `bold ${Math.round(height * 0.052)}px "${nikFontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(nik, width * 0.208, height * 0.202);
+        ctx.fillText(nik, width * 0.232, height * 0.202);
         ctx.restore();
 
-        // 5. ISIAN BIODATA KTP (FONT ARIAL BOLD)
+        // 5. ISIAN BIODATA KTP (VALX DIGESER KE KANAN DARI 0.308 KE 0.320)
         ctx.save();
         ctx.fillStyle = "#050505";
         ctx.font = `bold ${Math.round(height * 0.028)}px "${fontFamily}"`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
 
-        const valX = width * 0.308;
+        const valX = width * 0.320;
         const rows = [
             { y: height * 0.278, val: nama },
             { y: height * 0.330, val: ttl },
@@ -246,21 +246,21 @@ router.post('/', ktpUpload, async (req, res) => {
             ctx.fillText(row.val, valX, row.y);
         }
 
-        // Value Golongan Darah (Di sebelah kanan Jenis Kelamin)
-        ctx.fillText(golDarah, width * 0.660, height * 0.382);
+        // Value Golongan Darah
+        ctx.fillText(golDarah, width * 0.665, height * 0.382);
         ctx.restore();
 
-        // 6. RENDER PAS FOTO USER (MENGCOVER TOTAL BINGKAI PLACEHOLDER MENTAHAN)
-        const photoX = width * 0.708;
+        // 6. RENDER PAS FOTO USER
+        const photoX = width * 0.710;
         const photoY = height * 0.170;
-        const photoW = width * 0.252;
-        const photoH = height * 0.495;
+        const photoW = width * 0.245;
+        const photoH = height * 0.465;
 
         ctx.save();
         ctx.drawImage(userPhoto, photoX, photoY, photoW, photoH);
         ctx.restore();
 
-        // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN (PRESISI PROPORSI KTP ASLI)
+        // 7. KOTA, TANGGAL TERBIT & TANDA TANGAN (POSISI DITURUNKAN)
         const ttdCenterX = photoX + (photoW / 2);
 
         ctx.save();
@@ -272,13 +272,13 @@ router.post('/', ktpUpload, async (req, res) => {
         const kotaOnly = kota.replace("KOTA", "").replace("KABUPATEN", "").trim();
         const tglOnly = tglBuat.includes(',') ? tglBuat.split(',')[1].trim() : tglBuat;
 
-        // Posisi nama kota & tanggal di bawah foto
-        ctx.fillText(kotaOnly, ttdCenterX, height * 0.680);
-        ctx.fillText(tglOnly, ttdCenterX, height * 0.718);
+        // Diturunkan koordinat Y agar tidak menempel pada pas foto
+        ctx.fillText(kotaOnly, ttdCenterX, height * 0.675);
+        ctx.fillText(tglOnly, ttdCenterX, height * 0.715);
         ctx.restore();
 
-        // Menggambar Tanda Tangan Acak
-        drawRandomSignature(ctx, ttdCenterX, height * 0.810, nama + nik);
+        // Tanda tangan diperbesar dan diletakkan di koordinat Y 0.825
+        drawRandomSignature(ctx, ttdCenterX, height * 0.825, nama + nik);
 
         // 8. EXPORT BUFFER PNG
         const buffer = await canvas.encode('png');
